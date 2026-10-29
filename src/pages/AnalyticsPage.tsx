@@ -1,13 +1,11 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { BarChart3, Car, MessageSquare, Eye, RefreshCw, TrendingUp, CircleHelp } from 'lucide-react';
-import { useNavigation } from '../context/NavigationContext';
 import { storageService } from '../services/storage';
 import { isSupabaseConfigured } from '../lib/supabase';
 import { BottomNav } from '../components/layout/BottomNav';
 import type { Dealership, Enquiry, Vehicle } from '../types';
 
 export const AnalyticsPage: React.FC = () => {
-  const { showToast } = useNavigation();
   const live = isSupabaseConfigured() && !storageService.isDemoModeActive();
   const [dealership, setDealership] = useState<Dealership | null>(null);
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
@@ -37,7 +35,7 @@ export const AnalyticsPage: React.FC = () => {
 
   useEffect(() => { void loadAnalytics(); }, []);
 
-  const views = live ? (dealership?.storefrontViews ?? 0) : (dealership?.storefrontViews ?? 0);
+  const views = dealership?.storefrontViews ?? 0;
   const availableVehicles = vehicles.filter(v => v.status === 'available').length;
   const enquiryRate = views > 0 ? (enquiries.length / views) * 100 : 0;
   const stageCounts = useMemo(() => [
