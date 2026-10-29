@@ -602,15 +602,12 @@ export const storageService = {
   // ---------------------------------------------------------------------------
   async getDealershipAsync(): Promise<Dealership> {
     if (isSupabaseConfigured()) {
-      try {
-        const liveDealer = await supabaseService.getCurrentDealership();
-        if (liveDealer) {
-          this.saveDealership(liveDealer);
-          return liveDealer;
-        }
-      } catch (err) {
-        console.warn('Falling back to local dealership data:', err);
+      const liveDealer = await supabaseService.getCurrentDealership();
+      if (!liveDealer) {
+        throw new Error('No dealership is linked to the signed-in account. Complete dealership onboarding first.');
       }
+      this.saveDealership(liveDealer);
+      return liveDealer;
     }
     return this.getDealership();
   },
@@ -631,18 +628,14 @@ export const storageService = {
 
   async getVehiclesAsync(isPublic: boolean = false): Promise<Vehicle[]> {
     if (isSupabaseConfigured()) {
-      try {
-        const dealer = this.getDealership();
-        const liveVehicles = await supabaseService.getVehicles(dealer.id, isPublic);
-        if (liveVehicles && liveVehicles.length > 0) {
-          if (!isPublic) {
-            this.saveVehicles(liveVehicles);
-          }
-          return liveVehicles;
-        }
-      } catch (err) {
-        console.warn('Falling back to local vehicles data:', err);
+      // Never use cached/demo inventory for an authenticated production session.
+      if (isPublic) {
+        throw new Error('Public vehicle loading must resolve a published dealership before querying inventory.');
       }
+      const dealer = await this.getDealershipAsync();
+      const liveVehicles = await supabaseService.getVehicles(dealer.id, false);
+      this.saveVehicles(liveVehicles);
+      return liveVehicles;
     }
     return this.getVehicles();
   },
