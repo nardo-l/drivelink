@@ -91,6 +91,12 @@ export interface Database {
         };
         Relationships: [];
       };
+      storefront_view_events: {
+        Row: { id: number; dealership_id: string; viewed_at: string };
+        Insert: { id?: number; dealership_id: string; viewed_at?: string };
+        Update: { id?: number; dealership_id?: string; viewed_at?: string };
+        Relationships: [];
+      };
       vehicles: {
         Row: {
           id: string;
@@ -213,6 +219,10 @@ export interface Database {
       record_storefront_view: {
         Args: { p_slug: string };
         Returns: undefined;
+      };
+      get_storefront_view_history: {
+        Args: { p_days?: number };
+        Returns: { view_date: string; views: number }[];
       };
     };
     Enums: {
