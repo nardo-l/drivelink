@@ -6,6 +6,7 @@ import { SignupPage } from './pages/SignupPage';
 import { LoginPage } from './pages/LoginPage';
 import { OnboardingFlow } from './pages/OnboardingFlow';
 import { DashboardPage } from './pages/DashboardPage';
+import { AnalyticsPage } from './pages/AnalyticsPage';
 import { VehiclesListPage } from './pages/VehiclesListPage';
 import { AddEditVehiclePage } from './pages/AddEditVehiclePage';
 import { EnquiriesPage } from './pages/EnquiriesPage';
@@ -110,6 +111,11 @@ function AppContent() {
     // 5. Dealer Dashboard / Screen 03
     if (currentPath === '/app') {
       return <DashboardPage />;
+    }
+
+    // Analytics: live dealership metrics
+    if (currentPath === '/app/analytics') {
+      return <AnalyticsPage />;
     }
 
     // 6. Inventory: Add new vehicle / Screen 04
