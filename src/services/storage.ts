@@ -167,7 +167,12 @@ export const storageService = {
     // metrics cannot override the authenticated dealer's live records.
     if (!isSupabaseConfigured()) return true;
     try {
+      const hadLegacyDemoFlag = localStorage.getItem(STORAGE_KEYS.DEMO_MODE_ACTIVE) === 'true';
       localStorage.removeItem(STORAGE_KEYS.DEMO_MODE_ACTIVE);
+      if (hadLegacyDemoFlag) {
+        // A demo session must never masquerade as a real Supabase login.
+        localStorage.removeItem(STORAGE_KEYS.SESSION);
+      }
     } catch {
       // ignore storage access failures
     }
