@@ -773,68 +773,8 @@ export const OnboardingFlow: React.FC = () => {
       }
     }
 
-    // ---------------------------------------------------------------------------
-    // LOCAL DEMO / STANDALONE MODE
-    // ---------------------------------------------------------------------------
-    const demoDealerId = `dealer-${Date.now()}`;
-    const newDemoDealer: Dealership = {
-      id: demoDealerId,
-      name: dealershipName,
-      slug,
-      country,
-      city,
-      address,
-      phone: phoneE164,
-      whatsapp: whatsappE164,
-      email: onboarding.account.email || 'dealer@drivelink.app',
-      currency,
-      template: onboarding.template,
-      bio: onboarding.contact.description || '',
-      tagline: dealershipName,
-      stickerText: 'Good cars brighter days',
-      logoUrl: onboarding.branding.logoPreview || undefined,
-      coverUrl: onboarding.branding.coverPreview || undefined,
-      isVerified: true,
-      storefrontViews: 1,
-      totalEnquiries: 0,
-    };
-
-    storageService.saveDealership(newDemoDealer);
-
-    if (
-      !onboarding.firstVehicle.isSkipped &&
-      onboarding.firstVehicle.make &&
-      onboarding.firstVehicle.model
-    ) {
-      storageService.createVehicle({
-        dealershipId: demoDealerId,
-        make: onboarding.firstVehicle.make,
-        model: onboarding.firstVehicle.model,
-        year: Number(onboarding.firstVehicle.year) || new Date().getFullYear(),
-        price: Number(onboarding.firstVehicle.price) || 0,
-        currency,
-        mileageKm: Number(onboarding.firstVehicle.mileageKm) || 0,
-        transmission: onboarding.firstVehicle.transmission,
-        fuel: onboarding.firstVehicle.fuel,
-        condition: onboarding.firstVehicle.condition,
-        dutyStatus: 'Duty Paid & Registered',
-        status: onboarding.firstVehicle.status,
-        description: onboarding.firstVehicle.description,
-        photos: onboarding.firstVehicle.photos,
-        features: ['Keyless Entry', 'Air Conditioning'],
-      });
-    }
-
-    storageService.setUserSession({
-      isLoggedIn: true,
-      email: onboarding.account.email || 'dealer@drivelink.app',
-      dealershipId: demoDealerId,
-    });
-
+    setSubmitError('Dealership setup requires a live backend. Please try again later or contact support.');
     setIsSubmitting(false);
-    setOnboarding((prev) => ({ ...prev, isCompleted: true }));
-    showToast('Setup complete! Your showroom is ready.');
-    navigate('/app');
   };
 
   // Header Back Button Logic
