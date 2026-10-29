@@ -1,12 +1,10 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { BarChart3, Car, MessageSquare, Eye, RefreshCw, TrendingUp, CircleHelp } from 'lucide-react';
 import { storageService } from '../services/storage';
-import { isSupabaseConfigured } from '../lib/supabase';
 import { BottomNav } from '../components/layout/BottomNav';
 import type { Dealership, Enquiry, Vehicle } from '../types';
 
 export const AnalyticsPage: React.FC = () => {
-  const live = isSupabaseConfigured() && !storageService.isDemoModeActive();
   const [dealership, setDealership] = useState<Dealership | null>(null);
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [enquiries, setEnquiries] = useState<Enquiry[]>([]);
