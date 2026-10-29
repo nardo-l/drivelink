@@ -494,16 +494,12 @@ export const storageService = {
     stage: EnquiryStage,
     notes?: string
   ): Promise<Enquiry | undefined> {
-    const localUpdated = this.updateEnquiryStage(id, stage, notes);
     if (isSupabaseConfigured()) {
-      try {
-        const liveUpdated = await supabaseService.updateEnquiryStage(id, stage, notes);
-        return liveUpdated;
-      } catch (err) {
-        console.error('Failed to update enquiry stage in Supabase:', err);
-      }
+      const liveUpdated = await supabaseService.updateEnquiryStage(id, stage, notes);
+      this.updateEnquiryStage(id, stage, notes);
+      return liveUpdated;
     }
-    return localUpdated;
+    return this.updateEnquiryStage(id, stage, notes);
   },
 
   async incrementViewsAsync(dealershipId: string): Promise<number> {
