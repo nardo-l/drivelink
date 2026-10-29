@@ -72,7 +72,7 @@ export const DashboardPage: React.FC = () => {
   // Summary counts
   const totalVehicles = vehicles.length;
   const totalEnquiries = enquiries.length;
-  const storefrontViews = dealership.storefrontViews || 1892;
+  const storefrontViews = dealership.storefrontViews || 0;
 
   // Display top 4 recent vehicles matching Screen 03
   const displayedVehicles = vehicles.slice(0, 4);
@@ -99,11 +99,7 @@ export const DashboardPage: React.FC = () => {
                     <span className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse" />
                     <span>Supabase</span>
                   </span>
-                ) : (
-                  <span className="inline-flex items-center gap-1 text-[9px] font-semibold text-slate-500 bg-slate-200/70 px-1.5 py-0.2 rounded-full">
-                    <span>Demo Mode</span>
-                  </span>
-                )}
+                ) : null}
               </div>
               <p className="text-xs text-slate-500 font-medium">
                 Good morning! Here&apos;s your overview.
