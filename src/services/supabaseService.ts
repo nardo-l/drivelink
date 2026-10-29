@@ -327,12 +327,22 @@ export const supabaseService = {
   async incrementStorefrontViews(slug: string): Promise<void> {
     if (!isSupabaseConfigured() || !slug) return;
     // Public visitors cannot directly update dealership rows under RLS.
-    // This narrowly scoped RPC increments only published storefronts.
+    // This narrowly scoped RPC increments only published storefronts and logs a timestamped event.
     const { error } = await supabase.rpc('record_storefront_view', { p_slug: slug });
     if (error) {
       console.error('Failed to record storefront view:', error);
       throw error;
     }
+  },
+
+  async getStorefrontViewHistory(days: number = 30): Promise<{ view_date: string; views: number }[]> {
+    if (!isSupabaseConfigured()) return [];
+    const { data, error } = await supabase.rpc('get_storefront_view_history', { p_days: days });
+    if (error) {
+      console.error('Failed to load storefront view history:', error);
+      throw error;
+    }
+    return (data || []).map(row => ({ view_date: row.view_date, views: Number(row.views) || 0 }));
   },
 
   // ---------------------------------------------------------------------------
