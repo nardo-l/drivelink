@@ -6,7 +6,6 @@ import { BottomNav } from '../components/layout/BottomNav';
 import { StatusBadge } from '../components/common/Badge';
 import { ShareModal } from '../components/common/ShareModal';
 import {
-  Bell,
   Car,
   MessageSquare,
   BarChart3,
@@ -14,10 +13,7 @@ import {
   Share2,
   ChevronRight,
   Plus,
-  ExternalLink,
   Check,
-  Database,
-  RefreshCw,
 } from 'lucide-react';
 
 export const DashboardPage: React.FC = () => {
@@ -26,15 +22,26 @@ export const DashboardPage: React.FC = () => {
   const [vehicles, setVehicles] = useState(() => storageService.getVehicles());
   const [enquiries, setEnquiries] = useState(() => storageService.getEnquiries());
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [liveDataLoaded, setLiveDataLoaded] = useState(false);
 
   const isLive = isSupabaseConfigured() && !storageService.isDemoModeActive();
 
   // If Supabase is configured, sync fresh data in background
   useEffect(() => {
     if (isLive) {
-      storageService.getDealershipAsync().then(setDealership).catch(() => {});
-      storageService.getVehiclesAsync().then(setVehicles).catch(() => {});
-      storageService.getEnquiriesAsync().then(setEnquiries).catch(() => {});
+      Promise.all([
+        storageService.getDealershipAsync(),
+        storageService.getVehiclesAsync(),
+        storageService.getEnquiriesAsync(),
+      ]).then(([d, v, e]) => {
+        setDealership(d);
+        setVehicles(v);
+        setEnquiries(e);
+        setLiveDataLoaded(true);
+      }).catch((err) => {
+        console.error('Failed to load live dashboard analytics:', err);
+        setLiveDataLoaded(true);
+      });
     }
   }, [isLive]);
 
@@ -47,6 +54,7 @@ export const DashboardPage: React.FC = () => {
       setDealership(d);
       setVehicles(v);
       setEnquiries(e);
+      setLiveDataLoaded(true);
       showToast(isLive ? 'Synced with Supabase database' : 'Refreshed local data');
     } catch (err) {
       console.error(err);
@@ -57,7 +65,6 @@ export const DashboardPage: React.FC = () => {
 
   const [copied, setCopied] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
-  const [showNotifications, setShowNotifications] = useState(false);
 
   const storefrontUrl = `drivelink.app/${dealership.slug}`;
   const fullPublicUrl = `${window.location.origin}/#/showroom/${dealership.slug}`;
@@ -72,7 +79,7 @@ export const DashboardPage: React.FC = () => {
   // Summary counts
   const totalVehicles = vehicles.length;
   const totalEnquiries = enquiries.length;
-  const storefrontViews = dealership.storefrontViews || 0;
+  const storefrontViews = isLive && !liveDataLoaded ? 0 : (dealership.storefrontViews || 0);
 
   // Display top 4 recent vehicles matching Screen 03
   const displayedVehicles = vehicles.slice(0, 4);
@@ -107,41 +114,6 @@ export const DashboardPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Notification Bell */}
-          <div className="relative">
-            <button
-              onClick={() => setShowNotifications(!showNotifications)}
-              className="w-10 h-10 rounded-full hover:bg-white flex items-center justify-center text-slate-700 transition-colors relative border border-transparent hover:border-slate-200"
-              aria-label="Notifications"
-            >
-              <Bell className="w-5 h-5 stroke-[2]" />
-              <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-rose-500 ring-2 ring-white" />
-            </button>
-
-            {/* Notification Dropdown Drawer */}
-            {showNotifications && (
-              <div className="absolute right-0 mt-2 w-72 bg-white rounded-2xl shadow-xl border border-slate-200 p-3 z-50 text-left">
-                <div className="flex items-center justify-between pb-2 border-b border-slate-100">
-                  <span className="text-xs font-bold text-slate-900">Recent Alerts</span>
-                  <span className="text-[10px] text-slate-400">2 unread</span>
-                </div>
-                <div className="flex flex-col gap-2 mt-2">
-                  <div className="p-2 rounded-xl bg-blue-50/70 border border-blue-100/60 text-xs">
-                    <p className="font-semibold text-slate-900">New WhatsApp Inquiry</p>
-                    <p className="text-[11px] text-slate-600">
-                      Tendai Moyo asked about 2019 Toyota Aqua.
-                    </p>
-                  </div>
-                  <div className="p-2 rounded-xl bg-slate-50 border border-slate-100 text-xs">
-                    <p className="font-semibold text-slate-900">Showroom Milestone</p>
-                    <p className="text-[11px] text-slate-600">
-                      Your link reached 1,892 verified visits this month.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
         </div>
 
         {/* 3 Summary Cards matching Screen 03 */}
