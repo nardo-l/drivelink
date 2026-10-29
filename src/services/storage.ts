@@ -162,12 +162,16 @@ export const storageService = {
   },
 
   isDemoModeActive(): boolean {
+    // Demo data is only available when there is no live backend.
+    // When Supabase is configured, discard any old browser flag so cached demo
+    // metrics cannot override the authenticated dealer's live records.
     if (!isSupabaseConfigured()) return true;
     try {
-      return localStorage.getItem(STORAGE_KEYS.DEMO_MODE_ACTIVE) === 'true';
+      localStorage.removeItem(STORAGE_KEYS.DEMO_MODE_ACTIVE);
     } catch {
-      return false;
+      // ignore storage access failures
     }
+    return false;
   },
 
   setDemoModeActive(active: boolean): void {
