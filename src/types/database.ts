@@ -210,7 +210,10 @@ export interface Database {
       [_ in never]: never;
     };
     Functions: {
-      [_ in never]: never;
+      record_storefront_view: {
+        Args: { p_slug: string };
+        Returns: undefined;
+      };
     };
     Enums: {
       [_ in never]: never;
