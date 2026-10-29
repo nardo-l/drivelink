@@ -40,7 +40,6 @@ export const DashboardPage: React.FC = () => {
         setLiveDataLoaded(true);
       }).catch((err) => {
         console.error('Failed to load live dashboard analytics:', err);
-        setLiveDataLoaded(true);
       });
     }
   }, [isLive]);
