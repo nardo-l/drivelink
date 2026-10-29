@@ -628,13 +628,12 @@ export const storageService = {
 
   async getVehiclesAsync(isPublic: boolean = false): Promise<Vehicle[]> {
     if (isSupabaseConfigured()) {
-      // Never use cached/demo inventory for an authenticated production session.
-      if (isPublic) {
-        throw new Error('Public vehicle loading must resolve a published dealership before querying inventory.');
-      }
-      const dealer = await this.getDealershipAsync();
-      const liveVehicles = await supabaseService.getVehicles(dealer.id, false);
-      this.saveVehicles(liveVehicles);
+      // Public storefront routes set the selected published dealership in their route flow.
+      // Dealer dashboards must resolve ownership from the authenticated Supabase user.
+      const dealer = isPublic ? this.getDealership() : await this.getDealershipAsync();
+      const liveVehicles = await supabaseService.getVehicles(dealer.id, isPublic);
+      if (!isPublic) this.saveVehicles(liveVehicles);
+      // An empty live result is valid; never substitute another dealership's demo inventory.
       return liveVehicles;
     }
     return this.getVehicles();
