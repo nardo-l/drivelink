@@ -201,7 +201,7 @@ const Legend: React.FC<{ color: string; label: string }> = ({ color, label }) =>
 );
 
 const TrendBars: React.FC<{ points: TrendPoint[]; max: number; compact?: boolean }> = ({ points, max, compact = false }) => (
-  <div className={`grid gap-2 ${compact ? 'grid-cols-10' : 'grid-cols-7'}`}>
+  <div className={`grid gap-2 ${compact ? 'grid-cols-[repeat(30,minmax(0,1fr))]' : 'grid-cols-7'}`}>
     {points.map(point => <div key={point.key} className="min-w-0 text-center">
       <div className={`h-32 flex items-end justify-center gap-1 border-b border-slate-100 ${compact ? 'px-0.5' : ''}`}>
         <div title={`${point.views} views`} className="w-1/2 max-w-5 rounded-t bg-slate-800" style={{ height: `${point.views ? Math.max(3, point.views / max * 100) : 0}%` }} />
