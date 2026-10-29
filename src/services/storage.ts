@@ -613,16 +613,14 @@ export const storageService = {
   },
 
   async updateDealershipAsync(partial: Partial<Dealership>): Promise<Dealership> {
-    const updatedLocal = this.updateDealership(partial);
-    if (isSupabaseConfigured() && updatedLocal.id) {
-      try {
-        const liveUpdated = await supabaseService.updateDealership(updatedLocal.id, partial);
-        this.saveDealership(liveUpdated);
-        return liveUpdated;
-      } catch (err) {
-        console.error('Failed to sync dealership update to Supabase:', err);
-      }
+    if (isSupabaseConfigured()) {
+      const dealer = await this.getDealershipAsync();
+      const liveUpdated = await supabaseService.updateDealership(dealer.id, partial);
+      this.saveDealership(liveUpdated);
+      return liveUpdated;
     }
+
+    const updatedLocal = this.updateDealership(partial);
     return updatedLocal;
   },
 
