@@ -324,20 +324,14 @@ export const supabaseService = {
     return mapDealershipFromRow(data);
   },
 
-  async incrementStorefrontViews(dealershipId: string): Promise<void> {
-    if (!isSupabaseConfigured()) return;
-    // RPC or fetch-and-update view count
-    const { data: current } = await supabase
-      .from('dealerships')
-      .select('storefront_views')
-      .eq('id', dealershipId)
-      .maybeSingle();
-
-    if (current) {
-      await supabase
-        .from('dealerships')
-        .update({ storefront_views: (current.storefront_views || 0) + 1 })
-        .eq('id', dealershipId);
+  async incrementStorefrontViews(slug: string): Promise<void> {
+    if (!isSupabaseConfigured() || !slug) return;
+    // Public visitors cannot directly update dealership rows under RLS.
+    // This narrowly scoped RPC increments only published storefronts.
+    const { error } = await supabase.rpc('record_storefront_view', { p_slug: slug });
+    if (error) {
+      console.error('Failed to record storefront view:', error);
+      throw error;
     }
   },
 
