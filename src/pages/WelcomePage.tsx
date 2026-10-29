@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { useNavigation } from '../context/NavigationContext';
-import { storageService } from '../services/storage';
 import { CAR_RAV4_SILVER, CAR_AQUA_WHITE, CAR_RANGER_WHITE, DEFAULT_DEALER_LOGO } from '../utils/carVisuals';
 import { ArrowRight, ChevronRight, Check } from 'lucide-react';
 
@@ -67,17 +66,8 @@ export const WelcomePage: React.FC = () => {
           </span>
         </div>
 
-        {/* Header Actions: Demo preview or Sign in */}
+        {/* Header Actions: Sign in */}
         <div className="flex items-center gap-1.5">
-          <button
-            onClick={() => {
-              storageService.setDemoModeActive(true);
-              navigate('/app');
-            }}
-            className="min-h-[40px] px-2.5 py-1.5 text-xs font-medium text-slate-500 hover:text-slate-900 transition-colors rounded-lg hover:bg-slate-100"
-          >
-            Demo
-          </button>
           <button
             onClick={() => navigate('/login')}
             className="min-h-[40px] px-2.5 py-1.5 text-xs font-semibold text-slate-900 hover:text-blue-600 transition-colors"
