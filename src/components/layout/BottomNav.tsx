@@ -1,5 +1,5 @@
 import React from 'react';
-import { Home, Car, MessageSquare, Settings } from 'lucide-react';
+import { Home, Car, MessageSquare, Settings, BarChart3 } from 'lucide-react';
 import { useNavigation } from '../../context/NavigationContext';
 import { storageService } from '../../services/storage';
 
@@ -12,6 +12,7 @@ export const BottomNav: React.FC = () => {
     { label: 'Home', path: '/app', icon: Home },
     { label: 'Vehicles', path: '/app/vehicles', icon: Car },
     { label: 'Enquiries', path: '/app/enquiries', icon: MessageSquare, badge: newEnquiriesCount },
+    { label: 'Analytics', path: '/app/analytics', icon: BarChart3 },
     { label: 'Settings', path: '/app/settings', icon: Settings },
   ];
 
