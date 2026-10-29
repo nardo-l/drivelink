@@ -42,7 +42,7 @@ export const PublicShowroomPage: React.FC<PublicShowroomPageProps> = ({ slug }) 
               setAllVehicles(vehList.filter((v) => v.status === 'available'));
             }
           });
-          supabaseService.incrementStorefrontViews(dealer.id);
+          supabaseService.incrementStorefrontViews(dealer.slug).catch((err) => console.warn('Storefront view tracking failed:', err));
         }
       }).catch((err) => console.warn('Supabase showroom load fallback:', err));
     }
