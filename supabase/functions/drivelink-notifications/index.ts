@@ -73,8 +73,12 @@ async function createScheduledNotifications() {
     }
     if (preferences.share_reminders !== false) {
       const { count: shareCount } = await db.from("notification_events").select("id", { count: "exact", head: true }).eq("dealership_id", dealer.id).eq("event_type", "showroom_share_started");
-      if (!shareCount && ageHours >= 24) {
-        await insertNotification(dealer.id, "sharing", "Share your showroom link", "Your online showroom is ready. Share its link on WhatsApp and social media to reach more buyers.", `share-reminder:${today}`, { url: "/app" });
+      if (!shareCount && ageHours >= 24 && ageHours < 72) {
+        await insertNotification(dealer.id, "sharing", "Share your showroom link", "Your online showroom is ready. Share its link on WhatsApp and social media to reach more buyers.", "share-reminder:24h", { url: "/app" });
+      } else if (!shareCount && ageHours >= 72 && ageHours < 168) {
+        await insertNotification(dealer.id, "sharing", "Bring buyers to your showroom", "Your DriveLink showroom is ready to share. Post the link on WhatsApp Status and your social pages.", "share-reminder:3d", { url: "/app" });
+      } else if (!shareCount && ageHours >= 168) {
+        await insertNotification(dealer.id, "sharing", "Give your showroom more reach", "A quick share can help more buyers discover your vehicles. Share your showroom link today.", "share-reminder:7d", { url: "/app" });
       }
     }
     const { data: subscription } = await db.from("dealership_subscriptions")
