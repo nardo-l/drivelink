@@ -20,6 +20,7 @@ export interface Database {
         Row: {
           id: string;
           user_id: string;
+          dealership_type: string;
           name: string;
           slug: string;
           country: string;
@@ -44,6 +45,7 @@ export interface Database {
         Insert: {
           id?: string;
           user_id: string;
+          dealership_type?: string;
           name: string;
           slug: string;
           country?: string;
@@ -68,6 +70,7 @@ export interface Database {
         Update: {
           id?: string;
           user_id?: string;
+          dealership_type?: string;
           name?: string;
           slug?: string;
           country?: string;
