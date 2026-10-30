@@ -21,7 +21,7 @@ function urlBase64ToUint8Array(value: string): Uint8Array {
 
 export const notificationService = {
   async list(dealershipId: string, limit = 50): Promise<DriveLinkNotification[]> {
-    const { data, error } = await supabase.from('notifications').select('id,category,title,body,data,read_at,created_at')
+    const { data, error } = await (supabase as any).from('notifications').select('id,category,title,body,data,read_at,created_at')
       .eq('dealership_id', dealershipId).order('created_at', { ascending: false }).limit(limit);
     if (error) throw error;
     return (data || []) as DriveLinkNotification[];
