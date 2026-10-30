@@ -82,6 +82,7 @@ export interface UserSession {
 export interface DealershipRow {
   id: string;
   user_id: string;
+  dealership_type: string;
   name: string;
   slug: string;
   country: string;
@@ -149,6 +150,7 @@ export function dealershipRowToModel(row: DealershipRow, totalEnquiries: number 
   return {
     id: row.id,
     userId: row.user_id,
+    dealershipType: row.dealership_type as SellerType,
     name: row.name,
     slug: row.slug,
     tagline: row.tagline || '',
@@ -175,6 +177,7 @@ export function dealershipModelToRow(model: Partial<Dealership>, userId?: string
   const row: Partial<DealershipRow> = {};
   if (model.id) row.id = model.id;
   if (userId || model.userId) row.user_id = userId || model.userId;
+  if (model.dealershipType !== undefined) row.dealership_type = model.dealershipType;
   if (model.name !== undefined) row.name = model.name;
   if (model.slug !== undefined) row.slug = model.slug;
   if (model.country !== undefined) row.country = model.country;
