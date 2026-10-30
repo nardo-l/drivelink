@@ -796,7 +796,7 @@ export const OnboardingFlow: React.FC = () => {
       .toUpperCase() || 'DL';
 
   return (
-    <div className="min-h-screen w-full flex flex-col justify-between bg-white text-slate-900 px-6 py-5 select-none">
+    <div className="dl-onboarding min-h-screen w-full flex flex-col justify-between bg-white text-slate-900 px-6 py-5 select-none">
       {/* Top Header: Back Arrow & Segmented Progress Bar */}
       <div className="flex flex-col gap-3 pb-2">
         <div className="flex items-center justify-between">
