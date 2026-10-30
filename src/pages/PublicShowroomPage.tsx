@@ -35,7 +35,12 @@ export const PublicShowroomPage: React.FC<PublicShowroomPageProps> = ({ slug, pr
   );
 
   useEffect(() => {
-    if (!previewDealership && isSupabaseConfigured() && slug) {
+    if (previewDealership) {
+      setDealership(previewDealership);
+      setAllVehicles(previewVehicles || []);
+      return;
+    }
+    if (isSupabaseConfigured() && slug) {
       supabaseService.getDealershipBySlug(slug).then((dealer) => {
         if (dealer) {
           setDealership(dealer);
@@ -49,7 +54,7 @@ export const PublicShowroomPage: React.FC<PublicShowroomPageProps> = ({ slug, pr
         }
       }).catch((err) => console.warn('Supabase showroom load fallback:', err));
     }
-  }, [slug, previewDealership]);
+  }, [slug, previewDealership, previewVehicles]);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedMake, setSelectedMake] = useState<string>('All');
