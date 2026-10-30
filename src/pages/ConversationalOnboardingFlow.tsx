@@ -19,6 +19,10 @@ const initialState = (): OnboardingState => ({
   isCompleted: false,
 });
 
+const dataUrlToFile = (dataUrl: string, name: string) => { const [meta, encoded] = dataUrl.split(','); const mime = meta.match(/data:(.*?);base64/)?.[1] || 'image/jpeg'; const binary = atob(encoded); const bytes = new Uint8Array(binary.length); for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i); return new File([bytes], name + (mime.includes('png') ? '.png' : '.jpg'), { type: mime }); };
+
+const compressImage = (file: File, maxWidth = 1400, quality = 0.72) => new Promise<string>((resolve, reject) => { const url = URL.createObjectURL(file); const image = new Image(); image.onload = () => { const scale = Math.min(1, maxWidth / image.width); const canvas = document.createElement('canvas'); canvas.width = Math.round(image.width * scale); canvas.height = Math.round(image.height * scale); const context = canvas.getContext('2d'); if (!context) { URL.revokeObjectURL(url); reject(new Error('Image processing is unavailable.')); return; } context.drawImage(image, 0, 0, canvas.width, canvas.height); URL.revokeObjectURL(url); resolve(canvas.toDataURL('image/jpeg', quality)); }; image.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Could not read this image.')); }; image.src = url; });
+
 const slugify = (value: string) => value.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 48) || 'my-dealership';
 
 const sellerOptions: { id: SellerType; title: string; detail: string; icon: React.ElementType }[] = [
@@ -46,7 +50,20 @@ export const OnboardingFlow: React.FC = () => {
   useEffect(() => { storageService.saveOnboardingState(data); }, [data]);
 
   const showroomSlug = useMemo(() => slugify(data.showroom.businessName || data.account.businessName), [data.showroom.businessName, data.account.businessName]);
-  const showroomUrl = `${window.location.origin}/showroom/${showroomSlug}`;
+  const [availableSlug, setAvailableSlug] = useState(showroomSlug);
+  const showroomUrl = `${window.location.origin}/showroom/${availableSlug}`;
+
+  useEffect(() => {
+    let active = true;
+    const findSlug = async () => {
+      let candidate = showroomSlug;
+      let suffix = 2;
+      while (!(await supabaseService.checkHandleAvailability(candidate))) candidate = `${showroomSlug}-${suffix++}`;
+      if (active) setAvailableSlug(candidate);
+    };
+    findSlug().catch(() => { if (active) setAvailableSlug(showroomSlug); });
+    return () => { active = false; };
+  }, [showroomSlug]);
 
   const patch = (section: keyof OnboardingState, values: any) => {
     setData(previous => ({ ...previous, [section]: { ...(previous[section] as any), ...values } }));
@@ -72,7 +89,8 @@ export const OnboardingFlow: React.FC = () => {
       if (!dealer) {
         dealer = await supabaseService.createDealership({
           name: data.showroom.businessName.trim(),
-          slug: showroomSlug,
+          slug: availableSlug,
+          dealershipType: data.sellerType,
           country,
           city: data.contact.city.trim(),
           address: data.contact.address.trim(),
@@ -88,12 +106,15 @@ export const OnboardingFlow: React.FC = () => {
         });
       }
       const assets: Partial<Dealership> = {};
-      if (logoFile) assets.logoUrl = await supabaseService.uploadDealershipAsset(dealer.id, logoFile, 'logo');
-      if (bannerFile) assets.coverUrl = await supabaseService.uploadDealershipAsset(dealer.id, bannerFile, 'cover');
+      const restoredLogo = logoFile || (data.branding.logoPreview?.startsWith('data:') ? dataUrlToFile(data.branding.logoPreview, 'dealership-logo') : null);
+      const restoredBanner = bannerFile || (data.branding.coverPreview?.startsWith('data:') ? dataUrlToFile(data.branding.coverPreview, 'dealership-banner') : null);
+      if (restoredLogo) assets.logoUrl = await supabaseService.uploadDealershipAsset(dealer.id, restoredLogo, 'logo');
+      if (restoredBanner) assets.coverUrl = await supabaseService.uploadDealershipAsset(dealer.id, restoredBanner, 'cover');
       if (Object.keys(assets).length) dealer = await supabaseService.updateDealership(dealer.id, assets);
 
       if (!data.firstVehicle.isSkipped && data.firstVehicle.make.trim() && data.firstVehicle.model.trim()) {
-        const photos = await Promise.all(vehicleFiles.map(file => supabaseService.uploadVehiclePhoto(dealer!.id, file)));
+        const restoredVehicleFiles = vehicleFiles.length ? vehicleFiles : data.firstVehicle.photos.filter(photo => photo.startsWith('data:')).map((photo, index) => dataUrlToFile(photo, `vehicle-${index + 1}`));
+        const photos = await Promise.all(restoredVehicleFiles.map(file => supabaseService.uploadVehiclePhoto(dealer!.id, file)));
         await supabaseService.createVehicle({
           dealershipId: dealer.id,
           make: data.firstVehicle.make.trim(),
@@ -138,10 +159,11 @@ export const OnboardingFlow: React.FC = () => {
     if (!file) return;
     if (!file.type.startsWith('image/')) { setError('Please choose an image file.'); return; }
     if (file.size > 5 * 1024 * 1024) { setError('Each image must be smaller than 5 MB.'); return; }
-    const url = URL.createObjectURL(file);
-    if (kind === 'logo') { setLogoFile(file); patch('branding', { logoPreview: url }); }
-    else { setBannerFile(file); patch('branding', { coverPreview: url }); }
-    setError('');
+    compressImage(file, kind === 'logo' ? 700 : 1500).then(preview => {
+      if (kind === 'logo') { setLogoFile(file); patch('branding', { logoPreview: preview }); }
+      else { setBannerFile(file); patch('branding', { coverPreview: preview }); }
+      setError('');
+    }).catch(() => setError('We could not process that image. Please choose another one.'));
   };
 
   const handleSignup = async (event: React.FormEvent) => {
@@ -269,7 +291,7 @@ export const OnboardingFlow: React.FC = () => {
               <div className="grid grid-cols-2 gap-3">{field('Year', data.firstVehicle.year, v => patch('firstVehicle', { year: v ? Number(v) : '' }), '2020', 'number')}{field('Price', data.firstVehicle.price, v => patch('firstVehicle', { price: v ? Number(v) : '' }), '8500', 'number')}</div>
               <div className="grid grid-cols-2 gap-3">{field('Mileage (km)', data.firstVehicle.mileageKm, v => patch('firstVehicle', { mileageKm: v ? Number(v) : '' }), '65000', 'number')}<label className="block"><span className="block text-xs font-semibold text-slate-600 mb-1.5">Currency</span><select value={data.firstVehicle.currency} onChange={e => patch('firstVehicle', { currency: e.target.value as CurrencyCode })} className="w-full h-12 px-3 rounded-xl border border-slate-200 bg-white text-sm"><option value="USD">USD</option><option value="ZAR">ZAR</option></select></label></div>
               <div className="grid grid-cols-2 gap-3"><label className="block"><span className="block text-xs font-semibold text-slate-600 mb-1.5">Transmission</span><select value={data.firstVehicle.transmission} onChange={e => patch('firstVehicle', { transmission: e.target.value as any })} className="w-full h-12 px-3 rounded-xl border border-slate-200 bg-white text-sm"><option>Automatic</option><option>Manual</option></select></label><label className="block"><span className="block text-xs font-semibold text-slate-600 mb-1.5">Fuel</span><select value={data.firstVehicle.fuel} onChange={e => patch('firstVehicle', { fuel: e.target.value as any })} className="w-full h-12 px-3 rounded-xl border border-slate-200 bg-white text-sm"><option>Petrol</option><option>Diesel</option><option>Hybrid</option><option>Electric</option></select></label></div>
-              <label className="block"><span className="block text-xs font-semibold text-slate-600 mb-1.5">Vehicle photos</span><input type="file" accept="image/*" multiple onChange={e => setVehicleFiles(Array.from(e.target.files || []).slice(0, 10))} className="w-full text-xs" /><span className="block text-[10px] text-slate-500 mt-1">{vehicleFiles.length} photo(s) selected</span></label>
+              <label className="block"><span className="block text-xs font-semibold text-slate-600 mb-1.5">Vehicle photos</span><input type="file" accept="image/*" multiple onChange={async e => { const files = Array.from(e.target.files || []).slice(0, 5); setVehicleFiles(files); try { const photos = await Promise.all(files.map(file => compressImage(file, 1200, 0.68))); patch('firstVehicle', { photos }); } catch { setError('One or more vehicle photos could not be processed.'); } }} className="w-full text-xs" /><span className="block text-[10px] text-slate-500 mt-1">{vehicleFiles.length} photo(s) selected</span></label>
             </div>}
             <button onClick={nextFromVehicle} className="w-full h-12 rounded-full bg-slate-950 text-white font-bold text-sm">Continue <ArrowRight className="inline w-4 h-4 ml-1" /></button>
           </>}
