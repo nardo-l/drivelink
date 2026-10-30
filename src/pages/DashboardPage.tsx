@@ -14,6 +14,7 @@ import {
   ChevronRight,
   Plus,
   Check,
+  Bell,
 } from 'lucide-react';
 
 export const DashboardPage: React.FC = () => {
@@ -112,7 +113,9 @@ export const DashboardPage: React.FC = () => {
               </p>
             </div>
           </div>
-
+          <button onClick={() => navigate('/app/notifications')} aria-label="Open notifications" className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-700 shadow-xs hover:bg-slate-50">
+            <Bell className="h-4.5 w-4.5" />
+          </button>
         </div>
 
         {/* 3 Summary Cards matching Screen 03 */}
