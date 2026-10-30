@@ -93,7 +93,7 @@ export const PublicShowroomPage: React.FC<PublicShowroomPageProps> = ({ slug }) 
   )}`;
 
   return (
-    <div className="relative min-h-full flex flex-col justify-between bg-white text-slate-900 pb-12">
+    <div className="dl-public-storefront relative min-h-full flex flex-col justify-between bg-white text-slate-900 pb-12">
       {/* Top Cover Banner matching Screen 05 */}
       <div className="relative w-full h-44 sm:h-52 bg-slate-800 overflow-hidden">
         {dealership.coverUrl ? (
