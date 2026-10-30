@@ -6,6 +6,7 @@ import { isSupabaseConfigured, runBackendDiagnostic, BackendDiagnosticResult } f
 import { Dealership, StorefrontTemplate, CurrencyCode } from '../types';
 import { BottomNav } from '../components/layout/BottomNav';
 import {
+  CreditCard,
   Building2,
   Phone,
   MessageCircle,
