@@ -237,13 +237,22 @@ export const SettingsPage: React.FC = () => {
           </p>
         </div>
 
-        <button
-          onClick={() => navigate(`/showroom/${current.slug}`)}
-          className="h-8 px-3 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-800 font-semibold text-xs flex items-center gap-1 transition-colors"
-        >
-          <ExternalLink className="w-3.5 h-3.5" />
-          <span>View Showroom</span>
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => navigate('/app/billing')}
+            className="h-8 px-3 rounded-full bg-slate-950 hover:bg-slate-800 text-white font-semibold text-xs flex items-center gap-1 transition-colors"
+          >
+            <CreditCard className="w-3.5 h-3.5" />
+            <span>Subscription</span>
+          </button>
+          <button
+            onClick={() => navigate(`/showroom/${current.slug}`)}
+            className="h-8 px-3 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-800 font-semibold text-xs flex items-center gap-1 transition-colors"
+          >
+            <ExternalLink className="w-3.5 h-3.5" />
+            <span>View Showroom</span>
+          </button>
+        </div>
       </div>
 
       {/* Main Body */}
