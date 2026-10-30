@@ -97,7 +97,7 @@ export const AnalyticsPage: React.FC = () => {
   const maxTrend = Math.max(1, ...trend.flatMap(point => [point.views, point.enquiries]));
 
   return (
-    <div className="relative min-h-full flex flex-col bg-[#F8F9FA] text-slate-900">
+    <div className="dl-workspace relative min-h-full flex flex-col bg-[#F8F9FA] text-slate-900">
       <main className="flex-1 overflow-y-auto px-5 pt-6 pb-28">
         <div className="flex items-start justify-between gap-3 mb-6">
           <div>
