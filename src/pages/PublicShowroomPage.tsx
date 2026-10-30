@@ -368,7 +368,7 @@ export const PublicShowroomPage: React.FC<PublicShowroomPageProps> = ({ slug, pr
         isOpen={isShareOpen}
         onClose={() => setIsShareOpen(false)}
         title={dealership.name}
-        url={window.location.href}
+        url={previewDealership ? `${window.location.origin}/showroom/${previewDealership.slug}` : window.location.href}
         description={`Browse verified cars from ${dealership.name} in ${dealership.city}.`}
       />
 
