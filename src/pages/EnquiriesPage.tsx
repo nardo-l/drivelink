@@ -128,7 +128,7 @@ export const EnquiriesPage: React.FC = () => {
   };
 
   return (
-    <div className="relative min-h-full flex flex-col bg-[#F7F8FA] text-slate-900">
+    <div className="dl-workspace relative min-h-full flex flex-col bg-[#F7F8FA] text-slate-900">
       <header className="sticky top-0 z-20 bg-white/95 backdrop-blur border-b border-slate-200/70 px-5 py-4">
         <div className="flex items-start justify-between gap-3">
           <div>
