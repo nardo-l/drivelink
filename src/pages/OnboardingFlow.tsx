@@ -568,7 +568,11 @@ export const OnboardingFlow: React.FC = () => {
 
   const handleVehicleSubmit = (isDraft: boolean = false) => {
     if (!onboarding.firstVehicle.make || !onboarding.firstVehicle.model) {
-      setErrors({ vehicle: 'Vehicle make and model are required if adding a vehicle.' });
+      setErrors({ vehicle: 'Tell us the make and model so buyers know which car this is.' });
+      return;
+    }
+    if (!onboarding.firstVehicle.photos.length) {
+      setErrors({ vehicle: 'Add at least one photo of your car to continue.' });
       return;
     }
 
@@ -583,18 +587,6 @@ export const OnboardingFlow: React.FC = () => {
     }));
     setErrors({});
     showToast(isDraft ? 'Vehicle saved as draft' : 'Vehicle details saved');
-  };
-
-  const handleSkipVehicle = () => {
-    setOnboarding((prev) => ({
-      ...prev,
-      firstVehicle: {
-        ...prev.firstVehicle,
-        isSkipped: true,
-      },
-      currentStep: 8,
-    }));
-    showToast('Vehicle step skipped — you can add vehicles anytime from your dashboard');
   };
 
   // ----------------------------------------------------
@@ -1886,16 +1878,10 @@ export const OnboardingFlow: React.FC = () => {
                     Tell us about the car
                   </h1>
                   <p className="text-xs font-medium text-slate-500 mt-1">
-                    Start with the essentials, or skip to launch a clean showroom.
+                    What car are we putting in your showroom first? Add its details and at least one photo.
                   </p>
                 </div>
-                <button
-                  type="button"
-                  onClick={handleSkipVehicle}
-                  className="text-xs font-semibold text-slate-400 hover:text-slate-800 shrink-0 pt-1 underline underline-offset-2"
-                >
-                  Skip for now
-                </button>
+
               </div>
 
               {errors.vehicle && (
@@ -2147,7 +2133,7 @@ export const OnboardingFlow: React.FC = () => {
               <div className="w-16 h-16 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center"><CheckCircle2 className="w-9 h-9" /></div>
               <div><p className="text-[10px] font-bold uppercase tracking-[.18em] text-emerald-700">All set</p><h1 className="text-2xl font-extrabold text-slate-950 mt-2">Your showroom is ready.</h1><p className="text-xs text-slate-500 mt-2">{onboarding.showroom.businessName || 'Your dealership'} is ready to share.</p></div>
               <div className="w-full rounded-2xl border border-slate-200 bg-slate-50 p-4 text-left"><p className="text-[10px] uppercase tracking-wider text-slate-400 font-bold">Your showroom link</p><p className="text-sm font-bold mt-1 break-all">{window.location.origin}/showroom/{onboarding.showroom.handle}</p></div>
-              <button type="button" onClick={() => navigate('/showroom/' + onboarding.showroom.handle)} className="w-full h-12 rounded-full bg-slate-950 text-white text-xs font-bold">View my showroom <ExternalLink className="inline w-4 h-4 ml-1" /></button>
+              <button type="button" onClick={() => navigate(onboarding.showroom.isPublished === false ? '/app/storefront' : '/showroom/' + onboarding.showroom.handle)} className="w-full h-12 rounded-full bg-slate-950 text-white text-xs font-bold">{onboarding.showroom.isPublished === false ? 'Manage private showroom' : 'View my showroom'} <ExternalLink className="inline w-4 h-4 ml-1" /></button>
               <button type="button" onClick={() => navigate('/app/vehicles/new')} className="w-full h-11 rounded-full border border-slate-200 text-xs font-bold">Add another car</button>
               <button type="button" onClick={() => { const url = window.location.origin + '/showroom/' + onboarding.showroom.handle; if (navigator.share) navigator.share({ title: onboarding.showroom.businessName, url }).catch(() => {}); else navigator.clipboard?.writeText(url).then(() => showToast('Showroom link copied')); }} className="w-full h-11 rounded-full text-xs font-bold text-slate-600">Share showroom link</button>
             </div>
