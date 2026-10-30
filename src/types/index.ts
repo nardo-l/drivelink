@@ -296,6 +296,7 @@ export interface OnboardingState {
   showroom: {
     businessName: string;
     handle: string;
+    isPublished?: boolean;
   };
   contact: {
     country: 'Zimbabwe' | 'South Africa';
