@@ -21,7 +21,31 @@ const initialState = (): OnboardingState => ({
 
 const dataUrlToFile = (dataUrl: string, name: string) => { const [meta, encoded] = dataUrl.split(','); const mime = meta.match(/data:(.*?);base64/)?.[1] || 'image/jpeg'; const binary = atob(encoded); const bytes = new Uint8Array(binary.length); for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i); return new File([bytes], name + (mime.includes('png') ? '.png' : '.jpg'), { type: mime }); };
 
-const compressImage = (file: File, maxWidth = 1400, quality = 0.72) => new Promise<string>((resolve, reject) => { const url = URL.createObjectURL(file); const image = new Image(); image.onload = () => { const scale = Math.min(1, maxWidth / image.width); const canvas = document.createElement('canvas'); canvas.width = Math.round(image.width * scale); canvas.height = Math.round(image.height * scale); const context = canvas.getContext('2d'); if (!context) { URL.revokeObjectURL(url); reject(new Error('Image processing is unavailable.')); return; } context.drawImage(image, 0, 0, canvas.width, canvas.height); URL.revokeObjectURL(url); resolve(canvas.toDataURL('image/jpeg', quality)); }; image.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Could not read this image.')); }; image.src = url; });
+const compressImage = (file: File, maxWidth = 1400, quality = 0.72) => new Promise<string>((resolve, reject) => {
+  const url = URL.createObjectURL(file);
+  const image = new Image();
+  image.onload = () => {
+    let scale = Math.min(1, maxWidth / image.width);
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d');
+    if (!context) { URL.revokeObjectURL(url); reject(new Error('Image processing is unavailable.')); return; }
+    let output = '';
+    let currentQuality = quality;
+    for (let attempt = 0; attempt < 7; attempt++) {
+      canvas.width = Math.max(1, Math.round(image.width * scale));
+      canvas.height = Math.max(1, Math.round(image.height * scale));
+      context.drawImage(image, 0, 0, canvas.width, canvas.height);
+      output = canvas.toDataURL('image/jpeg', currentQuality);
+      if (output.length < 460000) break;
+      currentQuality = Math.max(0.38, currentQuality - 0.08);
+      scale *= 0.85;
+    }
+    URL.revokeObjectURL(url);
+    resolve(output);
+  };
+  image.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Could not read this image.')); };
+  image.src = url;
+});
 
 const slugify = (value: string) => value.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 48) || 'my-dealership';
 
@@ -89,10 +113,16 @@ export const OnboardingFlow: React.FC = () => {
       const phone = toE164(data.contact.phoneCountryCode, data.contact.phoneNumber);
       const whatsapp = data.contact.whatsappSameAsPhone ? phone : toE164(data.contact.whatsappCountryCode, data.contact.whatsappNumber);
       const country = data.contact.country;
+      let finalSlug = availableSlug;
       if (!dealer) {
+        let suffix = 2;
+        for (let attempt = 0; attempt < 25; attempt++) {
+          if (await supabaseService.checkHandleAvailability(finalSlug)) break;
+          finalSlug = `${showroomSlug}-${suffix++}`;
+        }
         dealer = await supabaseService.createDealership({
           name: data.showroom.businessName.trim(),
-          slug: availableSlug,
+          slug: finalSlug,
           dealershipType: data.sellerType,
           country,
           city: data.contact.city.trim(),
