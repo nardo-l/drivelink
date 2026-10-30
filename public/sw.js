@@ -14,7 +14,8 @@ self.addEventListener('push', (event) => {
 });
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
-  const target = event.notification.data?.url || '/#/app/notifications';
+  const path = event.notification.data?.url || '/app/notifications';
+  const target = path.startsWith('/#') ? path : '/#' + path.replace(/^\//, '');
   event.waitUntil((async () => {
     const windows = await clients.matchAll({ type: 'window', includeUncontrolled: true });
     for (const client of windows) {
