@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigation } from '../context/NavigationContext';
+import { PublicShowroomPage } from './PublicShowroomPage';
 import { storageService } from '../services/storage';
 import { supabaseService } from '../services/supabaseService';
 import { isSupabaseConfigured } from '../lib/supabase';
@@ -2186,7 +2187,20 @@ export const OnboardingFlow: React.FC = () => {
                 </div>
               )}
 
-              {/* Live Preview Card */}
+              {/* Actual public storefront preview */}
+              <div className="rounded-3xl overflow-hidden border border-slate-200 bg-slate-50">
+                <div className="px-4 py-3 border-b border-slate-200 bg-white"><p className="text-xs font-bold text-slate-900">This is your actual buyer-facing storefront</p><p className="text-[10px] text-slate-500 mt-0.5">The preview uses the same page buyers will open from your showroom link.</p></div>
+                <div className="max-h-[620px] overflow-y-auto">
+                  <PublicShowroomPage
+                    previewDealership={{
+                      id: 'preview-showroom', userId: '', name: onboarding.showroom.businessName || 'Your Showroom', slug: onboarding.showroom.handle || 'your-showroom', tagline: onboarding.showroom.businessName || 'Quality vehicles. Fair prices.', bio: onboarding.contact.description || '', stickerText: 'Good cars brighter days', country: onboarding.contact.country, city: onboarding.contact.city || 'Your city', address: onboarding.contact.address || '', phone: onboarding.contact.phoneNumber || '', whatsapp: onboarding.contact.whatsappNumber || '', email: onboarding.account.email || '', currency: onboarding.firstVehicle.currency || 'USD', template: onboarding.template, logoUrl: onboarding.branding.logoPreview || undefined, coverUrl: onboarding.branding.coverPreview || undefined, isVerified: false, isPublished: onboarding.showroom.isPublished !== false, storefrontViews: 0, totalEnquiries: 0,
+                    }}
+                    previewVehicles={(!onboarding.firstVehicle.isSkipped && onboarding.firstVehicle.make && onboarding.firstVehicle.model) ? [{ id: 'preview-vehicle', dealershipId: 'preview-showroom', make: onboarding.firstVehicle.make, model: onboarding.firstVehicle.model, year: Number(onboarding.firstVehicle.year) || new Date().getFullYear(), price: Number(onboarding.firstVehicle.price) || 0, currency: onboarding.firstVehicle.currency, mileageKm: Number(onboarding.firstVehicle.mileageKm) || 0, transmission: onboarding.firstVehicle.transmission, fuel: onboarding.firstVehicle.fuel, condition: onboarding.firstVehicle.condition, status: 'available', description: onboarding.firstVehicle.description, photos: onboarding.firstVehicle.photos, features: [], createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() }] : []}
+                  />
+                </div>
+              </div>
+
+              {/* Setup summary */}
               <div className="bg-white rounded-3xl border border-slate-200 shadow-md overflow-hidden flex flex-col">
                 {/* Cover and Overlapping Avatar */}
                 <div className="relative h-28 bg-slate-900 overflow-hidden">
