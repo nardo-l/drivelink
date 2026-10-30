@@ -72,7 +72,7 @@ async function createScheduledNotifications() {
       await insertNotification(dealer.id, "inventory", "Grow your vehicle selection", `You have ${activeVehicles.length} active vehicle(s). Add a few more to give buyers more options.`, `low-inventory:${today}`, { url: "/app/vehicles/new" });
     }
     if (preferences.share_reminders !== false) {
-      const { count: shareCount } = await db.from("notification_events").select("id", { count: "exact", head: true }).eq("dealership_id", dealer.id).eq("event_type", "showroom_shared");
+      const { count: shareCount } = await db.from("notification_events").select("id", { count: "exact", head: true }).eq("dealership_id", dealer.id).eq("event_type", "showroom_share_started");
       if (!shareCount && ageHours >= 24) {
         await insertNotification(dealer.id, "sharing", "Share your showroom link", "Your online showroom is ready. Share its link on WhatsApp and social media to reach more buyers.", `share-reminder:${today}`, { url: "/app" });
       }
