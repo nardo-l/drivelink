@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { X, Copy, Check, MessageCircle, QrCode, ExternalLink } from 'lucide-react';
-import { useNavigation } from '../../context/NavigationContext';\nimport { notificationService } from '../../services/notificationService';
+import { useNavigation } from '../../context/NavigationContext';
+import { notificationService } from '../../services/notificationService';
 
 interface ShareModalProps {
   isOpen: boolean;
@@ -8,6 +9,7 @@ interface ShareModalProps {
   title: string;
   url: string;
   description?: string;
+  dealershipId?: string;
 }
 
 export const ShareModal: React.FC<ShareModalProps> = ({
@@ -16,6 +18,7 @@ export const ShareModal: React.FC<ShareModalProps> = ({
   title,
   url,
   description = 'Check out this showroom on DriveLink!',
+  dealershipId,
 }) => {
   const { showToast, navigate } = useNavigation();
   const [copied, setCopied] = useState(false);
@@ -23,7 +26,9 @@ export const ShareModal: React.FC<ShareModalProps> = ({
   if (!isOpen) return null;
 
   const handleCopy = () => {
-    navigator.clipboard?.writeText(url);\n    if (dealershipId) void notificationService.trackShareStarted(dealershipId, 'copy').catch((error) => console.warn('Share activity could not be recorded:', error));
+    navigator.clipboard?.writeText(url);
+    if (dealershipId) void notificationService.trackShareStarted(dealershipId, 'copy').catch((error) => console.warn('Share activity could not be recorded:', error));
+    if (dealershipId) void notificationService.trackShareStarted(dealershipId, 'copy').catch((error) => console.warn('Share activity could not be recorded:', error));
     setCopied(true);
     showToast('Link copied to clipboard!');
     setTimeout(() => setCopied(false), 2000);
@@ -76,6 +81,7 @@ export const ShareModal: React.FC<ShareModalProps> = ({
           {/* WhatsApp Direct */}
           <a
             href={whatsappUrl}
+            onClick={() => { if (dealershipId) void notificationService.trackShareStarted(dealershipId, 'whatsapp').catch((error) => console.warn('Share activity could not be recorded:', error)); }}
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-[#25D366] hover:bg-[#20bd5a] text-white font-semibold text-xs transition-colors shadow-xs"
@@ -88,6 +94,7 @@ export const ShareModal: React.FC<ShareModalProps> = ({
           <button
             onClick={() => {
               onClose();
+              if (dealershipId) void notificationService.trackShareStarted(dealershipId, 'open').catch((error) => console.warn('Share activity could not be recorded:', error));
               navigate(url.replace(/^https?:\/\/[^/]+/, ''));
             }}
             className="flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-semibold text-xs transition-colors"
