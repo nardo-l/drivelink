@@ -39,7 +39,7 @@ export const NotificationsPage: React.FC = () => {
     if (busy || !dealershipId) return;
     setBusy(true);
     try {
-      if (pushEnabled) { await notificationService.disablePush(); setPushEnabled(false); showToast('Push notifications disabled'); }
+      if (pushEnabled) { await notificationService.disablePush(dealershipId); setPushEnabled(false); showToast('Push notifications disabled'); }
       else { await notificationService.enablePush(dealershipId); setPushEnabled(true); showToast('Push notifications enabled'); }
     } catch (err) { showToast(err instanceof Error ? err.message : 'Could not update push settings'); }
     finally { setBusy(false); }
