@@ -78,7 +78,7 @@ export const notificationService = {
     await subscription.unsubscribe();
   },
 
-  async isPushEnabled(): Promise<boolean> {
+  async trackShareStarted(dealershipId: string, channel: 'copy' | 'whatsapp' | 'open'): Promise<void> {\n    const { error } = await (supabase as any).from('notification_events').insert({ dealership_id: dealershipId, event_type: 'showroom_share_started', metadata: { channel } });\n    if (error) throw error;\n  },\n\n  async isPushEnabled(): Promise<boolean> {
     if (!('serviceWorker' in navigator)) return false;
     const registration = await navigator.serviceWorker.getRegistration('/sw.js');
     return Boolean(await registration?.pushManager.getSubscription());
