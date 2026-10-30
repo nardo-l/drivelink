@@ -1,161 +1,53 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useNavigation } from '../context/NavigationContext';
-import { CAR_RAV4_SILVER, CAR_AQUA_WHITE, CAR_RANGER_WHITE, DEFAULT_DEALER_LOGO } from '../utils/carVisuals';
-import { ArrowRight, ChevronRight, Check } from 'lucide-react';
+import { CAR_RAV4_SILVER } from '../utils/carVisuals';
+import { ArrowRight, Link2, ShieldCheck, Smartphone } from 'lucide-react';
 
 export const WelcomePage: React.FC = () => {
   const { navigate } = useNavigation();
-  const [activeSlide, setActiveSlide] = useState(0);
-
-  const previewVehicles = [
-    {
-      year: 2022,
-      make: 'Toyota',
-      model: 'RAV4',
-      price: '$36,990',
-      status: 'Available',
-      image: CAR_RAV4_SILVER,
-    },
-    {
-      year: 2019,
-      make: 'Toyota',
-      model: 'Aqua',
-      price: '$15,990',
-      status: 'Available',
-      image: CAR_AQUA_WHITE,
-    },
-    {
-      year: 2021,
-      make: 'Ford',
-      model: 'Ranger',
-      price: '$42,500',
-      status: 'Available',
-      image: CAR_RANGER_WHITE,
-    },
-  ];
-
-  const currentCar = previewVehicles[activeSlide % previewVehicles.length];
 
   return (
-    <div className="min-h-screen w-full flex flex-col justify-between px-6 py-6 bg-white text-slate-900 select-none">
-      {/* Top Bar matching Screen 01 */}
-      <header className="flex items-center justify-between pt-1 pb-4">
-        {/* Logo and Wordmark */}
+    <main className="dl-welcome min-h-screen w-full text-[#111216]">
+      <header className="dl-welcome-content flex items-center justify-between py-5">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-full bg-slate-950 flex items-center justify-center text-white shadow-xs">
-            {/* Clean steering/link vector mark */}
-            <svg
-              className="w-4 h-4 text-white"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <circle cx="12" cy="12" r="9" />
-              <circle cx="12" cy="12" r="3" />
-              <path d="M12 3v6" />
-              <path d="M12 15v6" />
-              <path d="M3 12h6" />
-              <path d="M15 12h6" />
-            </svg>
-          </div>
-          <span className="font-extrabold text-base tracking-tight text-slate-950">
-            DriveLink
-          </span>
+          <div className="h-8 w-8 rounded-full bg-black text-white flex items-center justify-center"><Link2 size={16} /></div>
+          <span className="text-[17px] font-black tracking-tight">DriveLink</span>
         </div>
-
-        {/* Header Actions: Sign in */}
-        <div className="flex items-center gap-1.5">
-          <button
-            onClick={() => navigate('/login')}
-            className="min-h-[40px] px-2.5 py-1.5 text-xs font-semibold text-slate-900 hover:text-blue-600 transition-colors"
-          >
-            Sign in
-          </button>
-        </div>
+        <button onClick={() => navigate('/login')} className="rounded-full border border-black/10 bg-white px-4 py-2 text-xs font-bold">Sign in</button>
       </header>
 
-      {/* Main Content Area matching Screen 01 */}
-      <div className="my-auto flex flex-col items-start text-left py-4">
-        {/* Headline matching Screen 01 */}
-        <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-950 tracking-tight leading-[1.16] mb-3">
-          Your dealership, <br />
-          online in minutes.
-        </h1>
-
-        {/* Supporting Copy matching Screen 01 */}
-        <p className="text-sm font-medium text-slate-500 leading-relaxed mb-6">
-          Create a showroom, showcase your inventory and make it easy for buyers to get in touch — all with one link.
-        </p>
-
-        {/* Vehicle Listing Preview Card matching Screen 01 */}
-        <div className="w-full max-w-sm mx-auto">
-          <div className="bg-white rounded-3xl p-4 shadow-xl shadow-slate-200/60 border border-slate-100 flex flex-col gap-3 transition-all">
-            {/* Vehicle Image Container */}
-            <div className="w-full aspect-16/10 rounded-2xl overflow-hidden bg-slate-50 relative flex items-center justify-center">
-              <img
-                src={currentCar.image}
-                alt={`${currentCar.year} ${currentCar.make} ${currentCar.model}`}
-                className="w-full h-full object-contain p-2"
-              />
-              {/* Green Available badge on top right of image */}
-              <div className="absolute top-2.5 right-2.5 bg-emerald-50 text-emerald-700 border border-emerald-200/70 text-[11px] font-semibold px-2.5 py-0.5 rounded-full shadow-2xs">
-                Available
-              </div>
-            </div>
-
-            {/* Title, Price and Status row matching Screen 01 */}
-            <div className="flex items-center justify-between pt-1">
-              <div>
-                <p className="font-bold text-xs text-slate-800">
-                  {currentCar.year} {currentCar.make} {currentCar.model}
-                </p>
-                <p className="font-extrabold text-base text-slate-950 mt-0.5">
-                  {currentCar.price}
-                </p>
-              </div>
-
-              <span className="px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/70">
-                Available
-              </span>
-            </div>
+      <section className="dl-welcome-content">
+        <div className="dl-welcome-hero rounded-[28px] px-6 py-7 sm:px-10 sm:py-10 flex flex-col justify-end text-white">
+          <img src={CAR_RAV4_SILVER} alt="Premium vehicle displayed in a dealership showroom" />
+          <div className="mb-auto flex items-center gap-2 text-[10px] font-bold uppercase tracking-[.2em] text-white/70">
+            <span className="h-1.5 w-1.5 rounded-full bg-white" /> Online showroom for car dealers
           </div>
-
-          {/* Carousel Pagination Dots matching Screen 01 */}
-          <div className="flex items-center justify-center gap-2 mt-4">
-            {previewVehicles.map((_, idx) => (
-              <button
-                key={idx}
-                onClick={() => setActiveSlide(idx)}
-                className={`h-2 rounded-full transition-all ${
-                  activeSlide === idx ? 'w-5 bg-slate-950' : 'w-2 bg-slate-300'
-                }`}
-                aria-label={`Slide ${idx + 1}`}
-              />
-            ))}
+          <div className="max-w-md">
+            <p className="text-[10px] uppercase tracking-[.2em] font-extrabold text-white/65 mb-3">Your dealership. Your brand. One link.</p>
+            <h1 className="text-[clamp(38px,10vw,58px)] leading-[.98] font-black tracking-[-.065em]">Get your dealership online.</h1>
+            <p className="mt-4 max-w-sm text-sm leading-6 text-white/75">Showcase your vehicles in a premium online showroom and turn buyer interest into direct enquiries.</p>
+            <button onClick={() => navigate('/onboarding')} className="mt-7 w-full sm:w-auto min-h-12 rounded-full bg-white px-6 text-sm font-extrabold text-black flex items-center justify-center gap-3">
+              Get started <ArrowRight size={17} />
+            </button>
+          </div>
+          <div className="mt-8 flex items-center gap-5 text-[10px] font-semibold text-white/65">
+            <span className="flex items-center gap-1.5"><ShieldCheck size={14}/> No technical skills needed</span>
+            <span className="flex items-center gap-1.5"><Smartphone size={14}/> Mobile first</span>
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* Bottom CTA Area matching Screen 01 */}
-      <div className="flex flex-col gap-3 pt-6 pb-2">
-        <button
-          onClick={() => navigate('/onboarding')}
-          className="w-full h-13 rounded-full bg-slate-950 hover:bg-slate-850 text-white font-bold text-sm tracking-wide shadow-md active:scale-[0.99] transition-all flex items-center justify-center gap-2 group"
-        >
-          <span>Get started</span>
-          <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
-        </button>
-
-        <button
-          onClick={() => navigate('/login')}
-          className="w-full py-2 text-center text-xs font-semibold text-slate-600 hover:text-slate-950 transition-colors"
-        >
-          I already have an account
-        </button>
-      </div>
-    </div>
+      <section className="dl-welcome-content grid grid-cols-3 gap-2 py-5">
+        {[['01','Build your showroom'],['02','Add your vehicles'],['03','Share your link']].map(([n,label]) => (
+          <div key={n} className="rounded-2xl bg-white border border-black/[.06] p-3">
+            <p className="text-[10px] font-black text-black/35">{n}</p>
+            <p className="mt-2 text-[11px] leading-4 font-bold">{label}</p>
+          </div>
+        ))}
+      </section>
+      <footer className="dl-welcome-content pb-7 text-[10px] text-black/40 flex justify-between">
+        <span>DriveLink · Online showrooms for car dealers</span><span>Zimbabwe & South Africa</span>
+      </footer>
+    </main>
   );
 };
