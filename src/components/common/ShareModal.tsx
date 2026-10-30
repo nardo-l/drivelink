@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { X, Copy, Check, MessageCircle, QrCode, ExternalLink } from 'lucide-react';
-import { useNavigation } from '../../context/NavigationContext';
+import { useNavigation } from '../../context/NavigationContext';\nimport { notificationService } from '../../services/notificationService';
 
 interface ShareModalProps {
   isOpen: boolean;
@@ -23,7 +23,7 @@ export const ShareModal: React.FC<ShareModalProps> = ({
   if (!isOpen) return null;
 
   const handleCopy = () => {
-    navigator.clipboard?.writeText(url);
+    navigator.clipboard?.writeText(url);\n    if (dealershipId) void notificationService.trackShareStarted(dealershipId, 'copy').catch((error) => console.warn('Share activity could not be recorded:', error));
     setCopied(true);
     showToast('Link copied to clipboard!');
     setTimeout(() => setCopied(false), 2000);
