@@ -6,6 +6,7 @@ import { isSupabaseConfigured } from '../lib/supabase';
 import { StatusBadge } from '../components/common/Badge';
 import { ShareModal } from '../components/common/ShareModal';
 import { EnquiryModal } from '../components/common/EnquiryModal';
+import type { Dealership, Vehicle } from '../types';
 import {
   MapPin,
   Search,
@@ -22,17 +23,19 @@ import {
 
 interface PublicShowroomPageProps {
   slug?: string;
+  previewDealership?: Dealership;
+  previewVehicles?: Vehicle[];
 }
 
-export const PublicShowroomPage: React.FC<PublicShowroomPageProps> = ({ slug }) => {
+export const PublicShowroomPage: React.FC<PublicShowroomPageProps> = ({ slug, previewDealership, previewVehicles }) => {
   const { navigate, showToast } = useNavigation();
-  const [dealership, setDealership] = useState(() => storageService.getDealership());
-  const [allVehicles, setAllVehicles] = useState(() =>
-    storageService.getVehicles().filter((v) => v.status === 'available')
+  const [dealership, setDealership] = useState<Dealership>(() => previewDealership || storageService.getDealership());
+  const [allVehicles, setAllVehicles] = useState<Vehicle[]>(() =>
+    previewVehicles || storageService.getVehicles().filter((v) => v.status === 'available')
   );
 
   useEffect(() => {
-    if (isSupabaseConfigured() && slug) {
+    if (!previewDealership && isSupabaseConfigured() && slug) {
       supabaseService.getDealershipBySlug(slug).then((dealer) => {
         if (dealer) {
           setDealership(dealer);
@@ -46,7 +49,7 @@ export const PublicShowroomPage: React.FC<PublicShowroomPageProps> = ({ slug }) 
         }
       }).catch((err) => console.warn('Supabase showroom load fallback:', err));
     }
-  }, [slug]);
+  }, [slug, previewDealership]);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedMake, setSelectedMake] = useState<string>('All');
