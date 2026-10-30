@@ -11,6 +11,7 @@ import { VehiclesListPage } from './pages/VehiclesListPage';
 import { AddEditVehiclePage } from './pages/AddEditVehiclePage';
 import { EnquiriesPage } from './pages/EnquiriesPage';
 import { SettingsPage } from './pages/SettingsPage';
+import { BillingPage } from './pages/BillingPage';
 import { PublicShowroomPage } from './pages/PublicShowroomPage';
 import { PublicVehicleDetailPage } from './pages/PublicVehicleDetailPage';
 import { isSupabaseConfigured } from './lib/supabase';
@@ -137,6 +138,10 @@ function AppContent() {
     // 9. Enquiries CRM
     if (currentPath === '/app/enquiries') {
       return <EnquiriesPage />;
+    }
+
+    if (currentPath === '/app/billing') {
+      return <BillingPage />;
     }
 
     // 10. Settings & Storefront configuration
