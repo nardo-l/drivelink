@@ -16,7 +16,8 @@ export const NotificationsPage: React.FC = () => {
   const [items, setItems] = useState<DriveLinkNotification[]>([]);
   const [dealershipId, setDealershipId] = useState('');
   const [loading, setLoading] = useState(true);
-  const [pushEnabled, setPushEnabled] = useState(false);\n  const [preferences, setPreferences] = useState<NotificationPreferences>({ daily_summary: true, new_enquiries: true, vehicle_reminders: true, share_reminders: true, showroom_activity: true, subscription_reminders: true, push_enabled: true });
+  const [pushEnabled, setPushEnabled] = useState(false);
+  const [preferences, setPreferences] = useState<NotificationPreferences>({ daily_summary: true, new_enquiries: true, vehicle_reminders: true, share_reminders: true, showroom_activity: true, subscription_reminders: true, push_enabled: true });
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
 
@@ -44,7 +45,14 @@ export const NotificationsPage: React.FC = () => {
     finally { setBusy(false); }
   };
 
-  const togglePreference = async (key: keyof NotificationPreferences) => {\n    const next = { ...preferences, [key]: !preferences[key] };\n    setPreferences(next);\n    try { await notificationService.updatePreferences(dealershipId, { [key]: next[key] }); }\n    catch { setPreferences(preferences); showToast('Could not save notification preference'); }\n  };\n\n  const markAllRead = async () => {
+  const togglePreference = async (key: keyof NotificationPreferences) => {
+    const next = { ...preferences, [key]: !preferences[key] };
+    setPreferences(next);
+    try { await notificationService.updatePreferences(dealershipId, { [key]: next[key] }); }
+    catch { setPreferences(preferences); showToast('Could not save notification preference'); }
+  };
+
+  const markAllRead = async () => {
     if (!dealershipId) return;
     try { await notificationService.markAllRead(dealershipId); setItems(current => current.map(item => ({ ...item, read_at: item.read_at || new Date().toISOString() }))); }
     catch { showToast('Could not mark notifications as read'); }
