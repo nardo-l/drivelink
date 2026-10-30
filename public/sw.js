@@ -4,9 +4,7 @@ self.addEventListener('push', (event) => {
   const title = payload.title || 'DriveLink';
   const options = {
     body: payload.body || 'You have an update from your dealership.',
-    icon: '/icons/icon-192.png',
-    badge: '/icons/icon-192.png',
-    data: payload.data || { url: '/#/app/notifications' },
+        data: payload.data || { url: '/#/app/notifications' },
     tag: payload.tag || 'drivelink-notification',
     renotify: false,
   };
@@ -15,7 +13,7 @@ self.addEventListener('push', (event) => {
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
   const path = event.notification.data?.url || '/app/notifications';
-  const target = path.startsWith('/#') ? path : '/#' + path.replace(/^\//, '');
+  const target = path.startsWith('/#') ? path : '/#' + path;
   event.waitUntil((async () => {
     const windows = await clients.matchAll({ type: 'window', includeUncontrolled: true });
     for (const client of windows) {
