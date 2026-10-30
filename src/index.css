@@ -72,3 +72,66 @@ img { max-width: 100%; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
 }
+
+
+/* Refined components shared by showroom, onboarding and dealer workspace */
+.dl-frame .rounded-2xl.border,
+.dl-frame .rounded-3xl.border {
+  border-color: #e8e8eb;
+}
+.dl-frame .shadow-xs,
+.dl-frame .shadow-2xs {
+  box-shadow: 0 3px 14px rgba(18,18,22,.035);
+}
+.dl-frame header {
+  border-color: rgba(20,20,24,.07);
+}
+.dl-frame input[type="file"] { border: 0; }
+.dl-frame button[class*="bg-slate-950"],
+.dl-frame button[class*="bg-black"] {
+  box-shadow: 0 5px 14px rgba(12,12,14,.12);
+}
+.dl-frame button[class*="rounded-full"][class*="border"] {
+  border-color: #e4e4e7;
+}
+.dl-frame .bg-slate-50 { background-color: #f7f7f6; }
+.dl-frame .text-slate-950 { color: #111216; }
+.dl-frame .text-slate-500 { color: #777982; }
+
+/* Onboarding: editorial setup flow with clear progress and generous spacing */
+.dl-onboarding {
+  background:
+    radial-gradient(ellipse at 88% 0%, rgba(225,225,229,.32), transparent 34%),
+    #fff;
+}
+.dl-onboarding > div:first-child {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  padding: max(12px, env(safe-area-inset-top)) 0 14px;
+  background: rgba(255,255,255,.94);
+  backdrop-filter: blur(16px);
+}
+.dl-onboarding h1 {
+  letter-spacing: -.055em;
+  line-height: 1.08;
+}
+.dl-onboarding form,
+.dl-onboarding > div.my-auto {
+  padding-top: 22px;
+  padding-bottom: 28px;
+}
+.dl-onboarding label {
+  letter-spacing: -.01em;
+}
+.dl-onboarding input:not([type="checkbox"]):not([type="radio"]),
+.dl-onboarding select,
+.dl-onboarding textarea {
+  min-height: 46px;
+  border-radius: 13px;
+}
+.dl-onboarding button[class*="bg-slate-950"] {
+  min-height: 50px;
+  border-radius: 999px;
+  letter-spacing: .01em;
+}
