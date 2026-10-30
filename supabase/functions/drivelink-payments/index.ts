@@ -157,14 +157,21 @@ Deno.serve(async (req: Request) => {
 
   if (body.action === "status") {
     const { data: subscription, error } = await admin.from("dealership_subscriptions")
-      .select("status, amount, currency, current_period_start, current_period_end, grace_until")
+      .select("status, amount, currency, trial_started_at, trial_ends_at, trial_used, current_period_start, current_period_end, grace_until")
       .eq("dealership_id", dealership.id).maybeSingle();
     if (error) return json({ error: "Could not load subscription." }, 500);
-    if (subscription?.current_period_end) {
+    if (subscription) {
       const now = Date.now();
-      const periodEnd = new Date(subscription.current_period_end).getTime();
+      const trialEnd = subscription.trial_ends_at ? new Date(subscription.trial_ends_at).getTime() : 0;
+      const periodEnd = subscription.current_period_end ? new Date(subscription.current_period_end).getTime() : 0;
       const graceEnd = subscription.grace_until ? new Date(subscription.grace_until).getTime() : 0;
-      const nextStatus = now <= periodEnd ? "active" : now <= graceEnd ? "grace_period" : "expired";
+      const nextStatus = trialEnd && !periodEnd && now <= trialEnd
+        ? "trial"
+        : periodEnd && now <= periodEnd
+          ? "active"
+          : periodEnd && graceEnd && now <= graceEnd
+            ? "grace_period"
+            : "expired";
       if (subscription.status !== nextStatus) {
         await admin.from("dealership_subscriptions").update({ status: nextStatus, updated_at: new Date().toISOString() })
           .eq("dealership_id", dealership.id);
