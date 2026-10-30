@@ -5,7 +5,7 @@ import { storageService } from '../services/storage';
 import { supabaseService } from '../services/supabaseService';
 import { isSupabaseConfigured } from '../lib/supabase';
 import { OnboardingState, SellerType, Dealership, CurrencyCode } from '../types';
-import { toE164 } from '../utils/phoneUtils';
+import { toE164, validatePhoneNumber } from '../utils/phoneUtils';
 
 const dataUrlToFile = (dataUrl: string, name: string) => { const [meta, encoded] = dataUrl.split(','); const mime = meta.match(/data:(.*?);base64/)?.[1] || 'image/jpeg'; const binary = atob(encoded); const bytes = new Uint8Array(binary.length); for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i); return new File([bytes], name + (mime.includes('png') ? '.png' : '.jpg'), { type: mime }); };
 
@@ -214,7 +214,12 @@ export const OnboardingFlow: React.FC = () => {
 
   const nextFromBusiness = () => {
     if (!data.showroom.businessName.trim()) { setError('Please enter your dealership name.'); return; }
-    if (!data.contact.phoneNumber.trim()) { setError('Please enter a phone number customers can reach.'); return; }
+    const phoneCheck = validatePhoneNumber(data.contact.phoneCountryCode, data.contact.phoneNumber);
+    if (!phoneCheck.isValid) { setError(phoneCheck.error || 'Please enter a valid phone number.'); return; }
+    if (!data.contact.whatsappSameAsPhone) {
+      const whatsappCheck = validatePhoneNumber(data.contact.whatsappCountryCode, data.contact.whatsappNumber);
+      if (!whatsappCheck.isValid) { setError(whatsappCheck.error || 'Please enter a valid WhatsApp number.'); return; }
+    }
     go(5);
   };
 
