@@ -57,31 +57,31 @@ async function createScheduledNotifications() {
       const leadCount = newLeads.length;
       const summary = `Today: ${views} showroom views, ${leadCount} new enquiries, ${added} vehicles added and ${sold} vehicles sold. ${pendingLeads.length} enquiries still need a response.`;
       const next = pendingLeads.length ? "Follow up with your new buyers to keep conversations moving." : activeVehicles.length < 3 ? "Add more available vehicles to give buyers more choice." : "Share your showroom link to bring more buyers to your inventory.";
-      await insertNotification(dealer.id, "daily_summary", "Your daily dealership summary", `${summary} ${next}`, `daily-summary:${today}`, { url: "/#/app/analytics", views, enquiries: leadCount, vehiclesAdded: added, vehiclesSold: sold, pendingEnquiries: pendingLeads.length });
+      await insertNotification(dealer.id, "daily_summary", "Your daily dealership summary", `${summary} ${next}`, `daily-summary:${today}`, { url: "/app/analytics", views, enquiries: leadCount, vehiclesAdded: added, vehiclesSold: sold, pendingEnquiries: pendingLeads.length });
     }
 
     const ageHours = (now.getTime() - new Date(dealer.created_at).getTime()) / 3600000;
     if (preferences.vehicle_reminders !== false && activeVehicles.length === 0 && ageHours >= 2 && ageHours < 24) {
-      await insertNotification(dealer.id, "inventory", "Add your first vehicle", "Your showroom is ready. Add a vehicle so buyers have something to discover.", "first-vehicle:2h", { url: "/#/app/vehicles/new" });
+      await insertNotification(dealer.id, "inventory", "Add your first vehicle", "Your showroom is ready. Add a vehicle so buyers have something to discover.", "first-vehicle:2h", { url: "/app/vehicles/new" });
     }
     if (preferences.vehicle_reminders !== false && activeVehicles.length === 0 && ageHours >= 24) {
-      await insertNotification(dealer.id, "inventory", "Your showroom needs inventory", "Add your first vehicle to turn your showroom link into a place buyers can browse.", `first-vehicle:24h:${today}`, { url: "/#/app/vehicles/new" });
+      await insertNotification(dealer.id, "inventory", "Your showroom needs inventory", "Add your first vehicle to turn your showroom link into a place buyers can browse.", `first-vehicle:24h:${today}`, { url: "/app/vehicles/new" });
     }
     if (preferences.vehicle_reminders !== false && activeVehicles.length > 0 && activeVehicles.length < 3) {
-      await insertNotification(dealer.id, "inventory", "Grow your vehicle selection", `You have ${activeVehicles.length} active vehicle(s). Add a few more to give buyers more options.`, `low-inventory:${today}`, { url: "/#/app/vehicles/new" });
+      await insertNotification(dealer.id, "inventory", "Grow your vehicle selection", `You have ${activeVehicles.length} active vehicle(s). Add a few more to give buyers more options.`, `low-inventory:${today}`, { url: "/app/vehicles/new" });
     }
     if (preferences.share_reminders !== false) {
       const { count: shareCount } = await db.from("notification_events").select("id", { count: "exact", head: true }).eq("dealership_id", dealer.id).eq("event_type", "showroom_shared");
       if (!shareCount && ageHours >= 24) {
-        await insertNotification(dealer.id, "sharing", "Share your showroom link", "Your online showroom is ready. Share its link on WhatsApp and social media to reach more buyers.", `share-reminder:${today}`, { url: "/#/app" });
+        await insertNotification(dealer.id, "sharing", "Share your showroom link", "Your online showroom is ready. Share its link on WhatsApp and social media to reach more buyers.", `share-reminder:${today}`, { url: "/app" });
       }
     }
     if (preferences.new_enquiries !== false) {
       const stale = pendingLeads.filter((e: any) => (now.getTime() - new Date(e.created_at).getTime()) >= 24 * 3600000);
       for (const lead of stale) {
         const hours = (now.getTime() - new Date(lead.created_at).getTime()) / 3600000;
-        if (hours < 48) await insertNotification(dealer.id, "enquiry", "A buyer is waiting for a reply", "One of your enquiries has been waiting for more than 24 hours. Follow up while the buyer is still interested.", `enquiry-followup-24h:${lead.id}`, { url: "/#/app/enquiries", enquiryId: lead.id });
-        else await insertNotification(dealer.id, "enquiry", "Enquiry follow-up needed", "A buyer has been waiting for over 48 hours. Follow up or update the enquiry status.", `enquiry-followup-48h:${lead.id}`, { url: "/#/app/enquiries", enquiryId: lead.id });
+        if (hours < 48) await insertNotification(dealer.id, "enquiry", "A buyer is waiting for a reply", "One of your enquiries has been waiting for more than 24 hours. Follow up while the buyer is still interested.", `enquiry-followup-24h:${lead.id}`, { url: "/app/enquiries", enquiryId: lead.id });
+        else await insertNotification(dealer.id, "enquiry", "Enquiry follow-up needed", "A buyer has been waiting for over 48 hours. Follow up or update the enquiry status.", `enquiry-followup-48h:${lead.id}`, { url: "/app/enquiries", enquiryId: lead.id });
       }
     }
   }
@@ -114,7 +114,7 @@ async function deliverPendingPush() {
     for (const sub of subscriptions || []) {
       try {
         await webpush.sendNotification({ endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } }, JSON.stringify({
-          title: notification.title, body: notification.body, data: { ...notification.data, url: notification.data?.url || "/#/app/notifications" }, tag: notification.category,
+          title: notification.title, body: notification.body, data: { ...notification.data, url: notification.data?.url || "/app/notifications" }, tag: notification.category,
         }));
         sent++;
         await db.from("push_subscriptions").update({ last_success_at: new Date().toISOString(), last_error: null }).eq("id", sub.id);
