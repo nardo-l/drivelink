@@ -1,23 +1,11 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { ArrowLeft, ArrowRight, Building2, MapPin, Phone, ImagePlus, CarFront, Link2, CheckCircle2, Loader2, Upload, X, Mail, MessageCircle, Store, Ship, UserRound, Briefcase, Globe2 } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Building2, MapPin, ImagePlus, CarFront, Link2, CheckCircle2, Loader2, MessageCircle, Store, Ship, UserRound, Briefcase, Globe2 } from 'lucide-react';
 import { useNavigation } from '../context/NavigationContext';
 import { storageService } from '../services/storage';
 import { supabaseService } from '../services/supabaseService';
 import { isSupabaseConfigured } from '../lib/supabase';
 import { OnboardingState, SellerType, Dealership, CurrencyCode } from '../types';
 import { toE164 } from '../utils/phoneUtils';
-
-const initialState = (): OnboardingState => ({
-  currentStep: 1,
-  account: { businessName: '', email: '', password: '', handle: '' },
-  sellerType: 'dealership',
-  showroom: { businessName: '', handle: '', isPublished: true },
-  contact: { country: 'Zimbabwe', city: '', address: '', whatsappCountryCode: '+263', whatsappNumber: '', whatsappSameAsPhone: true, phoneCountryCode: '+263', phoneNumber: '', description: '' },
-  branding: { logoFile: null, logoPreview: null, coverFile: null, coverPreview: null },
-  template: 'signature',
-  firstVehicle: { make: '', model: '', year: '', price: '', currency: 'USD', mileageKm: '', transmission: 'Automatic', fuel: 'Petrol', condition: 'Excellent', status: 'available', description: '', photos: [], isDraft: false, isSkipped: true },
-  isCompleted: false,
-});
 
 const dataUrlToFile = (dataUrl: string, name: string) => { const [meta, encoded] = dataUrl.split(','); const mime = meta.match(/data:(.*?);base64/)?.[1] || 'image/jpeg'; const binary = atob(encoded); const bytes = new Uint8Array(binary.length); for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i); return new File([bytes], name + (mime.includes('png') ? '.png' : '.jpg'), { type: mime }); };
 
@@ -60,7 +48,7 @@ export const OnboardingFlow: React.FC = () => {
   const { navigate, showToast } = useNavigation();
   const [data, setData] = useState<OnboardingState>(() => {
     const saved = storageService.getOnboardingState();
-    return saved.isCompleted ? saved : { ...saved, currentStep: 1, account: { ...saved.account, password: '' } };
+    return saved.isCompleted ? { ...saved, currentStep: 8 } : { ...saved, currentStep: 1, account: { ...saved.account, password: '' } };
   });
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [bannerFile, setBannerFile] = useState<File | null>(null);
