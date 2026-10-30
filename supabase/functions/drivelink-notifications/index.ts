@@ -69,7 +69,15 @@ async function createScheduledNotifications() {
       await insertNotification(dealer.id, "inventory", "Your showroom needs inventory", "Add your first vehicle to turn your showroom link into a place buyers can browse.", `first-vehicle:24h:${today}`, { url: "/app/vehicles/new" });
     }
     if (preferences.vehicle_reminders !== false && activeVehicles.length > 0 && activeVehicles.length < 3) {
-      await insertNotification(dealer.id, "inventory", "Grow your vehicle selection", `You have ${activeVehicles.length} active vehicle(s). Add a few more to give buyers more options.`, `low-inventory:${today}`, { url: "/app/vehicles/new" });
+      const threeDayWindow = Math.floor(now.getTime() / (3 * 24 * 3600000));
+      await insertNotification(dealer.id, "inventory", "Grow your vehicle selection", `You have ${activeVehicles.length} active vehicle(s). Add a few more to give buyers more options.`, `low-inventory:${threeDayWindow}`, { url: "/app/vehicles/new" });
+    }
+    if (preferences.vehicle_reminders !== false && activeVehicles.length > 0) {
+      const lastInventoryChange = Math.max(...activeVehicles.map((v: any) => new Date(v.updated_at || v.created_at).getTime()));
+      if (now.getTime() - lastInventoryChange >= 7 * 24 * 3600000) {
+        const weekWindow = Math.floor(now.getTime() / (7 * 24 * 3600000));
+        await insertNotification(dealer.id, "inventory", "Refresh your showroom inventory", "Your vehicle listings have not changed in a week. Update prices, add fresh stock or mark unavailable vehicles as sold.", `inventory-stale:${weekWindow}`, { url: "/app/vehicles" });
+      }
     }
     if (preferences.share_reminders !== false) {
       const { count: shareCount } = await db.from("notification_events").select("id", { count: "exact", head: true }).eq("dealership_id", dealer.id).eq("event_type", "showroom_share_started");
