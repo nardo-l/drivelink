@@ -58,7 +58,10 @@ export const OnboardingFlow: React.FC = () => {
     const findSlug = async () => {
       let candidate = showroomSlug;
       let suffix = 2;
-      while (!(await supabaseService.checkHandleAvailability(candidate))) candidate = `${showroomSlug}-${suffix++}`;
+      for (let attempt = 0; attempt < 25; attempt++) {
+        if (await supabaseService.checkHandleAvailability(candidate)) break;
+        candidate = `${showroomSlug}-${suffix++}`;
+      }
       if (active) setAvailableSlug(candidate);
     };
     findSlug().catch(() => { if (active) setAvailableSlug(showroomSlug); });
