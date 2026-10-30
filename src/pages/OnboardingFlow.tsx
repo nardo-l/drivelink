@@ -227,28 +227,6 @@ export const OnboardingFlow: React.FC = () => {
     }));
   };
 
-  const handleBusinessNameChange = (val: string) => {
-    const slug = val
-      .toLowerCase()
-      .replace(/[^a-z0-9-]/g, '-')
-      .replace(/-+/g, '-')
-      .replace(/^-|-$/g, '');
-
-    setOnboarding((prev) => ({
-      ...prev,
-      account: {
-        ...prev.account,
-        businessName: val,
-        handle: slug || prev.account.handle,
-      },
-      showroom: {
-        ...prev.showroom,
-        businessName: val,
-        handle: slug || prev.showroom.handle,
-      },
-    }));
-  };
-
   // ----------------------------------------------------
   // STEP 2: SELLER TYPE (Screen 03)
   // ----------------------------------------------------
@@ -923,24 +901,6 @@ export const OnboardingFlow: React.FC = () => {
               <div className="flex flex-col gap-3.5 pt-1">
                 <button type="button" onClick={async () => { try { setIsSubmitting(true); await supabaseService.signInWithGoogle(); } catch (error: any) { setErrors({ auth: error?.message || 'Google sign-in could not start.' }); setIsSubmitting(false); } }} className="w-full h-11 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-800 flex items-center justify-center gap-2"><span className="text-base font-black">G</span> Continue with Google</button>
                 <div className="flex items-center gap-3 text-[10px] text-slate-400"><span className="h-px flex-1 bg-slate-200" />or use email<span className="h-px flex-1 bg-slate-200" /></div>
-                {/* Business name is already set in the showroom stage. */}
-                <div>
-                  <label className="block text-xs font-semibold text-slate-800 mb-1">
-                    Business name *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={onboarding.account.businessName}
-                    onChange={(e) => handleBusinessNameChange(e.target.value)}
-                    placeholder="Enter your dealership name"
-                    className="w-full h-11 px-3.5 rounded-xl border border-slate-200 bg-white text-xs font-medium text-slate-900 focus:border-slate-950 focus:outline-none transition-all placeholder:text-slate-400"
-                  />
-                  {errors.businessName && (
-                    <p className="text-[11px] text-rose-600 mt-1">{errors.businessName}</p>
-                  )}
-                </div>
-
                 {/* Email */}
                 <div>
                   <label className="block text-xs font-semibold text-slate-800 mb-1">
@@ -996,39 +956,7 @@ export const OnboardingFlow: React.FC = () => {
                   )}
                 </div>
 
-                {/* Showroom URL is already set in the showroom stage. */}
-                <div>
-                  <label className="block text-xs font-semibold text-slate-800 mb-1">
-                    Showroom handle
-                  </label>
-                  <div className="flex items-center h-11 px-3 rounded-xl border border-slate-200 bg-slate-50 focus-within:border-slate-950 focus-within:bg-white transition-all">
-                    <span className="text-xs font-medium text-slate-400 select-none shrink-0 mr-1">
-                      drivelink.com/
-                    </span>
-                    <input
-                      type="text"
-                      required
-                      value={onboarding.account.handle}
-                      onChange={(e) =>
-                        setOnboarding((prev) => ({
-                          ...prev,
-                          account: {
-                            ...prev.account,
-                            handle: e.target.value
-                              .toLowerCase()
-                              .replace(/[^a-z0-9-]/g, '-'),
-                          },
-                        }))
-                      }
-                      placeholder="your-dealership"
-                      className="flex-1 min-w-0 bg-transparent text-xs font-semibold text-slate-900 focus:outline-none"
-                    />
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 ml-1.5" />
-                  </div>
-                  <p className="text-[11px] font-semibold text-emerald-600 mt-1 flex items-center gap-1">
-                    <span>✓ Available</span>
-                  </p>
-                </div>
+
               </div>
 
               <button
