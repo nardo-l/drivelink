@@ -160,6 +160,17 @@ Deno.serve(async (req: Request) => {
       .select("status, amount, currency, current_period_start, current_period_end, grace_until")
       .eq("dealership_id", dealership.id).maybeSingle();
     if (error) return json({ error: "Could not load subscription." }, 500);
+    if (subscription?.current_period_end) {
+      const now = Date.now();
+      const periodEnd = new Date(subscription.current_period_end).getTime();
+      const graceEnd = subscription.grace_until ? new Date(subscription.grace_until).getTime() : 0;
+      const nextStatus = now <= periodEnd ? "active" : now <= graceEnd ? "grace_period" : "expired";
+      if (subscription.status !== nextStatus) {
+        await admin.from("dealership_subscriptions").update({ status: nextStatus, updated_at: new Date().toISOString() })
+          .eq("dealership_id", dealership.id);
+        subscription.status = nextStatus;
+      }
+    }
     const { data: payments } = await admin.from("dealership_subscription_payments")
       .select("reference, amount, currency, status, paid_at, created_at")
       .eq("dealership_id", dealership.id).order("created_at", { ascending: false }).limit(8);
