@@ -6,8 +6,8 @@ interface DeviceFrameProps {
 
 export const DeviceFrame: React.FC<DeviceFrameProps> = ({ children }) => {
   return (
-    <div className="min-h-screen w-full bg-slate-100/70 text-slate-900 flex justify-center selection:bg-blue-100 selection:text-blue-900">
-      <div className="w-full max-w-xl md:max-w-2xl min-h-screen bg-white shadow-xs sm:border-x sm:border-slate-200/60 flex flex-col relative">
+    <div className="dl-frame min-h-screen w-full flex justify-center selection:bg-slate-200 selection:text-slate-950">
+      <div className="w-full max-w-[520px] min-h-screen bg-white shadow-[0_18px_70px_rgba(20,20,24,0.07)] sm:border-x sm:border-black/[0.04] flex flex-col relative overflow-x-hidden">
         {children}
       </div>
     </div>
