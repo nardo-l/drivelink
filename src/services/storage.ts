@@ -312,6 +312,7 @@ export const storageService = {
           account: {
             ...defaultState.account,
             ...(parsed.account || {}),
+            password: '',
           },
           showroom: {
             ...defaultState.showroom,
@@ -365,6 +366,7 @@ export const storageService = {
 
       const serializableState = {
         ...state,
+        account: { ...state.account, password: '' },
         branding: {
           logoPreview: safeLogo,
           coverPreview: safeCover,
