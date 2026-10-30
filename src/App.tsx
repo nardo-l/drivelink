@@ -4,7 +4,7 @@ import { DeviceFrame } from './components/layout/DeviceFrame';
 import { WelcomePage } from './pages/WelcomePage';
 import { SignupPage } from './pages/SignupPage';
 import { LoginPage } from './pages/LoginPage';
-import { OnboardingFlow } from './pages/OnboardingFlow';
+import { OnboardingFlow } from './pages/ConversationalOnboardingFlow';
 import { DashboardPage } from './pages/DashboardPage';
 import { AnalyticsPage } from './pages/AnalyticsPage';
 import { VehiclesListPage } from './pages/VehiclesListPage';
