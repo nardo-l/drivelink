@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { ArrowLeft, Bell, BellOff, CheckCheck, RefreshCw, ShieldCheck } from 'lucide-react';
 import { useNavigation } from '../context/NavigationContext';
 import { storageService } from '../services/storage';
-import { notificationService, DriveLinkNotification, NotificationPreferences } from '../services/notificationService';
+import { notificationService, type DriveLinkNotification, type NotificationPreferences } from '../services/notificationService';
 import { isSupabaseConfigured } from '../lib/supabase';
 import { BottomNav } from '../components/layout/BottomNav';
 
