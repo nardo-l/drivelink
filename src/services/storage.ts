@@ -251,7 +251,7 @@ export const storageService = {
 
   getOnboardingState(): OnboardingState {
     const defaultState: OnboardingState = {
-      currentStep: 1, // 1 to 8 (Account, Type, Name/URL, Contact, Branding, Template, Vehicle, Preview)
+      currentStep: 3, // Start with showroom setup; account creation is stage four.
       account: {
         businessName: '',
         email: '',
@@ -262,6 +262,7 @@ export const storageService = {
       showroom: {
         businessName: '',
         handle: '',
+        isPublished: true,
       },
       contact: {
         country: 'Zimbabwe',
