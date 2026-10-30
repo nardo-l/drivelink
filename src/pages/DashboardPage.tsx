@@ -265,6 +265,7 @@ export const DashboardPage: React.FC = () => {
         isOpen={isShareModalOpen}
         onClose={() => setIsShareModalOpen(false)}
         title={dealership.name}
+        dealershipId={dealership.id}
         url={fullPublicUrl}
         description={`Explore quality verified vehicles in Harare / Sandton from ${dealership.name}.`}
       />
