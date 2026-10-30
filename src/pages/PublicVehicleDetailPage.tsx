@@ -60,7 +60,7 @@ export const PublicVehicleDetailPage: React.FC<PublicVehicleDetailPageProps> = (
   // If vehicle does not exist or is not available, show unavailable state as per RLS
   if (!vehicle || vehicle.status !== 'available') {
     return (
-      <div className="min-h-full flex flex-col items-center justify-center p-6 text-center bg-white text-slate-900">
+      <div className="dl-public-vehicle min-h-full flex flex-col items-center justify-center p-6 text-center bg-white text-slate-900">
         <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 mb-4">
           <Building2 className="w-8 h-8" />
         </div>
