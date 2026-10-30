@@ -80,8 +80,10 @@ export const OnboardingFlow: React.FC = () => {
     storageService.saveOnboardingState(onboarding);
   }, [onboarding]);
 
-  // Current step (1: Account, 2: Seller Type, 3: Showroom Name & URL, 4: Contact, 5: Branding, 6: Template, 7: First Vehicle, 8: Final Preview)
+  // Five-stage flow: showroom, first vehicle, live preview, account, success.
   const step = onboarding.currentStep;
+  const progressStep = step === 3 ? 1 : step === 7 ? 2 : step === 8 ? 3 : step === 1 ? 4 : 5;
+  const [setupComplete, setSetupComplete] = useState(Boolean(onboarding.isCompleted));
 
   const setStep = (newStep: number) => {
     setOnboarding((prev) => ({ ...prev, currentStep: newStep }));
@@ -220,7 +222,7 @@ export const OnboardingFlow: React.FC = () => {
         businessName: prev.showroom.businessName || prev.account.businessName,
         handle: prev.showroom.handle || prev.account.handle,
       },
-      currentStep: 2,
+      currentStep: 9,
     }));
   };
 
@@ -655,6 +657,7 @@ export const OnboardingFlow: React.FC = () => {
           tagline: dealershipName,
           stickerText: 'Good cars brighter days',
           isVerified: true,
+          isPublished: onboarding.showroom.isPublished !== false,
           logoUrl: onboarding.branding.logoPreview?.startsWith('http')
             ? onboarding.branding.logoPreview
             : undefined,
@@ -758,10 +761,12 @@ export const OnboardingFlow: React.FC = () => {
           dealershipId: createdDealer.id,
         });
 
-        storageService.clearOnboardingState();
+        const completedState = { ...onboarding, currentStep: 9, isCompleted: true };
+        storageService.saveOnboardingState(completedState);
+        setOnboarding(completedState);
+        setSetupComplete(true);
         setIsSubmitting(false);
-        showToast('Dealership created in Supabase! Welcome to your dashboard.');
-        navigate('/app');
+        showToast('Your showroom is ready!');
         return;
       } catch (backendErr: any) {
         console.error('Supabase persistence error during onboarding:', backendErr);
@@ -777,13 +782,18 @@ export const OnboardingFlow: React.FC = () => {
     setIsSubmitting(false);
   };
 
+  useEffect(() => {
+    if (step === 9 && !setupComplete && isSupabaseConfigured() && !storageService.isDemoModeActive()) {
+      supabaseService.getSession().then(session => { if (session?.user) handleFinishSetup(); }).catch(error => setSubmitError(error?.message || 'Could not restore your account session.'));
+    }
+  }, [step, setupComplete]);
+
   // Header Back Button Logic
   const handleBack = () => {
-    if (step > 1) {
-      setStep(step - 1);
-    } else {
-      navigate('/');
-    }
+    if (step === 7) setStep(3);
+    else if (step === 8) setStep(7);
+    else if (step === 1) setStep(8);
+    else navigate('/');
   };
 
   // Dealer display initials for fallback badge
@@ -809,18 +819,18 @@ export const OnboardingFlow: React.FC = () => {
           </button>
 
           <span className="text-[11px] font-semibold text-slate-400 tabular-nums">
-            {step <= 7 ? `${step}/7` : 'Preview'}
+            {setupComplete ? 'Ready' : `${progressStep}/5`}
           </span>
         </div>
 
         {/* Segmented Progress Indicator (Steps 1 to 7) */}
-        {step <= 7 && (
-          <div className="grid grid-cols-7 gap-1.5 w-full">
-            {[1, 2, 3, 4, 5, 6, 7].map((s) => (
+        {!setupComplete && step !== 9 && (
+          <div className="grid grid-cols-5 gap-1.5 w-full">
+            {[1, 2, 3, 4, 5].map((s) => (
               <div
                 key={s}
                 className={`h-1 rounded-full transition-colors ${
-                  s <= step ? 'bg-slate-950' : 'bg-slate-200'
+                  s <= progressStep ? 'bg-slate-950' : 'bg-slate-200'
                 }`}
               />
             ))}
@@ -894,7 +904,7 @@ export const OnboardingFlow: React.FC = () => {
                   Create your account
                 </h1>
                 <p className="text-xs font-medium text-slate-500 mt-1">
-                  Get started with your DriveLink seller account.
+                  One last step. Create an account to publish and manage your showroom.
                 </p>
               </div>
 
@@ -911,7 +921,9 @@ export const OnboardingFlow: React.FC = () => {
               )}
 
               <div className="flex flex-col gap-3.5 pt-1">
-                {/* Business Name */}
+                <button type="button" onClick={async () => { try { setIsSubmitting(true); await supabaseService.signInWithGoogle(); } catch (error: any) { setErrors({ auth: error?.message || 'Google sign-in could not start.' }); setIsSubmitting(false); } }} className="w-full h-11 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-800 flex items-center justify-center gap-2"><span className="text-base font-black">G</span> Continue with Google</button>
+                <div className="flex items-center gap-3 text-[10px] text-slate-400"><span className="h-px flex-1 bg-slate-200" />or use email<span className="h-px flex-1 bg-slate-200" /></div>
+                {/* Business name is already set in the showroom stage. */}
                 <div>
                   <label className="block text-xs font-semibold text-slate-800 mb-1">
                     Business name *
@@ -984,7 +996,7 @@ export const OnboardingFlow: React.FC = () => {
                   )}
                 </div>
 
-                {/* Showroom URL Handle */}
+                {/* Showroom URL is already set in the showroom stage. */}
                 <div>
                   <label className="block text-xs font-semibold text-slate-800 mb-1">
                     Showroom handle
@@ -1031,7 +1043,7 @@ export const OnboardingFlow: React.FC = () => {
                   </>
                 ) : (
                   <>
-                    <span>Continue</span>
+                    <span>Create my showroom</span>
                     <ArrowRight className="w-4 h-4" />
                   </>
                 )}
@@ -1148,10 +1160,10 @@ export const OnboardingFlow: React.FC = () => {
             <div className="my-auto py-2 flex flex-col gap-4">
               <div>
                 <h1 className="text-2xl font-extrabold text-slate-950 tracking-tight">
-                  Name your showroom
+                  Let’s name your showroom
                 </h1>
                 <p className="text-xs font-medium text-slate-500 mt-1">
-                  This will be your business name and public showroom URL.
+                  What should buyers see when they open your link?
                 </p>
               </div>
 
@@ -1212,11 +1224,19 @@ export const OnboardingFlow: React.FC = () => {
                     </p>
                   </div>
                 </div>
+                <div className="p-4 rounded-2xl border border-slate-200 bg-white">
+                  <p className="text-xs font-semibold text-slate-900">Who can see your showroom?</p>
+                  <p className="text-[11px] text-slate-500 mt-1">You can change this later in settings.</p>
+                  <div className="grid grid-cols-2 gap-2 mt-3">
+                    <button type="button" onClick={() => setOnboarding(prev => ({ ...prev, showroom: { ...prev.showroom, isPublished: true } }))} className={`rounded-xl border p-3 text-left ${onboarding.showroom.isPublished !== false ? 'border-slate-950 bg-slate-50' : 'border-slate-200'}`}><span className="block text-xs font-bold">Public</span><span className="block text-[10px] text-slate-500 mt-1">Anyone with the link can view</span></button>
+                    <button type="button" onClick={() => setOnboarding(prev => ({ ...prev, showroom: { ...prev.showroom, isPublished: false } }))} className={`rounded-xl border p-3 text-left ${onboarding.showroom.isPublished === false ? 'border-slate-950 bg-slate-50' : 'border-slate-200'}`}><span className="block text-xs font-bold">Private</span><span className="block text-[10px] text-slate-500 mt-1">Keep it hidden until you publish</span></button>
+                  </div>
+                </div>
               </div>
 
               <button
                 type="button"
-                onClick={() => setStep(4)}
+                onClick={() => setStep(7)}
                 className="w-full h-12 mt-4 rounded-full bg-slate-950 hover:bg-slate-850 text-white font-bold text-xs tracking-wide shadow-xs active:scale-[0.99] transition-all flex items-center justify-center gap-1.5"
               >
                 <span>Continue</span>
@@ -2112,6 +2132,17 @@ export const OnboardingFlow: React.FC = () => {
           {/* ========================================================================= */}
           {/* SCREEN 08: FINAL SHOWROOM PREVIEW & COMPLETE (Step 8) */}
           {/* ========================================================================= */}
+          {step === 9 && setupComplete && (
+            <div className="my-auto py-8 flex flex-col items-center text-center gap-5">
+              <div className="w-16 h-16 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center"><CheckCircle2 className="w-9 h-9" /></div>
+              <div><p className="text-[10px] font-bold uppercase tracking-[.18em] text-emerald-700">All set</p><h1 className="text-2xl font-extrabold text-slate-950 mt-2">Your showroom is ready.</h1><p className="text-xs text-slate-500 mt-2">{onboarding.showroom.businessName || 'Your dealership'} is ready to share.</p></div>
+              <div className="w-full rounded-2xl border border-slate-200 bg-slate-50 p-4 text-left"><p className="text-[10px] uppercase tracking-wider text-slate-400 font-bold">Your showroom link</p><p className="text-sm font-bold mt-1 break-all">{window.location.origin}/showroom/{onboarding.showroom.handle}</p></div>
+              <button type="button" onClick={() => navigate('/showroom/' + onboarding.showroom.handle)} className="w-full h-12 rounded-full bg-slate-950 text-white text-xs font-bold">View my showroom <ExternalLink className="inline w-4 h-4 ml-1" /></button>
+              <button type="button" onClick={() => navigate('/app/vehicles/new')} className="w-full h-11 rounded-full border border-slate-200 text-xs font-bold">Add another car</button>
+              <button type="button" onClick={() => { const url = window.location.origin + '/showroom/' + onboarding.showroom.handle; if (navigator.share) navigator.share({ title: onboarding.showroom.businessName, url }).catch(() => {}); else navigator.clipboard?.writeText(url).then(() => showToast('Showroom link copied')); }} className="w-full h-11 rounded-full text-xs font-bold text-slate-600">Share showroom link</button>
+            </div>
+          )}
+
           {step === 8 && (
             <div className="py-2 flex flex-col gap-4">
               <div className="flex items-center justify-between">
@@ -2121,10 +2152,10 @@ export const OnboardingFlow: React.FC = () => {
                     <span>Showroom Ready</span>
                   </span>
                   <h1 className="text-2xl font-extrabold text-slate-950 tracking-tight mt-1.5">
-                    Preview your new showroom
+                    Your showroom is taking shape
                   </h1>
                   <p className="text-xs font-medium text-slate-500 mt-0.5">
-                    Here is what buyers in {onboarding.contact.city || 'your area'} will see.
+                    Take a look at the public page before creating your account.
                   </p>
                 </div>
               </div>
@@ -2137,7 +2168,7 @@ export const OnboardingFlow: React.FC = () => {
                     <p className="text-[11px] mt-0.5">{submitError}</p>
                     <button
                       type="button"
-                      onClick={handleFinishSetup}
+                      onClick={() => setStep(1)}
                       className="mt-2 text-xs font-bold text-rose-700 underline"
                     >
                       Retry setup
@@ -2276,11 +2307,11 @@ export const OnboardingFlow: React.FC = () => {
                   {isSubmitting ? (
                     <>
                       <Loader2 className="w-4 h-4 animate-spin" />
-                      <span>Saving to Supabase & Launching Showroom...</span>
+                      <span>Continue to account creation...</span>
                     </>
                   ) : (
                     <>
-                      <span>Finish setup & Go to Dashboard</span>
+                      <span>Looks good — create my account</span>
                       <ArrowRight className="w-4 h-4" />
                     </>
                   )}
@@ -2289,18 +2320,18 @@ export const OnboardingFlow: React.FC = () => {
                 <div className="grid grid-cols-2 gap-2">
                   <button
                     type="button"
-                    onClick={() => setStep(4)}
+                    onClick={() => setStep(3)}
                     className="py-2.5 rounded-xl border border-slate-200 text-slate-700 font-semibold text-xs hover:bg-slate-50 transition-colors"
                   >
-                    Edit details
+                    Edit showroom
                   </button>
                   <button
                     type="button"
-                    onClick={() => setStep(5)}
+                    onClick={() => setStep(7)}
                     className="py-2.5 rounded-xl bg-slate-100 text-slate-800 font-semibold text-xs hover:bg-slate-200 transition-colors flex items-center justify-center gap-1"
                   >
                     <Camera className="w-3.5 h-3.5" />
-                    <span>Edit branding</span>
+                    <span>Edit vehicle</span>
                   </button>
                 </div>
               </div>
