@@ -1153,7 +1153,7 @@ export const OnboardingFlow: React.FC = () => {
                     <Pencil className="w-3.5 h-3.5 text-slate-400 shrink-0 ml-1.5" />
                   </div>
 
-                  <p className="text-[11px] font-semibold text-emerald-600 mt-1 flex items-center gap-1">
+                  <p className={`text-[11px] font-semibold mt-1 flex items-center gap-1 ${handleAvailable ? "text-emerald-600" : "text-slate-400"}`}>
                     <Check className="w-3.5 h-3.5 stroke-[2.5]" />
                     <span>{checkingHandle ? 'Checking this link…' : handleAvailable ? 'This URL is available!' : 'This URL is unavailable. Try another.'}</span>
                   </p>
@@ -1184,6 +1184,7 @@ export const OnboardingFlow: React.FC = () => {
 
               <button
                 type="button"
+                disabled={!onboarding.showroom.businessName.trim() || !onboarding.showroom.handle.trim() || !handleAvailable || checkingHandle}
                 onClick={() => setStep(7)}
                 className="w-full h-12 mt-4 rounded-full bg-slate-950 hover:bg-slate-850 text-white font-bold text-xs tracking-wide shadow-xs active:scale-[0.99] transition-all flex items-center justify-center gap-1.5"
               >
