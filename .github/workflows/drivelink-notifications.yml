@@ -1,0 +1,27 @@
+name: DriveLink notification scheduler
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: drivelink-notification-worker
+  cancel-in-progress: false
+
+jobs:
+  dispatch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run notification worker
+        env:
+          NOTIFICATION_CRON_SECRET: ${{ secrets.NOTIFICATION_CRON_SECRET }}
+        run: |
+          if [ -z "$NOTIFICATION_CRON_SECRET" ]; then
+            echo "Missing NOTIFICATION_CRON_SECRET repository secret"
+            exit 1
+          fi
+          curl --fail-with-body --silent --show-error \
+            -X POST \
+            -H "x-notification-secret: $NOTIFICATION_CRON_SECRET" \
+            "https://cimyerrelscqjiwqvnnn.supabase.co/functions/v1/drivelink-notifications"
