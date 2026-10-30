@@ -124,7 +124,8 @@ export const BillingPage: React.FC = () => {
             <div className="space-y-3 text-xs">
               <div className="flex justify-between"><span className="text-slate-500">Current period ends</span><strong>{dateLabel(subscription?.current_period_end)}</strong></div>
               {inGrace && <div className="rounded-xl bg-amber-50 text-amber-800 p-3 leading-relaxed">Your subscription is in its 3-day grace period. Renew now to avoid interruption.</div>}
-              {active && <div className="rounded-xl bg-emerald-50 text-emerald-800 p-3 flex items-start gap-2"><CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5" /><span>Your subscription is active. Renew before the end date to keep your access uninterrupted.</span></div>}
+              {active && end - now <= 5 * 24 * 60 * 60 * 1000 && <div className="rounded-xl bg-amber-50 text-amber-800 p-3 leading-relaxed flex items-start gap-2"><Clock3 className="w-4 h-4 shrink-0 mt-0.5" /><span>Your subscription is nearing its renewal date ({dateLabel(subscription?.current_period_end)}). Renew for $3.99 to keep your access uninterrupted.</span></div>}
+              {active && end - now > 5 * 24 * 60 * 60 * 1000 && <div className="rounded-xl bg-emerald-50 text-emerald-800 p-3 flex items-start gap-2"><CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5" /><span>Your subscription is active. Renew before the end date to keep your access uninterrupted.</span></div>}
               {!active && !inGrace && <div className="rounded-xl bg-slate-50 text-slate-600 p-3">Subscribe or renew to keep your DriveLink account active.</div>}
             </div>
           )}
