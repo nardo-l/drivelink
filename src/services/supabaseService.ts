@@ -22,7 +22,8 @@ type EnquiryRow = Database['public']['Tables']['enquiries']['Row'];
 export function mapDealershipFromRow(row: DealershipRow): Dealership {
   return {
     id: row.id,
-    name: row.name,
+    dealershipType: row.dealership_type as Dealership['dealershipType'],
+    name: row.name;
     slug: row.slug,
     tagline: row.tagline || 'Quality vehicles. Fair prices.',
     bio: row.bio || '',
@@ -51,6 +52,7 @@ export function mapDealershipToRow(
   return {
     ...(d.id ? { id: d.id } : {}),
     user_id: userId,
+    dealership_type: d.dealershipType || 'dealership',
     name: d.name || 'My Dealership',
     slug: d.slug || 'my-dealership',
     country: d.country || 'Zimbabwe',
@@ -300,6 +302,7 @@ export const supabaseService = {
     }
 
     const dbPayload: Partial<Database['public']['Tables']['dealerships']['Update']> = {};
+    if (updates.dealershipType !== undefined) dbPayload.dealership_type = updates.dealershipType;
     if (updates.name !== undefined) dbPayload.name = updates.name;
     if (updates.slug !== undefined) dbPayload.slug = updates.slug;
     if (updates.country !== undefined) dbPayload.country = updates.country;
