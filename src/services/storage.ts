@@ -308,6 +308,7 @@ export const storageService = {
         return {
           ...defaultState,
           ...parsed,
+          currentStep: parsed.isCompleted ? 9 : 3,
           account: {
             ...defaultState.account,
             ...(parsed.account || {}),
