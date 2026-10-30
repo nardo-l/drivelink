@@ -140,7 +140,7 @@ export const OnboardingFlow: React.FC = () => {
     e.preventDefault();
     const newErrors: Record<string, string> = {};
 
-    if (!onboarding.account.businessName.trim()) {
+    if (!onboarding.showroom.businessName.trim()) {
       newErrors.businessName = 'Please enter your dealership or business name.';
     }
     if (!onboarding.account.email.trim() || !onboarding.account.email.includes('@')) {
@@ -149,7 +149,7 @@ export const OnboardingFlow: React.FC = () => {
     if (!onboarding.account.password || onboarding.account.password.length < 6) {
       newErrors.password = 'Password must be at least 6 characters.';
     }
-    if (!onboarding.account.handle.trim()) {
+    if (!onboarding.showroom.handle.trim()) {
       newErrors.handle = 'Please enter your desired showroom handle.';
     }
 
@@ -265,6 +265,7 @@ export const OnboardingFlow: React.FC = () => {
       .replace(/-+/g, '-');
     setOnboarding((prev) => ({
       ...prev,
+      account: { ...prev.account, handle: sanitized },
       showroom: {
         ...prev.showroom,
         handle: sanitized,
@@ -743,13 +744,19 @@ export const OnboardingFlow: React.FC = () => {
                 dutyStatus: 'Duty Paid & Registered',
                 status: onboarding.firstVehicle.status,
                 description: onboarding.firstVehicle.description,
-                photos: onboarding.firstVehicle.photos,
+                photos: await Promise.all(onboarding.firstVehicle.photos.map(async (photo, index) => {
+                  if (!photo.startsWith('data:')) return photo;
+                  const response = await fetch(photo);
+                  const blob = await response.blob();
+                  const file = new File([blob], `vehicle-${index + 1}.${blob.type.includes('png') ? 'png' : 'jpg'}`, { type: blob.type || 'image/jpeg' });
+                  return supabaseService.uploadVehiclePhoto(createdDealer.id, file);
+                })),
                 features: ['Keyless Entry', 'Air Conditioning', 'Power Steering'],
               },
               createdDealer.id
             );
           } catch (vehErr: any) {
-            console.warn('Vehicle insertion notice:', vehErr);
+            throw new Error(`Your showroom was created, but the first car could not be saved: ${vehErr?.message || 'Please try again.'}`);
           }
         }
 
@@ -783,8 +790,8 @@ export const OnboardingFlow: React.FC = () => {
   };
 
   useEffect(() => {
-    if (step === 9 && !setupComplete && isSupabaseConfigured() && !storageService.isDemoModeActive()) {
-      supabaseService.getSession().then(session => { if (session?.user) handleFinishSetup(); }).catch(error => setSubmitError(error?.message || 'Could not restore your account session.'));
+    if (!setupComplete && isSupabaseConfigured() && !storageService.isDemoModeActive()) {
+      supabaseService.getSession().then(session => { if (session?.user && (step === 9 || step === 1)) handleFinishSetup(); }).catch(error => setSubmitError(error?.message || 'Could not restore your account session.'));
     }
   }, [step, setupComplete]);
 
@@ -1179,6 +1186,7 @@ export const OnboardingFlow: React.FC = () => {
                       const val = e.target.value;
                       setOnboarding((prev) => ({
                         ...prev,
+                        account: { ...prev.account, businessName: val },
                         showroom: { ...prev.showroom, businessName: val },
                       }));
                     }}
@@ -1872,8 +1880,9 @@ export const OnboardingFlow: React.FC = () => {
             <div className="py-2 flex flex-col gap-4">
               <div className="flex items-start justify-between">
                 <div>
+                  <p className="text-[10px] font-bold uppercase tracking-[.18em] text-slate-400 mb-2">Step 2 of 5 · Your first car</p>
                   <h1 className="text-2xl font-extrabold text-slate-950 tracking-tight">
-                    Add your first vehicle
+                    Tell us about the car
                   </h1>
                   <p className="text-xs font-medium text-slate-500 mt-1">
                     Start with the essentials, or skip to launch a clean showroom.
@@ -2301,7 +2310,7 @@ export const OnboardingFlow: React.FC = () => {
                 <button
                   type="button"
                   disabled={isSubmitting}
-                  onClick={handleFinishSetup}
+                  onClick={() => setStep(1)}
                   className="w-full h-13 rounded-full bg-slate-950 hover:bg-slate-850 disabled:bg-slate-400 text-white font-bold text-xs tracking-wide shadow-md active:scale-[0.99] transition-all flex items-center justify-center gap-2 cursor-pointer"
                 >
                   {isSubmitting ? (
