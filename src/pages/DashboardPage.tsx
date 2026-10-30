@@ -84,7 +84,7 @@ export const DashboardPage: React.FC = () => {
   const displayedVehicles = vehicles.slice(0, 4);
 
   return (
-    <div className="relative min-h-full flex flex-col justify-between bg-[#F8F9FA] text-slate-900">
+    <div className="dl-workspace relative min-h-full flex flex-col justify-between bg-[#F8F9FA] text-slate-900">
       {/* Scrollable Content */}
       <div className="flex-1 px-5 pt-5 pb-24 overflow-y-auto">
         {/* Dealership Header matching Screen 03 */}
