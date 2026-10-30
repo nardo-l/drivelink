@@ -47,6 +47,7 @@ export interface Enquiry {
 export interface Dealership {
   id: string;
   userId?: string;
+  dealershipType?: SellerType;
   name: string;
   slug: string;
   tagline: string;
