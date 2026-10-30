@@ -38,6 +38,7 @@ export function mapDealershipFromRow(row: DealershipRow): Dealership {
     logoUrl: row.logo_url || undefined,
     coverUrl: row.cover_url || undefined,
     isVerified: row.is_verified,
+    isPublished: row.is_published,
     storefrontViews: row.storefront_views || 0,
     totalEnquiries: 0,
   };
@@ -66,7 +67,7 @@ export function mapDealershipToRow(
     tagline: d.tagline || null,
     sticker_text: d.stickerText || null,
     is_verified: d.isVerified ?? false,
-    is_published: true,
+    is_published: d.isPublished ?? true,
     storefront_views: d.storefrontViews ?? 0,
   };
 }
@@ -161,6 +162,13 @@ export const supabaseService = {
       email,
     });
     if (error) throw error;
+  },
+
+  async signInWithGoogle() {
+    if (!isSupabaseConfigured()) throw new Error('Supabase is not configured.');
+    const { data, error } = await supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: `${window.location.origin}/onboarding` } });
+    if (error) throw error;
+    return data;
   },
 
   async signIn(email: string, password: string) {
