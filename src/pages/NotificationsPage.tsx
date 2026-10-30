@@ -25,8 +25,8 @@ export const NotificationsPage: React.FC = () => {
     try {
       const dealer = await storageService.getDealershipAsync();
       setDealershipId(dealer.id);
-      const [rows, enabled] = await Promise.all([notificationService.list(dealer.id), notificationService.isPushEnabled()]);
-      setItems(rows); setPushEnabled(enabled);
+      const [rows, enabled, settings] = await Promise.all([notificationService.list(dealer.id), notificationService.isPushEnabled(), notificationService.getPreferences(dealer.id)]);
+      setItems(rows); setPushEnabled(enabled); setPreferences(settings);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not load notifications.');
     } finally { setLoading(false); }
