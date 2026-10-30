@@ -23,7 +23,7 @@ export function mapDealershipFromRow(row: DealershipRow): Dealership {
   return {
     id: row.id,
     dealershipType: row.dealership_type as Dealership['dealershipType'],
-    name: row.name;
+    name: row.name,
     slug: row.slug,
     tagline: row.tagline || 'Quality vehicles. Fair prices.',
     bio: row.bio || '',
@@ -150,7 +150,7 @@ export const supabaseService = {
     if (!isSupabaseConfigured()) {
       throw new Error('Supabase is not configured. Please add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.');
     }
-    const { data, error } = await supabase.auth.signUp({ email, password });
+    const { data, error } = await supabase.auth.signUp({ email, password, options: { emailRedirectTo: `${window.location.origin}/onboarding` } });
     if (error) throw error;
     return data;
   },
