@@ -225,7 +225,7 @@ export const SettingsPage: React.FC = () => {
   };
 
   return (
-    <div className="relative min-h-full flex flex-col justify-between bg-[#F8F9FA] text-slate-900">
+    <div className="dl-workspace relative min-h-full flex flex-col justify-between bg-[#F8F9FA] text-slate-900">
       {/* Top Header */}
       <div className="sticky top-0 z-20 bg-white/95 backdrop-blur-md px-5 py-3 border-b border-slate-100 flex items-center justify-between">
         <div>
