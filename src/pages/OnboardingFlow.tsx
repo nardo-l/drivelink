@@ -76,6 +76,19 @@ export const OnboardingFlow: React.FC = () => {
   const [emailConfirmationRequired, setEmailConfirmationRequired] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
+  useEffect(() => {
+    const handle = onboarding.showroom.handle.trim();
+    let active = true;
+    if (!handle) { setHandleAvailable(false); setCheckingHandle(false); return; }
+    setCheckingHandle(true);
+    supabaseService.checkHandleAvailability(handle).then(available => {
+      if (active) setHandleAvailable(available);
+    }).catch(() => { if (active) setHandleAvailable(false); }).finally(() => {
+      if (active) setCheckingHandle(false);
+    });
+    return () => { active = false; };
+  }, [onboarding.showroom.handle]);
+
   // Sync state to storage whenever it changes (File instances excluded in storageService)
   useEffect(() => {
     storageService.saveOnboardingState(onboarding);
@@ -85,6 +98,8 @@ export const OnboardingFlow: React.FC = () => {
   const step = onboarding.currentStep;
   const progressStep = step === 3 ? 1 : step === 7 ? 2 : step === 8 ? 3 : step === 1 ? 4 : 5;
   const [setupComplete, setSetupComplete] = useState(Boolean(onboarding.isCompleted));
+  const [handleAvailable, setHandleAvailable] = useState(false);
+  const [checkingHandle, setCheckingHandle] = useState(false);
 
   const setStep = (newStep: number) => {
     setOnboarding((prev) => ({ ...prev, currentStep: newStep }));
@@ -152,6 +167,10 @@ export const OnboardingFlow: React.FC = () => {
     }
     if (!onboarding.showroom.handle.trim()) {
       newErrors.handle = 'Please enter your desired showroom handle.';
+    }
+
+    if (onboarding.showroom.handle.trim() && !handleAvailable) {
+      newErrors.handle = 'That showroom link is already taken. Try another one.';
     }
 
     if (Object.keys(newErrors).length > 0) {
@@ -1136,7 +1155,7 @@ export const OnboardingFlow: React.FC = () => {
 
                   <p className="text-[11px] font-semibold text-emerald-600 mt-1 flex items-center gap-1">
                     <Check className="w-3.5 h-3.5 stroke-[2.5]" />
-                    <span>This URL is available!</span>
+                    <span>{checkingHandle ? 'Checking this link…' : handleAvailable ? 'This URL is available!' : 'This URL is unavailable. Try another.'}</span>
                   </p>
                 </div>
 
