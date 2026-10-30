@@ -12,6 +12,7 @@ import { AddEditVehiclePage } from './pages/AddEditVehiclePage';
 import { EnquiriesPage } from './pages/EnquiriesPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { BillingPage } from './pages/BillingPage';
+import { NotificationsPage } from './pages/NotificationsPage';
 import { PublicShowroomPage } from './pages/PublicShowroomPage';
 import { PublicVehicleDetailPage } from './pages/PublicVehicleDetailPage';
 import { isSupabaseConfigured } from './lib/supabase';
@@ -140,7 +141,7 @@ function AppContent() {
       return <EnquiriesPage />;
     }
 
-    if (currentPath === '/app/billing') {
+    if (currentPath === '/app/notifications') {\n      return <NotificationsPage />;\n    }\n\n    if (currentPath === '/app/billing') {
       return <BillingPage />;
     }
 
