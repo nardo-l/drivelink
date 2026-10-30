@@ -77,6 +77,39 @@ async function createScheduledNotifications() {
         await insertNotification(dealer.id, "sharing", "Share your showroom link", "Your online showroom is ready. Share its link on WhatsApp and social media to reach more buyers.", `share-reminder:${today}`, { url: "/app" });
       }
     }
+    const { data: subscription } = await db.from("dealership_subscriptions")
+      .select("status,trial_started_at,trial_ends_at,current_period_start,current_period_end,grace_until")
+      .eq("dealership_id", dealer.id).maybeSingle();
+    if (subscription) {
+      const trialStart = subscription.trial_started_at ? new Date(subscription.trial_started_at) : null;
+      const trialEnd = subscription.trial_ends_at ? new Date(subscription.trial_ends_at) : null;
+      const paidEnd = subscription.current_period_end ? new Date(subscription.current_period_end) : null;
+      const graceEnd = subscription.grace_until ? new Date(subscription.grace_until) : null;
+      const trialHours = trialEnd ? (trialEnd.getTime() - now.getTime()) / 3600000 : null;
+      const paidHours = paidEnd ? (paidEnd.getTime() - now.getTime()) / 3600000 : null;
+      if (subscription.status === "trial" && trialStart && now.getTime() - trialStart.getTime() < 24 * 3600000) {
+        await insertNotification(dealer.id, "subscription", "Your 3-day free trial has started", "You have full access to DriveLink for the next 72 hours. Add vehicles and share your showroom.", `trial-start:${trialStart.toISOString()}`, { url: "/app/billing" });
+      }
+      if (subscription.status === "trial" && trialHours !== null && trialHours <= 24 && trialHours > 6) {
+        await insertNotification(dealer.id, "subscription", "Your free trial ends tomorrow", "Your DriveLink trial has 24 hours remaining. Subscribe to keep adding vehicles and managing your showroom.", `trial-24h:${trialEnd!.toISOString()}`, { url: "/app/billing" });
+      }
+      if (subscription.status === "trial" && trialHours !== null && trialHours <= 6 && trialHours > 0) {
+        await insertNotification(dealer.id, "subscription", "Your free trial is nearly over", "Your DriveLink trial ends in 6 hours. Choose a plan to keep full access.", `trial-6h:${trialEnd!.toISOString()}`, { url: "/app/billing" });
+      }
+      if (subscription.status === "trial" && trialHours !== null && trialHours <= 0) {
+        await insertNotification(dealer.id, "subscription", "Your free trial has ended", "Your account is now in view-only mode. Subscribe to restore full access.", `trial-ended:${trialEnd!.toISOString()}`, { url: "/app/billing" });
+      }
+      if (subscription.status === "active" && paidHours !== null && paidHours <= 120 && paidHours > 24) {
+        await insertNotification(dealer.id, "subscription", "Your subscription renews in 5 days", "Renew your DriveLink subscription to keep your dealership tools active.", `renew-5d:${paidEnd!.toISOString()}`, { url: "/app/billing" });
+      }
+      if (subscription.status === "active" && paidHours !== null && paidHours <= 24 && paidHours > 0) {
+        await insertNotification(dealer.id, "subscription", "Your subscription expires tomorrow", "Renew now to avoid interruption to your dealership workspace.", `renew-1d:${paidEnd!.toISOString()}`, { url: "/app/billing" });
+      }
+      if (subscription.status === "grace_period" && graceEnd && graceEnd.getTime() <= now.getTime()) {
+        await insertNotification(dealer.id, "subscription", "Your grace period has ended", "Your account is now view-only. Renew your subscription to restore full access.", `grace-ended:${graceEnd.toISOString()}`, { url: "/app/billing" });
+      }
+    }
+
     if (preferences.new_enquiries !== false) {
       const stale = pendingLeads.filter((e: any) => (now.getTime() - new Date(e.created_at).getTime()) >= 24 * 3600000);
       for (const lead of stale) {
