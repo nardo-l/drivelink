@@ -10,7 +10,7 @@ const vapidPrivateKey = Deno.env.get("VAPID_PRIVATE_KEY")!;
 const vapidSubject = Deno.env.get("VAPID_SUBJECT") || "mailto:support@drivelink.app";
 const db = createClient(supabaseUrl, serviceRoleKey, { auth: { persistSession: false } });
 
-webpush.setVapidDetails(vapidSubject, vapidPublicKey, vapidPrivateKey);
+const pushReady = Boolean(vapidPublicKey && vapidPrivateKey);\nif (pushReady) webpush.setVapidDetails(vapidSubject, vapidPublicKey!, vapidPrivateKey!);
 
 const harareParts = (date = new Date()) => {
   const parts = new Intl.DateTimeFormat("en-GB", {
