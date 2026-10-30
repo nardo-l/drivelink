@@ -28,7 +28,6 @@ export const ShareModal: React.FC<ShareModalProps> = ({
   const handleCopy = () => {
     navigator.clipboard?.writeText(url);
     if (dealershipId) void notificationService.trackShareStarted(dealershipId, 'copy').catch((error) => console.warn('Share activity could not be recorded:', error));
-    if (dealershipId) void notificationService.trackShareStarted(dealershipId, 'copy').catch((error) => console.warn('Share activity could not be recorded:', error));
     setCopied(true);
     showToast('Link copied to clipboard!');
     setTimeout(() => setCopied(false), 2000);
