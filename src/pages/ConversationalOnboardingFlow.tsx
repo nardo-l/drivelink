@@ -113,31 +113,31 @@ export const OnboardingFlow: React.FC = () => {
       const phone = toE164(data.contact.phoneCountryCode, data.contact.phoneNumber);
       const whatsapp = data.contact.whatsappSameAsPhone ? phone : toE164(data.contact.whatsappCountryCode, data.contact.whatsappNumber);
       const country = data.contact.country;
-      let finalSlug = availableSlug;
+      let finalSlug = dealer?.slug || availableSlug;
       if (!dealer) {
         let suffix = 2;
         for (let attempt = 0; attempt < 25; attempt++) {
           if (await supabaseService.checkHandleAvailability(finalSlug)) break;
           finalSlug = `${showroomSlug}-${suffix++}`;
         }
-        dealer = await supabaseService.createDealership({
-          name: data.showroom.businessName.trim(),
-          slug: finalSlug,
-          dealershipType: data.sellerType,
-          country,
-          city: data.contact.city.trim(),
-          address: data.contact.address.trim(),
-          phone: phone || whatsapp || '',
-          whatsapp: whatsapp || phone || '',
-          email: user.email || data.account.email,
-          currency: country === 'South Africa' ? 'ZAR' : 'USD',
-          template: 'signature',
-          bio: data.contact.description.trim(),
-          tagline: data.showroom.businessName.trim(),
-          isPublished: true,
-          isVerified: false,
-        });
       }
+      dealer = await supabaseService.createDealership({
+        name: data.showroom.businessName.trim(),
+        slug: finalSlug,
+        dealershipType: data.sellerType,
+        country,
+        city: data.contact.city.trim(),
+        address: data.contact.address.trim(),
+        phone: phone || whatsapp || '',
+        whatsapp: whatsapp || phone || '',
+        email: user.email || data.account.email,
+        currency: country === 'South Africa' ? 'ZAR' : 'USD',
+        template: 'signature',
+        bio: data.contact.description.trim(),
+        tagline: data.showroom.businessName.trim(),
+        isPublished: true,
+        isVerified: false,
+      });
       const assets: Partial<Dealership> = {};
       const restoredLogo = logoFile || (data.branding.logoPreview?.startsWith('data:') ? dataUrlToFile(data.branding.logoPreview, 'dealership-logo') : null);
       const restoredBanner = bannerFile || (data.branding.coverPreview?.startsWith('data:') ? dataUrlToFile(data.branding.coverPreview, 'dealership-banner') : null);
