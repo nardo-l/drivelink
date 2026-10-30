@@ -90,7 +90,7 @@ export const notificationService = {
     if (error) throw error;
     await this.updatePreferences(dealershipId, { push_enabled: true });
   },
-  async disablePush(): Promise<void> {
+  async disablePush(dealershipId: string): Promise<void> {
     if (!('serviceWorker' in navigator)) return;
     const registration = await navigator.serviceWorker.getRegistration('/sw.js');
     const subscription = await registration?.pushManager.getSubscription();
@@ -98,6 +98,7 @@ export const notificationService = {
     const { error } = await (supabase as any).from('push_subscriptions').delete().eq('endpoint', subscription.endpoint);
     if (error) throw error;
     await subscription.unsubscribe();
+    await this.updatePreferences(dealershipId, { push_enabled: false });
   },
   async isPushEnabled(): Promise<boolean> {
     if (!('serviceWorker' in navigator)) return false;
