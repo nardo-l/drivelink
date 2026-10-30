@@ -838,7 +838,7 @@ export const OnboardingFlow: React.FC = () => {
                 const session = await supabaseService.getSession();
                 if (session?.user) {
                   setEmailConfirmationRequired(false);
-                  setOnboarding((prev) => ({ ...prev, currentStep: 2 }));
+                  setOnboarding((prev) => ({ ...prev, currentStep: 9 }));
                   showToast('Email verified! Continuing showroom setup.');
                 } else {
                   showToast('Verification pending. Please click the link in your email first.');
@@ -2056,6 +2056,14 @@ export const OnboardingFlow: React.FC = () => {
           {/* ========================================================================= */}
           {/* SCREEN 08: FINAL SHOWROOM PREVIEW & COMPLETE (Step 8) */}
           {/* ========================================================================= */}
+          {step === 9 && !setupComplete && (
+            <div className="my-auto py-10 flex flex-col items-center text-center gap-4">
+              <div className="w-14 h-14 rounded-full bg-slate-100 flex items-center justify-center">{isSubmitting ? <Loader2 className="w-6 h-6 animate-spin text-slate-700" /> : <Car className="w-6 h-6 text-slate-700" />}</div>
+              <div><h1 className="text-xl font-extrabold text-slate-950">{submitError ? 'We couldn’t finish setting up your showroom' : 'Getting your showroom ready…'}</h1><p className="text-xs text-slate-500 mt-2 max-w-xs">{submitError || 'We’re saving your showroom and first car securely to your account.'}</p></div>
+              {submitError && <button type="button" onClick={handleFinishSetup} disabled={isSubmitting} className="w-full h-11 rounded-full bg-slate-950 text-white text-xs font-bold">Try again</button>}
+            </div>
+          )}
+
           {step === 9 && setupComplete && (
             <div className="my-auto py-8 flex flex-col items-center text-center gap-5">
               <div className="w-16 h-16 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center"><CheckCircle2 className="w-9 h-9" /></div>
