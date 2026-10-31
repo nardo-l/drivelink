@@ -221,7 +221,7 @@ export const OnboardingFlow: React.FC = () => {
       const whatsappCheck = validatePhoneNumber(data.contact.whatsappCountryCode, data.contact.whatsappNumber);
       if (!whatsappCheck.isValid) { setError(whatsappCheck.error || 'Please enter a valid WhatsApp number.'); return; }
     }
-    go(5);
+    go(6);
   };
 
   const nextFromVehicle = () => {
@@ -229,7 +229,7 @@ export const OnboardingFlow: React.FC = () => {
       setError('Please enter the vehicle make and model, or choose to add a car later.');
       return;
     }
-    go(6);
+    go(8);
   };
 
   const back = () => go(Math.max(1, step - 1));
@@ -290,7 +290,7 @@ export const OnboardingFlow: React.FC = () => {
             <button onClick={() => data.contact.city.trim() ? go(4) : setError('Please tell us which city or town your dealership is in.')} className="w-full h-12 rounded-full bg-slate-950 text-white font-bold text-sm">Continue <ArrowRight className="inline w-4 h-4 ml-1" /></button>
           </>}
 
-          {step === 7 && <>
+          {step === 5 && <>
             {bubble(<>Great. Now let's put a face to your business. What is your dealership called, and how can customers reach you?</>, <Building2 className="w-4 h-4" />)}
             <div className="bg-white border border-slate-200 rounded-2xl p-4 space-y-4">
               {field('Dealership name', data.showroom.businessName, v => { patch('showroom', { businessName: v }); patch('account', { businessName: v }); }, 'e.g. Moyo Motors')}
@@ -318,7 +318,7 @@ export const OnboardingFlow: React.FC = () => {
             </div>
             <button onClick={() => go(5)} className="w-full h-12 rounded-full bg-[#f47716] text-white font-bold text-sm">Continue <ArrowRight className="inline w-4 h-4 ml-1" /></button>
           </>}
-          {step === 5 && <>
+          {step === 7 && <>
             {bubble(<>Your dealership profile is coming together! Would you like to add your first car now, or would you rather do that later from your dashboard?</>, <CarFront className="w-4 h-4" />)}
             <div className="grid grid-cols-2 gap-3">
               <button onClick={() => { patch('firstVehicle', { isSkipped: false }); go(5); }} className="rounded-2xl border border-slate-950 bg-white p-4 text-left"><CarFront className="w-6 h-6 mb-3" /><span className="block font-bold text-sm">Add my first car</span><span className="text-xs text-slate-500">Add details and photos</span></button>
