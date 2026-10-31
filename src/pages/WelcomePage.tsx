@@ -1,11 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigation } from '../context/NavigationContext';
 import { CAR_RAV4_SILVER, CAR_AQUA_WHITE } from '../utils/carVisuals';
-import {
-  ArrowRight, ArrowUpRight, CarFront, Check, ChevronDown, CircleHelp,
-  Eye, Instagram, Link2, Menu, MessageCircle, Play, Share2, ShieldCheck,
-  Smartphone, TrendingUp, Users, X, BarChart3, ClipboardList, Gauge
-} from 'lucide-react';
+import { ArrowRight, ArrowUpRight, CarFront, Check, ChevronDown, Link2, Menu, MessageCircle, Play, Share2, Users, X, BarChart3, ClipboardList } from 'lucide-react';
 
 const ORANGE = '#FF784F';
 
