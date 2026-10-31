@@ -85,3 +85,13 @@ img { max-width: 100%; }
   .dl-workspace > main { padding-left: 112px !important; }
   .dl-workspace > header { padding-left: 112px !important; }
 }
+
+.dl-onboarding { background: #f4f4f3 !important; }
+.dl-onboarding .bg-slate-950 { background-color: #f47716 !important; }
+.dl-onboarding .text-slate-950 { color: #171717 !important; }
+.dl-onboarding .border-slate-950 { border-color: #f47716 !important; }
+.dl-onboarding .bg-slate-200 { background-color: #e8e8e6 !important; }
+.dl-onboarding .h-full.bg-slate-950 { background-color: #f47716 !important; }
+@media (min-width: 1024px) {
+  .dl-bottom-nav { left: max(16px, calc((100vw - 1180px) / 2 + 14px)); }
+}
