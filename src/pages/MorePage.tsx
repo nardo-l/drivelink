@@ -1,13 +1,15 @@
-import React from 'react';
+import React,{useEffect,useState} from 'react';
 import {UserRound,ChartNoAxesCombined,UsersRound,CreditCard,Bell,Settings,LifeBuoy,LogOut,ChevronRight,Building2} from 'lucide-react';
 import {useNavigation} from '../context/NavigationContext';
 import {storageService} from '../services/storage';
+import {Dealership} from '../types';
 import {BottomNav} from '../components/layout/BottomNav';
 import {supabaseService} from '../services/supabaseService';
 import {isSupabaseConfigured} from '../lib/supabase';
 
 export const MorePage:React.FC=()=>{
- const {navigate,showToast}=useNavigation();const dealer=storageService.getDealership();
+ const {navigate,showToast}=useNavigation();const [dealer,setDealer]=useState<Dealership>(()=>({...storageService.getDealership(),name:'Your dealership'}));
+ useEffect(()=>{storageService.getDealershipAsync().then(setDealer).catch(()=>setDealer({...storageService.getDealership(),name:'Your dealership'}));},[]);
  const signOut=async()=>{try{if(isSupabaseConfigured()&&!storageService.isDemoModeActive())await supabaseService.signOut();storageService.clearSession();navigate('/login');}catch(e:any){showToast(e?.message||'Could not sign out.');}};
  const items=[{label:'Analytics',detail:'Track visits and vehicle performance',icon:ChartNoAxesCombined,path:'/app/analytics'},{label:'Team',detail:'Manage dealership access',icon:UsersRound,path:'/app/settings'},{label:'Subscription',detail:'Your DriveLink plan',icon:CreditCard,path:'/app/billing'},{label:'Notifications',detail:'Enquiry and account updates',icon:Bell,path:'/app/notifications'},{label:'Settings',detail:'Business details and preferences',icon:Settings,path:'/app/settings'},{label:'Help & Support',detail:'Get help with your account',icon:LifeBuoy,path:'/app/settings'}];
  return <div className="dl-workspace min-h-full flex flex-col"><main className="flex-1 px-4 sm:px-7 pt-6 pb-28 max-w-4xl w-full mx-auto">
