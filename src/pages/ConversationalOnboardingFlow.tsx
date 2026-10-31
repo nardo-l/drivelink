@@ -251,7 +251,7 @@ export const OnboardingFlow: React.FC = () => {
   );
 
   return (
-    <main className="min-h-screen bg-[#F7F8FA] text-slate-950 px-4 py-5 sm:px-6">
+    <main className="dl-onboarding min-h-screen bg-[#F7F8FA] text-slate-950 px-4 py-5 sm:px-6">
       <div className="max-w-xl mx-auto min-h-[calc(100vh-40px)] flex flex-col">
         <header className="mb-8">
           <div className="flex items-center justify-between mb-4">
