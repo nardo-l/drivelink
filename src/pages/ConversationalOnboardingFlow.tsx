@@ -6,6 +6,7 @@ import { supabaseService } from '../services/supabaseService';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { OnboardingState, SellerType, Dealership, Vehicle } from '../types';
 import { toE164 } from '../utils/phoneUtils';
+import { MARKETING_CAR_IMAGES } from '../utils/marketingCarImages';
 
 const TOTAL = 9;
 const ORANGE = '#FF7417';
@@ -198,7 +199,7 @@ export const OnboardingFlow: React.FC = () => {
         <h1 className="text-[34px] font-extrabold leading-[1.05] tracking-tight">Get your dealership online.</h1>
         <p className="mt-4 max-w-xs text-sm leading-6 text-gray-600">Showcase your cars, get more leads and grow your business.</p>
         <div className="relative my-auto flex min-h-[260px] items-center justify-center overflow-hidden rounded-[28px] bg-gradient-to-br from-orange-50 via-white to-gray-100">
-          <div className="absolute -right-16 top-5 h-48 w-48 rounded-full bg-orange-100"/><img src="/cars/rav4-silver.png" onError={e => { e.currentTarget.style.display='none'; }} alt="Featured vehicle" className="relative z-10 max-h-[260px] w-full object-contain drop-shadow-xl"/>
+          <div className="absolute -right-16 top-5 h-48 w-48 rounded-full bg-orange-100"/><img src={MARKETING_CAR_IMAGES.hero} onError={e => { e.currentTarget.style.display='none'; }} alt="Mercedes-Benz GLE featured in the DriveLink showroom" loading="eager" decoding="async" className="relative z-10 max-h-[260px] w-full object-contain drop-shadow-xl"/>
           <div className="absolute bottom-4 left-4 rounded-full bg-white/90 px-3 py-1 text-[10px] font-semibold text-gray-600">Your showroom. Your brand.</div>
         </div>
         <button className={primary + ' mt-7'} onClick={() => setStep(2)}>Get Started <ArrowRight size={17}/></button>
