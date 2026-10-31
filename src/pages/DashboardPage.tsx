@@ -9,14 +9,14 @@ import { CarFront, MessageCircle, Eye, Bell, Plus, ChevronRight, RefreshCw, Arro
 
 export const DashboardPage: React.FC = () => {
   const { navigate, showToast } = useNavigation();
-  const [dealership, setDealership] = useState(() => storageService.getDealership());
-  const [vehicles, setVehicles] = useState(() => storageService.getVehicles());
-  const [enquiries, setEnquiries] = useState(() => storageService.getEnquiries());
-  const [loading, setLoading] = useState(isSupabaseConfigured() && !storageService.isDemoModeActive());
+  const isLive = isSupabaseConfigured() && !storageService.isDemoModeActive();
+  const [dealership, setDealership] = useState(() => isLive ? { ...storageService.getDealership(), name: 'Your dealership', slug: '' } : storageService.getDealership());
+  const [vehicles, setVehicles] = useState(() => isLive ? [] : storageService.getVehicles());
+  const [enquiries, setEnquiries] = useState(() => isLive ? [] : storageService.getEnquiries());
+  const [loading, setLoading] = useState(isLive);
   const [loadError, setLoadError] = useState('');
   const [period, setPeriod] = useState('7d');
   const [shareOpen, setShareOpen] = useState(false);
-  const isLive = isSupabaseConfigured() && !storageService.isDemoModeActive();
 
   const load = async () => {
     setLoading(true);
