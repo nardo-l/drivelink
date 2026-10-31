@@ -1,274 +1,100 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigation } from '../context/NavigationContext';
 import { storageService } from '../services/storage';
 import { isSupabaseConfigured } from '../lib/supabase';
 import { BottomNav } from '../components/layout/BottomNav';
 import { StatusBadge } from '../components/common/Badge';
 import { ShareModal } from '../components/common/ShareModal';
-import {
-  Car,
-  MessageSquare,
-  BarChart3,
-  Copy,
-  Share2,
-  ChevronRight,
-  Plus,
-  Check,
-  Bell,
-} from 'lucide-react';
+import { CarFront, MessageCircle, Eye, Bell, Plus, ChevronRight, RefreshCw, ArrowUpRight, CircleAlert } from 'lucide-react';
 
 export const DashboardPage: React.FC = () => {
   const { navigate, showToast } = useNavigation();
   const [dealership, setDealership] = useState(() => storageService.getDealership());
   const [vehicles, setVehicles] = useState(() => storageService.getVehicles());
   const [enquiries, setEnquiries] = useState(() => storageService.getEnquiries());
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [liveDataLoaded, setLiveDataLoaded] = useState(false);
-
+  const [loading, setLoading] = useState(isSupabaseConfigured() && !storageService.isDemoModeActive());
+  const [loadError, setLoadError] = useState('');
+  const [period, setPeriod] = useState('7d');
+  const [shareOpen, setShareOpen] = useState(false);
   const isLive = isSupabaseConfigured() && !storageService.isDemoModeActive();
 
-  // If Supabase is configured, sync fresh data in background
-  useEffect(() => {
-    if (isLive) {
-      Promise.all([
+  const load = async () => {
+    setLoading(true);
+    setLoadError('');
+    try {
+      const [d, v, e] = await Promise.all([
         storageService.getDealershipAsync(),
         storageService.getVehiclesAsync(),
         storageService.getEnquiriesAsync(),
-      ]).then(([d, v, e]) => {
-        setDealership(d);
-        setVehicles(v);
-        setEnquiries(e);
-        setLiveDataLoaded(true);
-      }).catch((err) => {
-        console.error('Failed to load live dashboard analytics:', err);
-      });
-    }
-  }, [isLive]);
-
-  const handleManualSync = async () => {
-    setIsRefreshing(true);
-    try {
-      const d = await storageService.getDealershipAsync();
-      const v = await storageService.getVehiclesAsync();
-      const e = await storageService.getEnquiriesAsync();
-      setDealership(d);
-      setVehicles(v);
-      setEnquiries(e);
-      setLiveDataLoaded(true);
-      showToast(isLive ? 'Synced with Supabase database' : 'Refreshed local data');
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setIsRefreshing(false);
-    }
+      ]);
+      setDealership(d); setVehicles(v); setEnquiries(e);
+    } catch (error: any) {
+      setLoadError(error?.message || 'We could not load your dealership data.');
+      if (isLive) { setVehicles([]); setEnquiries([]); }
+    } finally { setLoading(false); }
   };
+  useEffect(() => { void load(); }, []);
 
-  const [copied, setCopied] = useState(false);
-  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
-
-  const storefrontUrl = `drivelink.app/${dealership.slug}`;
+  const newLeads = enquiries.filter(e => e.stage === 'new').length;
+  const soldCount = vehicles.filter(v => v.status === 'sold').length;
+  const availableCount = vehicles.filter(v => v.status === 'available').length;
+  const recent = useMemo(() => [...enquiries].sort((a,b) => new Date(b.createdAt).getTime()-new Date(a.createdAt).getTime()).slice(0,4), [enquiries]);
+  const visits = dealership.storefrontViews || 0;
+  const rate = visits > 0 ? Math.min(100, Math.round((enquiries.length / visits) * 100)) : 0;
+  const money = (v: number, currency: string) => `${currency === 'ZAR' ? 'R' : '$'}${v.toLocaleString()}`;
   const fullPublicUrl = `${window.location.origin}/#/showroom/${dealership.slug}`;
-
-  const handleCopyLink = () => {
-    navigator.clipboard?.writeText(fullPublicUrl);
-    setCopied(true);
-    showToast('Showroom link copied to clipboard!');
-    setTimeout(() => setCopied(false), 2000);
-  };
-
-  // Summary counts
-  const totalVehicles = vehicles.length;
-  const totalEnquiries = enquiries.length;
-  const storefrontViews = isLive && !liveDataLoaded ? 0 : (dealership.storefrontViews || 0);
-
-  // Display top 4 recent vehicles matching Screen 03
-  const displayedVehicles = vehicles.slice(0, 4);
+  const greeting = new Date().getHours() < 12 ? 'Good Morning' : new Date().getHours() < 17 ? 'Good Afternoon' : 'Good Evening';
 
   return (
-    <div className="dl-workspace relative min-h-full flex flex-col justify-between bg-[#F8F9FA] text-slate-900">
-      {/* Scrollable Content */}
-      <div className="flex-1 px-5 pt-5 pb-24 overflow-y-auto">
-        {/* Dealership Header matching Screen 03 */}
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-3">
-            <img
-              src={dealership.logoUrl}
-              alt={dealership.name}
-              className="w-11 h-11 rounded-full object-contain bg-white shadow-xs border border-slate-200/80 p-0.5"
-            />
-            <div>
-              <div className="flex items-center gap-1.5">
-                <h1 className="text-lg font-extrabold text-slate-950 tracking-tight leading-tight">
-                  {dealership.name}
-                </h1>
-                {isLive ? (
-                  <span className="inline-flex items-center gap-1 text-[9px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.2 rounded-full">
-                    <span className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse" />
-                    <span>Supabase</span>
-                  </span>
-                ) : null}
-              </div>
-              <p className="text-xs text-slate-500 font-medium">
-                Good morning! Here&apos;s your overview.
-              </p>
-            </div>
+    <div className="dl-workspace relative min-h-full flex flex-col text-[#171717]">
+      <main className="flex-1 overflow-y-auto px-4 sm:px-7 pt-5 pb-28 w-full max-w-5xl mx-auto">
+        <header className="!bg-transparent !backdrop-blur-0 !border-0 flex items-center justify-between gap-3 mb-5">
+          <div className="min-w-0">
+            <p className="text-xs text-[#777] font-medium">{greeting}</p>
+            <button onClick={() => navigate('/app/settings')} className="flex items-center gap-1 text-xl font-extrabold tracking-tight text-left truncate">{dealership.name}<span className="text-[#f47716] text-xs">⌄</span></button>
           </div>
-          <button onClick={() => navigate('/app/notifications')} aria-label="Open notifications" className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-700 shadow-xs hover:bg-slate-50">
-            <Bell className="h-4.5 w-4.5" />
-          </button>
-        </div>
+          <button onClick={() => navigate('/app/notifications')} aria-label="Notifications" className="relative w-11 h-11 rounded-full bg-white border border-[#ececec] flex items-center justify-center"><Bell size={19}/>{newLeads > 0 && <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-[#f47716]"/>}</button>
+        </header>
 
-        {/* 3 Summary Cards matching Screen 03 */}
-        <div className="grid grid-cols-3 gap-2.5 mb-5">
-          {/* Vehicles Card */}
-          <button
-            onClick={() => navigate('/app/vehicles')}
-            className="bg-white rounded-2xl p-3.5 border border-slate-100 shadow-xs flex flex-col items-start gap-1 hover:border-blue-200 transition-all text-left"
-          >
-            <div className="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
-              <Car className="w-4 h-4 stroke-[2.2]" />
-            </div>
-            <span className="text-[11px] font-medium text-slate-500 mt-1">Vehicles</span>
-            <span className="text-xl font-extrabold text-slate-950 tabular-nums">
-              {totalVehicles}
-            </span>
-          </button>
-
-          {/* Enquiries Card */}
-          <button
-            onClick={() => navigate('/app/enquiries')}
-            className="bg-white rounded-2xl p-3.5 border border-slate-100 shadow-xs flex flex-col items-start gap-1 hover:border-purple-200 transition-all text-left"
-          >
-            <div className="w-7 h-7 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center">
-              <MessageSquare className="w-4 h-4 stroke-[2.2]" />
-            </div>
-            <span className="text-[11px] font-medium text-slate-500 mt-1">Enquiries</span>
-            <span className="text-xl font-extrabold text-slate-950 tabular-nums">
-              {totalEnquiries}
-            </span>
-          </button>
-
-          {/* Views Card */}
-          <div className="bg-white rounded-2xl p-3.5 border border-slate-100 shadow-xs flex flex-col items-start gap-1 text-left">
-            <div className="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
-              <BarChart3 className="w-4 h-4 stroke-[2.2]" />
-            </div>
-            <span className="text-[11px] font-medium text-slate-500 mt-1">Storefront views</span>
-            <span className="text-xl font-extrabold text-slate-950 tabular-nums">
-              {storefrontViews.toLocaleString()}
-            </span>
+        <section className="rounded-[24px] bg-white border border-[#ededed] p-4 flex items-center gap-4 mb-4">
+          <div className="w-24 h-20 rounded-2xl bg-[#f1f1ef] overflow-hidden shrink-0 flex items-center justify-center">
+            {vehicles[0]?.photos?.[0] ? <img src={vehicles[0].photos[0]} alt={vehicles[0].make} className="w-full h-full object-cover"/> : <CarFront size={34} className="text-[#aaa]"/>}
           </div>
-        </div>
-
-        {/* Storefront Link Card matching Screen 03 */}
-        <div className="bg-white rounded-2xl p-4 border border-slate-200/70 shadow-xs mb-6">
-          <p className="text-xs font-semibold text-slate-700 mb-2">Your storefront link</p>
-          <div className="flex items-center justify-between gap-2">
-            {/* Link preview with copy icon */}
-            <div className="flex items-center gap-1.5 min-w-0">
-              <button
-                onClick={() => navigate(`/showroom/${dealership.slug}`)}
-                className="text-xs font-semibold text-blue-600 hover:text-blue-700 truncate underline decoration-blue-300 underline-offset-2 flex items-center gap-1"
-                title="Preview public showroom"
-              >
-                <span>{storefrontUrl}</span>
-              </button>
-              <button
-                onClick={handleCopyLink}
-                className="text-slate-400 hover:text-slate-700 p-1 shrink-0 transition-colors"
-                title="Copy link"
-              >
-                {copied ? (
-                  <Check className="w-3.5 h-3.5 text-emerald-600" />
-                ) : (
-                  <Copy className="w-3.5 h-3.5" />
-                )}
-              </button>
-            </div>
-
-            {/* Black Share Button matching Screen 03 */}
-            <button
-              onClick={() => setIsShareModalOpen(true)}
-              className="py-1.5 px-3.5 rounded-full bg-slate-950 hover:bg-slate-800 text-white font-semibold text-xs flex items-center gap-1.5 shrink-0 transition-colors shadow-xs"
-            >
-              <Share2 className="w-3.5 h-3.5" />
-              <span>Share</span>
-            </button>
+          <div className="min-w-0 flex-1">
+            <p className="text-[11px] font-semibold text-[#888]">Inventory overview</p>
+            <div className="flex items-baseline gap-2"><strong className="text-4xl font-black tracking-tight">{loading ? '—' : vehicles.length}</strong><span className="text-xs text-[#777]">Total cars</span></div>
+            <p className="text-[11px] text-[#777] mt-1">{availableCount} available · {soldCount} sold</p>
           </div>
-        </div>
+          <button onClick={() => navigate('/app/vehicles')} className="text-[#f47716]"><ArrowUpRight size={20}/></button>
+        </section>
 
-        {/* "Your vehicles" Section matching Screen 03 */}
-        <div className="mb-4">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-sm font-extrabold text-slate-950 tracking-tight">Your vehicles</h2>
-            <button
-              onClick={() => navigate('/app/vehicles')}
-              className="text-xs font-semibold text-blue-600 hover:text-blue-700 transition-colors"
-            >
-              See all
-            </button>
+        <section className="grid grid-cols-3 gap-2.5 mb-5">
+          {[{label:'Store visits',value:visits.toLocaleString(),icon:Eye},{label:'Enquiries',value:enquiries.length.toString(),icon:MessageCircle},{label:'Cars sold',value:soldCount.toString(),icon:CarFront}].map(item => {const Icon=item.icon;return <div key={item.label} className="rounded-2xl bg-white border border-[#ededed] p-3 min-w-0"><Icon size={18} className="text-[#f47716] mb-2"/><p className="text-xl sm:text-2xl font-extrabold tabular-nums truncate">{loading?'—':item.value}</p><p className="text-[10px] sm:text-[11px] text-[#777] mt-1 leading-tight">{item.label}</p></div>;})}
+        </section>
+
+        <section className="bg-white border border-[#ededed] rounded-[22px] p-4 mb-5">
+          <div className="flex items-center justify-between mb-4"><div><h2 className="font-extrabold text-sm">Performance overview</h2><p className="text-[11px] text-[#888] mt-0.5">Based on recorded activity</p></div><select aria-label="Performance period" value={period} onChange={e=>setPeriod(e.target.value)} className="!min-h-8 !rounded-full !px-3 !text-xs !w-auto"><option value="7d">7 days</option><option value="30d">30 days</option></select></div>
+          <div className="flex items-center gap-4">
+            <div className="relative w-24 h-24 shrink-0 rounded-full flex items-center justify-center" style={{background:`conic-gradient(#f47716 ${rate*3.6}deg,#eeeeec 0deg)`}}><div className="w-[76px] h-[76px] rounded-full bg-white flex flex-col items-center justify-center"><strong className="text-2xl">{visits ? `${rate}%` : '—'}</strong><span className="text-[9px] text-[#888]">Enquiry rate</span></div></div>
+            <div className="flex-1 min-w-0"><p className="text-xs font-bold">Your dealership activity</p><p className="text-[11px] text-[#888] leading-relaxed mt-1">{visits ? `${enquiries.length} enquiries from ${visits.toLocaleString()} recorded visits.` : 'Visit and enquiry trends will appear here as your showroom receives activity.'}</p><div className="mt-3 flex gap-2"><span className="text-[10px] rounded-full bg-[#fff1e7] text-[#d95d08] px-2.5 py-1 font-bold">{period === '7d' ? 'Last 7 days' : 'Last 30 days'}</span></div></div>
           </div>
+        </section>
 
-          {/* Vehicle List Rows */}
-          <div className="flex flex-col gap-2.5">
-            {displayedVehicles.map((vehicle) => (
-              <div
-                key={vehicle.id}
-                onClick={() => navigate(`/app/vehicles/${vehicle.id}`)}
-                className="bg-white rounded-2xl p-2.5 border border-slate-100 shadow-xs flex items-center gap-3 cursor-pointer hover:border-slate-300 hover:shadow-sm transition-all"
-              >
-                {/* Thumbnail */}
-                <div className="w-14 h-12 rounded-xl bg-slate-100 overflow-hidden shrink-0 flex items-center justify-center">
-                  <img
-                    src={vehicle.photos[0]}
-                    alt={`${vehicle.make} ${vehicle.model}`}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
+        <section className="mb-5">
+          <div className="flex items-center justify-between mb-3"><h2 className="font-extrabold text-sm">Recent leads</h2><button onClick={()=>navigate('/app/enquiries')} className="text-xs font-bold text-[#f47716] flex items-center gap-1">See all <ChevronRight size={14}/></button></div>
+          {recent.length ? <div className="bg-white border border-[#ededed] rounded-[20px] divide-y divide-[#f0f0f0]">{recent.map(lead=><button key={lead.id} onClick={()=>navigate('/app/enquiries')} className="w-full p-3 flex items-center gap-3 text-left"><span className="w-9 h-9 rounded-full bg-[#f2f2f0] flex items-center justify-center font-bold text-sm">{lead.buyerName.slice(0,1).toUpperCase()}</span><span className="flex-1 min-w-0"><strong className="block text-xs truncate">{lead.buyerName}</strong><span className="block text-[11px] text-[#888] truncate">{lead.message}</span></span><span className="text-[10px] text-[#999]">{new Date(lead.createdAt).toLocaleDateString()}</span></button>)}</div> : <div className="bg-white border border-dashed border-[#ddd] rounded-[20px] p-5 text-center"><MessageCircle className="mx-auto text-[#bbb] mb-2"/><p className="text-sm font-bold">No enquiries yet</p><p className="text-xs text-[#888] mt-1">New customer enquiries will appear here.</p></div>}
+        </section>
 
-                {/* Make, Model & Price */}
-                <div className="flex-1 min-w-0">
-                  <p className="font-bold text-xs text-slate-900 truncate">
-                    {vehicle.year} {vehicle.make} {vehicle.model}
-                  </p>
-                  <p className="text-xs font-bold text-slate-950 mt-0.5">
-                    ${vehicle.price.toLocaleString()}
-                  </p>
-                </div>
-
-                {/* Status Pill matching Screen 03 */}
-                <StatusBadge status={vehicle.status} size="sm" />
-
-                {/* Chevron */}
-                <ChevronRight className="w-4 h-4 text-slate-400 shrink-0" />
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Floating Add Vehicle Action Button (+) matching Screen 03 */}
-      <button
-        onClick={() => navigate('/app/vehicles/new')}
-        className="sticky bottom-20 self-end mr-5 -mt-14 z-30 w-13 h-13 rounded-full bg-slate-950 hover:bg-slate-800 text-white flex items-center justify-center shadow-xl shadow-slate-950/30 active:scale-95 transition-all"
-        title="Add vehicle"
-        aria-label="Add vehicle"
-      >
-        <Plus className="w-6 h-6 stroke-[2.5]" />
-      </button>
-
-      {/* Fixed Mobile Bottom Navigation Bar */}
-      <BottomNav />
-
-      {/* Share Modal Dialog */}
-      <ShareModal
-        isOpen={isShareModalOpen}
-        onClose={() => setIsShareModalOpen(false)}
-        title={dealership.name}
-        dealershipId={dealership.id}
-        url={fullPublicUrl}
-        description={`Explore quality verified vehicles in Harare / Sandton from ${dealership.name}.`}
-      />
+        <section className="mb-3">
+          <div className="flex items-center justify-between mb-3"><h2 className="font-extrabold text-sm">Garage snapshot</h2><button onClick={()=>navigate('/app/vehicles')} className="text-xs text-[#f47716] font-bold">View garage</button></div>
+          {vehicles.slice(0,3).map(vehicle=><button key={vehicle.id} onClick={()=>navigate(`/app/vehicles/${vehicle.id}`)} className="w-full bg-white border border-[#ededed] rounded-2xl p-2.5 mb-2 flex items-center gap-3 text-left"><div className="w-16 h-14 rounded-xl overflow-hidden bg-[#f1f1ef] shrink-0">{vehicle.photos?.[0]&&<img src={vehicle.photos[0]} alt="" className="w-full h-full object-cover"/>}</div><span className="flex-1 min-w-0"><strong className="block text-xs truncate">{vehicle.year} {vehicle.make} {vehicle.model}</strong><span className="text-[11px] text-[#888]">{money(vehicle.price,vehicle.currency)}</span></span><StatusBadge status={vehicle.status} size="sm"/></button>)}
+        </section>
+        {loadError && <div role="alert" className="rounded-xl bg-red-50 text-red-700 p-3 text-xs flex gap-2"><CircleAlert size={16}/>{loadError}<button onClick={load} className="ml-auto underline">Retry</button></div>}
+        <button onClick={()=>navigate('/app/vehicles/new')} className="dl-accent-button w-full rounded-full min-h-12 font-extrabold text-sm flex items-center justify-center gap-2 mt-4 shadow-lg shadow-orange-500/15"><Plus size={18}/> Add Vehicle</button>
+        <button onClick={load} disabled={loading} className="w-full text-center text-[11px] text-[#888] py-3 flex justify-center items-center gap-1"><RefreshCw size={12} className={loading?'animate-spin':''}/> Refresh data</button>
+      </main>
+      <BottomNav/>
+      <ShareModal isOpen={shareOpen} onClose={()=>setShareOpen(false)} title={dealership.name} dealershipId={dealership.id} url={fullPublicUrl} description={`Explore vehicles from ${dealership.name}.`}/>
     </div>
   );
 };
