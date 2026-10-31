@@ -12,7 +12,7 @@ export const BottomNav: React.FC = () => {
     { label: 'Garage', path: '/app/vehicles', icon: CarFront },
     { label: 'Leads', path: '/app/enquiries', icon: UsersRound, badge: newEnquiriesCount },
     { label: 'Analytics', path: '/app/analytics', icon: ChartNoAxesCombined },
-    { label: 'More', path: '/app/settings', icon: Ellipsis },
+    { label: 'More', path: '/app/more', icon: Ellipsis },
   ];
   return (
     <nav aria-label="Main navigation" className="dl-bottom-nav sticky bottom-0 z-40 bg-white/95 backdrop-blur-xl border-t border-black/[0.06] px-2 pt-2 pb-safe flex items-center justify-around shrink-0">
