@@ -95,3 +95,10 @@ img { max-width: 100%; }
 @media (min-width: 1024px) {
   .dl-bottom-nav { left: max(16px, calc((100vw - 1180px) / 2 + 14px)); }
 }
+
+.dl-workspace .bg-indigo-400 { background-color: #f47716 !important; }
+.dl-workspace .bg-indigo-50 { background-color: #fff1e7 !important; }
+.dl-workspace .text-indigo-700 { color: #d95f0a !important; }
+.dl-workspace .bg-blue-50 { background-color: #fff1e7 !important; }
+.dl-workspace .text-blue-700, .dl-workspace .text-blue-600 { color: #d95f0a !important; }
+.dl-workspace .border-blue-100 { border-color: #ffd8bd !important; }
