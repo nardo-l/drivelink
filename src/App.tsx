@@ -11,6 +11,7 @@ import { VehiclesListPage } from './pages/VehiclesListPage';
 import { AddEditVehiclePage } from './pages/AddEditVehiclePage';
 import { EnquiriesPage } from './pages/EnquiriesPage';
 import { SettingsPage } from './pages/SettingsPage';
+import { MorePage } from './pages/MorePage';
 import { BillingPage } from './pages/BillingPage';
 import { NotificationsPage } from './pages/NotificationsPage';
 import { PublicShowroomPage } from './pages/PublicShowroomPage';
@@ -143,6 +144,10 @@ function AppContent() {
 
     if (currentPath === '/app/notifications') {\n      return <NotificationsPage />;\n    }\n\n    if (currentPath === '/app/billing') {
       return <BillingPage />;
+    }
+
+    if (currentPath === '/app/more') {
+      return <MorePage />;
     }
 
     // 10. Settings & Storefront configuration
