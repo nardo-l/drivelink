@@ -48,7 +48,7 @@ export const OnboardingFlow: React.FC = () => {
   const { navigate, showToast } = useNavigation();
   const [data, setData] = useState<OnboardingState>(() => {
     const saved = storageService.getOnboardingState();
-    return saved.isCompleted ? { ...saved, currentStep: 8 } : { ...saved, currentStep: 1, account: { ...saved.account, password: '' } };
+    return saved.isCompleted ? { ...saved, currentStep: 10 } : { ...saved, currentStep: 1, account: { ...saved.account, password: '' } };
   });
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [bannerFile, setBannerFile] = useState<File | null>(null);
