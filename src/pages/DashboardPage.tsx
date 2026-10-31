@@ -42,7 +42,7 @@ export const DashboardPage: React.FC = () => {
   const visits = dealership.storefrontViews || 0;
   const rate = visits > 0 ? Math.min(100, Math.round((enquiries.length / visits) * 100)) : 0;
   const money = (v: number, currency: string) => `${currency === 'ZAR' ? 'R' : '$'}${v.toLocaleString()}`;
-  const fullPublicUrl = `${window.location.origin}/#/showroom/${dealership.slug}`;
+  const fullPublicUrl = `${window.location.origin}/showroom/${encodeURIComponent(dealership.slug)}`;
   const greeting = new Date().getHours() < 12 ? 'Good Morning' : new Date().getHours() < 17 ? 'Good Afternoon' : 'Good Evening';
 
   return (
