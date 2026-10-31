@@ -94,7 +94,16 @@ export const ShareModal: React.FC<ShareModalProps> = ({
             onClick={() => {
               onClose();
               if (dealershipId) void notificationService.trackShareStarted(dealershipId, 'open').catch((error) => console.warn('Share activity could not be recorded:', error));
-              navigate(url.replace(/^https?:\/\/[^/]+/, ''));
+              try {
+                const target = new URL(url, window.location.origin);
+                // Accept both clean /showroom/... links and legacy #/showroom/... links.
+                const route = target.hash.startsWith('#/')
+                  ? target.hash.slice(1)
+                  : `${target.pathname}${target.search}`;
+                navigate(route);
+              } catch {
+                navigate('/showroom');
+              }
             }}
             className="flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-semibold text-xs transition-colors"
           >
