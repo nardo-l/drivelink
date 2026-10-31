@@ -94,13 +94,19 @@ export const OnboardingFlow: React.FC = () => {
     if (!isSupabaseConfigured()) { setError('DriveLink account creation requires a configured Supabase connection.'); return; }
     setBusy(true); setError('');
     try {
-      const auth = await supabaseService.signUp(data.account.email.trim(), data.account.password);
-      if (!auth.session) {
-        setError('Check your email to confirm your account, then return and sign in to finish creating your showroom.');
-        setBusy(false); return;
+      // Signup can succeed before a later dealership or asset request fails.
+      // Reuse the authenticated user on retry instead of attempting to create the same
+      // auth account again.
+      let user = await supabaseService.getCurrentUser();
+      if (!user) {
+        const auth = await supabaseService.signUp(data.account.email.trim(), data.account.password);
+        if (!auth.session) {
+          setError('Your account has been created. Check your email to confirm it, then sign in to finish setting up your dealership.');
+          setBusy(false); return;
+        }
+        user = auth.user;
       }
-      const user = auth.user;
-      if (!user) throw new Error('Account was created, but no user session was returned.');
+      if (!user) throw new Error('Your account exists, but we could not restore its session. Please sign in to continue setup.');
       let dealer = await supabaseService.createDealership({
         name: data.showroom.businessName.trim(),
         slug: data.showroom.handle.trim(),
@@ -137,7 +143,15 @@ export const OnboardingFlow: React.FC = () => {
       update({ currentStep: 9, isCompleted: true });
       showToast('Your DriveLink dealership is ready!');
     } catch (e: any) {
-      setError(e?.message || 'We could not finish setting up your dealership. Please try again.');
+      const message = String(e?.message || '');
+      const code = String(e?.code || '');
+      if (code === '23505' || message.includes('dealerships_slug_key') || message.toLowerCase().includes('duplicate key')) {
+        setError('That showroom link is already being used. Go back one step, choose a different link, then continue. Your account has been kept.');
+      } else if (message.toLowerCase().includes('failed to fetch') || message.toLowerCase().includes('network')) {
+        setError('Your account may already have been created. Your details are saved—please try Continue again. We will reuse your existing signed-in account rather than creating another one.');
+      } else {
+        setError(message || 'Your account has been kept, but we could not finish setting up your dealership. Please try again.');
+      }
     } finally { setBusy(false); }
   };
 
