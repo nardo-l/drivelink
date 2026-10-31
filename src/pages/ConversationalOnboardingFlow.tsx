@@ -234,7 +234,7 @@ export const OnboardingFlow: React.FC = () => {
         <div className="mt-6 space-y-4">
           <label className="flex cursor-pointer flex-col items-center justify-center rounded-2xl border border-dashed border-gray-300 bg-gray-50 py-7">{data.branding.logoPreview?<img src={data.branding.logoPreview} className="h-16 w-16 rounded-xl object-cover" alt="Logo preview"/>:<Upload size={28} className="text-gray-500"/>}<span className="mt-2 text-sm font-bold">Upload Logo</span><span className="text-xs text-gray-500">PNG, JPG (max 5MB)</span><input type="file" accept="image/png,image/jpeg,image/webp" className="hidden" onChange={e=>e.target.files?.[0]&&uploadImage(e.target.files[0],'logo')}/></label>
           <label><span className={labelClass}>WhatsApp Number</span><input className={inputClass} value={data.contact.whatsappNumber} onChange={e=>updateContact({whatsappNumber:e.target.value})} placeholder={countryCode+' 77 123 4567'} /></label>
-          <label><span className={labelClass}>Instagram link (optional)</span><input className={inputClass} value={data.contact.description} onChange={e=>updateContact({description:e.target.value})} placeholder="https://instagram.com/yourbusiness"/></label>
+          <label><span className={labelClass}>Name of Dealership</span><input className={inputClass} value={data.showroom.businessName} onChange={e=>updateShowroom({businessName:e.target.value})} placeholder="e.g. Harare Motors" required/></label>
         </div>{footer}
       </section>}
 
