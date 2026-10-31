@@ -342,7 +342,7 @@ export const OnboardingFlow: React.FC = () => {
               <div className="rounded-xl bg-slate-50 border border-slate-200 p-3 flex items-center gap-2"><Globe2 className="w-4 h-4 text-slate-500 shrink-0" /><p className="text-sm font-bold break-all">{showroomUrl}</p></div>
               <p className="text-xs text-slate-500 mt-3">You can share this link on WhatsApp, Facebook, Instagram or anywhere your customers find you. You can manage your showroom from your dashboard.</p>
             </div>
-            <button onClick={() => go(8)} className="w-full h-12 rounded-full bg-slate-950 text-white font-bold text-sm">Continue <ArrowRight className="inline w-4 h-4 ml-1" /></button>
+            <button onClick={() => go(7)} className="w-full h-12 rounded-full bg-slate-950 text-white font-bold text-sm">Continue <ArrowRight className="inline w-4 h-4 ml-1" /></button>
           </>}
 
           {step === 8 && <>
