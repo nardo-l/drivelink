@@ -7,7 +7,7 @@ import { BottomNav } from '../components/layout/BottomNav';
 import { StatusBadge } from '../components/common/Badge';
 
 const filters: {id: VehicleStatus|'all';label:string}[] = [
-  {id:'all',label:'All'},{id:'available',label:'Available'},{id:'reserved',label:'Reserved'},{id:'sold',label:'Sold'}
+  {id:'all',label:'All'},{id:'available',label:'Available'},{id:'reserved',label:'Reserved'},{id:'sold',label:'Sold'},{id:'draft',label:'Draft'}
 ];
 
 export const VehiclesListPage: React.FC = () => {
@@ -22,7 +22,7 @@ export const VehiclesListPage: React.FC = () => {
 
   const load=async()=>{setLoading(true);setError('');try{setVehicles(await storageService.getVehiclesAsync());}catch(e:any){setVehicles([]);setError(e?.message||'Could not load your garage.');}finally{setLoading(false);}};
   useEffect(()=>{void load();},[]);
-  const counts=useMemo(()=>({all:vehicles.length,available:vehicles.filter(v=>v.status==='available').length,reserved:vehicles.filter(v=>v.status==='reserved').length,sold:vehicles.filter(v=>v.status==='sold').length}),[vehicles]);
+  const counts=useMemo(()=>({all:vehicles.length,available:vehicles.filter(v=>v.status==='available').length,reserved:vehicles.filter(v=>v.status==='reserved').length,sold:vehicles.filter(v=>v.status==='sold').length,draft:vehicles.filter(v=>v.status==='draft').length}),[vehicles]);
   const visible=useMemo(()=>vehicles.filter(v=>(filter==='all'||v.status===filter)&&`${v.year} ${v.make} ${v.model} ${v.colour||''}`.toLowerCase().includes(search.toLowerCase().trim())),[vehicles,filter,search]);
   const updateStatus=async(vehicle:Vehicle,status:VehicleStatus)=>{try{await storageService.updateVehicleAsync(vehicle.id,{status});setVehicles(items=>items.map(v=>v.id===vehicle.id?{...v,status}:v));showToast(`Vehicle marked ${status}`);}catch(e:any){showToast(e?.message||'Could not update vehicle status.');}};
   const remove=async()=>{if(!deleteTarget)return;try{await storageService.deleteVehicleAsync(deleteTarget.id);setVehicles(items=>items.filter(v=>v.id!==deleteTarget.id));showToast('Vehicle deleted');}catch(e:any){showToast(e?.message||'Could not delete vehicle.');}finally{setDeleteTarget(null);}};

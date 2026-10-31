@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { ArrowLeft, ArrowRight, Building2, MapPin, ImagePlus, CarFront, Link2, CheckCircle2, Loader2, MessageCircle, Store, Ship, UserRound, Briefcase, Globe2 } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Building2, MapPin, ImagePlus, CarFront, Link2, CheckCircle2, Loader2, MessageCircle, Store, Ship, UserRound, Briefcase, Globe2, Eye } from 'lucide-react';
 import { useNavigation } from '../context/NavigationContext';
 import { storageService } from '../services/storage';
 import { supabaseService } from '../services/supabaseService';
@@ -348,48 +348,43 @@ export const OnboardingFlow: React.FC = () => {
           {step === 8 && <>
             {bubble(<>Here's how your dealership profile and first vehicle will come together. You can make changes later from your account.</>, <Eye className="w-4 h-4" />)}
             <div className="rounded-[26px] overflow-hidden border border-slate-200 bg-white shadow-sm">
-              <div className="h-32 bg-slate-900 relative">{data.branding.coverPreview && <img src={data.branding.coverPreview} alt="" className="w-full h-full object-cover opacity-80"/>}<div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"/><div className="absolute bottom-3 left-4 text-white"><p className="text-[10px] uppercase tracking-widest">Your dealership showroom</p><h2 className="text-xl font-black">{data.showroom.businessName || 'Your dealership'}</h2><p className="text-xs text-white/75">{data.contact.city}, {data.contact.country}</p></div></div>
-              <div className="p-4"><div className="flex items-center gap-3 mb-3">{data.branding.logoPreview ? <img src={data.branding.logoPreview} alt="" className="w-10 h-10 rounded-full object-cover"/> : <span className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center"><Building2 size={18}/></span>}<div><p className="font-bold text-sm">{data.showroom.businessName || 'Your dealership'}</p><p className="text-[10px] text-slate-500">{data.contact.city || 'Your location'}</p></div></div>
-              {data.firstVehicle.make && data.firstVehicle.model && !data.firstVehicle.isSkipped ? <div className="rounded-2xl border border-slate-200 p-3"><div className="aspect-[16/9] rounded-xl bg-slate-100 overflow-hidden">{data.firstVehicle.photos[0] && <img src={data.firstVehicle.photos[0]} alt="" className="w-full h-full object-cover"/>}</div><p className="font-bold text-sm mt-2">{data.firstVehicle.year} {data.firstVehicle.make} {data.firstVehicle.model}</p><p className="font-black mt-1">{data.firstVehicle.currency === 'ZAR' ? 'R' : '
-            {bubble(<>Almost there! Create your DriveLink account to save your dealership profile and manage your showroom. You can continue with Google or use your email.</>, <UserRound className="w-4 h-4" />)}
-            <div className="bg-white border border-slate-200 rounded-2xl p-4 space-y-4">
-              <button onClick={handleGoogle} disabled={submitting} className="w-full h-12 rounded-xl border border-slate-200 font-bold text-sm flex items-center justify-center gap-2 disabled:opacity-60"><span className="font-black">G</span> Continue with Google</button>
-              <div className="flex items-center gap-3 text-[10px] text-slate-400"><span className="h-px bg-slate-200 flex-1" />OR WITH EMAIL<span className="h-px bg-slate-200 flex-1" /></div>
-              <form onSubmit={handleSignup} className="space-y-3">
-                {field('Email address', data.account.email, v => patch('account', { email: v }), 'you@example.com', 'email')}
-                {field('Password', data.account.password, v => patch('account', { password: v }), 'At least 8 characters', 'password')}
-                <button type="submit" disabled={submitting} className="w-full h-12 rounded-xl bg-slate-950 text-white font-bold text-sm disabled:opacity-60">{submitting ? 'Creating account…' : 'Create my account'}</button>
-              </form>
-              <p className="text-center text-xs text-slate-500">Already have an account? <button onClick={() => navigate('/login')} className="font-bold text-slate-950 underline">Log in</button></p>
-            </div>
-          </>}
-
-          {step === 9 && emailPending && <>
-            {bubble(<>We've sent a confirmation link to <strong>{data.account.email}</strong>. Open that email, confirm your address, then come back here and continue.</>)}
-            <button onClick={async () => { const session = await supabaseService.getSession(); if (session?.user) finishSetup(); else setError('We have not received confirmation yet. Please open the email link first.'); }} className="w-full h-12 rounded-full bg-slate-950 text-white font-bold text-sm">I've confirmed my email</button>
-            <button onClick={async () => { try { await supabaseService.resendConfirmationEmail(data.account.email); showToast('Confirmation email sent again.'); } catch (e: any) { setError(e?.message || 'Could not resend confirmation.'); } }} className="text-xs font-semibold text-slate-600">Resend confirmation email</button>
-          </>}
-
-          {step === 10 && isSuccess && <>
-            <div className="mx-auto w-16 h-16 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center"><CheckCircle2 className="w-9 h-9" /></div>
-            <div className="text-center"><p className="text-xs uppercase tracking-widest font-bold text-emerald-700">Setup complete</p><h1 className="text-2xl font-extrabold mt-2">Your dealership is ready!</h1><p className="text-sm text-slate-500 mt-2">{data.showroom.businessName} is now set up on DriveLink.</p></div>
-            <div className="rounded-2xl border border-slate-200 bg-white p-4"><p className="text-xs text-slate-500 mb-2">Your showroom link</p><p className="font-bold text-sm break-all">{window.location.origin}/showroom/{data.showroom.handle || showroomSlug}</p><button onClick={() => navigator.clipboard?.writeText(`${window.location.origin}/showroom/${data.showroom.handle || showroomSlug}`).then(() => showToast('Showroom link copied'))} className="mt-3 text-xs font-bold underline">Copy link</button></div>
-            <button onClick={() => navigate('/app')} className="w-full h-12 rounded-full bg-slate-950 text-white font-bold text-sm">Go to dashboard <ArrowRight className="inline w-4 h-4 ml-1" /></button>
-          </>}
-          {error && <div className="rounded-xl border border-rose-200 bg-rose-50 text-rose-700 p-3 text-xs">{error}</div>}
-          {submitting && step !== 7 && <div className="flex items-center justify-center gap-2 text-xs text-slate-500"><Loader2 className="w-4 h-4 animate-spin" /> Setting up your dealership…</div>}
-        </section>
-        <footer className="pt-4 border-t border-slate-200 text-center text-[10px] text-slate-400">Your details are saved as you go. You can finish setting up your inventory from your dashboard.</footer>
-      </div>
-    </main>
-  );
-};
-}{Number(data.firstVehicle.price || 0).toLocaleString()}</p></div> : <p className="text-xs text-slate-500 py-4">Your vehicle listings will appear here after you add them.</p>}
+              <div className="h-32 bg-slate-900 relative">
+                {data.branding.coverPreview && <img src={data.branding.coverPreview} alt="" className="w-full h-full object-cover opacity-80"/>}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"/>
+                <div className="absolute bottom-3 left-4 text-white">
+                  <p className="text-[10px] uppercase tracking-widest">Your dealership showroom</p>
+                  <h2 className="text-xl font-black">{data.showroom.businessName || 'Your dealership'}</h2>
+                  <p className="text-xs text-white/75">{data.contact.city}, {data.contact.country}</p>
+                </div>
+              </div>
+              <div className="p-4">
+                <div className="flex items-center gap-3 mb-3">
+                  {data.branding.logoPreview ? <img src={data.branding.logoPreview} alt="" className="w-10 h-10 rounded-full object-cover"/> : <span className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center"><Building2 size={18}/></span>}
+                  <div>
+                    <p className="font-bold text-sm">{data.showroom.businessName || 'Your dealership'}</p>
+                    <p className="text-[10px] text-slate-500">{data.contact.city || 'Your location'}</p>
+                  </div>
+                </div>
+                {data.firstVehicle.make && data.firstVehicle.model && !data.firstVehicle.isSkipped ? (
+                  <div className="rounded-2xl border border-slate-200 p-3">
+                    <div className="aspect-[16/9] rounded-xl bg-slate-100 overflow-hidden">
+                      {data.firstVehicle.photos[0] && <img src={data.firstVehicle.photos[0]} alt="" className="w-full h-full object-cover"/>}
+                    </div>
+                    <p className="font-bold text-sm mt-2">{data.firstVehicle.year} {data.firstVehicle.make} {data.firstVehicle.model}</p>
+                    <p className="font-black mt-1">{data.firstVehicle.currency === 'ZAR' ? 'R' : '$'}{Number(data.firstVehicle.price || 0).toLocaleString()}</p>
+                  </div>
+                ) : (
+                  <p className="text-xs text-slate-500 py-4">Your vehicle listings will appear here after you add them.</p>
+                )}
               </div>
             </div>
-            <div className="rounded-xl bg-white border border-slate-200 p-3"><p className="text-[10px] text-slate-500">Your showroom link</p><p className="text-sm font-bold break-all mt-1">{showroomUrl}</p></div>
-            <button onClick={() => go(9)} className="w-full h-12 rounded-full bg-[#f47716] text-white font-bold text-sm">Looks good — continue <ArrowRight className="inline w-4 h-4 ml-1" /></button>
+            <div className="rounded-xl bg-white border border-slate-200 p-3">
+              <p className="text-[10px] text-slate-500">Your showroom link</p>
+              <p className="text-sm font-bold break-all mt-1">{showroomUrl}</p>
+            </div>
+            <button onClick={() => go(9)} className="w-full h-12 rounded-full bg-slate-950 text-white font-bold text-sm">Looks good — continue <ArrowRight className="inline w-4 h-4 ml-1" /></button>
           </>}
+
           {step === 9 && !emailPending && <>
             {bubble(<>Almost there! Create your DriveLink account to save your dealership profile and manage your showroom. You can continue with Google or use your email.</>, <UserRound className="w-4 h-4" />)}
             <div className="bg-white border border-slate-200 rounded-2xl p-4 space-y-4">
