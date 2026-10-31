@@ -8,6 +8,7 @@ import { OnboardingFlow } from './pages/ConversationalOnboardingFlow';
 import { DashboardPage } from './pages/DashboardPage';
 import { AnalyticsPage } from './pages/AnalyticsPage';
 import { VehiclesListPage } from './pages/VehiclesListPage';
+import { VehicleDetailPage } from './pages/VehicleDetailPage';
 import { AddEditVehiclePage } from './pages/AddEditVehiclePage';
 import { EnquiriesPage } from './pages/EnquiriesPage';
 import { SettingsPage } from './pages/SettingsPage';
@@ -119,6 +120,16 @@ function AppContent() {
     // Analytics: live dealership metrics
     if (currentPath === '/app/analytics') {
       return <AnalyticsPage />;
+    }
+
+    if (currentPath.match(/^\/app\/vehicles\/[^/]+\/edit$/)) {
+      const vehicleId = currentPath.split('/')[3];
+      return <AddEditVehiclePage vehicleId={vehicleId} />;
+    }
+
+    const vehicleDetailMatchApp = currentPath.match(/^\/app\/vehicles\/([^/]+)$/);
+    if (vehicleDetailMatchApp && !['new'].includes(vehicleDetailMatchApp[1])) {
+      return <VehicleDetailPage vehicleId={vehicleDetailMatchApp[1]} />;
     }
 
     // 6. Inventory: Add new vehicle / Screen 04
