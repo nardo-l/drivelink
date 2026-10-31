@@ -153,7 +153,11 @@ function AppContent() {
       return <EnquiriesPage />;
     }
 
-    if (currentPath === '/app/notifications') {\n      return <NotificationsPage />;\n    }\n\n    if (currentPath === '/app/billing') {
+    if (currentPath === '/app/notifications') {
+      return <NotificationsPage />;
+    }
+
+    if (currentPath === '/app/billing') {
       return <BillingPage />;
     }
 
