@@ -581,3 +581,64 @@ img { max-width: 100%; }
   .dl-store-car-bottom { gap: 8px; }
   .dl-store-car-bottom > strong { font-size: clamp(19px, 5.5vw, 23px); }
 }
+
+/* Final mobile showroom card sizing: keep cards visually compact and centred. */
+@media (max-width: 700px) {
+  .dl-store-list {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: center;
+    width: 100%;
+    min-width: 0;
+  }
+  .dl-store-list > .dl-store-car-card {
+    width: 100%;
+    max-width: 560px;
+    min-width: 0;
+    justify-self: center;
+  }
+  .dl-store-list .dl-store-car-photo {
+    width: 100%;
+    max-width: 560px;
+    min-width: 0;
+    aspect-ratio: 1.48;
+    min-height: 0;
+    overflow: hidden;
+  }
+  .dl-store-list .dl-store-car-overlay {
+    right: 0;
+    left: 0;
+    min-width: 0;
+    padding: 18px 16px 14px;
+  }
+  .dl-store-list .dl-store-car-overlay > p {
+    min-width: 0;
+    flex-wrap: wrap;
+    white-space: normal;
+  }
+  .dl-store-list .dl-store-car-bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: nowrap;
+    gap: 8px;
+    min-width: 0;
+  }
+  .dl-store-list .dl-store-car-bottom > strong {
+    min-width: 0;
+    font-size: clamp(18px, 5vw, 23px);
+    white-space: nowrap;
+  }
+  .dl-store-list .dl-store-car-bottom > button {
+    min-width: 0;
+    min-height: 38px;
+    gap: 7px;
+    padding: 4px 5px 4px 11px;
+    font-size: 11px;
+  }
+  .dl-store-list .dl-store-car-bottom > button span {
+    width: 28px;
+    height: 28px;
+    flex: 0 0 28px;
+  }
+}
