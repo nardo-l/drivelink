@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ArrowLeft, Bell, BellOff, CheckCheck, RefreshCw, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, Bell, BellOff, CheckCheck, ShieldCheck } from 'lucide-react';
 import { useNavigation } from '../context/NavigationContext';
 import { storageService } from '../services/storage';
 import { notificationService, type DriveLinkNotification, type NotificationPreferences } from '../services/notificationService';
@@ -72,7 +72,6 @@ export const NotificationsPage: React.FC = () => {
       <div className="flex items-center gap-3">
         <button onClick={() => navigate('/app')} aria-label="Back to dashboard" className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200"><ArrowLeft className="h-4 w-4" /></button>
         <div className="min-w-0 flex-1"><p className="text-[10px] font-bold uppercase tracking-[.16em] text-slate-500">Your activity</p><h1 className="text-xl font-extrabold tracking-tight">Notifications</h1></div>
-        <button onClick={() => void load()} aria-label="Refresh" className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200"><RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} /></button>
       </div>
     </header>
     <main className="mx-auto w-full max-w-2xl flex-1 space-y-4 px-4 py-5 pb-28">
