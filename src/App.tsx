@@ -13,6 +13,7 @@ import { AddEditVehiclePage } from './pages/AddEditVehiclePage';
 import { EnquiriesPage } from './pages/EnquiriesPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { MorePage } from './pages/MorePage';
+import { SupportPage } from './pages/SupportPage';
 import { BillingPage } from './pages/BillingPage';
 import { NotificationsPage } from './pages/NotificationsPage';
 import { PublicShowroomPage } from './pages/PublicShowroomPage';
@@ -155,6 +156,10 @@ function AppContent() {
       return <EnquiriesPage />;
     }
 
+    if (currentPath === '/app/support') {
+      return <SupportPage />;
+    }
+
     if (currentPath === '/app/notifications') {
       return <NotificationsPage />;
     }
@@ -217,29 +222,8 @@ function AppContent() {
     return <WelcomePage />;
   };
 
-  const handleExitDemoMode = () => {
-    storageService.setDemoModeActive(false);
-    showToast('Exited Demo Mode. Connected to live Supabase.');
-    navigate('/login');
-  };
-
   return (
     <DeviceFrame>
-      {/* Top Banner when Demo Mode is explicitly active on a configured backend */}
-      {isConfigured && isDemo && (
-        <div className="bg-amber-500 text-slate-950 px-3 py-1.5 text-[11px] font-bold flex items-center justify-between border-b border-amber-600/30 sticky top-0 z-40">
-          <div className="flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full bg-slate-950 animate-pulse" />
-            <span>Demo Mode (Local Mock Data)</span>
-          </div>
-          <button
-            onClick={handleExitDemoMode}
-            className="px-2 py-0.5 rounded bg-slate-950 text-white font-semibold text-[10px] hover:bg-slate-800 transition-colors"
-          >
-            Exit Demo
-          </button>
-        </div>
-      )}
 
       {renderRoute()}
 
