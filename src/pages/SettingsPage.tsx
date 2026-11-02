@@ -7,7 +7,7 @@ import { CurrencyCode } from '../types';
 import {
   Building2, Phone, MessageCircle, MapPin, Globe, ExternalLink,
   Save, Loader2, Upload, Image as ImageIcon, Home, CarFront,
-  UsersRound, ChartNoAxesCombined, Store,
+  UsersRound, Store,
 } from 'lucide-react';
 
 export const SettingsPage: React.FC = () => {
@@ -309,7 +309,6 @@ export const SettingsPage: React.FC = () => {
           { label: 'Home', path: '/app', icon: Home },
           { label: 'Garage', path: '/app/vehicles', icon: CarFront },
           { label: 'Enquiries', path: '/app/enquiries', icon: UsersRound },
-          { label: 'Analytics', path: '/app/analytics', icon: ChartNoAxesCombined },
           { label: 'Store/Profile', path: '/app/settings', icon: Store },
         ].map((item) => {
           const Icon = item.icon;
