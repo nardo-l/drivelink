@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ArrowLeft, MapPin, Phone, MessageCircle, Instagram, Facebook, Send } from 'lucide-react';
+import { ArrowLeft, MapPin, Phone, MessageCircle, Send, Share2, Grid2X2 } from 'lucide-react';
 import { useNavigation } from '../context/NavigationContext';
 import { storageService } from '../services/storage';
 import { supabaseService } from '../services/supabaseService';
@@ -54,6 +54,7 @@ export const PublicStorefrontContactPage: React.FC<{ slug: string }> = ({ slug }
   if (loading) return <div className="dl-store-loading">Loading contact details…</div>;
   if (!dealer) return <div className="dl-store-loading">This dealership could not be found.</div>;
   const back = () => navigate('/' + dealer.slug + '/browse');
+  const shareShowroom = async () => { const url = window.location.origin + '/' + dealer.slug; if (navigator.share) { try { await navigator.share({ title: dealer.name, url }); } catch { /* share sheet dismissed */ } } else if (navigator.clipboard) { await navigator.clipboard.writeText(url); } };
   const whatsapp = dealer.whatsapp ? 'https://wa.me/' + dealer.whatsapp.replace(/\D/g,'') : '';
 
   return <main className="dl-store-contact">
@@ -79,6 +80,6 @@ export const PublicStorefrontContactPage: React.FC<{ slug: string }> = ({ slug }
         <button type="submit" disabled={sending}>{sending ? 'Sending…' : 'Send Enquiry'}</button>
       </>}
     </form>
-    <nav className="dl-store-bottom-nav"><button onClick={() => navigate('/' + dealer.slug)}><span>Home</span></button><button onClick={back}><span>Inventory</span></button><button className="active"><span>Enquiries</span></button><button className="active"><span>More</span></button></nav>
+    <nav className="dl-store-bottom-nav"><button onClick={() => navigate('/' + dealer.slug)}><Grid2X2/><span>Home</span></button><button onClick={back}><span>Inventory</span></button><button className="active"><MessageCircle/><span>Enquiries</span></button><button onClick={shareShowroom}><Share2/><span>More</span></button></nav>
   </main>;
 };
