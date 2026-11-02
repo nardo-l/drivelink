@@ -53,7 +53,7 @@ export const PublicStorefrontContactPage: React.FC<{ slug: string }> = ({ slug }
 
   if (loading) return <div className="dl-store-loading">Loading contact details…</div>;
   if (!dealer) return <div className="dl-store-loading">This dealership could not be found.</div>;
-  const back = () => navigate('/showroom/' + dealer.slug + '/browse');
+  const back = () => navigate('/' + dealer.slug + '/browse');
   const whatsapp = dealer.whatsapp ? 'https://wa.me/' + dealer.whatsapp.replace(/\D/g,'') : '';
 
   return <main className="dl-store-contact">
@@ -79,6 +79,6 @@ export const PublicStorefrontContactPage: React.FC<{ slug: string }> = ({ slug }
         <button type="submit" disabled={sending}>{sending ? 'Sending…' : 'Send Enquiry'}</button>
       </>}
     </form>
-    <nav className="dl-store-bottom-nav"><button onClick={() => navigate('/showroom/' + dealer.slug)}><span>Home</span></button><button onClick={back}><span>Inventory</span></button><button className="active"><span>Enquiries</span></button><button className="active"><span>More</span></button></nav>
+    <nav className="dl-store-bottom-nav"><button onClick={() => navigate('/' + dealer.slug)}><span>Home</span></button><button onClick={back}><span>Inventory</span></button><button className="active"><span>Enquiries</span></button><button className="active"><span>More</span></button></nav>
   </main>;
 };
