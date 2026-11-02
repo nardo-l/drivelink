@@ -5,7 +5,7 @@ import { isSupabaseConfigured } from '../lib/supabase';
 import { BottomNav } from '../components/layout/BottomNav';
 import { StatusBadge } from '../components/common/Badge';
 import { ShareModal } from '../components/common/ShareModal';
-import { CarFront, MessageCircle, Eye, Bell, Plus, ChevronRight, RefreshCw, ArrowUpRight, CircleAlert, Share2 } from 'lucide-react';
+import { CarFront, MessageCircle, Eye, Bell, Plus, ChevronRight, ArrowUpRight, CircleAlert, Share2 } from 'lucide-react';
 
 export const DashboardPage: React.FC = () => {
   const { navigate, showToast } = useNavigation();
@@ -89,9 +89,8 @@ export const DashboardPage: React.FC = () => {
           <div className="flex items-center justify-between mb-3"><h2 className="font-extrabold text-sm">Garage snapshot</h2><button onClick={()=>navigate('/app/vehicles')} className="text-xs text-[#f47716] font-bold">View garage</button></div>
           {vehicles.slice(0,3).map(vehicle=><button key={vehicle.id} onClick={()=>navigate(`/app/vehicles/${vehicle.id}`)} className="w-full bg-white border border-[#ededed] rounded-2xl p-2.5 mb-2 flex items-center gap-3 text-left"><div className="w-16 h-14 rounded-xl overflow-hidden bg-[#f1f1ef] shrink-0">{vehicle.photos?.[0]&&<img src={vehicle.photos[0]} alt="" className="w-full h-full object-cover"/>}</div><span className="flex-1 min-w-0"><strong className="block text-xs truncate">{vehicle.year} {vehicle.make} {vehicle.model}</strong><span className="text-[11px] text-[#888]">{money(vehicle.price,vehicle.currency)}</span></span><StatusBadge status={vehicle.status} size="sm"/></button>)}
         </section>
-        {loadError && <div role="alert" className="rounded-xl bg-red-50 text-red-700 p-3 text-xs flex gap-2"><CircleAlert size={16}/>{loadError}<button onClick={load} className="ml-auto underline">Retry</button></div>}
+        {loadError && <div role="alert" className="rounded-xl bg-red-50 text-red-700 p-3 text-xs flex gap-2"><CircleAlert size={16}/>{loadError}</div>}
         <button onClick={()=>navigate('/app/vehicles/new')} className="dl-accent-button w-full rounded-full min-h-12 font-extrabold text-sm flex items-center justify-center gap-2 mt-4 shadow-lg shadow-orange-500/15"><Plus size={18}/> Add Vehicle</button>
-        <button onClick={load} disabled={loading} className="w-full text-center text-[11px] text-[#888] py-3 flex justify-center items-center gap-1"><RefreshCw size={12} className={loading?'animate-spin':''}/> Refresh data</button>
       </main>
       <button
         type="button"
