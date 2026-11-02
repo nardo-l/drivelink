@@ -5,7 +5,7 @@ import { isSupabaseConfigured } from '../lib/supabase';
 import { BottomNav } from '../components/layout/BottomNav';
 import { StatusBadge } from '../components/common/Badge';
 import { ShareModal } from '../components/common/ShareModal';
-import { CarFront, MessageCircle, Eye, Bell, Plus, ChevronRight, RefreshCw, ArrowUpRight, CircleAlert } from 'lucide-react';
+import { CarFront, MessageCircle, Eye, Bell, Plus, ChevronRight, RefreshCw, ArrowUpRight, CircleAlert, Share2 } from 'lucide-react';
 
 export const DashboardPage: React.FC = () => {
   const { navigate, showToast } = useNavigation();
@@ -93,6 +93,14 @@ export const DashboardPage: React.FC = () => {
         <button onClick={()=>navigate('/app/vehicles/new')} className="dl-accent-button w-full rounded-full min-h-12 font-extrabold text-sm flex items-center justify-center gap-2 mt-4 shadow-lg shadow-orange-500/15"><Plus size={18}/> Add Vehicle</button>
         <button onClick={load} disabled={loading} className="w-full text-center text-[11px] text-[#888] py-3 flex justify-center items-center gap-1"><RefreshCw size={12} className={loading?'animate-spin':''}/> Refresh data</button>
       </main>
+      <button
+        type="button"
+        onClick={() => setShareOpen(true)}
+        className="fixed z-40 right-5 bottom-24 sm:right-8 inline-flex min-h-12 items-center gap-2.5 rounded-full bg-black px-5 text-sm font-extrabold text-white shadow-xl shadow-black/20 transition-transform hover:-translate-y-0.5 active:scale-95"
+        aria-label="Share your storefront"
+      >
+        <Share2 size={18}/><span>Share storefront</span>
+      </button>
       <BottomNav/>
       <ShareModal isOpen={shareOpen} onClose={()=>setShareOpen(false)} title={dealership.name} dealershipId={dealership.id} url={fullPublicUrl} description={`Explore vehicles from ${dealership.name}.`}/>
     </div>
