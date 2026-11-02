@@ -3,7 +3,6 @@ import { useNavigation } from '../context/NavigationContext';
 import { storageService } from '../services/storage';
 import { supabaseService } from '../services/supabaseService';
 import { isSupabaseConfigured } from '../lib/supabase';
-import { ONBOARDING_CAR_ILLUSTRATION } from '../utils/carVisuals';
 import { ArrowLeft, Eye, EyeOff, Loader2, AlertCircle } from 'lucide-react';
 
 export const LoginPage: React.FC = () => {
@@ -92,8 +91,8 @@ export const LoginPage: React.FC = () => {
       <div className="relative z-10 flex flex-col items-center text-center my-auto">
         <div className="w-36 h-24 mb-2 flex items-center justify-center">
           <img
-            src={ONBOARDING_CAR_ILLUSTRATION}
-            alt="Car mascot"
+            src={"https://cimyerrelscqjiwqvnnn.supabase.co/storage/v1/object/public/drivelink-assets/image%202.jfif"}
+            alt="DriveLink featured vehicle"
             className="w-full h-full object-contain"
           />
         </div>
