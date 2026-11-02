@@ -17,6 +17,8 @@ import { BillingPage } from './pages/BillingPage';
 import { NotificationsPage } from './pages/NotificationsPage';
 import { PublicShowroomPage } from './pages/PublicShowroomPage';
 import { PublicVehicleDetailPage } from './pages/PublicVehicleDetailPage';
+import { PublicStorefrontBrowsePage } from './pages/PublicStorefrontBrowsePage';
+import { PublicStorefrontContactPage } from './pages/PublicStorefrontContactPage';
 import { isSupabaseConfigured } from './lib/supabase';
 import { supabaseService } from './services/supabaseService';
 import { storageService } from './services/storage';
@@ -168,6 +170,17 @@ function AppContent() {
     // 10. Settings & Storefront configuration
     if (currentPath === '/app/settings' || currentPath === '/app/storefront') {
       return <SettingsPage />;
+    }
+
+    // Public dealership inventory browsing and contact routes
+    const showroomBrowseMatch = currentPath.match(/^\/showroom\/([^/]+)\/browse\/?$/);
+    if (showroomBrowseMatch) {
+      return <PublicStorefrontBrowsePage slug={decodeURIComponent(showroomBrowseMatch[1])} />;
+    }
+
+    const showroomContactMatch = currentPath.match(/^\/showroom\/([^/]+)\/contact\/?$/);
+    if (showroomContactMatch) {
+      return <PublicStorefrontContactPage slug={decodeURIComponent(showroomContactMatch[1])} />;
     }
 
     // 11. Public Vehicle Details: /showroom/:slug/vehicle/:id / Screen 06
