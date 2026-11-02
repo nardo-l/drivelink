@@ -41,7 +41,7 @@ export const PublicVehicleDetailPage: React.FC<PublicVehicleDetailPageProps> = (
   }, [vehicleId, slug]);
 
   if (loading) return <div className="dl-store-loading">Loading vehicle…</div>;
-  if (!dealer || !vehicle) return <div className="dl-store-loading"><h1>Vehicle unavailable</h1><p>This vehicle may have been sold or removed.</p><button onClick={() => navigate('/showroom/' + (slug || ''))}>Return to showroom</button></div>;
+  if (!dealer || !vehicle) return <div className="dl-store-loading"><h1>Vehicle unavailable</h1><p>This vehicle may have been sold or removed.</p><button onClick={() => navigate('/' + (slug || ''))}>Return to showroom</button></div>;
 
   const photos = vehicle.photos || [];
   const money = new Intl.NumberFormat('en-US', { style:'currency', currency:vehicle.currency || dealer.currency, maximumFractionDigits:0 }).format(vehicle.price);
