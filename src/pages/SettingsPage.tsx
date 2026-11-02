@@ -4,25 +4,10 @@ import { storageService } from '../services/storage';
 import { supabaseService } from '../services/supabaseService';
 import { isSupabaseConfigured } from '../lib/supabase';
 import { CurrencyCode } from '../types';
-import { BottomNav } from '../components/layout/BottomNav';
 import {
-  CreditCard,
-  Building2,
-  Phone,
-  MessageCircle,
-  MapPin,
-  Globe,
-  ExternalLink,
-  Save,
-  LogOut,
-  ShieldCheck,
-  Loader2,
-  Check,
-  XCircle,
-  Upload,
-  Camera,
-  Image as ImageIcon,
-  Trash2,
+  Building2, Phone, MessageCircle, MapPin, Globe, ExternalLink,
+  Save, Loader2, Upload, Image as ImageIcon, Home, CarFront,
+  UsersRound, ChartNoAxesCombined, Store,
 } from 'lucide-react';
 
 export const SettingsPage: React.FC = () => {
