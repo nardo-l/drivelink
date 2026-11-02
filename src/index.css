@@ -642,3 +642,67 @@ img { max-width: 100%; }
     flex: 0 0 28px;
   }
 }
+
+
+/* Mobile inventory cards: add breathing room on both sides and prevent
+   card content from forcing the layout wider than the viewport. */
+@media (max-width: 700px) {
+  .dl-store-browse {
+    width: 100%;
+    max-width: 100%;
+    padding-right: 16px;
+    padding-left: 16px;
+    overflow-x: hidden;
+  }
+
+  .dl-store-list {
+    width: 100%;
+    max-width: 100%;
+    justify-items: center;
+    overflow: hidden;
+  }
+
+  .dl-store-list > .dl-store-car-card {
+    width: calc(100% - 16px);
+    max-width: 420px;
+    min-width: 0;
+    margin-inline: auto;
+  }
+
+  .dl-store-list .dl-store-car-photo {
+    width: 100%;
+    max-width: 100%;
+    aspect-ratio: 1.42;
+    min-height: 0;
+  }
+
+  .dl-store-list .dl-store-car-overlay {
+    padding: 16px 14px 13px;
+  }
+
+  .dl-store-list .dl-store-car-overlay > p {
+    gap: 6px;
+    font-size: 10px;
+  }
+
+  .dl-store-list .dl-store-car-bottom {
+    gap: 6px;
+  }
+
+  .dl-store-list .dl-store-car-bottom > strong {
+    font-size: clamp(16px, 4.8vw, 21px);
+  }
+
+  .dl-store-list .dl-store-car-bottom > button {
+    min-height: 36px;
+    gap: 5px;
+    padding: 3px 4px 3px 9px;
+    font-size: 10px;
+  }
+
+  .dl-store-list .dl-store-car-bottom > button span {
+    width: 26px;
+    height: 26px;
+    flex-basis: 26px;
+  }
+}
