@@ -62,8 +62,8 @@ export const PublicStorefrontBrowsePage: React.FC<{ slug: string }> = ({ slug })
   if (!dealer) return <div className="dl-store-loading"><h1>Showroom unavailable</h1><button onClick={() => navigate('/')}>Back to DriveLink</button></div>;
   const money = (v: Vehicle) => new Intl.NumberFormat('en-US', { style:'currency', currency:v.currency || dealer.currency, maximumFractionDigits:0 }).format(v.price);
   const clearFilters = () => { setMinPrice(''); setMaxPrice(''); setYearFrom(''); setTransmission('All'); setFuel('All'); setBrand('All'); };
-  const goHome = () => navigate('/showroom/' + dealer.slug);
-  const goContact = () => navigate('/showroom/' + dealer.slug + '/contact');
+  const goHome = () => navigate('/' + dealer.slug);
+  const goContact = () => navigate('/' + dealer.slug + '/contact');
 
   return <main className="dl-store-browse">
     <header className="dl-store-header">
@@ -80,7 +80,7 @@ export const PublicStorefrontBrowsePage: React.FC<{ slug: string }> = ({ slug })
     <div className="dl-store-brands">{brands.map(item => <button key={item} className={brand === item ? 'active' : ''} onClick={() => setBrand(item)}>{item}</button>)}</div>
     <section className="dl-store-section-heading"><div><h1>Featured Cars</h1><p>{filtered.length} vehicles available</p></div><button onClick={() => {setBrand('All');setQuery('');}}>View all <ArrowRight size={16}/></button></section>
     <div className="dl-store-sort"><span>Available inventory</span><select value={sort} onChange={e => setSort(e.target.value)} aria-label="Sort vehicles"><option value="newest">Recently added</option><option value="price-low">Price: low to high</option><option value="price-high">Price: high to low</option><option value="year">Newest year</option></select></div>
-    {filtered.length ? <section className="dl-store-list">{filtered.map(vehicle => <article key={vehicle.id} className="dl-store-car-card" onClick={() => navigate('/showroom/' + dealer.slug + '/vehicle/' + vehicle.id)}>
+    {filtered.length ? <section className="dl-store-list">{filtered.map(vehicle => <article key={vehicle.id} className="dl-store-car-card" onClick={() => navigate('/' + dealer.slug + '/vehicle/' + vehicle.id)}>
       <div className="dl-store-car-photo"><img src={vehicle.photos?.[0] || ''} alt={vehicle.year + ' ' + vehicle.make + ' ' + vehicle.model}/><button onClick={e => {e.stopPropagation();setFavorites(old => old.includes(vehicle.id) ? old.filter(id => id !== vehicle.id) : [...old,vehicle.id]);}} aria-label="Save vehicle" className={favorites.includes(vehicle.id) ? 'saved' : ''}><Heart fill={favorites.includes(vehicle.id) ? 'currentColor' : 'none'}/></button></div>
       <div className="dl-store-car-info"><div><h2>{vehicle.make} {vehicle.model}</h2><p>{vehicle.year} <i/> {vehicle.mileageKm.toLocaleString()} km <i/> {vehicle.fuel}</p></div><strong>{money(vehicle)}</strong></div>
     </article>)}</section> : <div className="dl-store-empty"><CarFront/><h2>No matching vehicles</h2><p>Try a different search or clear your filters.</p><button onClick={() => {clearFilters();setQuery('');}}>Clear filters</button></div>}
