@@ -509,6 +509,8 @@ export const SettingsPage: React.FC = () => {
         </button>
         {/* Account actions */}
         <div className="pt-2 flex flex-col gap-2">
+          <button type="button" onClick={handleSignOut} className="w-full py-2.5 rounded-xl hover:bg-rose-50 text-rose-600 font-semibold text-xs flex items-center justify-center gap-1.5 transition-colors"><LogOut className="w-3.5 h-3.5"/><span>Sign Out</span></button>
+        </div>
       </form>
 
       {/* Fixed Bottom Navigation */}
