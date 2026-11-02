@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Search, Plus, CarFront, MoreVertical, Pencil, Trash2, RefreshCw, SlidersHorizontal } from 'lucide-react';
+import { Search, Plus, CarFront, MoreVertical, Pencil, Trash2, SlidersHorizontal } from 'lucide-react';
 import { useNavigation } from '../context/NavigationContext';
 import { storageService } from '../services/storage';
 import { Vehicle, VehicleStatus } from '../types';
@@ -40,8 +40,8 @@ export const VehiclesListPage: React.FC = () => {
       <div className="flex gap-2 overflow-x-auto pb-3 mb-2">
         {filters.map(tab=><button key={tab.id} onClick={()=>setFilter(tab.id)} className={`shrink-0 rounded-full px-4 py-2 text-xs font-bold ${filter===tab.id?'bg-[#171717] text-white':'bg-white border border-[#e9e9e9] text-[#777]'}`}>{tab.label} <span className={filter===tab.id?'text-white/65':'text-[#aaa]'}>({counts[tab.id]})</span></button>)}
       </div>
-      <div className="flex items-center justify-between mb-3"><p className="text-xs font-bold text-[#777]">{visible.length} vehicles</p><button onClick={load} disabled={loading} className="text-xs font-semibold text-[#888] flex items-center gap-1"><RefreshCw size={13} className={loading?'animate-spin':''}/> Refresh</button></div>
-      {error&&<div role="alert" className="bg-red-50 text-red-700 rounded-xl p-3 text-xs mb-3">{error}<button onClick={load} className="ml-2 underline font-bold">Retry</button></div>}
+      <div className="flex items-center justify-between mb-3"><p className="text-xs font-bold text-[#777]">{visible.length} vehicles</p></div>
+      {error&&<div role="alert" className="bg-red-50 text-red-700 rounded-xl p-3 text-xs mb-3">{error}</div>}
       {loading?<div className="space-y-3">{[1,2,3].map(n=><div key={n} className="h-36 rounded-2xl bg-white animate-pulse border border-[#eee]"/>)}</div>:visible.length===0?<div className="rounded-3xl bg-white border border-dashed border-[#ddd] text-center px-6 py-14"><CarFront className="mx-auto text-[#bbb]" size={30}/><h2 className="font-extrabold mt-3">{vehicles.length?'No matching vehicles':'Your garage is empty'}</h2><p className="text-xs text-[#888] mt-1">{vehicles.length?'Try another search or filter.':'Add your first vehicle to start building your inventory.'}</p><button onClick={()=>navigate('/app/vehicles/new')} className="dl-accent-button rounded-full px-5 py-3 text-xs font-extrabold mt-4"><Plus size={14} className="inline mr-1"/> Add vehicle</button></div>:<div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
         {visible.map(vehicle=><article key={vehicle.id} className="relative rounded-[22px] bg-white border border-[#ececec] p-3 flex gap-3 min-w-0">
           <button onClick={()=>navigate(`/app/vehicles/${vehicle.id}`)} className="w-[116px] sm:w-36 h-[112px] rounded-2xl overflow-hidden bg-[#f0f0ee] shrink-0">{vehicle.photos?.[0]?<img src={vehicle.photos[0]} alt={`${vehicle.make} ${vehicle.model}`} className="w-full h-full object-cover"/>:<CarFront className="m-auto text-[#bbb]"/>}</button>
