@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { ArrowLeft, ArrowRight, CarFront, Contact, Filter, Grid2X2, Heart, MapPin, Search, SlidersHorizontal, X } from 'lucide-react';
+import { ArrowRight, CarFront, Contact, Grid2X2, Heart, MapPin, Search, Share2, SlidersHorizontal, X } from 'lucide-react';
 import { useNavigation } from '../context/NavigationContext';
 import { storageService } from '../services/storage';
 import { supabaseService } from '../services/supabaseService';
@@ -71,6 +71,7 @@ export const PublicStorefrontBrowsePage: React.FC<{ slug: string }> = ({ slug })
   const clearFilters = () => { setMinPrice(''); setMaxPrice(''); setYearFrom(''); setYearTo(''); setMinMileage(''); setMaxMileage(''); setTransmission('All'); setFuel('All'); setBrand('All'); };
   const goHome = () => navigate('/' + dealer.slug);
   const goContact = () => navigate('/' + dealer.slug + '/contact');
+  const shareShowroom = async () => { const url = window.location.origin + '/' + dealer.slug; if (navigator.share) { try { await navigator.share({ title: dealer.name, text: 'Browse vehicles at ' + dealer.name, url }); } catch { /* share sheet dismissed */ } } else if (navigator.clipboard) { await navigator.clipboard.writeText(url); } };
 
   return <main className="dl-store-browse">
     <header className="dl-store-header">
@@ -92,7 +93,7 @@ export const PublicStorefrontBrowsePage: React.FC<{ slug: string }> = ({ slug })
       <div className="dl-store-car-info"><div><h2>{vehicle.make} {vehicle.model}</h2><p>{vehicle.year} <i/> {vehicle.mileageKm.toLocaleString()} km <i/> {vehicle.fuel}</p></div><strong>{money(vehicle)}</strong></div>
     </article>)}</section> : <div className="dl-store-empty"><CarFront/><h2>No matching vehicles</h2><p>Try a different search or clear your filters.</p><button onClick={() => {clearFilters();setQuery('');}}>Clear filters</button></div>}
     <footer className="dl-store-footer">{dealer.name} · Powered by DriveLink</footer>
-    <nav className="dl-store-bottom-nav"><button onClick={goHome}><Grid2X2/><span>Home</span></button><button className="active"><CarFront/><span>Inventory</span></button><button onClick={goContact}><Contact/><span>Enquiries</span></button><button onClick={goContact}><Grid2X2/><span>More</span></button></nav>
+    <nav className="dl-store-bottom-nav"><button onClick={goHome}><Grid2X2/><span>Home</span></button><button className="active"><CarFront/><span>Inventory</span></button><button onClick={goContact}><Contact/><span>Enquiries</span></button><button onClick={shareShowroom}><Share2/><span>More</span></button></nav>
     {filtersOpen && <div className="dl-store-filter-backdrop" onClick={() => setFiltersOpen(false)}><section className="dl-store-filter-panel" onClick={e => e.stopPropagation()}><header><div><h2>Filters</h2><p>Find the right vehicle</p></div><button onClick={() => setFiltersOpen(false)} aria-label="Close filters"><X/></button></header>
       <label>Make<select value={brand} onChange={e => setBrand(e.target.value)}>{brands.map(b => <option key={b}>{b}</option>)}</select></label>
       <div className="dl-store-filter-two"><label>Minimum price<input type="number" min="0" value={minPrice} onChange={e => setMinPrice(e.target.value)} placeholder="No minimum"/></label><label>Maximum price<input type="number" min="0" value={maxPrice} onChange={e => setMaxPrice(e.target.value)} placeholder="No maximum"/></label></div>
