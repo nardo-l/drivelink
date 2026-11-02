@@ -348,3 +348,136 @@ img { max-width: 100%; }
  .dl-footer-bottom { flex-wrap:wrap;padding-inline:0;line-height:1.6; }
  .dl-footer-bottom>div { order:3;width:100%; }
 }
+
+
+/* Public dealership storefront — monochrome customer experience */
+.dl-frame:has(.dl-cinematic-storefront) > .dl-frame-inner,
+.dl-frame:has(.dl-store-browse) > .dl-frame-inner,
+.dl-frame:has(.dl-store-contact) > .dl-frame-inner,
+.dl-frame:has(.dl-public-vehicle) > .dl-frame-inner { width:100%; max-width:none !important; border:0; box-shadow:none; overflow:visible; }
+.dl-frame:has(.dl-cinematic-storefront),.dl-frame:has(.dl-store-browse),.dl-frame:has(.dl-store-contact) { background:#f5f5f5; }
+.dl-cinematic-storefront { min-height:100svh; position:relative; isolation:isolate; display:flex; flex-direction:column; justify-content:space-between; padding:clamp(22px,4vw,52px) clamp(22px,7vw,100px) 34px; color:#fff; background-color:#171717; background-size:cover; background-position:center; font-family:Manrope,Inter,system-ui,sans-serif; }
+.dl-cinematic-storefront:before { content:""; position:absolute; inset:0; z-index:-1; background:linear-gradient(90deg,rgba(0,0,0,.72),rgba(0,0,0,.15) 80%),linear-gradient(0deg,rgba(0,0,0,.42),transparent 55%); }
+.dl-cinematic-header { position:relative; display:flex; justify-content:space-between; align-items:center; }
+.dl-cinematic-brand { display:flex; align-items:center; gap:12px; border:0; background:transparent; color:#fff; text-align:left; }
+.dl-cinematic-brand img,.dl-cinematic-brand>span:first-child { width:48px;height:48px;object-fit:contain;border-radius:50%;background:#fff;color:#111;display:grid;place-items:center;font-weight:900; }
+.dl-cinematic-brand strong { display:block;font-size:18px;font-weight:800;letter-spacing:-.5px; }
+.dl-cinematic-brand small { display:block;margin-top:3px;color:rgba(255,255,255,.72);font-size:12px; }
+.dl-cinematic-menu { width:46px;height:46px;display:grid;place-items:center;border:1px solid rgba(255,255,255,.28);border-radius:50%;background:rgba(0,0,0,.16);color:#fff; }
+.dl-cinematic-menu-panel { position:absolute;right:0;top:56px;z-index:5;min-width:190px;padding:8px;border:1px solid rgba(255,255,255,.2);border-radius:16px;background:rgba(18,18,18,.92);backdrop-filter:blur(14px); }
+.dl-cinematic-menu-panel button { width:100%;padding:12px;text-align:left;color:#fff;background:transparent;border:0;border-radius:9px;font-size:13px; }
+.dl-cinematic-menu-panel button:hover { background:rgba(255,255,255,.12); }
+.dl-cinematic-copy { width:min(650px,100%);margin:auto 0; padding:90px 0 120px; }
+.dl-cinematic-eyebrow { margin-bottom:18px;color:rgba(255,255,255,.72);font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase; }
+.dl-cinematic-copy h1 { max-width:680px;margin:0;color:#fff;font-size:clamp(48px,8vw,104px);font-weight:850;letter-spacing:-.065em;line-height:.98; }
+.dl-cinematic-description { max-width:440px;margin:24px 0 30px;color:rgba(255,255,255,.82);font-size:clamp(16px,2vw,22px);line-height:1.55; }
+.dl-explore-button { display:inline-flex;align-items:center;gap:24px;min-height:64px;padding:8px 10px 8px 28px;border:0;border-radius:999px;background:#fff;color:#111;font-size:16px;font-weight:800; }
+.dl-explore-button span { width:44px;height:44px;display:grid;place-items:center;border-radius:50%;background:#080808;color:#fff; }
+.dl-cinematic-footer { display:flex;align-items:center;justify-content:space-between;color:rgba(255,255,255,.75);font-size:12px; }
+.dl-cinematic-dots { display:flex;gap:7px; }
+.dl-cinematic-dots i { display:block;width:34px;height:4px;border-radius:10px;background:rgba(255,255,255,.42); }
+.dl-cinematic-dots i:first-child { background:#fff; }
+.dl-cinematic-loading,.dl-store-loading { min-height:100svh;display:grid;place-content:center;gap:12px;padding:28px;text-align:center;background:#fff;color:#111; }
+.dl-store-browse,.dl-store-contact { min-height:100svh;max-width:1160px;margin:auto;padding:26px clamp(16px,4vw,48px) 110px;background:#fff;color:#101010;font-family:Manrope,Inter,system-ui,sans-serif; }
+.dl-store-header { display:flex;align-items:center;justify-content:space-between;gap:16px; }
+.dl-store-dealer { display:flex;align-items:center;gap:11px;padding:0;border:0;background:transparent;text-align:left;color:#111; }
+.dl-store-dealer img,.dl-store-monogram { width:48px;height:48px;border-radius:50%;object-fit:contain;border:1px solid #eee;background:#fff; }
+.dl-store-monogram { display:grid;place-items:center;font-size:14px;font-weight:850; }
+.dl-store-dealer strong { display:block;font-size:17px;font-weight:850;letter-spacing:-.5px; }
+.dl-store-dealer small { display:flex;align-items:center;gap:4px;margin-top:3px;color:#777;font-size:12px; }
+.dl-store-icon,.dl-store-filter-button { width:48px;height:48px;display:grid;place-items:center;border:1px solid #eee;border-radius:50%;background:#fff;color:#111; }
+.dl-store-search-row { display:flex;gap:12px;margin:26px 0 17px; }
+.dl-store-search { height:54px;display:flex;align-items:center;gap:12px;flex:1;padding:0 18px;border-radius:30px;background:#f1f1f1;color:#111; }
+.dl-store-search svg { width:20px;height:20px;flex-shrink:0; }
+.dl-store-search input { width:100%;height:100%;border:0!important;outline:0!important;box-shadow:none!important;background:transparent!important;font-size:15px; }
+.dl-store-filter-button { background:#f1f1f1;border:0; }
+.dl-store-brands { display:flex;gap:9px;overflow-x:auto;padding:2px 0 9px;scrollbar-width:none; }
+.dl-store-brands::-webkit-scrollbar { display:none; }
+.dl-store-brands button { flex:0 0 auto;padding:13px 21px;border:0;border-radius:30px;background:#f0f0f0;color:#222;font-size:13px;font-weight:700; }
+.dl-store-brands button.active { background:#080808;color:#fff; }
+.dl-store-section-heading { display:flex;align-items:end;justify-content:space-between;gap:14px;margin:29px 0 18px; }
+.dl-store-section-heading h1 { margin:0;font-size:27px;font-weight:850;letter-spacing:-1px; }
+.dl-store-section-heading p { margin:4px 0 0;color:#777;font-size:12px; }
+.dl-store-section-heading>button { display:flex;align-items:center;gap:6px;padding:8px 0;border:0;background:transparent;color:#111;font-size:13px;font-weight:700; }
+.dl-store-sort { display:flex;justify-content:space-between;align-items:center;gap:10px;margin:0 0 12px;color:#777;font-size:12px; }
+.dl-store-sort select { min-height:34px;padding:5px 25px 5px 10px;border:1px solid #eee;border-radius:20px;background:#fff;color:#111;font-size:11px; }
+.dl-store-list { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px 18px; }
+.dl-store-car-card { min-width:0;cursor:pointer; }
+.dl-store-car-photo { position:relative;aspect-ratio:1.52;overflow:hidden;border-radius:18px;background:#eee; }
+.dl-store-car-photo>img { width:100%;height:100%;object-fit:cover;transition:transform .25s ease; }
+.dl-store-car-card:hover .dl-store-car-photo>img { transform:scale(1.025); }
+.dl-store-car-photo>button { position:absolute;top:12px;right:12px;width:38px;height:38px;display:grid;place-items:center;border:0;border-radius:50%;background:#fff;color:#111; }
+.dl-store-car-photo>button svg { width:19px;height:19px; }
+.dl-store-car-photo>button.saved { color:#111; }
+.dl-store-car-info { display:flex;justify-content:space-between;align-items:start;gap:12px;padding:12px 2px 0; }
+.dl-store-car-info h2 { margin:0;font-size:16px;font-weight:850;letter-spacing:-.4px; }
+.dl-store-car-info p { display:flex;align-items:center;gap:7px;margin:6px 0 0;color:#777;font-size:11px;white-space:nowrap; }
+.dl-store-car-info p i { width:3px;height:3px;border-radius:50%;background:#aaa; }
+.dl-store-car-info>strong { flex-shrink:0;font-size:18px;font-weight:850;letter-spacing:-.5px; }
+.dl-store-empty { padding:70px 15px;text-align:center;color:#777; }
+.dl-store-empty svg { width:34px;height:34px;margin:auto auto 12px; }
+.dl-store-empty h2 { margin:0;color:#111;font-size:18px; }
+.dl-store-empty p { font-size:13px; }
+.dl-store-empty button { padding:11px 20px;border:0;border-radius:30px;background:#111;color:#fff;font-size:12px; }
+.dl-store-footer { margin-top:45px;padding:24px 0;border-top:1px solid #eee;text-align:center;color:#999;font-size:11px; }
+.dl-store-bottom-nav { position:fixed;z-index:30;left:50%;bottom:12px;transform:translateX(-50%);width:min(500px,calc(100% - 24px));display:flex;justify-content:space-around;gap:4px;padding:10px 8px calc(10px + env(safe-area-inset-bottom));border:1px solid #eee;border-radius:28px;background:rgba(255,255,255,.96);box-shadow:0 8px 35px rgba(0,0,0,.12);backdrop-filter:blur(16px); }
+.dl-store-bottom-nav button { flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:5px;border:0;background:transparent;color:#555;font-size:10px;font-weight:650; }
+.dl-store-bottom-nav button svg { width:21px;height:21px; }
+.dl-store-bottom-nav button.active { color:#080808;font-weight:850; }
+.dl-store-filter-backdrop { position:fixed;z-index:60;inset:0;display:flex;align-items:end;justify-content:center;background:rgba(0,0,0,.5); }
+.dl-store-filter-panel { width:min(560px,100%);max-height:90svh;overflow:auto;padding:24px 22px calc(24px + env(safe-area-inset-bottom));border-radius:26px 26px 0 0;background:#fff;color:#111; }
+.dl-store-filter-panel header { display:flex;justify-content:space-between;align-items:center;margin-bottom:18px; }
+.dl-store-filter-panel header h2 { margin:0;font-size:23px;font-weight:850; }
+.dl-store-filter-panel header p { margin:4px 0 0;color:#777;font-size:12px; }
+.dl-store-filter-panel header button { width:38px;height:38px;border:1px solid #eee;border-radius:50%;background:#fff; }
+.dl-store-filter-panel>label,.dl-store-filter-two label { display:grid;gap:7px;margin:13px 0;color:#444;font-size:12px;font-weight:750; }
+.dl-store-filter-panel input,.dl-store-filter-panel select { width:100%;min-height:46px;padding:0 13px;border:1px solid #e5e5e5;border-radius:12px;background:#fff;color:#111;font-size:14px; }
+.dl-store-filter-two { display:grid;grid-template-columns:1fr 1fr;gap:12px; }
+.dl-store-filter-actions { display:flex;gap:10px;margin-top:22px; }
+.dl-store-filter-actions button { flex:1;min-height:48px;border:1px solid #ddd;border-radius:30px;background:#fff;color:#111;font-size:13px;font-weight:800; }
+.dl-store-filter-actions button:last-child { background:#080808;color:#fff;border-color:#080808; }
+.dl-store-contact { max-width:760px; }
+.dl-store-contact>header { display:flex;align-items:center;gap:15px;padding-bottom:20px;border-bottom:1px solid #eee;font-size:16px;font-weight:850; }
+.dl-store-contact>header button { width:40px;height:40px;border:1px solid #eee;border-radius:50%;background:#fff; }
+.dl-contact-profile { padding:35px 0 20px;text-align:center; }
+.dl-contact-profile img,.dl-contact-monogram { width:76px;height:76px;margin:auto;border-radius:50%;object-fit:contain;border:1px solid #eee; }
+.dl-contact-monogram { display:grid;place-items:center;background:#111;color:#fff;font-weight:850; }
+.dl-contact-profile h1 { margin:14px 0 5px;font-size:25px;font-weight:850;letter-spacing:-.8px; }
+.dl-contact-profile p { display:flex;align-items:center;justify-content:center;gap:5px;color:#777;font-size:13px; }
+.dl-contact-profile>div { max-width:520px;margin:14px auto 0;color:#666;font-size:13px;line-height:1.6; }
+.dl-contact-methods { display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin:18px 0 35px; }
+.dl-contact-methods a { display:flex;align-items:center;gap:8px;padding:13px 19px;border:1px solid #e6e6e6;border-radius:30px;color:#111;text-decoration:none;font-size:12px;font-weight:800; }
+.dl-contact-methods svg { width:17px;height:17px; }
+.dl-contact-form { max-width:540px;margin:auto;padding:25px;border:1px solid #eee;border-radius:22px;background:#fafafa; }
+.dl-contact-form h2 { margin:0;font-size:21px;font-weight:850; }
+.dl-contact-form>p { margin:5px 0 18px;color:#777;font-size:12px; }
+.dl-contact-form label { display:grid;gap:7px;margin:13px 0;color:#444;font-size:12px;font-weight:750; }
+.dl-contact-form input,.dl-contact-form select,.dl-contact-form textarea { width:100%;min-height:46px;padding:12px;border:1px solid #e4e4e4;border-radius:12px;background:#fff;color:#111;font-size:14px; }
+.dl-contact-form textarea { resize:vertical; }
+.dl-contact-form>button { width:100%;min-height:50px;margin-top:10px;border:0;border-radius:30px;background:#080808;color:#fff;font-size:13px;font-weight:850; }
+.dl-contact-form>button:disabled { opacity:.6; }
+.dl-contact-error { color:#b42318;font-size:12px; }
+.dl-contact-success { display:grid;gap:6px;padding:22px;border-radius:14px;background:#eee;color:#111;font-size:13px; }
+@media (max-width:700px) {
+ .dl-cinematic-storefront { min-height:100svh;padding:22px 22px calc(24px + env(safe-area-inset-bottom));background-position:58% center; }
+ .dl-cinematic-copy { padding:70px 0 80px; }
+ .dl-cinematic-copy h1 { font-size:clamp(48px,13vw,76px); }
+ .dl-cinematic-description { max-width:330px;font-size:16px; }
+ .dl-store-browse { padding:20px 16px 115px; }
+ .dl-store-header .dl-store-dealer img,.dl-store-monogram { width:42px;height:42px; }
+ .dl-store-dealer strong { font-size:15px; }
+ .dl-store-search-row { margin-top:21px; }
+ .dl-store-list { grid-template-columns:1fr;gap:22px; }
+ .dl-store-car-photo { aspect-ratio:1.55; }
+ .dl-store-car-info h2 { font-size:16px; }
+ .dl-store-car-info>strong { font-size:17px; }
+ .dl-store-contact { padding:20px 16px 115px; }
+ .dl-contact-form { padding:19px; }
+}
+@media (min-width:900px) {
+ .dl-cinematic-storefront { min-height:100vh; }
+ .dl-store-browse { padding-top:36px; }
+ .dl-store-list { grid-template-columns:repeat(3,minmax(0,1fr));gap:28px 22px; }
+ .dl-store-bottom-nav { bottom:22px; }
+}
+@media (prefers-reduced-motion:reduce) { .dl-store-car-photo>img { transition:none; } }
