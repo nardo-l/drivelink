@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { useNavigation } from '../context/NavigationContext';
 import { storageService } from '../services/storage';
 import { supabaseService } from '../services/supabaseService';
-import { isSupabaseConfigured, runBackendDiagnostic, BackendDiagnosticResult } from '../lib/supabase';
-import { Dealership, StorefrontTemplate, CurrencyCode } from '../types';
+import { isSupabaseConfigured } from '../lib/supabase';
+import { CurrencyCode } from '../types';
 import { BottomNav } from '../components/layout/BottomNav';
 import {
   CreditCard,
@@ -12,16 +12,10 @@ import {
   MessageCircle,
   MapPin,
   Globe,
-  Palette,
   ExternalLink,
   Save,
-  RotateCcw,
   LogOut,
   ShieldCheck,
-  Database,
-  CheckCircle2,
-  AlertCircle,
-  RefreshCw,
   Loader2,
   Check,
   XCircle,
@@ -35,21 +29,6 @@ export const SettingsPage: React.FC = () => {
   const { navigate, showToast } = useNavigation();
   const current = storageService.getDealership();
 
-  const [diagnostic, setDiagnostic] = useState<BackendDiagnosticResult | null>(null);
-  const [isRunningDiagnostic, setIsRunningDiagnostic] = useState(false);
-
-  const loadDiagnostic = async () => {
-    setIsRunningDiagnostic(true);
-    try {
-      const result = await runBackendDiagnostic(storageService.isDemoModeActive());
-      setDiagnostic(result);
-    } catch (e) {
-      console.error('Error running backend diagnostic:', e);
-    } finally {
-      setIsRunningDiagnostic(false);
-    }
-  };
-
   const [name, setName] = useState(current.name);
   const [slug, setSlug] = useState(current.slug);
   const [city, setCity] = useState(current.city);
@@ -60,7 +39,6 @@ export const SettingsPage: React.FC = () => {
   const [currency, setCurrency] = useState<CurrencyCode>(current.currency || 'USD');
   const [bio, setBio] = useState(current.bio);
   const [stickerText, setStickerText] = useState(current.stickerText || 'Good cars brighter days');
-  const [template, setTemplate] = useState<StorefrontTemplate>(current.template || 'signature');
   const [logoUrl, setLogoUrl] = useState<string>(current.logoUrl || '');
   const [coverUrl, setCoverUrl] = useState<string>(current.coverUrl || '');
   const [isUploadingLogo, setIsUploadingLogo] = useState(false);
@@ -69,7 +47,6 @@ export const SettingsPage: React.FC = () => {
   const [coverError, setCoverError] = useState<string | null>(null);
 
   React.useEffect(() => {
-    loadDiagnostic();
     const fetchDealership = async () => {
       if (isSupabaseConfigured() && !storageService.isDemoModeActive()) {
         try {
@@ -86,7 +63,6 @@ export const SettingsPage: React.FC = () => {
             setCurrency(live.currency || 'USD');
             setBio(live.bio || '');
             setStickerText(live.stickerText || 'Good cars brighter days');
-            setTemplate(live.template || 'signature');
             if (live.logoUrl) setLogoUrl(live.logoUrl);
             if (live.coverUrl) setCoverUrl(live.coverUrl);
           }
@@ -124,7 +100,7 @@ export const SettingsPage: React.FC = () => {
         URL.revokeObjectURL(localPreview);
         setLogoUrl(publicUrl);
         storageService.updateDealership({ logoUrl: publicUrl });
-        showToast('Logo uploaded to Supabase Storage!');
+        showToast('Logo uploaded successfully!');
       } else {
         storageService.updateDealership({ logoUrl: localPreview });
         showToast('Logo updated');
@@ -165,7 +141,7 @@ export const SettingsPage: React.FC = () => {
         URL.revokeObjectURL(localPreview);
         setCoverUrl(publicUrl);
         storageService.updateDealership({ coverUrl: publicUrl });
-        showToast('Showroom cover uploaded to Supabase Storage!');
+        showToast('Showroom cover uploaded successfully!');
       } else {
         storageService.updateDealership({ coverUrl: localPreview });
         showToast('Cover updated');
@@ -193,20 +169,13 @@ export const SettingsPage: React.FC = () => {
       currency,
       bio,
       stickerText,
-      template,
+      template: current.template || 'signature',
       logoUrl: logoUrl || undefined,
       coverUrl: coverUrl || undefined,
     });
     showToast('Settings saved successfully!');
   };
 
-  const handleResetData = () => {
-    if (window.confirm('Reset all vehicles, enquiries, and settings to original demo data?')) {
-      storageService.resetToDemo();
-      showToast('Demo data reset to fresh state');
-      window.location.reload();
-    }
-  };
 
   const handleSignOut = async () => {
     if (isSupabaseConfigured()) {
@@ -258,54 +227,6 @@ export const SettingsPage: React.FC = () => {
 
       {/* Main Body */}
       <form onSubmit={handleSave} className="flex-1 px-5 py-4 overflow-y-auto pb-24 flex flex-col gap-5">
-        {/* Storefront Layout Template Selection */}
-        <div className="bg-white rounded-2xl p-4 border border-slate-100 shadow-xs flex flex-col gap-3">
-          <div className="flex items-center gap-2">
-            <Palette className="w-4 h-4 text-blue-600" />
-            <h2 className="font-bold text-xs text-slate-900">Storefront Template</h2>
-          </div>
-
-          <div className="grid grid-cols-1 gap-2">
-            {[
-              {
-                id: 'signature',
-                title: 'Signature (Default)',
-                desc: 'Image-led 2-column mobile cards, hero showroom banner, and vibrant WhatsApp CTAs.',
-              },
-              {
-                id: 'inventory_first',
-                title: 'Inventory First',
-                desc: 'Dense vehicle listings prioritizing mileage, duty clearance, and specs.',
-              },
-              {
-                id: 'independent',
-                title: 'Independent Curator',
-                desc: 'Personal seller profile with hand-picked featured stock.',
-              },
-            ].map((item) => (
-              <label
-                key={item.id}
-                className={`p-3 rounded-xl border flex items-start gap-3 cursor-pointer transition-all ${
-                  template === item.id
-                    ? 'border-slate-950 bg-slate-50 ring-1 ring-slate-950'
-                    : 'border-slate-200 hover:border-slate-300'
-                }`}
-              >
-                <input
-                  type="radio"
-                  name="template"
-                  checked={template === item.id}
-                  onChange={() => setTemplate(item.id as StorefrontTemplate)}
-                  className="mt-0.5"
-                />
-                <div className="flex-1">
-                  <p className="font-bold text-xs text-slate-900">{item.title}</p>
-                  <p className="text-[11px] text-slate-500 leading-tight mt-0.5">{item.desc}</p>
-                </div>
-              </label>
-            ))}
-          </div>
-        </div>
 
         {/* Showroom Branding (Logo & Cover Uploads) */}
         <div className="bg-white rounded-2xl p-4 border border-slate-100 shadow-xs flex flex-col gap-4">
@@ -317,7 +238,7 @@ export const SettingsPage: React.FC = () => {
             {(isUploadingLogo || isUploadingCover) && (
               <span className="text-[10px] text-blue-600 flex items-center gap-1 font-semibold">
                 <Loader2 className="w-3 h-3 animate-spin" />
-                <span>Uploading to Supabase...</span>
+                <span>Uploading...</span>
               </span>
             )}
           </div>
@@ -371,7 +292,7 @@ export const SettingsPage: React.FC = () => {
                   )}
                 </div>
                 <p className="text-[10px] text-slate-400">
-                  Recommended: 500 × 500 px. Uploads to Supabase Storage bucket `dealership-assets`.
+                  Recommended: 500 × 500 px. Recommended image size: 500 × 500 px.
                 </p>
                 {logoError && (
                   <p className="text-[11px] text-rose-600 font-medium">{logoError}</p>
@@ -578,129 +499,6 @@ export const SettingsPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Supabase Backend Connection Diagnostic Card */}
-        <div className="bg-white rounded-2xl p-4 border border-slate-100 shadow-xs flex flex-col gap-3.5">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Database className="w-4 h-4 text-slate-800" />
-              <h2 className="font-bold text-xs text-slate-900">Backend Diagnostic</h2>
-            </div>
-
-            {diagnostic && (
-              <span
-                className={`flex items-center gap-1.5 text-[10px] font-bold px-2 py-0.5 rounded-full border ${
-                  diagnostic.state === 'authenticated'
-                    ? 'text-emerald-700 bg-emerald-50 border-emerald-200'
-                    : diagnostic.state === 'connected'
-                    ? 'text-blue-700 bg-blue-50 border-blue-200'
-                    : diagnostic.state === 'configured_unverified'
-                    ? 'text-amber-700 bg-amber-50 border-amber-200'
-                    : diagnostic.state === 'demo_mode'
-                    ? 'text-purple-700 bg-purple-50 border-purple-200'
-                    : 'text-slate-600 bg-slate-100 border-slate-200'
-                }`}
-              >
-                <span
-                  className={`w-1.5 h-1.5 rounded-full ${
-                    diagnostic.state === 'authenticated'
-                      ? 'bg-emerald-500 animate-pulse'
-                      : diagnostic.state === 'connected'
-                      ? 'bg-blue-500'
-                      : diagnostic.state === 'configured_unverified'
-                      ? 'bg-amber-500'
-                      : diagnostic.state === 'demo_mode'
-                      ? 'bg-purple-500'
-                      : 'bg-slate-400'
-                  }`}
-                />
-                <span>{diagnostic.statusLabel}</span>
-              </span>
-            )}
-          </div>
-
-          <p className="text-[11px] text-slate-500 leading-relaxed">
-            {diagnostic?.description || 'Evaluating Supabase connectivity...'}
-          </p>
-
-          {/* Diagnostic breakdown table */}
-          {diagnostic && (
-            <div className="bg-slate-50 rounded-xl p-3 border border-slate-100 text-[11px] flex flex-col gap-2 font-mono">
-              <div className="flex items-center justify-between">
-                <span className="text-slate-500">Host:</span>
-                <span className="font-semibold text-slate-800 text-[10px]">
-                  {diagnostic.host || 'Not configured'}
-                </span>
-              </div>
-
-              <div className="flex items-center justify-between">
-                <span className="text-slate-500">Session:</span>
-                <span className="font-semibold text-slate-800 text-[10px]">
-                  {diagnostic.isAuthenticated ? diagnostic.userEmail : 'Unauthenticated'}
-                </span>
-              </div>
-
-              <div className="pt-1 border-t border-slate-200/60 flex flex-col gap-1 text-[10px]">
-                <div className="flex items-center justify-between">
-                  <span className="text-slate-500">Tables (RLS):</span>
-                  <span className="font-semibold text-slate-800">
-                    {diagnostic.tables.dealerships && diagnostic.tables.vehicles && diagnostic.tables.enquiries ? (
-                      <span className="text-emerald-700 font-bold">✓ dealerships, vehicles, enquiries</span>
-                    ) : (
-                      <span className="text-amber-700">Check schema</span>
-                    )}
-                  </span>
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <span className="text-slate-500">vehicle-photos:</span>
-                  <span className="font-semibold">
-                    {diagnostic.storageBuckets.vehiclePhotos ? (
-                      <span className="text-emerald-700">✓ Ready</span>
-                    ) : (
-                      <span className="text-amber-700">
-                        {diagnostic.storageBuckets.vehiclePhotosError || 'Missing bucket'}
-                      </span>
-                    )}
-                  </span>
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <span className="text-slate-500">dealership-assets:</span>
-                  <span className="font-semibold">
-                    {diagnostic.storageBuckets.dealershipAssets ? (
-                      <span className="text-emerald-700">✓ Ready</span>
-                    ) : (
-                      <span className="text-amber-700">
-                        {diagnostic.storageBuckets.dealershipAssetsError || 'Missing bucket'}
-                      </span>
-                    )}
-                  </span>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Run test button */}
-          <button
-            type="button"
-            onClick={loadDiagnostic}
-            disabled={isRunningDiagnostic}
-            className="w-full py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-semibold text-xs flex items-center justify-center gap-1.5 transition-colors disabled:opacity-50"
-          >
-            {isRunningDiagnostic ? (
-              <>
-                <Loader2 className="w-3.5 h-3.5 animate-spin text-slate-500" />
-                <span>Testing Supabase connection...</span>
-              </>
-            ) : (
-              <>
-                <RefreshCw className="w-3.5 h-3.5 text-slate-500" />
-                <span>Run Connection Test</span>
-              </>
-            )}
-          </button>
-        </div>
-
         {/* Save Button */}
         <button
           type="submit"
@@ -709,27 +507,8 @@ export const SettingsPage: React.FC = () => {
           <Save className="w-4 h-4" />
           <span>Save Changes</span>
         </button>
-
-        {/* Demo Controls / Reset & Sign Out */}
+        {/* Account actions */}
         <div className="pt-2 flex flex-col gap-2">
-          <button
-            type="button"
-            onClick={handleResetData}
-            className="w-full py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs flex items-center justify-center gap-1.5 transition-colors"
-          >
-            <RotateCcw className="w-3.5 h-3.5" />
-            <span>Reset to Demo Data</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={handleSignOut}
-            className="w-full py-2.5 rounded-xl hover:bg-rose-50 text-rose-600 font-semibold text-xs flex items-center justify-center gap-1.5 transition-colors"
-          >
-            <LogOut className="w-3.5 h-3.5" />
-            <span>Sign Out</span>
-          </button>
-        </div>
       </form>
 
       {/* Fixed Bottom Navigation */}
