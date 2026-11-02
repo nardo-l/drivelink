@@ -551,3 +551,33 @@ img { max-width: 100%; }
  .dl-store-car-bottom { align-items:flex-start;flex-direction:column; }
 }
 @media(prefers-reduced-motion:reduce) { .dl-store-car-photo>img { transition:none; } }
+
+/* Keep public showroom inventory cards inside the mobile viewport. */
+.dl-store-browse {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 1160px;
+  min-width: 0;
+  overflow-x: clip;
+}
+.dl-store-browse *,
+.dl-store-browse *::before,
+.dl-store-browse *::after { box-sizing: border-box; }
+.dl-store-list {
+  width: 100%;
+  min-width: 0;
+  grid-template-columns: minmax(0, 1fr);
+}
+.dl-store-car-card,
+.dl-store-car-photo { width: 100%; max-width: 100%; min-width: 0; }
+.dl-store-car-bottom { min-width: 0; flex-wrap: wrap; }
+.dl-store-car-bottom > strong { min-width: 0; max-width: 100%; }
+.dl-store-car-bottom > button { flex: 0 0 auto; }
+@media (max-width: 700px) {
+  .dl-store-browse { padding-right: 16px; padding-left: 16px; }
+  .dl-store-list { grid-template-columns: minmax(0, 1fr); }
+  .dl-store-car-photo { aspect-ratio: 1.48; min-height: 0; }
+  .dl-store-car-overlay { padding-right: 14px; padding-left: 14px; }
+  .dl-store-car-bottom { gap: 8px; }
+  .dl-store-car-bottom > strong { font-size: clamp(19px, 5.5vw, 23px); }
+}
