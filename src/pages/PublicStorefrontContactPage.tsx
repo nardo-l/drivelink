@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ArrowLeft, MapPin, Phone, MessageCircle, Send, Share2, Grid2X2 } from 'lucide-react';
+import { ArrowLeft, MapPin, Phone, MessageCircle, Send, Share2, Grid2x2 } from 'lucide-react';
 import { useNavigation } from '../context/NavigationContext';
 import { storageService } from '../services/storage';
 import { supabaseService } from '../services/supabaseService';
@@ -80,6 +80,6 @@ export const PublicStorefrontContactPage: React.FC<{ slug: string }> = ({ slug }
         <button type="submit" disabled={sending}>{sending ? 'Sending…' : 'Send Enquiry'}</button>
       </>}
     </form>
-    <nav className="dl-store-bottom-nav"><button onClick={() => navigate('/' + dealer.slug)}><Grid2X2/><span>Home</span></button><button onClick={back}><span>Inventory</span></button><button className="active"><MessageCircle/><span>Enquiries</span></button><button onClick={shareShowroom}><Share2/><span>More</span></button></nav>
+    <nav className="dl-store-bottom-nav"><button onClick={() => navigate('/' + dealer.slug)}><Grid2x2/><span>Home</span></button><button onClick={back}><span>Inventory</span></button><button className="active"><MessageCircle/><span>Enquiries</span></button><button onClick={shareShowroom}><Share2/><span>More</span></button></nav>
   </main>;
 };
