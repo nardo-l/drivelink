@@ -49,7 +49,7 @@ export const PublicShowroomPage: React.FC<PublicShowroomPageProps> = ({ slug, pr
   const heroPhoto = dealer.coverUrl || vehicles.find(v => v.photos?.[0])?.photos[0] || '';
   const title = dealer.tagline?.trim() || 'Drive Your Dream Today.';
   const description = dealer.bio?.trim() || 'Premium cars. Great deals. Trusted dealership.';
-  const browse = () => navigate('/showroom/' + encodeURIComponent(dealer.slug) + '/browse');
+  const browse = () => navigate('/' + encodeURIComponent(dealer.slug) + '/browse');
 
   return (
     <main className="dl-cinematic-storefront" style={heroPhoto ? { backgroundImage: 'linear-gradient(90deg,rgba(0,0,0,.76),rgba(0,0,0,.16)),linear-gradient(0deg,rgba(0,0,0,.38),transparent 55%),url("' + heroPhoto + '") } : undefined}>
@@ -59,7 +59,7 @@ export const PublicShowroomPage: React.FC<PublicShowroomPageProps> = ({ slug, pr
           <span><strong>{dealer.name}</strong><small>{[dealer.city, dealer.country].filter(Boolean).join(', ')}</small></span>
         </button>
         <button className="dl-cinematic-menu" onClick={() => setMenuOpen(v => !v)} aria-label="Open menu">{menuOpen ? <X/> : <Menu/>}</button>
-        {menuOpen && <div className="dl-cinematic-menu-panel"><button onClick={browse}>Explore cars</button><button onClick={() => navigate('/showroom/' + dealer.slug + '/contact')}>Contact dealership</button></div>}
+        {menuOpen && <div className="dl-cinematic-menu-panel"><button onClick={browse}>Explore cars</button><button onClick={() => navigate('/' + dealer.slug + '/contact')}>Contact dealership</button></div>}
       </header>
       <section className="dl-cinematic-copy">
         <p className="dl-cinematic-eyebrow">{dealer.city}{dealer.city && dealer.country ? ' · ' : ''}{dealer.country}</p>
