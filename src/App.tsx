@@ -186,7 +186,7 @@ function AppContent() {
     // 11. Public Vehicle Details: /showroom/:slug/vehicle/:id / Screen 06
     const vehicleDetailMatch = currentPath.match(/^\/showroom\/([^/]+)\/vehicle\/([^/]+)/);
     if (vehicleDetailMatch) {
-      return <PublicVehicleDetailPage vehicleId={vehicleDetailMatch[2]} />;
+      return <PublicVehicleDetailPage slug={decodeURIComponent(vehicleDetailMatch[1])} vehicleId={vehicleDetailMatch[2]} />;
     }
 
     // 12. Public Showroom: /showroom/:slug / Screen 05
