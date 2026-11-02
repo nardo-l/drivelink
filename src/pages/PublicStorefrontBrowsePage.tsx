@@ -86,7 +86,7 @@ export const PublicStorefrontBrowsePage: React.FC<{ slug: string }> = ({ slug })
       <button className="dl-store-filter-button" onClick={() => setFiltersOpen(true)} aria-label="Open filters"><SlidersHorizontal/></button>
     </section>
     <div className="dl-store-brands">{brands.map(item => <button key={item} className={brand === item ? 'active' : ''} onClick={() => setBrand(item)}>{item}</button>)}</div>
-    <section className="dl-store-section-heading"><div><h1>Available Cars</h1><p>{filtered.length} vehicles available</p></div><button onClick={() => {setBrand('All');setQuery('');}}>View all <ArrowRight size={16}/></button></section>
+    <section className="dl-store-section-heading"><div><h1>Featured Cars</h1><p>{filtered.length} vehicles available</p></div><button onClick={() => {setBrand('All');setQuery('');}}>View all <ArrowRight size={16}/></button></section>
     <div className="dl-store-sort"><span>Available inventory</span><select value={sort} onChange={e => setSort(e.target.value)} aria-label="Sort vehicles"><option value="newest">Recently added</option><option value="price-low">Price: low to high</option><option value="price-high">Price: high to low</option><option value="year">Newest year</option></select></div>
     {filtered.length ? <section className="dl-store-list">{filtered.map(vehicle => <article key={vehicle.id} className="dl-store-car-card">
       <div className="dl-store-car-photo">
