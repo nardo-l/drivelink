@@ -195,6 +195,24 @@ function AppContent() {
       return <PublicShowroomPage slug={showroomMatch[1]} />;
     }
 
+    // Vanity public showroom URLs: /dealership-slug, /dealership-slug/browse, /dealership-slug/contact
+    const vanityVehicleMatch = currentPath.match(/^\/([^/]+)\/vehicle\/([^/]+)\/?$/);
+    if (vanityVehicleMatch) {
+      return <PublicVehicleDetailPage slug={decodeURIComponent(vanityVehicleMatch[1])} vehicleId={vanityVehicleMatch[2]} />;
+    }
+    const vanityBrowseMatch = currentPath.match(/^\/([^/]+)\/browse\/?$/);
+    if (vanityBrowseMatch) {
+      return <PublicStorefrontBrowsePage slug={decodeURIComponent(vanityBrowseMatch[1])} />;
+    }
+    const vanityContactMatch = currentPath.match(/^\/([^/]+)\/contact\/?$/);
+    if (vanityContactMatch) {
+      return <PublicStorefrontContactPage slug={decodeURIComponent(vanityContactMatch[1])} />;
+    }
+    const vanityShowroomMatch = currentPath.match(/^\/([^/]+)\/?$/);
+    if (vanityShowroomMatch) {
+      return <PublicShowroomPage slug={decodeURIComponent(vanityShowroomMatch[1])} />;
+    }
+
     // Fallback: Welcome page
     return <WelcomePage />;
   };
