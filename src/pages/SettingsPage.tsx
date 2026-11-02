@@ -4,10 +4,10 @@ import { storageService } from '../services/storage';
 import { supabaseService } from '../services/supabaseService';
 import { isSupabaseConfigured } from '../lib/supabase';
 import { CurrencyCode } from '../types';
+import { BottomNav } from '../components/layout/BottomNav';
 import {
   Building2, Phone, MessageCircle, MapPin, Globe, ExternalLink,
-  Save, Loader2, Upload, Image as ImageIcon, Home, CarFront,
-  UsersRound, Store,
+  Save, Loader2, Upload, Image as ImageIcon,
 } from 'lucide-react';
 
 export const SettingsPage: React.FC = () => {
@@ -304,23 +304,8 @@ export const SettingsPage: React.FC = () => {
         </button>
       </form>
 
-      <nav aria-label="Main navigation" className="sticky bottom-0 z-40 flex shrink-0 items-center justify-around border-t border-white/10 bg-[#252525] px-2 pb-safe pt-2 text-white shadow-[0_-5px_18px_rgba(0,0,0,0.08)]">
-        {[
-          { label: 'Home', path: '/app', icon: Home },
-          { label: 'Garage', path: '/app/vehicles', icon: CarFront },
-          { label: 'Enquiries', path: '/app/enquiries', icon: UsersRound },
-          { label: 'Store/Profile', path: '/app/settings', icon: Store },
-        ].map((item) => {
-          const Icon = item.icon;
-          const selected = item.path === '/app/settings';
-          return <button key={item.label} type="button" onClick={() => navigate(item.path)} aria-current={selected ? 'page' : undefined}
-            className="relative flex min-h-[52px] min-w-0 flex-1 flex-col items-center justify-center gap-1 text-white/75 transition hover:text-white">
-            {selected && <span className="absolute -top-2 h-[3px] w-7 rounded-full bg-[#F47716]" />}
-            <Icon className={`h-[19px] w-[19px] ${selected ? 'text-white' : ''}`} strokeWidth={selected ? 2.3 : 1.8} />
-            <span className={`whitespace-nowrap text-[9px] ${selected ? 'font-bold text-white' : 'font-medium'}`}>{item.label}</span>
-          </button>;
-        })}
-      </nav>
+      <BottomNav />
+
     </div>
   );
 };
