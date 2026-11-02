@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowLeft, CheckCircle2, Clock3, CreditCard, ExternalLink, Loader2, RefreshCw, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, Clock3, CreditCard, ExternalLink, Loader2, ShieldCheck } from 'lucide-react';
 import { useNavigation } from '../context/NavigationContext';
 import { supabase } from '../lib/supabase';
 import { isSupabaseConfigured } from '../lib/supabase';
@@ -140,7 +140,6 @@ export const BillingPage: React.FC = () => {
         <section className="rounded-2xl bg-white border border-slate-100 p-4 shadow-sm">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-sm font-extrabold">Payment history</h2>
-            <button onClick={loadStatus} disabled={loading} aria-label="Refresh payment history" className="p-2 rounded-full hover:bg-slate-100"><RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} /></button>
           </div>
           {payments.length === 0 ? <p className="text-xs text-slate-500 py-3">Your payments will appear here after checkout.</p> : (
             <div className="divide-y divide-slate-100">
