@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { BarChart3, Car, MessageSquare, Eye, RefreshCw, TrendingUp, CircleHelp } from 'lucide-react';
+import { BarChart3, Car, MessageSquare, Eye, TrendingUp, CircleHelp } from 'lucide-react';
 import { storageService } from '../services/storage';
 import { supabaseService } from '../services/supabaseService';
 import { BottomNav } from '../components/layout/BottomNav';
@@ -105,9 +105,6 @@ export const AnalyticsPage: React.FC = () => {
             <h1 className="text-2xl font-extrabold tracking-tight mt-1">Analytics</h1>
             <p className="text-sm text-slate-500 mt-1">{dealership?.name || 'Your showroom'} · Real recorded activity</p>
           </div>
-          <button onClick={() => void loadAnalytics()} disabled={loading} aria-label="Refresh analytics" className="h-10 w-10 shrink-0 rounded-xl border border-slate-200 bg-white flex items-center justify-center disabled:opacity-50">
-            <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-          </button>
         </div>
 
         {error && <div role="alert" className="mb-4 rounded-xl border border-rose-200 bg-rose-50 p-3 text-sm text-rose-800">{error}</div>}
