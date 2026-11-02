@@ -481,3 +481,35 @@ img { max-width: 100%; }
  .dl-store-bottom-nav { bottom:22px; }
 }
 @media (prefers-reduced-motion:reduce) { .dl-store-car-photo>img { transition:none; } }
+
+
+/* Public vehicle detail */
+.dl-vehicle-public-header { display:flex;justify-content:space-between;align-items:center;padding:0 0 16px; }
+.dl-vehicle-public-header button { width:42px;height:42px;display:grid;place-items:center;border:1px solid #eee;border-radius:50%;background:#fff;color:#111; }
+.dl-vehicle-public-gallery { position:relative;overflow:hidden;aspect-ratio:16/10;border-radius:20px;background:#eee; }
+.dl-vehicle-public-gallery>img { width:100%;height:100%;object-fit:cover; }
+.dl-vehicle-no-photo { display:grid;place-items:center;width:100%;height:100%;color:#777;font-size:13px; }
+.dl-vehicle-public-gallery>button { position:absolute;top:50%;transform:translateY(-50%);width:40px;height:40px;display:grid;place-items:center;border:0;border-radius:50%;background:rgba(0,0,0,.58);color:#fff; }
+.dl-vehicle-public-gallery>button.prev { left:14px; }.dl-vehicle-public-gallery>button.next { right:14px; }
+.dl-vehicle-photo-count { position:absolute;right:14px;bottom:14px;padding:7px 11px;border-radius:30px;background:rgba(0,0,0,.65);color:#fff;font-size:11px; }
+.dl-vehicle-public-content { max-width:900px;margin:0 auto;padding:25px 0 100px; }
+.dl-vehicle-public-title { display:flex;justify-content:space-between;align-items:start;gap:16px; }
+.dl-vehicle-public-title p { margin:0 0 5px;color:#777;font-size:12px; }
+.dl-vehicle-public-title h1 { margin:0;font-size:clamp(25px,4vw,36px);font-weight:900;letter-spacing:-1.2px; }
+.dl-vehicle-public-title>strong { flex-shrink:0;font-size:clamp(21px,3vw,30px);font-weight:900;letter-spacing:-.8px; }
+.dl-vehicle-public-location { display:flex;align-items:center;gap:6px;margin:12px 0 28px;color:#777;font-size:13px; }
+.dl-vehicle-public-section { margin:26px 0; }
+.dl-vehicle-public-section h2 { margin:0 0 13px;font-size:17px;font-weight:850;letter-spacing:-.4px; }
+.dl-vehicle-public-section>p { color:#555;font-size:14px;line-height:1.7;white-space:pre-wrap; }
+.dl-vehicle-spec-grid { display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;overflow:hidden;border:1px solid #eee;border-radius:15px;background:#eee; }
+.dl-vehicle-spec-grid>div { display:grid;gap:6px;padding:14px;background:#fafafa; }
+.dl-vehicle-spec-grid span { color:#888;font-size:11px; }.dl-vehicle-spec-grid strong { color:#111;font-size:13px; }
+.dl-vehicle-features { display:flex;flex-wrap:wrap;gap:8px; }
+.dl-vehicle-features span { padding:9px 12px;border:1px solid #e8e8e8;border-radius:30px;color:#333;font-size:12px; }
+.dl-vehicle-dealer-card { width:100%;display:flex;align-items:center;gap:12px;padding:14px;border:1px solid #eee;border-radius:16px;background:#fff;text-align:left;color:#111; }
+.dl-vehicle-dealer-card img,.dl-vehicle-dealer-card>span { width:44px;height:44px;display:grid;place-items:center;border-radius:50%;object-fit:contain;background:#f2f2f2;font-weight:850; }
+.dl-vehicle-dealer-card div { flex:1;display:grid;gap:4px; }.dl-vehicle-dealer-card strong { font-size:13px; }.dl-vehicle-dealer-card small { color:#777;font-size:11px; }
+.dl-vehicle-public-actions { position:fixed;z-index:35;left:50%;bottom:12px;transform:translateX(-50%);width:min(620px,calc(100% - 24px));display:flex;gap:10px;padding:9px;border:1px solid #eee;border-radius:28px;background:rgba(255,255,255,.96);box-shadow:0 8px 35px rgba(0,0,0,.13);backdrop-filter:blur(16px); }
+.dl-vehicle-public-actions a { min-height:48px;flex:1;display:flex;align-items:center;justify-content:center;gap:8px;border-radius:24px;background:#080808;color:#fff;text-decoration:none;font-size:12px;font-weight:850; }
+.dl-vehicle-public-actions a.secondary { flex:0 0 auto;padding:0 20px;background:#fff;border:1px solid #ddd;color:#111; }
+@media(max-width:600px) { .dl-vehicle-public-gallery { margin:0 -16px;border-radius:0;aspect-ratio:1.25; }.dl-vehicle-public-content { padding-top:20px; }.dl-vehicle-spec-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
