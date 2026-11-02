@@ -75,7 +75,7 @@ export const LoginPage: React.FC = () => {
         aria-hidden="true"
         className="absolute inset-0 h-full w-full object-cover object-center"
       />
-      <div className="absolute inset-0 bg-white/65" aria-hidden="true" />
+      <div className="absolute inset-0 bg-white/40" aria-hidden="true" />
 
       <div className="relative z-10 flex items-center justify-between">
         <button
@@ -95,16 +95,16 @@ export const LoginPage: React.FC = () => {
         </div>
       </div>
 
-      <div className="relative z-10 flex flex-col items-center text-center my-auto w-full max-w-md mx-auto rounded-3xl border border-white/70 bg-white/85 p-6 shadow-xl backdrop-blur-md">
+      <div className="relative z-10 flex flex-col items-center text-center my-auto w-full max-w-md mx-auto">
         <h1 className="text-2xl font-extrabold text-slate-950 tracking-tight">
           Welcome back
         </h1>
-        <p className="text-xs text-slate-500 mt-1 max-w-xs">
+        <p className="text-xs text-slate-700 mt-1 max-w-xs">
           Sign in to manage your vehicle inventory and buyer leads.
         </p>
 
         {authError && (
-          <div className="w-full mt-3 p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-start gap-2 text-left">
+          <div className="w-full mt-3 p-3 rounded-xl bg-rose-50/95 border border-rose-200 text-rose-700 text-xs flex items-start gap-2 text-left">
             <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
             <div className="flex-1">
               <p className="font-semibold">{authError}</p>
@@ -119,7 +119,7 @@ export const LoginPage: React.FC = () => {
 
         <form onSubmit={handleLogin} className="w-full flex flex-col gap-3.5 mt-5 text-left">
           <div>
-            <label className="block text-xs font-semibold text-slate-800 mb-1">
+            <label className="block text-xs font-semibold text-slate-900 mb-1">
               Email Address
             </label>
             <input
@@ -128,12 +128,12 @@ export const LoginPage: React.FC = () => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="dealer@example.com"
-              className="w-full h-11 px-3.5 rounded-xl border border-slate-200 bg-white/95 text-xs font-medium text-slate-900 focus:border-slate-950 focus:outline-none placeholder:text-slate-400"
+              className="w-full h-11 px-3.5 rounded-xl border border-slate-200 bg-white/90 text-xs font-medium text-slate-900 focus:border-slate-950 focus:outline-none placeholder:text-slate-400"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-800 mb-1">
+            <label className="block text-xs font-semibold text-slate-900 mb-1">
               Password
             </label>
             <div className="relative">
@@ -143,7 +143,7 @@ export const LoginPage: React.FC = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Enter your password"
-                className="w-full h-11 px-3.5 pr-10 rounded-xl border border-slate-200 bg-white/95 text-xs font-medium text-slate-900 focus:border-slate-950 focus:outline-none placeholder:text-slate-400"
+                className="w-full h-11 px-3.5 pr-10 rounded-xl border border-slate-200 bg-white/90 text-xs font-medium text-slate-900 focus:border-slate-950 focus:outline-none placeholder:text-slate-400"
               />
               <button
                 type="button"
@@ -173,11 +173,11 @@ export const LoginPage: React.FC = () => {
       </div>
 
       <div className="relative z-10 pt-4 text-center">
-        <p className="inline-block rounded-full bg-white/80 px-4 py-2 text-xs text-slate-600 backdrop-blur-sm">
+        <p className="inline-block rounded-full bg-white/70 px-4 py-2 text-xs text-slate-700 backdrop-blur-sm">
           Don&apos;t have a dealership yet?{' '}
           <button
             onClick={() => navigate('/signup')}
-            className="text-blue-600 font-semibold hover:underline"
+            className="text-blue-700 font-semibold hover:underline"
           >
             Create one
           </button>
