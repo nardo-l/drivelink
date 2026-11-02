@@ -54,7 +54,7 @@ export const PublicVehicleDetailPage: React.FC<PublicVehicleDetailPageProps> = (
   ].filter((item): item is [string,string] => Boolean(item[1]));
 
   return <main className="dl-public-vehicle dl-store-browse">
-    <header className="dl-vehicle-public-header"><button onClick={() => navigate('/showroom/' + dealer.slug + '/browse')} aria-label="Back"><ArrowLeft/></button><button onClick={() => setShareOpen(true)} aria-label="Share vehicle"><Share2/></button></header>
+    <header className="dl-vehicle-public-header"><button onClick={() => navigate('/' + dealer.slug + '/browse')} aria-label="Back"><ArrowLeft/></button><button onClick={() => setShareOpen(true)} aria-label="Share vehicle"><Share2/></button></header>
     <section className="dl-vehicle-public-gallery">
       {photos[photoIndex] ? <img src={photos[photoIndex]} alt={vehicle.year + ' ' + vehicle.make + ' ' + vehicle.model}/> : <div className="dl-vehicle-no-photo">No vehicle photos available</div>}
       {photos.length > 1 && <><button className="prev" onClick={() => setPhotoIndex(i => (i - 1 + photos.length) % photos.length)} aria-label="Previous photo"><ChevronLeft/></button><button className="next" onClick={() => setPhotoIndex(i => (i + 1) % photos.length)} aria-label="Next photo"><ChevronRight/></button><span className="dl-vehicle-photo-count">{photoIndex + 1} / {photos.length}</span></>}
@@ -65,7 +65,7 @@ export const PublicVehicleDetailPage: React.FC<PublicVehicleDetailPageProps> = (
       <section className="dl-vehicle-public-section"><h2>Specifications</h2><div className="dl-vehicle-spec-grid">{specs.map(([label,value]) => <div key={label}><span>{label}</span><strong>{value}</strong></div>)}</div></section>
       {vehicle.description && <section className="dl-vehicle-public-section"><h2>About this vehicle</h2><p>{vehicle.description}</p></section>}
       {!!vehicle.features?.length && <section className="dl-vehicle-public-section"><h2>Features</h2><div className="dl-vehicle-features">{vehicle.features.map(f => <span key={f}>{f}</span>)}</div></section>}
-      <button className="dl-vehicle-dealer-card" onClick={() => navigate('/showroom/' + dealer.slug)}>{dealer.logoUrl ? <img src={dealer.logoUrl} alt=""/> : <span>{dealer.name.slice(0,2)}</span>}<div><strong>{dealer.name}</strong><small>{dealer.city} · View dealership</small></div><ArrowRight/></button>
+      <button className="dl-vehicle-dealer-card" onClick={() => navigate('/' + dealer.slug)}>{dealer.logoUrl ? <img src={dealer.logoUrl} alt=""/> : <span>{dealer.name.slice(0,2)}</span>}<div><strong>{dealer.name}</strong><small>{dealer.city} · View dealership</small></div><ArrowRight/></button>
     </section>
     <div className="dl-vehicle-public-actions">{wa && <a href={wa} target="_blank" rel="noreferrer">Enquire on WhatsApp</a>}{dealer.phone && <a className="secondary" href={'tel:' + dealer.phone}><Phone size={17}/> Call</a>}</div>
     <ShareModal isOpen={shareOpen} onClose={() => setShareOpen(false)} title={vehicle.year + ' ' + vehicle.make + ' ' + vehicle.model} url={window.location.href} description={'View this vehicle at ' + dealer.name + '.'}/>
