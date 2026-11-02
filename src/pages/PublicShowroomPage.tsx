@@ -52,7 +52,7 @@ export const PublicShowroomPage: React.FC<PublicShowroomPageProps> = ({ slug, pr
   const browse = () => navigate('/' + encodeURIComponent(dealer.slug) + '/browse');
 
   return (
-    <main className="dl-cinematic-storefront" style={heroPhoto ? { backgroundImage: 'linear-gradient(90deg,rgba(0,0,0,.76),rgba(0,0,0,.16)),linear-gradient(0deg,rgba(0,0,0,.38),transparent 55%),url("' + heroPhoto + '") } : undefined}>
+    <main className="dl-cinematic-storefront" style={heroPhoto ? { backgroundImage: 'linear-gradient(90deg,rgba(0,0,0,.76),rgba(0,0,0,.16)),linear-gradient(0deg,rgba(0,0,0,.38),transparent 55%),url(' + JSON.stringify(heroPhoto) + ')' } : undefined}>
       <header className="dl-cinematic-header">
         <button className="dl-cinematic-brand" onClick={browse} aria-label="Explore dealership inventory">
           {dealer.logoUrl ? <img src={dealer.logoUrl} alt="" /> : <span>{dealer.name.slice(0,2).toUpperCase()}</span>}
