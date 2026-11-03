@@ -1,16 +1,15 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import './ConversationalOnboardingFlow.css';
-import { ArrowLeft, ArrowRight, Check, Copy, Car, Truck, Bus, Crown, TrendingUp, Users, Star, Rocket, Upload, X, Eye, EyeOff, MapPin, Link2, Loader2, Share2, MessageCircle } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, Copy, Car, Truck, Bus, Crown, Eye, EyeOff, Link2, Loader2, MessageCircle } from 'lucide-react';
 import { useNavigation } from '../context/NavigationContext';
 import { storageService } from '../services/storage';
 import { supabaseService } from '../services/supabaseService';
-import { supabase, isSupabaseConfigured } from '../lib/supabase';
-import { OnboardingState, SellerType, Dealership, Vehicle } from '../types';
+import { isSupabaseConfigured } from '../lib/supabase';
+import { OnboardingState, SellerType } from '../types';
 import { toE164 } from '../utils/phoneUtils';
 import { MARKETING_CAR_IMAGES } from '../utils/marketingCarImages';
 
 const TOTAL = 6;
-const ORANGE = '#FF7417';
 const initialState = (): OnboardingState => ({
   currentStep: 1,
   account: { businessName: '', email: '', password: '', handle: '' },
@@ -23,8 +22,6 @@ const initialState = (): OnboardingState => ({
   isCompleted: false,
 });
 
-const inputClass = 'w-full h-12 rounded-2xl border border-[#E7E7E5] bg-white px-4 text-sm text-[#171717] outline-none transition focus:border-[#FF7417] focus:ring-2 focus:ring-orange-100';
-const labelClass = 'mb-2 block text-xs font-semibold text-[#444]';
 
 export const OnboardingFlow: React.FC = () => {
   const { navigate, showToast } = useNavigation();
@@ -41,9 +38,6 @@ export const OnboardingFlow: React.FC = () => {
       return { ...initialState(), ...saved, currentStep: mappedStep, account: { ...initialState().account, ...saved.account, password: '' } };
     } catch { return initialState(); }
   });
-  const [goals, setGoals] = useState<string[]>([]);
-  const [logoFile, setLogoFile] = useState<File | null>(null);
-  const [vehicleFiles, setVehicleFiles] = useState<File[]>([]);
   const [available, setAvailable] = useState<boolean | null>(null);
   const [checking, setChecking] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -85,7 +79,7 @@ export const OnboardingFlow: React.FC = () => {
       }
     }).catch(error => console.warn('Could not restore onboarding session:', error));
     return () => { active = false; };
-  }, [navigate]);
+  }, []);
   const introTouchStart = useRef<number | null>(null);
   const handleIntroTouchStart = (event: React.TouchEvent<HTMLElement>) => { introTouchStart.current = event.changedTouches[0]?.clientX ?? null; };
   const handleIntroTouchEnd = (event: React.TouchEvent<HTMLElement>) => {
@@ -103,7 +97,6 @@ export const OnboardingFlow: React.FC = () => {
   const update = (patch: Partial<OnboardingState>) => setData(prev => ({ ...prev, ...patch }));
   const updateContact = (patch: Partial<OnboardingState['contact']>) => setData(prev => ({ ...prev, contact: { ...prev.contact, ...patch } }));
   const updateShowroom = (patch: Partial<OnboardingState['showroom']>) => setData(prev => ({ ...prev, showroom: { ...prev.showroom, ...patch } }));
-  const updateVehicle = (patch: Partial<OnboardingState['firstVehicle']>) => setData(prev => ({ ...prev, firstVehicle: { ...prev.firstVehicle, ...patch } }));
 
   useEffect(() => {
     if (data.isCompleted) { storageService.clearOnboardingState(); return; }
@@ -137,17 +130,6 @@ export const OnboardingFlow: React.FC = () => {
     setStep(step + 1);
   };
 
-  const uploadImage = (file: File, kind: 'logo' | 'vehicle') => {
-    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) { setError('Choose a JPG, PNG or WebP image.'); return; }
-    if (file.size > 5 * 1024 * 1024) { setError('Each image must be smaller than 5MB.'); return; }
-    if (kind === 'logo') { setLogoFile(file); update({ branding: { ...data.branding, logoPreview: URL.createObjectURL(file) } }); }
-    else {
-      const next = [...vehicleFiles, file].slice(0, 10);
-      setVehicleFiles(next);
-      updateVehicle({ photos: next.map(f => URL.createObjectURL(f)), isSkipped: false });
-    }
-    setError('');
-  };
 
   const finish = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -216,9 +198,6 @@ export const OnboardingFlow: React.FC = () => {
     } finally { setBusy(false); }
   };
 
-  const card = (selected: boolean) => `rounded-2xl border p-4 text-left transition-all ${selected ? 'border-[#FF7417] bg-orange-50/50 ring-1 ring-[#FF7417]' : 'border-[#E7E7E5] bg-white hover:border-gray-300'}`;
-  const primary = 'h-12 w-full rounded-full bg-[#FF7417] px-5 text-sm font-bold text-white shadow-sm transition hover:bg-[#ed650b] disabled:cursor-not-allowed disabled:opacity-60 flex items-center justify-center gap-2';
-  const footer = <div className="mt-auto pt-6">{error && <p role="alert" className="mb-3 rounded-xl bg-red-50 p-3 text-xs text-red-700">{error}</p>}{step < 8 ? <button type="button" className={primary} onClick={continueStep}>Continue <ArrowRight size={17}/></button> : null}</div>;
 
 
   const renderIntroVisual = () => {
