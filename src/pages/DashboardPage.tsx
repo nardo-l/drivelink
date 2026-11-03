@@ -47,13 +47,35 @@ export const DashboardPage: React.FC = () => {
 
   return (
     <div className="dl-workspace relative min-h-full flex flex-col text-[#171717]">
-      <main className="flex-1 overflow-y-auto px-4 sm:px-7 pt-5 pb-[160px] w-full max-w-5xl mx-auto">
+      <main className="flex-1 overflow-y-auto px-4 sm:px-7 pt-5 pb-[88px] w-full max-w-5xl mx-auto">
         <header className="!bg-transparent !backdrop-blur-0 !border-0 flex items-center justify-between gap-3 mb-5">
           <div className="min-w-0">
             <p className="text-xs text-[#777] font-medium">{greeting}</p>
             <button onClick={() => navigate('/app/settings')} className="flex items-center gap-1 text-xl font-extrabold tracking-tight text-left truncate">{dealership.name}<span className="text-[#f47716] text-xs">⌄</span></button>
           </div>
-          <button onClick={() => navigate('/app/notifications')} aria-label="Notifications" className="relative w-11 h-11 rounded-full bg-white border border-[#ececec] flex items-center justify-center"><Bell size={19}/>{newLeads > 0 && <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-[#f47716]"/>}</button>
+          <div className="flex shrink-0 items-center gap-2">
+            <button
+              type="button"
+              onClick={async () => {
+                const shareData = { title: dealership.name, text: 'Explore vehicles from ' + dealership.name + '.', url: fullPublicUrl };
+                if (typeof navigator !== 'undefined' && navigator.share) {
+                  try { await navigator.share(shareData); } catch (error: any) {
+                    if (error?.name !== 'AbortError') showToast('Could not share storefront.');
+                  }
+                  return;
+                }
+                try {
+                  await navigator.clipboard.writeText(fullPublicUrl);
+                  showToast('Storefront link copied');
+                } catch {
+                  showToast('Unable to copy storefront link');
+                }
+              }}
+              className="inline-flex h-10 items-center gap-2 rounded-full bg-black px-3.5 text-sm font-semibold text-white transition-transform active:scale-95"
+              aria-label="Share storefront"
+            ><Share2 size={18}/><span>Share</span></button>
+            <button onClick={() => navigate('/app/notifications')} aria-label="Notifications" className="relative w-11 h-11 rounded-full bg-white border border-[#ececec] flex items-center justify-center"><Bell size={19}/>{newLeads > 0 && <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-[#f47716]"/>}</button>
+          </div>
         </header>
 
         <section className="rounded-[24px] bg-white border border-[#ededed] p-4 flex items-center gap-4 mb-4">
@@ -92,16 +114,7 @@ export const DashboardPage: React.FC = () => {
         {loadError && <div role="alert" className="rounded-xl bg-red-50 text-red-700 p-3 text-xs flex gap-2"><CircleAlert size={16}/>{loadError}</div>}
         <button onClick={()=>navigate('/app/vehicles/new')} className="dl-accent-button w-full rounded-full min-h-12 font-extrabold text-sm flex items-center justify-center gap-2 mt-4 shadow-lg shadow-orange-500/15"><Plus size={18}/> Add Vehicle</button>
       </main>
-      <button
-        type="button"
-        onClick={() => setShareOpen(true)}
-        className="fixed z-40 right-4 sm:right-8 inline-flex h-11 items-center gap-2 rounded-full bg-black px-4 text-sm font-semibold text-white shadow-xl shadow-black/20 transition-transform hover:-translate-y-0.5 active:scale-95" style={{ bottom: "calc(env(safe-area-inset-bottom, 0px) + 100px)" }}
-        aria-label="Share your storefront"
-      >
-        <Share2 size={18}/><span>Share storefront</span>
-      </button>
       <BottomNav/>
-      <ShareModal isOpen={shareOpen} onClose={()=>setShareOpen(false)} title={dealership.name} dealershipId={dealership.id} url={fullPublicUrl} description={`Explore vehicles from ${dealership.name}.`}/>
     </div>
   );
 };

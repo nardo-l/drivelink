@@ -1509,65 +1509,135 @@ body, .dl-frame, .dl-workspace { color: #171717; background: #FAF9F6 !important;
 .dl-welcome-hero:after { background: rgba(16,24,32,.68) !important; }
 
 
-/* Compact mobile dashboard navigation sizing. */
-.dl-bottom-nav {
-  left: 16px !important;
-  right: 16px !important;
-  bottom: calc(env(safe-area-inset-bottom, 0px) + 12px) !important;
+/* Full-width dealer dashboard bottom navigation. */
+.dl-workspace .dl-bottom-nav {
+  position: fixed !important;
+  z-index: 60 !important;
+  left: 0 !important;
+  right: 0 !important;
+  top: auto !important;
+  bottom: 0 !important;
   transform: none !important;
-  width: auto !important;
-  max-width: 520px;
-  height: 64px !important;
-  min-height: 64px !important;
-  padding: 6px 8px !important;
-  gap: 4px !important;
-  border-radius: 32px !important;
-  box-sizing: border-box;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: stretch !important;
+  justify-content: space-between !important;
+  gap: 0 !important;
+  width: 100% !important;
+  max-width: none !important;
+  height: calc(64px + env(safe-area-inset-bottom, 0px)) !important;
+  min-height: calc(64px + env(safe-area-inset-bottom, 0px)) !important;
+  padding: 0 0 env(safe-area-inset-bottom, 0px) !important;
+  border: 0 !important;
+  border-top: 1px solid #EEEEEE !important;
+  border-radius: 0 !important;
+  background: #FFFFFF !important;
+  box-shadow: 0 -6px 20px rgba(0,0,0,.06) !important;
+  box-sizing: border-box !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  overflow: visible !important;
 }
-.dl-bottom-nav-item {
-  flex: 1 1 0 !important;
-  min-width: 44px !important;
-  min-height: 44px !important;
-  height: 50px !important;
-  padding: 2px 4px !important;
-  gap: 2px !important;
+.dl-workspace .dl-bottom-nav-item {
+  position: relative !important;
+  display: flex !important;
+  flex: 1 1 25% !important;
   flex-direction: column !important;
-  border-radius: 24px !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 3px !important;
+  width: 25% !important;
+  min-width: 0 !important;
+  min-height: 48px !important;
+  height: 64px !important;
+  padding: 7px 2px 3px !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  color: #6B7280 !important;
+  box-shadow: none !important;
+  transform: none;
+  transition: transform .15s ease, color .15s ease !important;
 }
-.dl-bottom-nav-item .dl-bottom-nav-icon-wrap {
-  flex: 0 0 28px !important;
-  width: 28px !important;
-  height: 28px !important;
+.dl-workspace .dl-bottom-nav-item:active { transform: scale(.95) !important; }
+.dl-workspace .dl-bottom-nav-item .dl-bottom-nav-icon-wrap {
+  position: static !important;
+  display: grid !important;
+  flex: 0 0 22px !important;
+  place-items: center !important;
+  width: 22px !important;
+  height: 22px !important;
+  border-radius: 0 !important;
   background: transparent !important;
 }
-.dl-bottom-nav-item .dl-bottom-nav-icon { width: 22px !important; height: 22px !important; }
-.dl-bottom-nav-label { font-size: 11px !important; line-height: 13px !important; font-weight: 600 !important; }
-.dl-bottom-nav-item.is-active {
-  flex: 1.35 1 0 !important;
-  flex-direction: row !important;
+.dl-workspace .dl-bottom-nav-item .dl-bottom-nav-icon {
+  width: 22px !important;
+  height: 22px !important;
+  color: #6B7280 !important;
+  stroke-width: 2 !important;
+}
+.dl-workspace .dl-bottom-nav-label {
+  display: block !important;
+  max-width: 100% !important;
+  color: #6B7280 !important;
+  font-size: 11px !important;
+  font-weight: 500 !important;
+  line-height: 14px !important;
+  letter-spacing: 0 !important;
+  white-space: nowrap !important;
+}
+.dl-workspace .dl-bottom-nav-item.is-active {
+  flex: 1 1 25% !important;
+  flex-direction: column !important;
   justify-content: center !important;
-  gap: 7px !important;
-  height: 44px !important;
-  min-height: 44px !important;
-  padding: 0 16px !important;
-  border-radius: 24px !important;
+  gap: 3px !important;
+  height: 64px !important;
+  min-height: 48px !important;
+  padding: 7px 2px 3px !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  color: #F47716 !important;
+  box-shadow: none !important;
 }
-.dl-bottom-nav-item.is-active .dl-bottom-nav-icon-wrap {
-  flex: 0 0 20px !important; width: 20px !important; height: 20px !important;
+.dl-workspace .dl-bottom-nav-item.is-active::before {
+  content: "";
+  position: absolute;
+  top: 5px;
+  left: 50%;
+  width: 24px;
+  height: 4px;
+  border-radius: 999px;
+  background: #F47716;
+  transform: translateX(-50%);
 }
-.dl-bottom-nav-item.is-active .dl-bottom-nav-icon { width: 20px !important; height: 20px !important; }
-.dl-bottom-nav-item.is-active .dl-bottom-nav-label {
-  font-size: 14px !important; line-height: 18px !important; font-weight: 600 !important;
+.dl-workspace .dl-bottom-nav-item.is-active .dl-bottom-nav-icon-wrap {
+  flex: 0 0 22px !important;
+  width: 22px !important;
+  height: 22px !important;
+  background: transparent !important;
 }
+.dl-workspace .dl-bottom-nav-item.is-active .dl-bottom-nav-icon {
+  width: 22px !important;
+  height: 22px !important;
+  color: #F47716 !important;
+  stroke-width: 2.5 !important;
+}
+.dl-workspace .dl-bottom-nav-item.is-active .dl-bottom-nav-label {
+  color: #F47716 !important;
+  font-size: 11px !important;
+  font-weight: 500 !important;
+}
+.dl-workspace .dl-bottom-nav-badge { top: -2px !important; right: -7px !important; }
 @media (min-width: 1024px) {
-  .dl-bottom-nav {
-    left: 50% !important; right: auto !important; bottom: 24px !important;
-    width: min(520px, calc(100vw - 48px)) !important;
-    height: 64px !important; min-height: 64px !important;
-    transform: translateX(-50%) !important;
+  .dl-workspace .dl-bottom-nav {
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100% !important;
+    height: calc(64px + env(safe-area-inset-bottom, 0px)) !important;
+    min-height: calc(64px + env(safe-area-inset-bottom, 0px)) !important;
+    transform: none !important;
   }
-}
-@media (max-width: 360px) {
-  .dl-bottom-nav { left: 12px !important; right: 12px !important; padding-inline: 6px !important; gap: 2px !important; }
-  .dl-bottom-nav-item.is-active { padding-inline: 12px !important; gap: 5px !important; }
+  .dl-workspace > main { padding-left: 28px !important; }
+  .dl-workspace > header { padding-left: 28px !important; }
 }
