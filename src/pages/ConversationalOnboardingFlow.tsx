@@ -39,6 +39,24 @@ export const OnboardingFlow: React.FC = () => {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [introDone, setIntroDone] = useState(() => {
+    try { return localStorage.getItem('drivelink_intro_completed_v1') === 'true'; } catch { return false; }
+  });
+  const [introStep, setIntroStep] = useState(0);
+  const introSlides = [
+    { title: 'Your dealership, online.', body: 'Turn your cars into customers with a single powerful link.' },
+    { title: 'Turn your stock into a showroom.', body: 'Showcase your vehicles beautifully and keep your listings up to date.' },
+    { title: 'Get more WhatsApp enquiries.', body: 'Let buyers reach you instantly with one tap.' },
+    { title: 'Everything buyers need, in one link.', body: 'Photos, specs, price, location and WhatsApp — all in one place.' },
+    { title: 'Keep your showroom looking sharp.', body: 'Customise your link, match your brand and track your results.' },
+    { title: 'Launch your showroom in minutes.', body: 'Join dealers in Zimbabwe and South Africa building smarter with Drive Link.' },
+  ];
+  const finishIntro = () => {
+    try { localStorage.setItem('drivelink_intro_completed_v1', 'true'); } catch {}
+    setIntroDone(true);
+  };
+  const advanceIntro = () => introStep === introSlides.length - 1 ? finishIntro() : setIntroStep(value => Math.min(value + 1, introSlides.length - 1));
+
 
   const step = data.currentStep || 1;
   const countryCode = data.contact.country === 'South Africa' ? '+27' : '+263';
@@ -198,6 +216,32 @@ export const OnboardingFlow: React.FC = () => {
   const card = (selected: boolean) => `rounded-2xl border p-4 text-left transition-all ${selected ? 'border-[#FF7417] bg-orange-50/50 ring-1 ring-[#FF7417]' : 'border-[#E7E7E5] bg-white hover:border-gray-300'}`;
   const primary = 'h-12 w-full rounded-full bg-[#FF7417] px-5 text-sm font-bold text-white shadow-sm transition hover:bg-[#ed650b] disabled:cursor-not-allowed disabled:opacity-60 flex items-center justify-center gap-2';
   const footer = <div className="mt-auto pt-6">{error && <p role="alert" className="mb-3 rounded-xl bg-red-50 p-3 text-xs text-red-700">{error}</p>}{step < 8 ? <button type="button" className={primary} onClick={continueStep}>Continue <ArrowRight size={17}/></button> : null}</div>;
+
+
+  const renderIntroVisual = () => {
+    if (introStep === 0) return <div className="di-hero-visual"><img src={MARKETING_CAR_IMAGES.hero} alt="Premium vehicle in a dealership setting" /><div className="di-brand-mark"><span className="di-brand-symbol">D</span><span>DRIVE LINK</span><small>CARS. CONNECTIONS. SALES.</small></div></div>;
+    if (introStep === 1) return <div className="di-stack-visual">
+      {[{name:'Toyota Fortuner',meta:'2022 | 2.8 GD-6 | SUV',price:'US$48,900',img:MARKETING_CAR_IMAGES.hero},{name:'VW Polo',meta:'2023 | 1.0 TSI | Hatchback',price:'US$21,500',img:MARKETING_CAR_IMAGES.hondaFit},{name:'BMW 320i',meta:'2021 | 2.0 | Sedan',price:'US$32,900',img:MARKETING_CAR_IMAGES.showroom}].map((v,i)=><div className={'di-listing di-listing-'+i} key={v.name}><img src={v.img} alt="" /><span><b>{v.name}</b><small>{v.meta}</small><strong>{v.price}</strong></span><ArrowRight size={16}/></div>)}
+    </div>;
+    if (introStep === 2) return <div className="di-phone-visual"><div className="di-phone-screen"><img src={MARKETING_CAR_IMAGES.showroom} alt="Vehicle detail preview" /><b>Toyota Hilux</b><small>2023 | 2.8 GD-6 | 4x4</small><strong>US$45,000</strong><div className="di-phone-actions"><span>View details</span><span><MessageCircle size={14}/> Chat on WhatsApp</span></div></div><div className="di-notification"><MessageCircle size={24}/><span><b>New enquiry <small>now</small></b><em>Hi, I'm interested in the Hilux. Is it still available?</em></span></div></div>;
+    if (introStep === 3) return <div className="di-detail-visual"><img src={MARKETING_CAR_IMAGES.showroom} alt="Vehicle preview" /><div className="di-detail-card"><b>Mercedes-Benz GLC</b><small>2022 | 2.0 | SUV</small><strong>US$42,900</strong><div className="di-spec-grid"><span>◉ Mileage<br/><b>42 000 km</b></span><span>⌖ Location<br/><b>Harare, ZW</b></span><span>▧ Photos<br/><b>12 photos</b></span><span>▤ Key details<br/><b>Petrol | Auto</b></span></div><div className="di-whatsapp"><MessageCircle size={17}/> Enquire on WhatsApp <ArrowRight size={15}/></div></div></div>;
+    if (introStep === 4) return <div className="di-showroom-visual"><div className="di-showroom-screen"><div className="di-mini-brand">D　DRIVE LINK <span>☰</span></div><div className="di-showroom-hero"><b>Quality cars.<br/>Driven by trust.</b><small>New & pre-owned vehicles across Zimbabwe & South Africa.</small></div><div className="di-car-thumbs">{[MARKETING_CAR_IMAGES.hero,MARKETING_CAR_IMAGES.showroom,MARKETING_CAR_IMAGES.hondaFit].map((img,i)=><img key={i} src={img} alt="Vehicle thumbnail"/>)}</div><div className="di-categories"><span>All</span><span>SUV</span><span>Sedan</span><span>Hatchback</span></div></div><div className="di-analytics"><small>This month　⌄</small><div><span><b>1,248</b>Visits</span><span><b>320</b>Enquiries</span><span><b>27</b>Leads</span></div></div></div>;
+    return <div className="di-share-visual"><div className="di-public-card"><div className="di-public-logo">D</div><b>Moyo Motors</b><small>Quality Vehicles. Trusted Deals.</small><span><Car size={15}/> View Our Vehicles <ArrowRight size={14}/></span><span><MessageCircle size={15}/> WhatsApp Us <ArrowRight size={14}/></span><span>▣ Visit Our Store <ArrowRight size={14}/></span></div><div className="di-share-link"><Link2 size={17}/><span>drivelink.co/moyo-motors</span><Check size={17}/></div></div>;
+  };
+
+  if (!introDone) return <main className="di-onboarding">
+    <section className="di-onboarding-phone" aria-label={'Drive Link introduction, screen ' + (introStep + 1) + ' of 6'}>
+      <div className="di-status"><span>9:41</span><span>▮▮▮　◉　▰</span></div>
+      <button className="di-skip" onClick={finishIntro}>Skip <ArrowRight size={14}/></button>
+      <div className="di-visual-wrap">{renderIntroVisual()}</div>
+      <div className="di-copy"><h1>{introSlides[introStep].title}</h1><p>{introSlides[introStep].body}</p></div>
+      <div className="di-bottom">
+        <div className="di-dots" aria-label={'Step ' + (introStep + 1) + ' of 6'}>{introSlides.map((slide,i)=><button key={slide.title} aria-label={'Go to introduction screen ' + (i + 1)} aria-current={i===introStep?'step':undefined} onClick={()=>setIntroStep(i)} className={i===introStep?'active':''}/>)}</div>
+        <button className="di-continue" onClick={advanceIntro}>{introStep===5?'Get started':'Continue'} <ArrowRight size={17}/></button>
+        {introStep>0&&<button className="di-back" onClick={()=>setIntroStep(value=>Math.max(0,value-1))}><ArrowLeft size={15}/> Back</button>}
+      </div>
+    </section>
+  </main>;
 
   return <div className="min-h-screen bg-[#F5F5F3] px-4 py-5 text-[#171717] sm:py-8">
     <div className="mx-auto flex min-h-[calc(100dvh-40px)] w-full max-w-[460px] flex-col rounded-[30px] bg-white px-6 py-5 shadow-[0_18px_60px_rgba(0,0,0,.09)] sm:min-h-[780px] sm:px-8">
