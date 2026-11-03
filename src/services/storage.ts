@@ -1,4 +1,4 @@
-import { Dealership, Enquiry, UserSession, Vehicle, VehicleStatus, EnquiryStage, OnboardingState, SellerType } from '../types';
+import { Dealership, Enquiry, UserSession, Vehicle, VehicleStatus, EnquiryStage, OnboardingState } from '../types';
 import { supabaseService } from './supabaseService';
 import { isSupabaseConfigured, supabase } from '../lib/supabase';
 import {
