@@ -4,7 +4,6 @@ import { storageService } from '../services/storage';
 import { isSupabaseConfigured } from '../lib/supabase';
 import { BottomNav } from '../components/layout/BottomNav';
 import { StatusBadge } from '../components/common/Badge';
-import { ShareModal } from '../components/common/ShareModal';
 import { CarFront, MessageCircle, Eye, Bell, Plus, ChevronRight, ArrowUpRight, CircleAlert, Share2 } from 'lucide-react';
 
 export const DashboardPage: React.FC = () => {
@@ -16,7 +15,6 @@ export const DashboardPage: React.FC = () => {
   const [loading, setLoading] = useState(isLive);
   const [loadError, setLoadError] = useState('');
   const [period, setPeriod] = useState('7d');
-  const [shareOpen, setShareOpen] = useState(false);
 
   const load = async () => {
     setLoading(true);
