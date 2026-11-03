@@ -2,7 +2,6 @@ import React from 'react';
 import { NavigationProvider, useNavigation } from './context/NavigationContext';
 import { DeviceFrame } from './components/layout/DeviceFrame';
 import { WelcomePage } from './pages/WelcomePage';
-import { SignupPage } from './pages/SignupPage';
 import { LoginPage } from './pages/LoginPage';
 import { OnboardingFlow } from './pages/ConversationalOnboardingFlow';
 import { DashboardPage } from './pages/DashboardPage';
@@ -86,34 +85,29 @@ function AppContent() {
 
   // Route matching logic
   const renderRoute = () => {
-    // 1. Welcome / Screen 01
-    if (currentPath === '/' || currentPath === '') {
-      return <WelcomePage />;
-    }
-
-    // 2. Signup / Screen 02
-    if (currentPath === '/signup') {
-      return <SignupPage />;
-    }
-
-    // 3. Login
-    if (currentPath === '/login') {
-      return <LoginPage />;
-    }
-
-    // 4. Onboarding setup wizard
-    if (currentPath === '/onboarding') {
-      return <OnboardingFlow />;
-    }
-
-    // Route Protection: enforce real Supabase session for /app routes
+    // Resolve live auth before deciding between intro, setup and the dashboard.
     const isLive = isConfigured && !isDemo;
     const session = storageService.getUserSession();
     const isProtectedRoute = currentPath.startsWith('/app');
+    if (isLive && !sessionChecked) {
+      return <div className="flex min-h-[100dvh] items-center justify-center bg-white text-sm text-gray-500">Loading your Drive Link account…</div>;
+    }
 
-    if (isProtectedRoute && isLive && !session.isLoggedIn) {
+    if (currentPath === '/welcome') return <WelcomePage />;
+
+    // The six-slide introduction and the required setup are one flow.
+    if (currentPath === '/' || currentPath === '' || currentPath === '/signup' || currentPath === '/onboarding') {
+      if (isLive && session.isLoggedIn && session.dealershipId) return <DashboardPage />;
+      return <OnboardingFlow />;
+    }
+
+    if (currentPath === '/login') {
+      if (isLive && session.isLoggedIn) return session.dealershipId ? <DashboardPage /> : <OnboardingFlow />;
       return <LoginPage />;
     }
+
+    if (isProtectedRoute && isLive && !session.isLoggedIn) return <LoginPage />;
+    if (isProtectedRoute && isLive && session.isLoggedIn && !session.dealershipId) return <OnboardingFlow />;
 
     // 5. Dealer Dashboard / Screen 03
     if (currentPath === '/app') {
