@@ -46,12 +46,14 @@ export const LoginPage: React.FC = () => {
         isLoggedIn: true,
         email: user.email || email.trim(),
         dealershipId,
+        userId: user.id,
       });
 
       showToast('Signed in via Supabase! Welcome back.');
       if (dealershipId) {
         navigate('/app');
       } else {
+        try { localStorage.setItem('drivelink_intro_completed_v1', 'true'); } catch {}
         showToast('Please complete your dealership setup.');
         navigate('/onboarding');
       }
