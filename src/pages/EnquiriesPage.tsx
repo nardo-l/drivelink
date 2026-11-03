@@ -2,7 +2,6 @@ import React,{useEffect,useMemo,useState} from 'react';
 import {Search,MessageCircle,Phone,Clock,CarFront,ChevronRight,CheckCircle2,MessageSquareText} from 'lucide-react';
 import {useNavigation} from '../context/NavigationContext';
 import {storageService} from '../services/storage';
-import {BottomNav} from '../components/layout/BottomNav';
 import {Enquiry,EnquiryStage,Vehicle} from '../types';
 
 const stages:{id:EnquiryStage|'all';label:string}[]=[{id:'all',label:'All'},{id:'new',label:'New'},{id:'contacted',label:'Contacted'},{id:'negotiating',label:'Negotiating'},{id:'sold',label:'Converted'},{id:'lost',label:'Lost'}];
@@ -24,7 +23,7 @@ export const EnquiriesPage:React.FC=()=>{
  const wa=(lead:Enquiry)=>{const phone=lead.buyerPhone.replace(/\D/g,'');const v=vehicleFor(lead);return phone?`https://wa.me/${phone}?text=${encodeURIComponent(`Hi ${lead.buyerName}, thanks for your enquiry${v?` about the ${v.year} ${v.make} ${v.model}`:''}. How can I help?`)}`:'';};
  return <div className="dl-workspace min-h-full flex flex-col">
   <header className="sticky top-0 z-20 !bg-white/95 border-b border-[#eee] px-4 sm:px-7 py-4"><div className="max-w-5xl mx-auto flex justify-between items-center"><div><p className="text-[10px] uppercase tracking-[.16em] font-extrabold text-[#999]">Customer relationship management</p><h1 className="text-2xl font-black mt-1">Leads</h1><p className="text-xs text-[#888] mt-0.5">Manage your enquiries</p></div></div></header>
-  <main className="flex-1 px-4 sm:px-7 py-4 pb-28 max-w-5xl w-full mx-auto">
+  <main className="flex-1 px-4 sm:px-7 py-4 pb-[110px] max-w-5xl w-full mx-auto">
    <div className="grid grid-cols-3 gap-2 mb-4">{[{label:'All leads',n:counts.all},{label:'New',n:counts.new},{label:'Converted',n:counts.sold}].map(x=><div key={x.label} className="rounded-2xl bg-white border border-[#eee] p-3"><strong className="text-2xl">{loading?'—':x.n}</strong><p className="text-[10px] text-[#888] mt-1">{x.label}</p></div>)}</div>
    <div className="relative mb-3"><Search className="absolute left-4 top-1/2 -translate-y-1/2 text-[#999]" size={16}/><input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search leads..." className="w-full !rounded-full !pl-11 !bg-white !text-sm"/></div>
    <div className="flex gap-2 overflow-x-auto pb-3">{stages.map(s=><button key={s.id} onClick={()=>setFilter(s.id)} className={`shrink-0 rounded-full px-4 py-2 text-xs font-bold ${filter===s.id?'bg-[#171717] text-white':'bg-white border border-[#e9e9e9] text-[#777]'}`}>{s.label} ({counts[s.id]})</button>)}</div>
@@ -39,6 +38,5 @@ export const EnquiriesPage:React.FC=()=>{
    <label className="block mt-3 text-xs font-bold">Internal notes<textarea value={notes} onChange={e=>setNotes(e.target.value)} rows={3} placeholder="Add a note about this buyer..." className="block w-full mt-2 !bg-white"/></label>
    <button onClick={save} disabled={saving} className="w-full rounded-full dl-accent-button py-3.5 text-sm font-extrabold mt-4 disabled:opacity-50">{saving?'Saving...':'Save lead updates'}</button>
   </section></div>}
-  <BottomNav/>
  </div>;
 };

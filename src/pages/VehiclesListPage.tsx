@@ -3,7 +3,6 @@ import { Search, Plus, CarFront, MoreVertical, Pencil, Trash2, SlidersHorizontal
 import { useNavigation } from '../context/NavigationContext';
 import { storageService } from '../services/storage';
 import { Vehicle, VehicleStatus } from '../types';
-import { BottomNav } from '../components/layout/BottomNav';
 import { StatusBadge } from '../components/common/Badge';
 
 const filters: {id: VehicleStatus|'all';label:string}[] = [
@@ -35,7 +34,7 @@ export const VehiclesListPage: React.FC = () => {
         <button onClick={()=>navigate('/app/vehicles/new')} aria-label="Add vehicle" className="w-11 h-11 rounded-full dl-accent-button flex items-center justify-center shadow-md shadow-orange-500/20"><Plus size={22}/></button>
       </div>
     </header>
-    <main className="flex-1 px-4 sm:px-7 py-4 pb-28 max-w-5xl w-full mx-auto">
+    <main className="flex-1 px-4 sm:px-7 py-4 pb-[110px] max-w-5xl w-full mx-auto">
       <div className="relative mb-4"><Search className="absolute left-4 top-1/2 -translate-y-1/2 text-[#999]" size={17}/><input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search vehicles..." className="w-full !rounded-full !pl-11 !pr-4 !bg-white !text-sm"/></div>
       <div className="flex gap-2 overflow-x-auto pb-3 mb-2">
         {filters.map(tab=><button key={tab.id} onClick={()=>setFilter(tab.id)} className={`shrink-0 rounded-full px-4 py-2 text-xs font-bold ${filter===tab.id?'bg-[#171717] text-white':'bg-white border border-[#e9e9e9] text-[#777]'}`}>{tab.label} <span className={filter===tab.id?'text-white/65':'text-[#aaa]'}>({counts[tab.id]})</span></button>)}
@@ -68,6 +67,5 @@ export const VehiclesListPage: React.FC = () => {
       </div>}
     </main>
     {deleteTarget&&<div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-5"><div role="dialog" aria-modal="true" className="w-full max-w-sm rounded-3xl bg-white p-5"><h2 className="font-extrabold text-lg">Delete this vehicle?</h2><p className="text-xs text-[#777] mt-2">This will remove {deleteTarget.year} {deleteTarget.make} {deleteTarget.model} from your garage.</p><div className="flex gap-2 mt-5"><button onClick={()=>setDeleteTarget(null)} className="flex-1 rounded-full border border-[#ddd] py-3 text-xs font-bold">Cancel</button><button onClick={()=>void remove()} className="flex-1 rounded-full bg-red-600 text-white py-3 text-xs font-bold">Delete</button></div></div></div>}
-    <BottomNav/>
   </div>;
 };

@@ -4,7 +4,6 @@ import { storageService } from '../services/storage';
 import { supabaseService } from '../services/supabaseService';
 import { isSupabaseConfigured } from '../lib/supabase';
 import { CurrencyCode } from '../types';
-import { BottomNav } from '../components/layout/BottomNav';
 import {
   Building2, Phone, MessageCircle, MapPin, Globe, ExternalLink,
   Save, Loader2, Upload, Image as ImageIcon,
@@ -303,8 +302,6 @@ export const SettingsPage: React.FC = () => {
           <Save className="h-4 w-4" /> Save changes
         </button>
       </form>
-
-      <BottomNav />
 
     </div>
   );

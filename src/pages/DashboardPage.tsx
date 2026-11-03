@@ -42,7 +42,7 @@ export const DashboardPage: React.FC = () => {
 
   return (
     <div className="dl-workspace relative min-h-full flex flex-col text-[#171717]">
-      <main className="flex-1 overflow-y-auto px-4 sm:px-7 pt-5 pb-8 w-full max-w-5xl mx-auto">
+      <main className="flex-1 overflow-y-auto px-4 sm:px-7 pt-5 pb-[110px] w-full max-w-5xl mx-auto">
         <header className="!bg-transparent !backdrop-blur-0 !border-0 flex items-center justify-between gap-3 mb-5">
           <div className="min-w-0">
             <p className="text-xs text-[#777] font-medium">{greeting}</p>

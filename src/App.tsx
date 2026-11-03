@@ -23,6 +23,7 @@ import { isSupabaseConfigured } from './lib/supabase';
 import { supabaseService } from './services/supabaseService';
 import { storageService } from './services/storage';
 import { Check } from 'lucide-react';
+import { BottomNav } from './components/layout/BottomNav';
 
 function AppContent() {
   const { currentPath, navigate, toast, showToast } = useNavigation();
@@ -235,6 +236,7 @@ function AppContent() {
     <DeviceFrame>
 
       {renderRoute()}
+      {(['/app', '/app/vehicles', '/app/enquiries', '/app/more'].includes(currentPath)) && <BottomNav />}
 
       {/* Global Toast Notification */}
       {toast && (
