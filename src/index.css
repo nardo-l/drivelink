@@ -891,3 +891,263 @@ html::-webkit-scrollbar, body::-webkit-scrollbar, #root::-webkit-scrollbar, *::-
   .dl-bottom-nav-item .dl-bottom-nav-icon,
   .dl-bottom-nav-label { transition: none; }
 }
+
+/* DriveLink cinematic dealer login */
+.dl-frame:has(.dl-login-page) {
+  min-height: 100svh;
+  background: radial-gradient(ellipse at 8% 18%, rgba(100,112,139,.34), transparent 38%), radial-gradient(ellipse at 92% 82%, rgba(43,63,91,.38), transparent 42%), #080b11;
+}
+.dl-frame:has(.dl-login-page) > .dl-frame-inner {
+  width: 100%;
+  max-width: 560px !important;
+  min-height: 100svh;
+  height: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
+  border: 0 !important;
+  background: #050608 !important;
+  box-shadow: 0 24px 90px rgba(0,0,0,.45) !important;
+}
+.dl-login-page {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  min-height: 100svh;
+  flex: 1 0 auto;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 0;
+  color: #f8f8fa;
+  background: #050608;
+  font-family: Manrope, Inter, ui-sans-serif, system-ui, sans-serif;
+}
+.dl-login-ambient {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(ellipse at 12% 14%, rgba(90,101,128,.25), transparent 38%), radial-gradient(ellipse at 95% 75%, rgba(34,54,82,.3), transparent 42%);
+}
+.dl-login-panel {
+  position: relative;
+  display: flex;
+  width: 100%;
+  min-height: 100svh;
+  flex: 1 0 auto;
+  flex-direction: column;
+  overflow: hidden;
+  background: #050608;
+}
+.dl-login-hero {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  min-height: 490px;
+  flex: 1 0 55svh;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: max(42px, env(safe-area-inset-top, 0px) + 28px) 34px 30px;
+  overflow: hidden;
+  background: #10141d;
+}
+.dl-login-car-image {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  object-fit: cover;
+  object-position: center 52%;
+  opacity: .88;
+}
+.dl-login-hero-shade {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(180deg, rgba(3,5,9,.56) 0%, rgba(3,5,9,.08) 38%, rgba(3,5,9,.34) 65%, #050608 100%);
+}
+.dl-login-brand {
+  display: flex;
+  width: fit-content;
+  flex-direction: column;
+  align-items: flex-start;
+  color: #fff;
+  text-shadow: 0 2px 18px rgba(0,0,0,.3);
+}
+.dl-login-brand-mark { width: 108px; height: 40px; margin-left: 1px; margin-bottom: -1px; }
+.dl-login-brand-name { font-size: clamp(38px, 10vw, 48px); font-weight: 500; line-height: .98; letter-spacing: -.065em; }
+.dl-login-brand-subtitle { margin-top: 8px; font-size: 10px; font-weight: 650; letter-spacing: .29em; }
+.dl-login-intro { position: relative; z-index: 1; max-width: 500px; }
+.dl-login-intro h1 {
+  margin: 0;
+  color: #fff;
+  font-size: clamp(40px, 10vw, 54px);
+  font-weight: 800;
+  line-height: 1.04;
+  letter-spacing: -.065em;
+}
+.dl-login-intro p {
+  margin: 15px 0 0;
+  color: rgba(246,247,250,.88);
+  font-size: clamp(17px, 4.3vw, 21px);
+  font-weight: 450;
+  line-height: 1.42;
+  letter-spacing: -.025em;
+}
+.dl-login-rule { display: block; width: 70px; height: 4px; margin-top: 24px; border-radius: 99px; background: #fff; }
+.dl-login-form-area {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  margin-top: -1px;
+  padding: 24px 30px max(30px, env(safe-area-inset-bottom, 0px) + 22px);
+  background: linear-gradient(180deg, #050608 0%, #030405 100%);
+}
+.dl-login-form { display: flex; flex-direction: column; gap: 17px; width: 100%; }
+.dl-login-field {
+  display: flex;
+  min-height: 66px;
+  width: 100%;
+  align-items: center;
+  gap: 18px;
+  padding: 0 20px;
+  border: 1px solid rgba(220,224,234,.14);
+  border-radius: 999px;
+  background: linear-gradient(145deg, rgba(28,30,36,.94), rgba(18,20,25,.96));
+  color: #f4f5f7;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.025), 0 8px 24px rgba(0,0,0,.12);
+  transition: border-color .2s ease, background .2s ease, box-shadow .2s ease;
+}
+.dl-login-field:focus-within {
+  border-color: rgba(255,255,255,.42);
+  background: #1b1e24;
+  box-shadow: 0 0 0 3px rgba(255,255,255,.055);
+}
+.dl-login-field > svg { flex: 0 0 auto; color: #f0f1f4; stroke-width: 1.8; }
+.dl-login-field input,
+.dl-frame .dl-login-field input:not([type="checkbox"]):not([type="radio"]) {
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  height: 62px;
+  padding: 0;
+  border: 0 !important;
+  border-radius: 0 !important;
+  outline: 0;
+  background: transparent !important;
+  color: #fff !important;
+  box-shadow: none !important;
+  font-size: 16px;
+  font-weight: 500;
+}
+.dl-login-field input::placeholder { color: #858790 !important; opacity: 1; }
+.dl-login-password-toggle {
+  display: grid;
+  width: 34px;
+  height: 40px;
+  flex: 0 0 34px;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #d5d7dc;
+}
+.dl-login-password-toggle:hover { color: #fff; }
+.dl-login-submit {
+  position: relative;
+  display: flex;
+  min-height: 66px;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 5px;
+  padding: 0 24px 0 48px;
+  border: 0;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #fff 0%, #ededee 100%);
+  color: #090a0c;
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: -.025em;
+  box-shadow: 0 8px 24px rgba(0,0,0,.18), inset 0 1px 0 #fff;
+  transition: transform .18s ease, background .18s ease, box-shadow .18s ease;
+}
+.dl-login-submit svg { position: absolute; right: 25px; }
+.dl-login-submit:hover:not(:disabled) { background: #fff; box-shadow: 0 12px 28px rgba(0,0,0,.24); transform: translateY(-1px); }
+.dl-login-submit:active:not(:disabled) { transform: scale(.99); }
+.dl-login-submit:disabled { cursor: wait; opacity: .72; }
+.dl-login-error {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 16px;
+  padding: 13px 15px;
+  border: 1px solid rgba(255,135,135,.28);
+  border-radius: 16px;
+  background: rgba(100,28,34,.28);
+  color: #ffc2c2;
+  font-size: 12px;
+  line-height: 1.5;
+}
+.dl-login-error svg { flex: 0 0 auto; margin-top: 1px; }
+.dl-login-error small { display: block; margin-top: 5px; color: rgba(255,205,205,.78); }
+.dl-login-signup {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  margin-top: 34px;
+  color: #8b8d95;
+  font-size: 13px;
+  white-space: nowrap;
+}
+.dl-login-signup p { margin: 0; }
+.dl-login-signup button {
+  margin-left: 5px;
+  padding: 3px 0;
+  border: 0;
+  background: transparent;
+  color: #fff;
+  font-size: inherit;
+  font-weight: 750;
+}
+.dl-login-signup button:hover { text-decoration: underline; text-underline-offset: 4px; }
+.dl-login-signup-line { display: block; width: min(12vw, 54px); height: 1px; background: rgba(255,255,255,.22); }
+
+@media (max-width: 380px) {
+  .dl-login-hero { min-height: 440px; padding-inline: 25px; }
+  .dl-login-form-area { padding-inline: 22px; }
+  .dl-login-field { min-height: 60px; gap: 13px; padding-inline: 17px; }
+  .dl-login-field input, .dl-frame .dl-login-field input:not([type="checkbox"]):not([type="radio"]) { height: 58px; font-size: 15px; }
+  .dl-login-submit { min-height: 61px; padding-left: 34px; font-size: 14px; }
+  .dl-login-submit svg { right: 20px; }
+  .dl-login-signup { gap: 9px; font-size: 11px; }
+}
+@media (min-width: 700px) {
+  .dl-frame:has(.dl-login-page) { align-items: center; padding: 28px 0; }
+  .dl-frame:has(.dl-login-page) > .dl-frame-inner {
+    min-height: min(940px, calc(100svh - 56px));
+    height: min(940px, calc(100svh - 56px));
+    border: 1px solid rgba(255,255,255,.12) !important;
+    border-radius: 34px;
+  }
+  .dl-login-page, .dl-login-panel { min-height: 100%; height: 100%; }
+  .dl-login-hero { min-height: 0; flex: 1 1 auto; padding: 48px 42px 34px; }
+  .dl-login-form-area { padding: 26px 36px 34px; }
+  .dl-login-brand-mark { width: 112px; }
+  .dl-login-intro h1 { font-size: 52px; }
+}
+@media (max-height: 720px) and (max-width: 699px) {
+  .dl-login-hero { min-height: 390px; flex-basis: 52svh; padding-top: max(24px, env(safe-area-inset-top, 0px) + 16px); }
+  .dl-login-form-area { padding-top: 17px; }
+  .dl-login-form { gap: 12px; }
+  .dl-login-field { min-height: 56px; }
+  .dl-login-field input, .dl-frame .dl-login-field input:not([type="checkbox"]):not([type="radio"]) { height: 54px; }
+  .dl-login-submit { min-height: 58px; }
+  .dl-login-signup { margin-top: 20px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dl-login-field, .dl-login-submit { transition: none; }
+}
