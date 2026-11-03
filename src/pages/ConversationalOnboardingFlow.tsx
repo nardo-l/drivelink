@@ -1,4 +1,5 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import './ConversationalOnboardingFlow.css';
 import { ArrowLeft, ArrowRight, Check, Car, Truck, Bus, Crown, TrendingUp, Users, Star, Rocket, Upload, X, Eye, EyeOff, MapPin, Link2, Loader2, Share2, MessageCircle } from 'lucide-react';
 import { useNavigation } from '../context/NavigationContext';
 import { storageService } from '../services/storage';
@@ -54,9 +55,19 @@ export const OnboardingFlow: React.FC = () => {
   const finishIntro = () => {
     try { localStorage.setItem('drivelink_intro_completed_v1', 'true'); } catch {}
     setIntroDone(true);
-    if (data.currentStep === 1) update({ currentStep: 2 });
+    update({ currentStep: 1 });
   };
   const advanceIntro = () => introStep === introSlides.length - 1 ? finishIntro() : setIntroStep(value => Math.min(value + 1, introSlides.length - 1));
+  const introTouchStart = useRef<number | null>(null);
+  const handleIntroTouchStart = (event: React.TouchEvent<HTMLElement>) => { introTouchStart.current = event.changedTouches[0]?.clientX ?? null; };
+  const handleIntroTouchEnd = (event: React.TouchEvent<HTMLElement>) => {
+    if (introTouchStart.current === null) return;
+    const delta = event.changedTouches[0].clientX - introTouchStart.current;
+    introTouchStart.current = null;
+    if (Math.abs(delta) < 48) return;
+    if (delta < 0) advanceIntro();
+    else setIntroStep(value => Math.max(0, value - 1));
+  };
 
 
   const step = data.currentStep || 1;
@@ -220,7 +231,7 @@ export const OnboardingFlow: React.FC = () => {
 
 
   const renderIntroVisual = () => {
-    if (introStep === 0) return <div className="di-hero-visual"><img src={MARKETING_CAR_IMAGES.hero} alt="Premium vehicle in a dealership setting" /><div className="di-brand-mark"><span className="di-brand-symbol">D</span><span>DRIVE LINK</span><small>CARS. CONNECTIONS. SALES.</small></div></div>;
+    if (introStep === 0) return <div className="di-hero-visual"><img src={MARKETING_CAR_IMAGES.hero} alt="Premium vehicle in a dealership setting" /><div className="di-brand-mark"><span className="di-brand-symbol" aria-hidden="true"><svg viewBox="0 0 40 40" role="img"><path fill="currentColor" fillRule="evenodd" d="M5 4h15c10 0 16 6 16 16S30 36 20 36H5V4zm9 8v16h6c5 0 8-3 8-8s-3-8-8-8h-6z"/></svg></span><span>DRIVE LINK</span><small>CARS. CONNECTIONS. SALES.</small></div></div>;
     if (introStep === 1) return <div className="di-stack-visual">
       {[{name:'Toyota Fortuner',meta:'2022 | 2.8 GD-6 | SUV',price:'US$48,900',img:MARKETING_CAR_IMAGES.hero},{name:'VW Polo',meta:'2023 | 1.0 TSI | Hatchback',price:'US$21,500',img:MARKETING_CAR_IMAGES.hondaFit},{name:'BMW 320i',meta:'2021 | 2.0 | Sedan',price:'US$32,900',img:MARKETING_CAR_IMAGES.showroom}].map((v,i)=><div className={'di-listing di-listing-'+i} key={v.name}><img src={v.img} alt="" /><span><b>{v.name}</b><small>{v.meta}</small><strong>{v.price}</strong></span><ArrowRight size={16}/></div>)}
     </div>;
@@ -231,15 +242,16 @@ export const OnboardingFlow: React.FC = () => {
   };
 
   if (!introDone) return <main className="di-onboarding">
-    <section className="di-onboarding-phone" aria-label={'Drive Link introduction, screen ' + (introStep + 1) + ' of 6'}>
-      <div className="di-status"><span>9:41</span><span>▮▮▮　◉　▰</span></div>
+    <section className="di-onboarding-phone" aria-label={'Drive Link introduction, screen ' + (introStep + 1) + ' of 6'} onTouchStart={handleIntroTouchStart} onTouchEnd={handleIntroTouchEnd}>
       <button className="di-skip" onClick={finishIntro}>Skip <ArrowRight size={14}/></button>
-      <div className="di-visual-wrap">{renderIntroVisual()}</div>
-      <div className="di-copy"><h1>{introSlides[introStep].title}</h1><p>{introSlides[introStep].body}</p></div>
+      <div className="di-slide" key={introStep}>
+        <div className="di-visual-wrap">{renderIntroVisual()}</div>
+        <div className="di-copy"><h1>{introSlides[introStep].title}</h1><p>{introSlides[introStep].body}</p></div>
+      </div>
       <div className="di-bottom">
         <div className="di-dots" aria-label={'Step ' + (introStep + 1) + ' of 6'}>{introSlides.map((slide,i)=><button key={slide.title} aria-label={'Go to introduction screen ' + (i + 1)} aria-current={i===introStep?'step':undefined} onClick={()=>setIntroStep(i)} className={i===introStep?'active':''}/>)}</div>
         <button className="di-continue" onClick={advanceIntro}>{introStep===5?'Get started':'Continue'} <ArrowRight size={17}/></button>
-        <p className="di-signin">Already have an account? <button onClick={()=>navigate("/login")}>Sign in</button></p>
+        {(introStep === 0 || introStep === 5) && <p className="di-signin">Already have an account? <button onClick={()=>navigate("/login")}>Sign in</button></p>}
         {introStep>0&&<button className="di-back" onClick={()=>setIntroStep(value=>Math.max(0,value-1))}><ArrowLeft size={15}/> Back</button>}
       </div>
     </section>
