@@ -44,9 +44,11 @@ function AppContent() {
               isLoggedIn: true,
               email: session.user.email || '',
               dealershipId: liveDealer?.id || '',
+              userId: session.user.id,
             });
           } catch (err) {
             console.warn('Session restoration error:', err);
+            storageService.clearSession();
           }
         } else {
           // No active Supabase session; ensure unauthenticated state
@@ -70,6 +72,7 @@ function AppContent() {
               isLoggedIn: true,
               email: session.user.email || '',
               dealershipId: liveDealer?.id || '',
+              userId: session.user.id,
             });
           } catch (err) {
             console.warn('Auth change error:', err);
