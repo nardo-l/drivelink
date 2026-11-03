@@ -235,98 +235,86 @@ export const OnboardingFlow: React.FC = () => {
     </section>
   </main>;
 
-  return <div className="min-h-screen bg-[#F5F5F3] px-4 py-5 text-[#171717] sm:py-8">
-    <div className="mx-auto flex min-h-[calc(100dvh-40px)] w-full max-w-[460px] flex-col rounded-[30px] bg-white px-6 py-5 shadow-[0_18px_60px_rgba(0,0,0,.09)] sm:min-h-[780px] sm:px-8">
-      {step !== 1 && step !== 9 && <header className="mb-6 flex items-center justify-between">
-        <button onClick={back} aria-label="Go back" className="flex h-10 w-10 items-center justify-center rounded-full hover:bg-gray-100"><ArrowLeft size={20}/></button>
-        <span className="text-xs font-semibold tabular-nums text-gray-500">{step}/9</span>
-      </header>}
-      {step === 1 && <div className="mb-6 flex justify-end text-xs text-gray-500">1/9</div>}
-      {step !== 9 && <div className="mb-7 h-1.5 overflow-hidden rounded-full bg-gray-100"><div className="h-full rounded-full bg-[#FF7417] transition-all" style={{width:`${step/9*100}%`}}/></div>}
+  const share = async () => {
+    const url = `${window.location.origin}/showroom/${data.showroom.handle}`;
+    const message = encodeURIComponent(`View our vehicles at ${url}`);
+    window.open(`https://wa.me/?text=${message}`, '_blank', 'noopener,noreferrer');
+  };
+  const copyShowroomLink = async () => {
+    const url = `${window.location.origin}/showroom/${data.showroom.handle}`;
+    try { await navigator.clipboard.writeText(url); showToast('Showroom link copied'); }
+    catch { setError('Could not copy the link. Please copy it from the address shown.'); }
+  };
 
-      {step === 1 && <section className="flex flex-1 flex-col">
-        <div className="mb-8 mt-5 flex items-center justify-center gap-2"><span className="flex h-11 w-11 items-center justify-center rounded-full bg-[#FF7417] text-white"><Link2 size={24}/></span><span className="text-3xl font-black tracking-tight">DriveLink</span></div>
-        <h1 className="text-[34px] font-extrabold leading-[1.05] tracking-tight">Get your dealership online.</h1>
-        <p className="mt-4 max-w-xs text-sm leading-6 text-gray-600">Showcase your cars, get more leads and grow your business.</p>
-        <div className="relative my-auto flex min-h-[260px] items-center justify-center overflow-hidden rounded-[28px] bg-gradient-to-br from-orange-50 via-white to-gray-100">
-          <div className="absolute -right-16 top-5 h-48 w-48 rounded-full bg-orange-100"/><img src={MARKETING_CAR_IMAGES.hero} onError={e => { e.currentTarget.style.display='none'; }} alt="Mercedes-Benz GLE featured in the DriveLink showroom" loading="eager" decoding="async" className="relative z-10 max-h-[260px] w-full object-contain drop-shadow-xl"/>
-          <div className="absolute bottom-4 left-4 rounded-full bg-white/90 px-3 py-1 text-[10px] font-semibold text-gray-600">Your showroom. Your brand.</div>
+  return <main className="min-h-[100dvh] bg-white px-4 py-5 text-[#0A0A0A] sm:py-8">
+    <section className="mx-auto flex min-h-[calc(100dvh-40px)] w-full max-w-[430px] flex-col rounded-[28px] bg-white px-1 py-3 sm:min-h-[780px] sm:px-5">
+      <header className="mb-7 flex items-center justify-between">
+        <button type="button" onClick={back} aria-label="Go back" className="flex h-10 items-center gap-2 rounded-full px-2 text-sm font-medium text-gray-600 hover:bg-gray-50" disabled={step===6}>
+          {step!==6 && <><ArrowLeft size={17}/> Back</>}
+        </button>
+        <span className="text-xs font-medium text-gray-500">{step===6?'Ready':`Setup ${step} of 5`}</span>
+      </header>
+      <div className="mb-8 flex items-center justify-center gap-2" aria-label={`Setup step ${step} of 6`}>
+        {Array.from({length:6},(_,i)=><span key={i} className={`h-1.5 rounded-full transition-all duration-300 ${i+1===step?'w-7 bg-[#0A0A0A]':i+1<step?'w-2 bg-[#0A0A0A]':'w-2 bg-gray-200'}`} />)}
+      </div>
+
+      {step === 1 && <form onSubmit={finish} className="flex flex-1 flex-col">
+        <div className="mb-9 text-center"><div className="mx-auto mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-black text-white"><Link2 size={24}/></div><h1 className="text-[30px] font-bold leading-tight tracking-tight">Create your account.</h1><p className="mt-2 text-sm leading-6 text-gray-500">Set up your Drive Link account to build your dealership showroom.</p></div>
+        <div className="space-y-4">
+          <label className="block"><span className="mb-2 block text-xs font-semibold text-gray-700">Full name</span><input autoComplete="name" className="h-12 w-full rounded-[15px] border border-[#E5E7EB] bg-white px-4 text-sm outline-none focus:border-black focus:ring-2 focus:ring-gray-100" value={data.account.businessName} onChange={e=>update({account:{...data.account,businessName:e.target.value}})} placeholder="Your name"/></label>
+          <label className="block"><span className="mb-2 block text-xs font-semibold text-gray-700">Email address</span><input type="email" autoComplete="email" required className="h-12 w-full rounded-[15px] border border-[#E5E7EB] bg-white px-4 text-sm outline-none focus:border-black focus:ring-2 focus:ring-gray-100" value={data.account.email} onChange={e=>update({account:{...data.account,email:e.target.value}})} placeholder="you@example.com"/></label>
+          <label className="block"><span className="mb-2 block text-xs font-semibold text-gray-700">Password</span><div className="relative"><input type={showPassword?'text':'password'} autoComplete="new-password" minLength={6} required className="h-12 w-full rounded-[15px] border border-[#E5E7EB] bg-white px-4 pr-12 text-sm outline-none focus:border-black focus:ring-2 focus:ring-gray-100" value={data.account.password} onChange={e=>update({account:{...data.account,password:e.target.value}})} placeholder="At least 6 characters"/><button type="button" onClick={()=>setShowPassword(v=>!v)} aria-label={showPassword?'Hide password':'Show password'} className="absolute right-4 top-3.5 text-gray-500">{showPassword?<EyeOff size={18}/>:<Eye size={18}/>}</button></div></label>
         </div>
-        <button className={primary + ' mt-7'} onClick={() => setStep(2)}>Get Started <ArrowRight size={17}/></button>
-        <p className="mt-4 text-center text-xs text-gray-500">Already have an account? <button onClick={() => navigate('/login')} className="font-bold underline">Sign in</button></p>
-      </section>}
+        {error&&<p role="alert" className="mt-4 rounded-xl bg-red-50 p-3 text-sm text-red-700">{error}</p>}
+        <button type="submit" disabled={busy||!data.account.email.includes('@')||data.account.password.length<6} className="mt-auto flex h-12 w-full items-center justify-center gap-2 rounded-full bg-black px-5 text-sm font-semibold text-white transition hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-40">{busy?<><Loader2 size={17} className="animate-spin"/> Creating account…</>:<>Continue <ArrowRight size={17}/></>}</button>
+        <p className="mt-5 text-center text-sm text-gray-500">Already have an account? <button type="button" onClick={()=>navigate('/login')} className="font-semibold text-black underline underline-offset-4">Sign in</button></p>
+      </form>}
 
       {step === 2 && <section className="flex flex-1 flex-col">
-        <h1 className="text-2xl font-extrabold leading-tight">What kind of vehicles do you sell?</h1><p className="mt-2 text-sm text-gray-500">Select the category that best describes your business.</p>
-        <div className="mt-7 grid grid-cols-2 gap-3">
-          {[{id:'dealership',title:'Cars',Icon:Car},{id:'importer',title:'Trucks & SUVs',Icon:Truck},{id:'independent',title:'Commercial Vehicles',Icon:Bus},{id:'broker',title:'Luxury Cars',Icon:Crown}].map(({id,title,Icon})=><button key={id} onClick={()=>update({sellerType:id as SellerType})} className={card(data.sellerType===id)+' min-h-[150px] flex flex-col items-center justify-center gap-4'}><Icon size={42} strokeWidth={1.5}/><span className="text-sm font-semibold">{title}</span>{data.sellerType===id&&<span className="absolute sr-only">Selected</span>}</button>)}
-        </div>{footer}
+        <h1 className="text-[30px] font-bold leading-tight tracking-tight">What kind of vehicles do you sell?</h1><p className="mt-2 text-sm leading-6 text-gray-500">Choose the option that best describes your business.</p>
+        <div className="mt-8 grid grid-cols-2 gap-3">
+          {[{id:'dealership',title:'Cars',Icon:Car},{id:'importer',title:'Trucks & SUVs',Icon:Truck},{id:'independent',title:'Commercial vehicles',Icon:Bus},{id:'broker',title:'Luxury cars',Icon:Crown}].map(({id,title,Icon})=><button type="button" key={id} onClick={()=>update({sellerType:id as SellerType})} aria-pressed={data.sellerType===id} className={`flex min-h-[132px] flex-col items-center justify-center gap-4 rounded-[20px] border p-4 text-sm font-semibold transition ${data.sellerType===id?'border-black bg-gray-50 ring-1 ring-black':'border-[#E5E7EB] bg-white hover:border-gray-400'}`}><Icon size={34} strokeWidth={1.6}/>{title}</button>)}
+        </div>
+        {error&&<p role="alert" className="mt-4 text-sm text-red-600">{error}</p>}
+        <button type="button" onClick={continueStep} className="mt-auto flex h-12 w-full items-center justify-center gap-2 rounded-full bg-black text-sm font-semibold text-white">Continue <ArrowRight size={17}/></button>
       </section>}
 
       {step === 3 && <section className="flex flex-1 flex-col">
-        <h1 className="text-2xl font-extrabold leading-tight">Where are you located?</h1><p className="mt-2 text-sm text-gray-500">Select your country, city and area.</p>
+        <h1 className="text-[30px] font-bold leading-tight tracking-tight">Where is your dealership?</h1><p className="mt-2 text-sm leading-6 text-gray-500">Set the location buyers will see on your showroom.</p>
         <div className="mt-8 space-y-5">
-          <label className="block"><span className={labelClass}>Country</span><select className={inputClass} value={data.contact.country} onChange={e=>{const c=e.target.value as 'Zimbabwe'|'South Africa';updateContact({country:c,phoneCountryCode:c==='Zimbabwe'?'+263':'+27',whatsappCountryCode:c==='Zimbabwe'?'+263':'+27'});}}><option>Zimbabwe</option><option>South Africa</option></select></label>
-          <label className="block"><span className={labelClass}>City / Town</span><input className={inputClass} value={data.contact.city} onChange={e=>updateContact({city:e.target.value})} placeholder="e.g. Harare"/></label>
-          <label className="block"><span className={labelClass}>Area (optional)</span><input className={inputClass} value={data.contact.address} onChange={e=>updateContact({address:e.target.value})} placeholder="e.g. Avondale"/></label>
-        </div>{footer}
+          <label className="block"><span className="mb-2 block text-xs font-semibold text-gray-700">Country</span><select className="h-12 w-full rounded-[15px] border border-[#E5E7EB] bg-white px-4 text-sm outline-none focus:border-black" value={data.contact.country} onChange={e=>{const country=e.target.value as 'Zimbabwe'|'South Africa';updateContact({country,phoneCountryCode:country==='Zimbabwe'?'+263':'+27',whatsappCountryCode:country==='Zimbabwe'?'+263':'+27'});}}><option>Zimbabwe</option><option>South Africa</option></select></label>
+          <label className="block"><span className="mb-2 block text-xs font-semibold text-gray-700">City / town</span><input className="h-12 w-full rounded-[15px] border border-[#E5E7EB] bg-white px-4 text-sm outline-none focus:border-black" value={data.contact.city} onChange={e=>updateContact({city:e.target.value})} placeholder="e.g. Harare"/></label>
+          <label className="block"><span className="mb-2 block text-xs font-semibold text-gray-700">Area or street <span className="font-normal text-gray-400">· optional</span></span><input className="h-12 w-full rounded-[15px] border border-[#E5E7EB] bg-white px-4 text-sm outline-none focus:border-black" value={data.contact.address} onChange={e=>updateContact({address:e.target.value})} placeholder="e.g. Avondale"/></label>
+        </div>
+        {error&&<p role="alert" className="mt-4 text-sm text-red-600">{error}</p>}
+        <button type="button" onClick={continueStep} disabled={!data.contact.city.trim()} className="mt-auto flex h-12 w-full items-center justify-center gap-2 rounded-full bg-black text-sm font-semibold text-white disabled:opacity-40">Continue <ArrowRight size={17}/></button>
       </section>}
 
       {step === 4 && <section className="flex flex-1 flex-col">
-        <h1 className="text-2xl font-extrabold leading-tight">What would you like to achieve?</h1><p className="mt-2 text-sm text-gray-500">Choose your main goal.</p>
-        <div className="mt-7 space-y-3">
-          {[{id:'sell',title:'Sell more cars',Icon:TrendingUp},{id:'leads',title:'Get more enquiries',Icon:Users},{id:'brand',title:'Build my brand',Icon:Star},{id:'grow',title:'Grow my business',Icon:Rocket}].map(({id,title,Icon})=><button key={id} onClick={()=>setGoals(g=>g.includes(id)?g.filter(v=>v!==id):[...g,id])} className={card(goals.includes(id))+' flex w-full items-center gap-4'}><Icon size={22}/><span className="flex-1 text-left text-sm font-semibold">{title}</span>{goals.includes(id)&&<Check size={19} color={ORANGE}/>}</button>)}
-        </div>{footer}
+        <h1 className="text-[30px] font-bold leading-tight tracking-tight">Tell buyers about your dealership.</h1><p className="mt-2 text-sm leading-6 text-gray-500">Add your business name and WhatsApp contact.</p>
+        <div className="mt-8 space-y-5">
+          <label className="block"><span className="mb-2 block text-xs font-semibold text-gray-700">Dealership name</span><input className="h-12 w-full rounded-[15px] border border-[#E5E7EB] bg-white px-4 text-sm outline-none focus:border-black" value={data.showroom.businessName} onChange={e=>updateShowroom({businessName:e.target.value})} placeholder="e.g. Moyo Motors"/></label>
+          <label className="block"><span className="mb-2 block text-xs font-semibold text-gray-700">WhatsApp number</span><div className="flex h-12 overflow-hidden rounded-[15px] border border-[#E5E7EB] focus-within:border-black"><span className="flex items-center border-r border-[#E5E7EB] px-3 text-sm text-gray-500">{countryCode}</span><input type="tel" autoComplete="tel" className="min-w-0 flex-1 px-3 text-sm outline-none" value={data.contact.whatsappNumber} onChange={e=>updateContact({whatsappNumber:e.target.value})} placeholder="77 123 4567"/></div></label>
+        </div>
+        {error&&<p role="alert" className="mt-4 text-sm text-red-600">{error}</p>}
+        <button type="button" onClick={continueStep} disabled={!data.showroom.businessName.trim()||!validWhatsapp} className="mt-auto flex h-12 w-full items-center justify-center gap-2 rounded-full bg-black text-sm font-semibold text-white disabled:opacity-40">Continue <ArrowRight size={17}/></button>
       </section>}
 
       {step === 5 && <section className="flex flex-1 flex-col">
-        <h1 className="text-2xl font-extrabold leading-tight">Tell us about your business.</h1><p className="mt-2 text-sm text-gray-500">Add your logo and social links (optional).</p>
-        <div className="mt-6 space-y-4">
-          <label className="flex cursor-pointer flex-col items-center justify-center rounded-2xl border border-dashed border-gray-300 bg-gray-50 py-7">{data.branding.logoPreview?<img src={data.branding.logoPreview} className="h-16 w-16 rounded-xl object-cover" alt="Logo preview"/>:<Upload size={28} className="text-gray-500"/>}<span className="mt-2 text-sm font-bold">Upload Logo</span><span className="text-xs text-gray-500">PNG, JPG (max 5MB)</span><input type="file" accept="image/png,image/jpeg,image/webp" className="hidden" onChange={e=>e.target.files?.[0]&&uploadImage(e.target.files[0],'logo')}/></label>
-          <label><span className={labelClass}>WhatsApp Number</span><input className={inputClass} value={data.contact.whatsappNumber} onChange={e=>updateContact({whatsappNumber:e.target.value})} placeholder={countryCode+' 77 123 4567'} /></label>
-          <label><span className={labelClass}>Name of Dealership</span><input className={inputClass} value={data.showroom.businessName} onChange={e=>updateShowroom({businessName:e.target.value})} placeholder="e.g. Harare Motors" required/></label>
-        </div>{footer}
+        <h1 className="text-[30px] font-bold leading-tight tracking-tight">Choose your showroom link.</h1><p className="mt-2 text-sm leading-6 text-gray-500">This is the link you will share with buyers.</p>
+        <label className="mt-8 block"><span className="mb-2 block text-xs font-semibold text-gray-700">Your public link</span><div className="flex h-12 items-center overflow-hidden rounded-[15px] border border-[#E5E7EB] px-3 focus-within:border-black"><span className="whitespace-nowrap text-xs text-gray-500">drivelink.co/</span><input aria-label="Showroom link name" className="h-full min-w-0 flex-1 px-2 text-sm outline-none" value={data.showroom.handle} onChange={e=>updateShowroom({handle:e.target.value.toLowerCase().replace(/[^a-z0-9-]/g,'-').replace(/--+/g,'-').replace(/^-|-$/g,'')})} placeholder="moyo-motors"/></div></label>
+        <div className="mt-4 rounded-[15px] border border-[#E5E7EB] p-4 text-sm" aria-live="polite">{checking?<span className="flex items-center gap-2 text-gray-500"><Loader2 size={15} className="animate-spin"/> Checking availability…</span>:available===true?<span className="text-gray-800">✓ This link is available</span>:available===false?<span className="text-red-600">This link is unavailable. Try another.</span>:<span className="text-gray-500">Use at least 3 letters, numbers or hyphens.</span>}</div>
+        {error&&<p role="alert" className="mt-3 text-sm text-red-600">{error}</p>}
+        <button type="button" onClick={finishExistingSession} disabled={busy||checking||!validSlug||available!==true} className="mt-auto flex h-12 w-full items-center justify-center gap-2 rounded-full bg-black text-sm font-semibold text-white disabled:opacity-40">{busy?<><Loader2 size={17} className="animate-spin"/> Saving your showroom…</>:<>Create showroom <ArrowRight size={17}/></>}</button>
       </section>}
 
-      {step === 6 && <section className="flex flex-1 flex-col">
-        <h1 className="text-2xl font-extrabold leading-tight">Choose your showroom link.</h1><p className="mt-2 text-sm text-gray-500">This will be your public dealership URL.</p>
-        <label className="mt-9 block"><span className={labelClass}>Your showroom URL</span><div className="flex items-center rounded-2xl border border-gray-200 px-3"><span className="whitespace-nowrap text-xs text-gray-500">drivelink.co.zw/</span><input className="h-12 min-w-0 flex-1 bg-transparent text-sm outline-none" value={data.showroom.handle} onChange={e=>updateShowroom({handle:e.target.value.toLowerCase().replace(/[^a-z0-9-]/g,'-').replace(/--+/g,'-')})} placeholder="yourname"/></div></label>
-        <div className="mt-4 rounded-2xl bg-gray-50 p-4 text-xs">{checking?<span className="flex items-center gap-2 text-gray-500"><Loader2 size={14} className="animate-spin"/> Checking availability…</span>:available===true?<span className="font-semibold text-green-700">✓ This link is available</span>:available===false?<span className="text-red-600">This link is unavailable. Try another.</span>:<span className="text-gray-500">Use 3+ letters, numbers or hyphens.</span>}</div>{footer}
+      {step === 6 && <section className="flex flex-1 flex-col items-center justify-center text-center">
+        <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-black text-white"><Check size={32}/></div>
+        <h1 className="text-[30px] font-bold tracking-tight">Your showroom is ready.</h1><p className="mt-3 max-w-xs text-sm leading-6 text-gray-500">Your dealership is now online. Share your link and start adding vehicles.</p>
+        <div className="mt-8 flex w-full items-center gap-3 rounded-[16px] border border-[#E5E7EB] p-4 text-left"><Link2 size={18} className="shrink-0 text-gray-500"/><span className="min-w-0 flex-1 truncate text-sm font-medium">drivelink.co/{data.showroom.handle}</span><button type="button" onClick={copyShowroomLink} aria-label="Copy showroom link" className="rounded-full p-2 hover:bg-gray-100"><Copy size={17}/></button></div>
+        <button type="button" onClick={share} className="mt-4 flex h-12 w-full items-center justify-center gap-2 rounded-full border border-[#E5E7EB] text-sm font-semibold"><MessageCircle size={17}/> Share on WhatsApp</button>
+        <button type="button" onClick={()=>navigate('/app')} className="mt-auto flex h-12 w-full items-center justify-center gap-2 rounded-full bg-black text-sm font-semibold text-white">Go to dashboard <ArrowRight size={17}/></button>
       </section>}
-
-      {step === 7 && <section className="flex flex-1 flex-col">
-        <h1 className="text-2xl font-extrabold leading-tight">Add your first car.</h1><p className="mt-2 text-sm text-gray-500">Upload a vehicle or skip this step and add later.</p>
-        <label className="mt-6 flex cursor-pointer flex-col items-center justify-center rounded-2xl border border-dashed border-gray-300 bg-gray-50 py-8"><Car size={30} className="text-gray-500"/><span className="mt-3 text-sm font-bold">Upload Photos</span><span className="mt-1 text-xs text-gray-500">PNG, JPG, WebP (max 5MB each)</span><input type="file" accept="image/*" multiple className="hidden" onChange={e=>Array.from(e.target.files||[]).forEach(f=>uploadImage(f,'vehicle'))}/></label>
-        {vehicleFiles.length>0&&<div className="mt-3 flex gap-2 overflow-x-auto">{vehicleFiles.map((f,i)=><div key={i} className="relative"><img src={URL.createObjectURL(f)} className="h-16 w-20 rounded-lg object-cover" alt="Vehicle"/><button onClick={()=>{const files=vehicleFiles.filter((_,n)=>n!==i);setVehicleFiles(files);updateVehicle({photos:files.map(v=>URL.createObjectURL(v))});}} className="absolute -right-1 -top-1 rounded-full bg-black p-1 text-white"><X size={12}/></button></div>)}</div>}
-        <div className="mt-5 grid grid-cols-2 gap-3">
-          <label><span className={labelClass}>Make</span><input className={inputClass} value={data.firstVehicle.make} onChange={e=>updateVehicle({make:e.target.value,isSkipped:false})} placeholder="Toyota"/></label>
-          <label><span className={labelClass}>Model</span><input className={inputClass} value={data.firstVehicle.model} onChange={e=>updateVehicle({model:e.target.value,isSkipped:false})} placeholder="Fortuner"/></label>
-          <label><span className={labelClass}>Year</span><input type="number" className={inputClass} value={data.firstVehicle.year} onChange={e=>updateVehicle({year:Number(e.target.value),isSkipped:false})}/></label>
-          <label><span className={labelClass}>Price</span><input type="number" className={inputClass} value={data.firstVehicle.price} onChange={e=>updateVehicle({price:Number(e.target.value),isSkipped:false})} placeholder="45000"/></label>
-          <label><span className={labelClass}>Currency</span><select className={inputClass} value={data.firstVehicle.currency} onChange={e=>updateVehicle({currency:e.target.value as 'USD'|'ZAR'})}><option>USD</option><option>ZAR</option></select></label>
-          <label><span className={labelClass}>Mileage (km)</span><input type="number" className={inputClass} value={data.firstVehicle.mileageKm} onChange={e=>updateVehicle({mileageKm:Number(e.target.value),isSkipped:false})}/></label>
-        </div>
-        <button className="mt-4 text-center text-xs font-semibold underline text-gray-600" onClick={()=>{updateVehicle({isSkipped:true});setVehicleFiles([]);}}>Skip for now</button>{footer}
-      </section>}
-
-      {step === 8 && <form onSubmit={finish} className="flex flex-1 flex-col">
-        <h1 className="text-2xl font-extrabold leading-tight">Create your account.</h1><p className="mt-2 text-sm text-gray-500">Save your progress and manage your dealership.</p>
-        <div className="mt-7 space-y-4">
-          <label><span className={labelClass}>Full Name</span><input className={inputClass} value={data.account.businessName} onChange={e=>update({account:{...data.account,businessName:e.target.value}})} placeholder="Your full name" required/></label>
-          <label><span className={labelClass}>Email Address</span><input type="email" className={inputClass} value={data.account.email} onChange={e=>update({account:{...data.account,email:e.target.value}})} placeholder="you@example.com" required/></label>
-          <label><span className={labelClass}>Create Password</span><div className="relative"><input type={showPassword?'text':'password'} className={inputClass+' pr-12'} value={data.account.password} onChange={e=>update({account:{...data.account,password:e.target.value}})} placeholder="At least 6 characters" required/><button type="button" onClick={()=>setShowPassword(v=>!v)} className="absolute right-3 top-3 text-gray-500">{showPassword?<EyeOff size={18}/>:<Eye size={18}/>}</button></div></label>
-        </div>
-        <button disabled={busy} className={primary+' mt-auto'}>{busy?<><Loader2 className="animate-spin" size={17}/> Creating your dealership…</>:<>Create Account <ArrowRight size={17}/></>}</button>
-        <p className="mt-4 text-center text-xs text-gray-500">Already have an account? <button type="button" onClick={()=>navigate('/login')} className="font-bold underline">Sign in</button></p>
-        {error&&<p role="alert" className="mt-3 rounded-xl bg-red-50 p-3 text-xs text-red-700">{error}</p>}
-      </form>}
-
-      {step === 9 && <section className="flex flex-1 flex-col items-center justify-center text-center">
-        <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-[#FF7417] text-white shadow-lg shadow-orange-200"><Check size={42}/></div>
-        <h1 className="text-3xl font-extrabold">You're all set!</h1><p className="mt-3 max-w-xs text-sm leading-6 text-gray-500">Your dealership is ready. Start managing your inventory and share your link.</p>
-        {data.branding.logoPreview&&<img src={data.branding.logoPreview} alt="Dealership logo" className="mt-6 h-16 w-16 rounded-2xl object-cover"/>}
-        <div className="mt-8 w-full space-y-3"><button className={primary} onClick={()=>navigate('/app')}>View my showroom <ArrowRight size={17}/></button><button className="h-12 w-full rounded-full border border-gray-200 text-sm font-bold" onClick={()=>navigate('/app/vehicles/new')}>Add another car</button><button className="flex h-12 w-full items-center justify-center gap-2 text-sm font-semibold" onClick={share}><Share2 size={17}/> Share my link</button></div>
-      </section>}
-    </div>
-  </div>;
+    </section>
+  </main>;
 };
