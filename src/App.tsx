@@ -236,7 +236,7 @@ function AppContent() {
     <DeviceFrame>
 
       {renderRoute()}
-      {(['/app', '/app/vehicles', '/app/enquiries', '/app/more'].includes(currentPath)) && <BottomNav />}
+      {(['/app', '/app/vehicles', '/app/enquiries', '/app/more'].includes(currentPath) || (currentPath === '/' && storageService.getUserSession().isLoggedIn && !!storageService.getUserSession().dealershipId)) && <BottomNav />}
 
       {/* Global Toast Notification */}
       {toast && (

@@ -13,7 +13,7 @@ const tabs: Tab[] = [
 export const BottomNav: React.FC = () => {
   const { currentPath, navigate } = useNavigation();
   const isActive = (path: string) => path === '/app'
-    ? currentPath === '/app'
+    ? currentPath === '/app' || currentPath === '/'
     : currentPath === path || currentPath.startsWith(path + '/');
   const moreActive = isActive('/app/more');
 
