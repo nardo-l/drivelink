@@ -33,9 +33,8 @@ export const OnboardingFlow: React.FC = () => {
       if (saved.flowVersion === 2 && saved.currentStep >= 1 && saved.currentStep <= TOTAL) {
         return { ...initialState(), ...saved, account: { ...initialState().account, ...saved.account, password: '' } };
       }
-      const legacyStep = Number(saved.currentStep || 1);
-      const mappedStep = legacyStep === 2 ? 2 : legacyStep === 3 ? 3 : legacyStep === 5 ? 4 : legacyStep === 6 ? 5 : 1;
-      return { ...initialState(), ...saved, currentStep: mappedStep, account: { ...initialState().account, ...saved.account, password: '' } };
+      // Legacy drafts must re-authenticate first; a live session is advanced to setup below.
+      return { ...initialState(), ...saved, currentStep: 1, account: { ...initialState().account, ...saved.account, password: '' } };
     } catch { return initialState(); }
   });
   const [available, setAvailable] = useState<boolean | null>(null);
