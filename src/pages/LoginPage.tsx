@@ -103,7 +103,7 @@ export const LoginPage: React.FC = () => {
           )}
 
           <form onSubmit={handleLogin} className="dl-login-form">
-            <label className="dl-login-field">
+            <div className="dl-login-field">
               <span className="sr-only">Email address</span>
               <Mail size={23} aria-hidden="true" />
               <input
