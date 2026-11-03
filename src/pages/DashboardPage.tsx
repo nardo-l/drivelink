@@ -2,7 +2,6 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigation } from '../context/NavigationContext';
 import { storageService } from '../services/storage';
 import { isSupabaseConfigured } from '../lib/supabase';
-import { BottomNav } from '../components/layout/BottomNav';
 import { StatusBadge } from '../components/common/Badge';
 import { CarFront, MessageCircle, Eye, Bell, Plus, ChevronRight, ArrowUpRight, CircleAlert, Share2 } from 'lucide-react';
 
@@ -43,7 +42,7 @@ export const DashboardPage: React.FC = () => {
 
   return (
     <div className="dl-workspace relative min-h-full flex flex-col text-[#171717]">
-      <main className="flex-1 overflow-y-auto px-4 sm:px-7 pt-5 pb-[88px] w-full max-w-5xl mx-auto">
+      <main className="flex-1 overflow-y-auto px-4 sm:px-7 pt-5 pb-8 w-full max-w-5xl mx-auto">
         <header className="!bg-transparent !backdrop-blur-0 !border-0 flex items-center justify-between gap-3 mb-5">
           <div className="min-w-0">
             <p className="text-xs text-[#777] font-medium">{greeting}</p>
@@ -103,7 +102,6 @@ export const DashboardPage: React.FC = () => {
         {loadError && <div role="alert" className="rounded-xl bg-red-50 text-red-700 p-3 text-xs flex gap-2"><CircleAlert size={16}/>{loadError}</div>}
         <button onClick={()=>navigate('/app/vehicles/new')} className="dl-accent-button w-full rounded-full min-h-12 font-extrabold text-sm flex items-center justify-center gap-2 mt-4 shadow-lg shadow-orange-500/15"><Plus size={18}/> Add Vehicle</button>
       </main>
-      <BottomNav/>
     </div>
   );
 };
