@@ -150,7 +150,7 @@ export const LoginPage: React.FC = () => {
 
           <div className="dl-login-signup">
             <span className="dl-login-signup-line" />
-            <p>Don&apos;t have an account? <button onClick={() => navigate('/signup')}>Sign Up</button></p>
+            <p>Don&apos;t have an account? <button onClick={() => { try { localStorage.setItem('drivelink_intro_completed_v1', 'true'); } catch {} navigate('/signup'); }}>Sign Up</button></p>
             <span className="dl-login-signup-line" />
           </div>
         </div>
