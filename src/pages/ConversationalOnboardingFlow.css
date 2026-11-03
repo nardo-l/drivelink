@@ -47,3 +47,6 @@
 @media(max-height:740px){.di-visual-wrap{height:clamp(220px,43svh,340px);min-height:220px}.di-copy{margin-top:13px}.di-copy h1{font-size:clamp(26px,6.8vw,31px)}.di-copy p{margin-top:7px;font-size:13px}.di-bottom{padding-top:12px}.di-continue{min-height:49px}}
 @media(max-width:360px){.di-onboarding-phone{padding-left:17px;padding-right:17px}.di-listing{gap:7px;padding:8px}.di-listing img{width:70px;flex-basis:70px}.di-listing b{font-size:11px}.di-listing small{font-size:7px}.di-listing strong{font-size:12px}}
 @media(prefers-reduced-motion:reduce){.di-slide,.di-dots button,.di-continue{animation:none;transition:none}}
+
+.di-setup-screen{animation:di-slide-in .28s cubic-bezier(.2,.7,.2,1) both}
+@media(prefers-reduced-motion:reduce){.di-setup-screen{animation:none}}
