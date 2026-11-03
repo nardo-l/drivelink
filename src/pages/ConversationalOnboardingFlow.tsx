@@ -118,7 +118,7 @@ export const OnboardingFlow: React.FC = () => {
   }, [data.showroom.handle]);
 
   const setStep = (next: number) => { update({ currentStep: Math.max(1, Math.min(TOTAL, next)) }); setError(''); window.scrollTo({ top: 0, behavior: 'smooth' }); };
-  const back = () => step === 1 ? (setIntroDone(false), setIntroStep(5)) : setStep(step - 1);
+  const back = () => { if (step === 1) { try { localStorage.removeItem('drivelink_intro_completed_v1'); } catch {} setIntroDone(false); setIntroStep(5); } else setStep(step - 1); };
   const validSlug = /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(data.showroom.handle);
   const validWhatsapp = data.contact.whatsappNumber.replace(/[^0-9]/g, '').length >= 7;
   const continueStep = () => {
