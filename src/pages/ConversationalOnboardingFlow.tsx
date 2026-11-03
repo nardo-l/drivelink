@@ -54,6 +54,7 @@ export const OnboardingFlow: React.FC = () => {
   const finishIntro = () => {
     try { localStorage.setItem('drivelink_intro_completed_v1', 'true'); } catch {}
     setIntroDone(true);
+    if (data.currentStep === 1) update({ currentStep: 2 });
   };
   const advanceIntro = () => introStep === introSlides.length - 1 ? finishIntro() : setIntroStep(value => Math.min(value + 1, introSlides.length - 1));
 
