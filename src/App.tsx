@@ -53,6 +53,10 @@ function AppContent() {
           storageService.clearSession();
         }
         setSessionChecked(true);
+      }).catch((err) => {
+        console.warn('Session check failed:', err);
+        storageService.clearSession();
+        setSessionChecked(true);
       });
 
       const sub = supabaseService.onAuthStateChange(async (session) => {
