@@ -3,6 +3,7 @@ import { useNavigation } from '../context/NavigationContext';
 import { storageService } from '../services/storage';
 import { isSupabaseConfigured } from '../lib/supabase';
 import { BottomNav } from '../components/layout/BottomNav';
+import { StackedBars } from '../components/charts/StackedBars';
 import { StatusBadge } from '../components/common/Badge';
 import { CarFront, MessageCircle, Eye, Bell, Plus, ChevronRight, ArrowUpRight, CircleAlert, Share2 } from 'lucide-react';
 
@@ -92,12 +93,11 @@ export const DashboardPage: React.FC = () => {
           {[{label:'Store visits',value:visits.toLocaleString(),icon:Eye},{label:'Enquiries',value:enquiries.length.toString(),icon:MessageCircle},{label:'Cars sold',value:soldCount.toString(),icon:CarFront}].map(item => {const Icon=item.icon;return <div key={item.label} className="rounded-2xl bg-white border border-[#ededed] p-3 min-w-0"><Icon size={18} className="text-[#f47716] mb-2"/><p className="text-xl sm:text-2xl font-extrabold tabular-nums truncate">{loading?'—':item.value}</p><p className="text-[10px] sm:text-[11px] text-[#777] mt-1 leading-tight">{item.label}</p></div>;})}
         </section>
 
-        <section className="bg-white border border-[#ededed] rounded-[22px] p-4 mb-5">
-          <div className="flex items-center justify-between mb-4"><div><h2 className="font-extrabold text-sm">Performance overview</h2><p className="text-[11px] text-[#888] mt-0.5">Based on recorded activity</p></div><select aria-label="Performance period" value={period} onChange={e=>setPeriod(e.target.value)} className="!min-h-8 !rounded-full !px-3 !text-xs !w-auto"><option value="7d">7 days</option><option value="30d">30 days</option></select></div>
-          <div className="flex items-center gap-4">
-            <div className="relative w-24 h-24 shrink-0 rounded-full flex items-center justify-center" style={{background:`conic-gradient(#f47716 ${rate*3.6}deg,#eeeeec 0deg)`}}><div className="w-[76px] h-[76px] rounded-full bg-white flex flex-col items-center justify-center"><strong className="text-2xl">{visits ? `${rate}%` : '—'}</strong><span className="text-[9px] text-[#888]">Enquiry rate</span></div></div>
-            <div className="flex-1 min-w-0"><p className="text-xs font-bold">Your dealership activity</p><p className="text-[11px] text-[#888] leading-relaxed mt-1">{visits ? `${enquiries.length} enquiries from ${visits.toLocaleString()} recorded visits.` : 'Visit and enquiry trends will appear here as your showroom receives activity.'}</p><div className="mt-3 flex gap-2"><span className="text-[10px] rounded-full bg-[#fff1e7] text-[#d95d08] px-2.5 py-1 font-bold">{period === '7d' ? 'Last 7 days' : 'Last 30 days'}</span></div></div>
+        <section className="mb-5">
+          <div className="mb-3 flex items-center justify-between">
+            <div><h2 className="font-extrabold text-sm">Traffic overview</h2><p className="text-[11px] text-[#888] mt-0.5">Interactive chart preview · sample data</p></div>
           </div>
+          <StackedBars colour="Mono" bars={20} gap={5} />
         </section>
 
         <section className="mb-5">
