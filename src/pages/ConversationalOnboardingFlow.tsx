@@ -34,7 +34,7 @@ export const OnboardingFlow: React.FC = () => {
         return { ...initialState(), ...saved, account: { ...initialState().account, ...saved.account, password: '' } };
       }
       const legacyStep = Number(saved.currentStep || 1);
-      const mappedStep = legacyStep === 2 ? 2 : legacyStep === 3 ? 3 : legacyStep === 5 ? 4 : legacyStep === 6 ? 5 : legacyStep === 9 || saved.isCompleted ? 6 : 1;
+      const mappedStep = legacyStep === 2 ? 2 : legacyStep === 3 ? 3 : legacyStep === 5 ? 4 : legacyStep === 6 ? 5 : 1;
       return { ...initialState(), ...saved, currentStep: mappedStep, account: { ...initialState().account, ...saved.account, password: '' } };
     } catch { return initialState(); }
   });
