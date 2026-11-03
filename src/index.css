@@ -1365,3 +1365,132 @@ select:focus-visible, textarea:focus-visible {
 [class*="ring-pink-"],[class*="ring-rose-"],[class*="ring-red-"]) {
   --tw-ring-color: rgba(17,17,17,.12) !important;
 }
+
+
+/* Midnight Safari brand system — visual-only overrides */
+:root {
+  color-scheme: light;
+  --dl-canvas: #FAF9F6;
+  --dl-card: #FFFFFF;
+  --dl-ink: #171717;
+  --dl-muted: #626262;
+  --dl-line: #D9D6CF;
+  --dl-accent: #C96B3D;
+  --dl-accent-dark: #9E4F2E;
+  --dl-navy: #101820;
+  --dl-sand: #F1EFEA;
+  --dl-success: #1F6B52;
+  --dl-promo: #C58A24;
+  font-family: "Inter", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+html, body, button, input, select, textarea {
+  font-family: "Inter", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+}
+body, .dl-frame, .dl-workspace { color: #171717; background: #FAF9F6 !important; }
+.dl-frame, .dl-workspace { --tw-ring-color: rgba(201,107,61,.28); }
+.dl-frame :is(h1,.dl-heading,.dl-display-heading,.dl-marketing-page h1,.dl-showroom-heading),
+.dl-workspace :is(h1,.dl-display-heading,.dl-showroom-heading) {
+  font-family: "DM Serif Display", Georgia, serif !important;
+  font-weight: 400 !important;
+  letter-spacing: -.025em;
+  line-height: 1.12;
+}
+.dl-frame :is(h2,h3,h4), .dl-workspace :is(h2,h3,h4) {
+  font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
+}
+.dl-frame :is(p,span,label,a,small,strong,b,button,input,select,textarea,td,th),
+.dl-workspace :is(p,span,label,a,small,strong,b,button,input,select,textarea,td,th) {
+  font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
+}
+.dl-frame :is(.dl-eyebrow,.text-xs,.text-\[11px\],.text-\[10px\]) { letter-spacing: .01em; }
+.dl-frame :is(.dl-surface,[class*="rounded-2xl"][class*="border"],[class*="rounded-3xl"][class*="border"]),
+.dl-workspace :is(.dl-surface,[class*="rounded-2xl"][class*="border"],[class*="rounded-3xl"][class*="border"]) {
+  background-color: #FFFFFF;
+  border-color: #D9D6CF !important;
+  border-radius: 14px;
+  box-shadow: 0 3px 14px rgba(16,24,32,.045);
+}
+.dl-frame :is(input:not([type="checkbox"]):not([type="radio"]),select,textarea),
+.dl-workspace :is(input:not([type="checkbox"]):not([type="radio"]),select,textarea) {
+  background: #FFFFFF !important; color: #171717 !important; border-color: #D9D6CF !important;
+}
+.dl-frame :is(input,textarea)::placeholder, .dl-workspace :is(input,textarea)::placeholder { color: #626262 !important; opacity: .78; }
+.dl-frame :is(input,select,textarea):focus, .dl-workspace :is(input,select,textarea):focus {
+  border-color: #C96B3D !important; box-shadow: 0 0 0 3px rgba(201,107,61,.16) !important; outline: none;
+}
+.dl-frame button, .dl-workspace button { font-family: "Inter", sans-serif; font-weight: 600; }
+.dl-frame :is(.dl-accent-button,.dl-button), .dl-workspace :is(.dl-accent-button,.dl-button) {
+  background: #C96B3D !important; color: #FFFFFF !important; border-color: #C96B3D !important;
+  box-shadow: none;
+}
+.dl-frame :is(.dl-accent-button,.dl-button):hover, .dl-workspace :is(.dl-accent-button,.dl-button):hover {
+  background: #9E4F2E !important; border-color: #9E4F2E !important;
+}
+.dl-frame button:disabled, .dl-workspace button:disabled {
+  background: #E5E2DC !important; color: #626262 !important; border-color: #E5E2DC !important;
+}
+.dl-accent-text, .dl-marketing-page .dl-kicker { color: #C96B3D !important; }
+.dl-pill-active { background: #C96B3D !important; color: #FFFFFF !important; }
+.dl-bottom-nav { background: rgba(255,255,255,.97) !important; border-color: #D9D6CF !important; }
+.dl-bottom-nav-item.is-active { background: #C96B3D !important; color: #FFFFFF !important; }
+.dl-bottom-nav-item.is-active .dl-bottom-nav-icon,
+.dl-bottom-nav-item.is-active .dl-bottom-nav-label { color: #FFFFFF !important; }
+.dl-bottom-nav-item .dl-bottom-nav-icon-wrap { background: #F1EFEA !important; }
+.dl-marketing-page { color: #171717 !important; background: #FAF9F6 !important; font-family: "Inter", sans-serif !important; }
+.dl-frame:has(.dl-marketing-page) { background: #FAF9F6 !important; }
+.dl-marketing-page :is(.dl-glow-one,.dl-glow-two,.dl-orb-orange,.dl-orb-blue) { display: none !important; }
+.dl-marketing-page :is(.dl-brand-mark,.dl-brand-mini,.dl-button,.dl-phone-cta,.dl-mock-cta,.dl-mock-plus) {
+  background: #C96B3D !important; color: #FFFFFF !important; box-shadow: none !important;
+}
+.dl-marketing-page :is(.dl-hero h1,.dl-section-heading h2,.dl-pricing h2,.dl-faq h2,.dl-final-cta h2,.dl-feature-copy h3) {
+  font-family: "DM Serif Display", Georgia, serif !important; font-weight: 400 !important;
+}
+.dl-marketing-page :is(.dl-hero h1 em,.dl-kicker,.dl-feature-icon,.dl-float-title span) { color: #C96B3D !important; }
+.dl-marketing-page :is(.dl-trial-badge,.dl-feature-icon,.dl-mock-status,.dl-mock-avatar) {
+  background: #F1EFEA !important; color: #626262 !important;
+}
+.dl-marketing-page :is(.dl-button:hover,.dl-marketing-nav nav button:hover,.dl-login-link:hover,.dl-footer-links button:hover) {
+  background: #9E4F2E !important; color: #FFFFFF !important;
+}
+.dl-marketing-page :is(.dl-feature-visual,.dl-feature-visual.garage,.dl-feature-visual.leads,.dl-feature-visual.analytics) { background: #F1EFEA !important; }
+.dl-onboarding { background: #FAF9F6 !important; }
+.dl-onboarding .bg-slate-950, .dl-onboarding .h-full.bg-slate-950 { background-color: #C96B3D !important; }
+.dl-onboarding .border-slate-950 { border-color: #C96B3D !important; }
+.dl-onboarding .text-slate-950 { color: #101820 !important; }
+.dl-onboarding .bg-slate-200 { background-color: #F1EFEA !important; }
+.dl-welcome { background: #FAF9F6 !important; }
+.dl-frame hr, .dl-workspace hr { border-color: #D9D6CF !important; }
+
+/* Semantic utility remapping: copper actions, green positive states, ochre promotions. */
+.dl-frame :is([class~="bg-orange-500"],[class~="bg-orange-600"],[class~="bg-indigo-500"],[class~="bg-indigo-600"],[class~="bg-blue-500"],[class~="bg-blue-600"]) {
+  background-color: #C96B3D !important; color: #FFFFFF !important;
+}
+.dl-frame :is([class~="hover:bg-orange-600"],[class~="hover:bg-indigo-600"],[class~="hover:bg-blue-600"]):hover { background-color: #9E4F2E !important; }
+.dl-frame :is([class~="text-orange-500"],[class~="text-orange-600"],[class~="text-indigo-600"],[class~="text-blue-600"]) { color: #C96B3D !important; }
+.dl-frame :is([class~="bg-emerald-50"],[class~="bg-green-50"],[class~="bg-teal-50"],[class~="bg-emerald-100"],[class~="bg-green-100"]) {
+  background-color: #EAF3EF !important; color: #1F6B52 !important;
+}
+.dl-frame :is([class~="text-emerald-600"],[class~="text-emerald-700"],[class~="text-green-600"],[class~="text-green-700"],[class~="text-teal-600"]) { color: #1F6B52 !important; }
+.dl-frame :is([class~="border-emerald-200"],[class~="border-green-200"],[class~="border-teal-200"]) { border-color: rgba(31,107,82,.28) !important; }
+.dl-frame :is([class~="bg-amber-50"],[class~="bg-yellow-50"],[class~="bg-orange-50"],[class~="bg-amber-100"]) {
+  background-color: #FBF2DF !important; color: #8B641D !important;
+}
+.dl-frame :is([class~="text-amber-600"],[class~="text-amber-700"],[class~="text-yellow-600"],[class~="text-orange-700"]) { color: #9A6A16 !important; }
+.dl-frame :is([class~="border-amber-200"],[class~="border-yellow-200"],[class~="border-orange-200"]) { border-color: rgba(197,138,36,.35) !important; }
+.dl-frame :is([class~="bg-red-50"],[class~="bg-rose-50"]) { background-color: #F7ECEA !important; }
+.dl-frame :is([class~="text-red-500"],[class~="text-red-600"],[class~="text-rose-600"]) { color: #8B3A32 !important; }
+.dl-frame :is([class~="bg-slate-50"],[class~="bg-gray-50"],[class~="bg-zinc-50"]) { background-color: #FAF9F6 !important; }
+.dl-frame :is([class~="bg-slate-100"],[class~="bg-gray-100"],[class~="bg-zinc-100"]) { background-color: #F1EFEA !important; }
+.dl-frame :is([class~="border-slate-200"],[class~="border-gray-200"],[class~="border-zinc-200"]) { border-color: #D9D6CF !important; }
+.dl-frame :is([class~="text-slate-500"],[class~="text-gray-500"],[class~="text-zinc-500"]) { color: #626262 !important; }
+
+/* WhatsApp actions retain a distinct forest-green treatment. */
+.dl-frame :is(.whatsapp-button,.whatsapp-cta,[class*="whatsapp"]) { --whatsapp-brand: #1F6B52; }
+.dl-frame :is(.whatsapp-button,.whatsapp-cta) { background: #1F6B52 !important; color: #FFFFFF !important; }
+@media (max-width: 390px) {
+  .dl-frame :is(h1,.dl-display-heading) { font-size: clamp(28px, 8vw, 32px); }
+  .dl-marketing-page .dl-hero h1 { font-size: clamp(42px, 12vw, 58px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dl-frame *, .dl-workspace * { transition-duration: .01ms !important; }
+}
