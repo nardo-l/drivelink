@@ -249,97 +249,6 @@ export const storageService = {
     return newViews;
   },
 
-  getOnboardingState(): OnboardingState {
-    const defaultState: OnboardingState = {
-      currentStep: 3, // Start with showroom setup; account creation is stage four.
-      account: {
-        businessName: '',
-        email: '',
-        password: '',
-        handle: '',
-      },
-      sellerType: 'dealership',
-      showroom: {
-        businessName: '',
-        handle: '',
-        isPublished: true,
-      },
-      contact: {
-        country: 'Zimbabwe',
-        city: '',
-        address: '',
-        whatsappCountryCode: '+263',
-        whatsappNumber: '',
-        whatsappSameAsPhone: true,
-        phoneCountryCode: '+263',
-        phoneNumber: '',
-        description: '',
-      },
-      branding: {
-        logoFile: null,
-        logoPreview: null,
-        coverFile: null,
-        coverPreview: null,
-      },
-      template: 'signature',
-      firstVehicle: {
-        make: '',
-        model: '',
-        year: '',
-        price: '',
-        currency: 'USD',
-        mileageKm: '',
-        transmission: 'Automatic',
-        fuel: 'Petrol',
-        condition: 'Excellent',
-        status: 'available',
-        description: '',
-        photos: [],
-        isDraft: false,
-        isSkipped: true,
-      },
-      isCompleted: false,
-    };
-
-    try {
-      const data = localStorage.getItem(STORAGE_KEYS.ONBOARDING);
-      if (data) {
-        const parsed = JSON.parse(data);
-        return {
-          ...defaultState,
-          ...parsed,
-          currentStep: parsed.isCompleted ? 10 : (parsed.currentStep ?? 1),
-          account: {
-            ...defaultState.account,
-            ...(parsed.account || {}),
-            password: '',
-          },
-          showroom: {
-            ...defaultState.showroom,
-            ...(parsed.showroom || {}),
-          },
-          contact: {
-            ...defaultState.contact,
-            ...(parsed.contact || {}),
-          },
-          branding: {
-            ...defaultState.branding,
-            ...(parsed.branding || {}),
-            logoFile: null,
-            coverFile: null,
-          },
-          firstVehicle: {
-            ...defaultState.firstVehicle,
-            ...(parsed.firstVehicle || {}),
-          },
-        };
-      }
-    } catch {
-      // ignore
-    }
-    return defaultState;
-  },
-
   clearOnboardingState(): void {
     try {
       localStorage.removeItem(STORAGE_KEYS.ONBOARDING);
@@ -376,17 +285,6 @@ export const storageService = {
     } catch (e) {
       console.warn('localStorage saveOnboardingState error:', e);
     }
-  },
-
-  updateOnboardingState(partial: Partial<OnboardingState>): OnboardingState {
-    const current = this.getOnboardingState();
-    const updated = { ...current, ...partial };
-    this.saveOnboardingState(updated);
-    return updated;
-  },
-
-  resetOnboarding(): void {
-    localStorage.removeItem(STORAGE_KEYS.ONBOARDING);
   },
 
   isSupabaseMode(): boolean {
