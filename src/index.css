@@ -1494,3 +1494,16 @@ body, .dl-frame, .dl-workspace { color: #171717; background: #FAF9F6 !important;
 @media (prefers-reduced-motion: reduce) {
   .dl-frame *, .dl-workspace * { transition-duration: .01ms !important; }
 }
+
+/* Final semantic refinements for the branded palette. */
+.dl-frame button[class~="bg-slate-950"], .dl-frame a[class~="bg-slate-950"],
+.dl-workspace button[class~="bg-slate-950"], .dl-workspace a[class~="bg-slate-950"] {
+  background-color: #C96B3D !important; color: #FFFFFF !important;
+}
+.dl-frame :is([class~="bg-emerald-500"],[class~="bg-green-500"],[class~="bg-teal-500"]) {
+  background-color: #1F6B52 !important; color: #FFFFFF !important;
+}
+.dl-frame :is([class~="bg-amber-500"],[class~="bg-yellow-500"]) {
+  background-color: #C58A24 !important; color: #171717 !important;
+}
+.dl-welcome-hero:after { background: rgba(16,24,32,.68) !important; }
