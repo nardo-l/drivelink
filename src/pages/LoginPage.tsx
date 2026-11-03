@@ -115,9 +115,9 @@ export const LoginPage: React.FC = () => {
                 placeholder="Email address"
                 aria-label="Email address"
               />
-            </label>
+            </div>
 
-            <label className="dl-login-field">
+            <div className="dl-login-field">
               <span className="sr-only">Password</span>
               <LockKeyhole size={23} aria-hidden="true" />
               <input
@@ -138,7 +138,7 @@ export const LoginPage: React.FC = () => {
               >
                 {showPassword ? <EyeOff size={21} /> : <Eye size={21} />}
               </button>
-            </label>
+            </div>
 
             <button type="submit" disabled={loading} className="dl-login-submit">
               <span>{loading ? 'Signing in...' : 'Sign in to Dealership'}</span>
