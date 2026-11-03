@@ -102,8 +102,16 @@ function AppContent() {
 
     if (currentPath === '/welcome') return <WelcomePage />;
 
-    // The six-slide introduction and the required setup are one flow.
-    if (currentPath === '/' || currentPath === '' || currentPath === '/signup' || currentPath === '/onboarding') {
+    // Public landing page stays separate from the current onboarding flow.
+    // Returning dealers with a completed setup go straight to their dashboard.
+    if (currentPath === '/' || currentPath === '') {
+      if (isLive && session.isLoggedIn && session.dealershipId) return <DashboardPage />;
+      if (isLive && session.isLoggedIn && !session.dealershipId) return <OnboardingFlow />;
+      return <WelcomePage />;
+    }
+
+    // Sign-up and onboarding continue to use the current six-slide flow.
+    if (currentPath === '/signup' || currentPath === '/onboarding') {
       if (isLive && session.isLoggedIn && session.dealershipId) return <DashboardPage />;
       return <OnboardingFlow />;
     }
