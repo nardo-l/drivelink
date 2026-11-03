@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { ArrowLeft, ArrowRight, Check, Car, Truck, Bus, Crown, TrendingUp, Users, Star, Rocket, Upload, X, Eye, EyeOff, MapPin, Link2, Loader2, Share2 } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, Car, Truck, Bus, Crown, TrendingUp, Users, Star, Rocket, Upload, X, Eye, EyeOff, MapPin, Link2, Loader2, Share2, MessageCircle } from 'lucide-react';
 import { useNavigation } from '../context/NavigationContext';
 import { storageService } from '../services/storage';
 import { supabaseService } from '../services/supabaseService';
