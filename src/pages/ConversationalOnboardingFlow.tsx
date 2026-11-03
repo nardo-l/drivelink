@@ -9,7 +9,7 @@ import { OnboardingState, SellerType, Dealership, Vehicle } from '../types';
 import { toE164 } from '../utils/phoneUtils';
 import { MARKETING_CAR_IMAGES } from '../utils/marketingCarImages';
 
-const TOTAL = 9;
+const TOTAL = 6;
 const ORANGE = '#FF7417';
 const initialState = (): OnboardingState => ({
   currentStep: 1,
@@ -29,8 +29,17 @@ const labelClass = 'mb-2 block text-xs font-semibold text-[#444]';
 export const OnboardingFlow: React.FC = () => {
   const { navigate, showToast } = useNavigation();
   const [data, setData] = useState<OnboardingState>(() => {
-    const saved = storageService.getOnboardingState();
-    return saved && saved.currentStep >= 1 && saved.currentStep <= TOTAL ? saved : initialState();
+    try {
+      const raw = localStorage.getItem('drivelink_onboarding_v1');
+      if (!raw) return initialState();
+      const saved = JSON.parse(raw);
+      if (saved.flowVersion === 2 && saved.currentStep >= 1 && saved.currentStep <= TOTAL) {
+        return { ...initialState(), ...saved, account: { ...initialState().account, ...saved.account, password: '' } };
+      }
+      const legacyStep = Number(saved.currentStep || 1);
+      const mappedStep = legacyStep === 2 ? 2 : legacyStep === 3 ? 3 : legacyStep === 5 ? 4 : legacyStep === 6 ? 5 : legacyStep === 9 || saved.isCompleted ? 6 : 1;
+      return { ...initialState(), ...saved, currentStep: mappedStep, account: { ...initialState().account, ...saved.account, password: '' } };
+    } catch { return initialState(); }
   });
   const [goals, setGoals] = useState<string[]>([]);
   const [logoFile, setLogoFile] = useState<File | null>(null);
@@ -77,7 +86,14 @@ export const OnboardingFlow: React.FC = () => {
   const updateShowroom = (patch: Partial<OnboardingState['showroom']>) => setData(prev => ({ ...prev, showroom: { ...prev.showroom, ...patch } }));
   const updateVehicle = (patch: Partial<OnboardingState['firstVehicle']>) => setData(prev => ({ ...prev, firstVehicle: { ...prev.firstVehicle, ...patch } }));
 
-  useEffect(() => { storageService.saveOnboardingState(data); }, [data]);
+  useEffect(() => {
+    if (data.isCompleted) { storageService.clearOnboardingState(); return; }
+    storageService.saveOnboardingState({ ...data, currentStep: step, isCompleted: false } as OnboardingState);
+    try {
+      const draft = JSON.parse(localStorage.getItem('drivelink_onboarding_v1') || '{}');
+      localStorage.setItem('drivelink_onboarding_v1', JSON.stringify({ ...draft, flowVersion: 2 }));
+    } catch {}
+  }, [data]);
   useEffect(() => {
     const slug = data.showroom.handle.trim();
     if (!slug || slug.length < 3) { setAvailable(null); setChecking(false); return; }
@@ -90,17 +106,15 @@ export const OnboardingFlow: React.FC = () => {
   }, [data.showroom.handle]);
 
   const setStep = (next: number) => { update({ currentStep: Math.max(1, Math.min(TOTAL, next)) }); setError(''); window.scrollTo({ top: 0, behavior: 'smooth' }); };
-  const back = () => step === 1 ? navigate('/') : setStep(step - 1);
+  const back = () => step === 1 ? (setIntroDone(false), setIntroStep(5)) : setStep(step - 1);
   const validSlug = /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(data.showroom.handle);
-
+  const validWhatsapp = data.contact.whatsappNumber.replace(/[^0-9]/g, '').length >= 7;
   const continueStep = () => {
     setError('');
     if (step === 2 && !data.sellerType) return setError('Choose the type of vehicles you sell.');
-    if (step === 3 && !data.contact.city.trim()) return setError('Enter your city or town.');
-    if (step === 4 && goals.length === 0) return setError('Choose at least one goal.');
-    if (step === 5 && !data.showroom.businessName.trim()) return setError('Enter your business name.');
-    if (step === 6 && (!validSlug || available !== true)) return setError('Choose a valid, available showroom link.');
-    if (step === 7 && !data.firstVehicle.isSkipped && (!data.firstVehicle.make.trim() || !data.firstVehicle.model.trim())) return setError('Enter the vehicle make and model, or skip this step.');
+    if (step === 3 && (!data.contact.city.trim() || !data.contact.country)) return setError('Enter your country and city.');
+    if (step === 4 && (!data.showroom.businessName.trim() || !validWhatsapp)) return setError('Enter your dealership name and a valid WhatsApp number.');
+    if (step === 5 && (!validSlug || available !== true)) return setError('Choose a valid, available showroom link.');
     setStep(step + 1);
   };
 
@@ -118,26 +132,42 @@ export const OnboardingFlow: React.FC = () => {
 
   const finish = async (event: React.FormEvent) => {
     event.preventDefault();
-    if (!data.account.businessName.trim() || !data.account.email.includes('@') || data.account.password.length < 6) {
-      setError('Enter your full name, a valid email and a password of at least 6 characters.'); return;
+    if (!data.account.email.includes('@') || data.account.password.length < 6) {
+      setError('Enter a valid email and a password of at least 6 characters.'); return;
     }
-    if (!isSupabaseConfigured()) { setError('DriveLink account creation requires a configured Supabase connection.'); return; }
+    if (!isSupabaseConfigured()) { setError('Account creation requires a configured connection.'); return; }
     setBusy(true); setError('');
     try {
-      // Signup can succeed before a later dealership or asset request fails.
-      // Reuse the authenticated user on retry instead of attempting to create the same
-      // auth account again.
-      let user = await supabaseService.getCurrentUser();
-      if (!user) {
+      const existingUser = await supabaseService.getCurrentUser();
+      if (!existingUser) {
         const auth = await supabaseService.signUp(data.account.email.trim(), data.account.password);
-        if (!auth.session) {
-          setError('Your account has been created. Check your email to confirm it, then sign in to finish setting up your dealership.');
-          setBusy(false); return;
+        if (!auth.session || !auth.user) {
+          setError('Check your email to confirm your account, then sign in to continue setting up your dealership.');
+          return;
         }
-        user = auth.user;
       }
-      if (!user) throw new Error('Your account exists, but we could not restore its session. Please sign in to continue setup.');
-      let dealer = await supabaseService.createDealership({
+      const user = await supabaseService.getCurrentUser();
+      if (!user) throw new Error('Your account was created. Please sign in to continue setup.');
+      storageService.setUserSession({ isLoggedIn: true, email: user.email || data.account.email, dealershipId: '', userId: user.id });
+      setStep(2);
+    } catch (e: any) {
+      setError(e?.message || 'We could not create your account. Please try again.');
+    } finally { setBusy(false); }
+  };
+
+  const finishExistingSession = async () => {
+    setBusy(true); setError('');
+    try {
+      const user = await supabaseService.getCurrentUser();
+      if (!user) throw new Error('Please sign in to finish your setup.');
+      const existing = await supabaseService.getCurrentDealership();
+      if (existing) {
+        storageService.saveDealership(existing);
+        storageService.setUserSession({ isLoggedIn: true, email: user.email || '', dealershipId: existing.id, userId: user.id });
+        update({ currentStep: 6, isCompleted: true });
+        return;
+      }
+      const dealer = await supabaseService.createDealership({
         name: data.showroom.businessName.trim(),
         slug: data.showroom.handle.trim(),
         country: data.contact.country,
@@ -147,76 +177,24 @@ export const OnboardingFlow: React.FC = () => {
         whatsapp: toE164(countryCode, data.contact.whatsappNumber) || '',
         email: user.email || data.account.email.trim(),
         currency: data.contact.country === 'South Africa' ? 'ZAR' : 'USD',
-        template: data.template,
+        template: 'signature',
         dealershipType: data.sellerType,
-        bio: data.contact.description || '',
+        bio: '',
         tagline: data.showroom.businessName.trim(),
         isPublished: true,
       });
-      if (logoFile) {
-        const logoUrl = await supabaseService.uploadDealershipAsset(dealer.id, logoFile, 'logo');
-        dealer = await supabaseService.updateDealership(dealer.id, { logoUrl });
-      }
-      if (!data.firstVehicle.isSkipped && data.firstVehicle.make.trim() && data.firstVehicle.model.trim()) {
-        const photos = await Promise.all(vehicleFiles.map(file => supabaseService.uploadVehiclePhoto(dealer.id, file)));
-        await supabaseService.createVehicle({
-          dealershipId: dealer.id, make: data.firstVehicle.make.trim(), model: data.firstVehicle.model.trim(),
-          year: Number(data.firstVehicle.year) || new Date().getFullYear(), price: Number(data.firstVehicle.price) || 0,
-          currency: data.firstVehicle.currency, mileageKm: Number(data.firstVehicle.mileageKm) || 0,
-          transmission: data.firstVehicle.transmission, fuel: data.firstVehicle.fuel, condition: data.firstVehicle.condition,
-          dutyStatus: 'Duty status not specified', status: 'available', description: data.firstVehicle.description || '',
-          photos, features: [],
-        }, dealer.id);
-      }
       storageService.saveDealership(dealer);
       storageService.setUserSession({ isLoggedIn: true, email: user.email || data.account.email, dealershipId: dealer.id, userId: user.id });
-      update({ currentStep: 9, isCompleted: true });
-      showToast('Your DriveLink dealership is ready!');
+      update({ currentStep: 6, isCompleted: true });
+      showToast('Your DriveLink showroom is ready!');
     } catch (e: any) {
       const message = String(e?.message || '');
-      const code = String(e?.code || '');
-      if (code === '23505' || message.includes('dealerships_slug_key') || message.toLowerCase().includes('duplicate key')) {
-        setError('That showroom link is already being used. Go back one step, choose a different link, then continue. Your account has been kept.');
-      } else if (message.toLowerCase().includes('failed to fetch') || message.toLowerCase().includes('network')) {
-        setError('Your account may already have been created. Your details are saved—please try Continue again. We will reuse your existing signed-in account rather than creating another one.');
+      if (String(e?.code || '') === '23505' || message.toLowerCase().includes('duplicate key')) {
+        setError('That showroom link is already in use. Go back and choose another.');
       } else {
-        setError(message || 'Your account has been kept, but we could not finish setting up your dealership. Please try again.');
+        setError(message || 'We could not save your dealership. Please try again.');
       }
     } finally { setBusy(false); }
-  };
-
-  const finishExistingSession = async () => {
-    setBusy(true); setError('');
-    try {
-      const user = await supabaseService.getCurrentUser();
-      if (!user) throw new Error('Please sign in to finish your setup.');
-      let dealer = await supabaseService.createDealership({
-        name: data.showroom.businessName.trim(), slug: data.showroom.handle.trim(),
-        country: data.contact.country, city: data.contact.city.trim(), address: data.contact.address.trim(),
-        phone: toE164(countryCode, data.contact.whatsappNumber) || '', whatsapp: toE164(countryCode, data.contact.whatsappNumber) || '',
-        email: user.email || '', currency: data.contact.country === 'South Africa' ? 'ZAR' : 'USD',
-        template: 'signature', dealershipType: data.sellerType, bio: data.contact.description || '',
-        tagline: data.showroom.businessName.trim(), isPublished: true,
-      });
-      if (logoFile) {
-        const logoUrl = await supabaseService.uploadDealershipAsset(dealer.id, logoFile, 'logo');
-        dealer = await supabaseService.updateDealership(dealer.id, { logoUrl });
-      }
-      if (!data.firstVehicle.isSkipped && data.firstVehicle.make && data.firstVehicle.model) {
-        const photos = await Promise.all(vehicleFiles.map(file => supabaseService.uploadVehiclePhoto(dealer.id, file)));
-        await supabaseService.createVehicle({
-          dealershipId: dealer.id, make: data.firstVehicle.make, model: data.firstVehicle.model,
-          year: Number(data.firstVehicle.year) || new Date().getFullYear(), price: Number(data.firstVehicle.price) || 0,
-          currency: data.firstVehicle.currency, mileageKm: Number(data.firstVehicle.mileageKm) || 0,
-          transmission: data.firstVehicle.transmission, fuel: data.firstVehicle.fuel, condition: data.firstVehicle.condition,
-          dutyStatus: 'Duty status not specified', status: 'available', description: data.firstVehicle.description || '', photos, features: [],
-        }, dealer.id);
-      }
-      storageService.saveDealership(dealer);
-      storageService.setUserSession({ isLoggedIn: true, email: user.email || '', dealershipId: dealer.id, userId: user.id });
-      update({ currentStep: 9, isCompleted: true });
-    } catch (e: any) { setError(e?.message || 'Could not finish setup.'); }
-    finally { setBusy(false); }
   };
 
   const share = async () => {
