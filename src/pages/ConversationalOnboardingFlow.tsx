@@ -67,6 +67,25 @@ export const OnboardingFlow: React.FC = () => {
     update({ currentStep: 1 });
   };
   const advanceIntro = () => introStep === introSlides.length - 1 ? finishIntro() : setIntroStep(value => Math.min(value + 1, introSlides.length - 1));
+  useEffect(() => {
+    let active = true;
+    supabaseService.getCurrentUser().then(async user => {
+      if (!active || !user) return;
+      const dealer = await supabaseService.getCurrentDealership();
+      if (!active) return;
+      if (dealer) {
+        storageService.saveDealership(dealer);
+        storageService.setUserSession({ isLoggedIn: true, email: user.email || '', dealershipId: dealer.id, userId: user.id });
+        navigate('/app');
+      } else {
+        try { localStorage.setItem('drivelink_intro_completed_v1', 'true'); } catch {}
+        setIntroDone(true);
+        setData(prev => ({ ...prev, currentStep: prev.currentStep <= 1 ? 2 : prev.currentStep }));
+        storageService.setUserSession({ isLoggedIn: true, email: user.email || '', dealershipId: '', userId: user.id });
+      }
+    }).catch(error => console.warn('Could not restore onboarding session:', error));
+    return () => { active = false; };
+  }, [navigate]);
   const introTouchStart = useRef<number | null>(null);
   const handleIntroTouchStart = (event: React.TouchEvent<HTMLElement>) => { introTouchStart.current = event.changedTouches[0]?.clientX ?? null; };
   const handleIntroTouchEnd = (event: React.TouchEvent<HTMLElement>) => {
@@ -195,12 +214,6 @@ export const OnboardingFlow: React.FC = () => {
         setError(message || 'We could not save your dealership. Please try again.');
       }
     } finally { setBusy(false); }
-  };
-
-  const share = async () => {
-    const url = `${window.location.origin}/showroom/${data.showroom.handle}`;
-    if (navigator.share) { try { await navigator.share({ title: data.showroom.businessName, url }); } catch {} }
-    else { await navigator.clipboard.writeText(url); showToast('Showroom link copied'); }
   };
 
   const card = (selected: boolean) => `rounded-2xl border p-4 text-left transition-all ${selected ? 'border-[#FF7417] bg-orange-50/50 ring-1 ring-[#FF7417]' : 'border-[#E7E7E5] bg-white hover:border-gray-300'}`;
