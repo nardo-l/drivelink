@@ -47,7 +47,7 @@ export const DashboardPage: React.FC = () => {
 
   return (
     <div className="dl-workspace relative min-h-full flex flex-col text-[#171717]">
-      <main className="flex-1 overflow-y-auto px-4 sm:px-7 pt-5 pb-28 w-full max-w-5xl mx-auto">
+      <main className="flex-1 overflow-y-auto px-4 sm:px-7 pt-5 pb-[160px] w-full max-w-5xl mx-auto">
         <header className="!bg-transparent !backdrop-blur-0 !border-0 flex items-center justify-between gap-3 mb-5">
           <div className="min-w-0">
             <p className="text-xs text-[#777] font-medium">{greeting}</p>
@@ -95,7 +95,7 @@ export const DashboardPage: React.FC = () => {
       <button
         type="button"
         onClick={() => setShareOpen(true)}
-        className="fixed z-40 right-5 bottom-24 sm:right-8 inline-flex min-h-12 items-center gap-2.5 rounded-full bg-black px-5 text-sm font-extrabold text-white shadow-xl shadow-black/20 transition-transform hover:-translate-y-0.5 active:scale-95"
+        className="fixed z-40 right-4 sm:right-8 inline-flex h-11 items-center gap-2 rounded-full bg-black px-4 text-sm font-semibold text-white shadow-xl shadow-black/20 transition-transform hover:-translate-y-0.5 active:scale-95" style={{ bottom: "calc(env(safe-area-inset-bottom, 0px) + 100px)" }}
         aria-label="Share your storefront"
       >
         <Share2 size={18}/><span>Share storefront</span>
