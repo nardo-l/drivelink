@@ -1333,3 +1333,35 @@ select:focus-visible, textarea:focus-visible {
   box-shadow: none;
 }
 .dl-frame hr, .dl-workspace hr { border-color: #eaeaea; }
+
+
+/* Remove remaining coloured utility gradients/rings without affecting neutral imagery. */
+.dl-frame [class*="bg-gradient-to-"],
+.dl-workspace [class*="bg-gradient-to-"] { background-image: none !important; }
+.dl-frame :is([class*="from-orange-"],[class*="to-orange-"],[class*="via-orange-"],
+[class*="from-amber-"],[class*="to-amber-"],[class*="via-amber-"],
+[class*="from-yellow-"],[class*="to-yellow-"],[class*="via-yellow-"],
+[class*="from-lime-"],[class*="to-lime-"],[class*="via-lime-"],
+[class*="from-emerald-"],[class*="to-emerald-"],[class*="via-emerald-"],
+[class*="from-green-"],[class*="to-green-"],[class*="via-green-"],
+[class*="from-teal-"],[class*="to-teal-"],[class*="via-teal-"],
+[class*="from-blue-"],[class*="to-blue-"],[class*="via-blue-"],
+[class*="from-sky-"],[class*="to-sky-"],[class*="via-sky-"],
+[class*="from-indigo-"],[class*="to-indigo-"],[class*="via-indigo-"],
+[class*="from-violet-"],[class*="to-violet-"],[class*="via-violet-"],
+[class*="from-purple-"],[class*="to-purple-"],[class*="via-purple-"],
+[class*="from-pink-"],[class*="to-pink-"],[class*="via-pink-"],
+[class*="from-rose-"],[class*="to-rose-"],[class*="via-rose-"],
+[class*="from-red-"],[class*="to-red-"],[class*="via-red-"] {
+  --tw-gradient-from: #f7f7f7 !important;
+  --tw-gradient-via: #f7f7f7 !important;
+  --tw-gradient-to: #f7f7f7 !important;
+  background-image: none !important;
+}
+.dl-frame :is([class*="ring-orange-"],[class*="ring-amber-"],[class*="ring-yellow-"],
+[class*="ring-lime-"],[class*="ring-emerald-"],[class*="ring-green-"],
+[class*="ring-teal-"],[class*="ring-blue-"],[class*="ring-sky-"],
+[class*="ring-indigo-"],[class*="ring-violet-"],[class*="ring-purple-"],
+[class*="ring-pink-"],[class*="ring-rose-"],[class*="ring-red-"]) {
+  --tw-ring-color: rgba(17,17,17,.12) !important;
+}
