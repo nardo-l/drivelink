@@ -1551,3 +1551,6 @@ body, .dl-frame, .dl-workspace { color: #171717; background: #FAF9F6 !important;
 @media(min-width:600px){.di-onboarding{padding:28px 16px}.di-onboarding-phone{width:min(100%,410px);min-height:min(850px,calc(100svh - 56px));border:1px solid rgba(255,255,255,.12);border-radius:38px;box-shadow:0 28px 90px rgba(0,0,0,.48)}.di-visual-wrap{height:clamp(300px,39svh,390px)}}
 @media(max-height:720px) and (max-width:599px){.di-visual-wrap{height:34svh;min-height:205px}.di-copy{margin-top:12px}.di-copy h1{font-size:27px}.di-copy p{margin-top:7px;font-size:13px}.di-bottom{padding-top:12px}.di-continue{min-height:49px}}
 @media(prefers-reduced-motion:reduce){.di-dots button,.di-continue{transition:none}}
+
+.di-signin{margin:12px 0 0;text-align:center;color:#8f9297;font-size:11px}
+.di-signin button{margin-left:4px;padding:2px 0;border:0;background:transparent;color:#f5f5f5;font-size:inherit;font-weight:700;text-decoration:underline;text-underline-offset:3px}
