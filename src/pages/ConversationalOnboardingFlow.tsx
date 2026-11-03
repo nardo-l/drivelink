@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import './ConversationalOnboardingFlow.css';
 import { ArrowLeft, ArrowRight, Check, Copy, Car, Truck, Bus, Crown, Eye, EyeOff, Link2, Loader2, MessageCircle } from 'lucide-react';
 import { useNavigation } from '../context/NavigationContext';
@@ -250,7 +250,7 @@ export const OnboardingFlow: React.FC = () => {
         {Array.from({length:6},(_,i)=><span key={i} className={`h-1.5 rounded-full transition-all duration-300 ${i+1===step?'w-7 bg-[#0A0A0A]':i+1<step?'w-2 bg-[#0A0A0A]':'w-2 bg-gray-200'}`} />)}
       </div>
 
-      {step === 1 && <form onSubmit={finish} className="flex flex-1 flex-col">
+      {step === 1 && <form onSubmit={finish} className="di-setup-screen flex flex-1 flex-col">
         <div className="mb-9 text-center"><div className="mx-auto mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-black text-white"><Link2 size={24}/></div><h1 className="text-[30px] font-bold leading-tight tracking-tight">Create your account.</h1><p className="mt-2 text-sm leading-6 text-gray-500">Set up your Drive Link account to build your dealership showroom.</p></div>
         <div className="space-y-4">
           <label className="block"><span className="mb-2 block text-xs font-semibold text-gray-700">Full name</span><input autoComplete="name" className="h-12 w-full rounded-[15px] border border-[#E5E7EB] bg-white px-4 text-sm outline-none focus:border-black focus:ring-2 focus:ring-gray-100" value={data.account.businessName} onChange={e=>update({account:{...data.account,businessName:e.target.value}})} placeholder="Your name"/></label>
@@ -300,7 +300,7 @@ export const OnboardingFlow: React.FC = () => {
         <button type="button" onClick={finishExistingSession} disabled={busy||checking||!validSlug||available!==true} className="mt-auto flex h-12 w-full items-center justify-center gap-2 rounded-full bg-black text-sm font-semibold text-white disabled:opacity-40">{busy?<><Loader2 size={17} className="animate-spin"/> Saving your showroom…</>:<>Create showroom <ArrowRight size={17}/></>}</button>
       </section>}
 
-      {step === 6 && <section className="flex flex-1 flex-col items-center justify-center text-center">
+      {step === 6 && <section className="di-setup-screen flex flex-1 flex-col items-center justify-center text-center">
         <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-black text-white"><Check size={32}/></div>
         <h1 className="text-[30px] font-bold tracking-tight">Your showroom is ready.</h1><p className="mt-3 max-w-xs text-sm leading-6 text-gray-500">Your dealership is now online. Share your link and start adding vehicles.</p>
         <div className="mt-8 flex w-full items-center gap-3 rounded-[16px] border border-[#E5E7EB] p-4 text-left"><Link2 size={18} className="shrink-0 text-gray-500"/><span className="min-w-0 flex-1 truncate text-sm font-medium">drivelink.co/{data.showroom.handle}</span><button type="button" onClick={copyShowroomLink} aria-label="Copy showroom link" className="rounded-full p-2 hover:bg-gray-100"><Copy size={17}/></button></div>
