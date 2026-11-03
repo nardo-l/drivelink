@@ -1712,3 +1712,34 @@ body, .dl-frame, .dl-workspace { color: #171717; background: #FAF9F6 !important;
 .stb[data-colour="off"] .stb-tip-row[data-esc] i { background-image:repeating-linear-gradient(-45deg,transparent 0 1.5px,var(--fill-slab) 1.5px 3px); }
 .stb-axis { display:flex;justify-content:space-between;margin-top:-8px;font-size:11px;line-height:14px;color:var(--stb-faint);font-variant-numeric:tabular-nums; }
 @keyframes stb-pop { from { transform:translateY(.18em);opacity:0;filter:blur(2px); } to { transform:none;opacity:1;filter:blur(0); } }
+
+
+/* Compact, thumb-friendly dealer taskbar. */
+@media (max-width: 1023px) {
+  .dl-workspace .dl-bottom-nav {
+    height: calc(56px + env(safe-area-inset-bottom, 0px)) !important;
+    min-height: calc(56px + env(safe-area-inset-bottom, 0px)) !important;
+    padding: 0 8px env(safe-area-inset-bottom, 0px) !important;
+    gap: 2px !important;
+  }
+  .dl-workspace .dl-bottom-nav-item,
+  .dl-workspace .dl-bottom-nav-item.is-active {
+    height: 56px !important; min-height: 48px !important;
+    padding: 5px 2px 3px !important; gap: 2px !important;
+    flex: 1 1 25% !important; border-radius: 14px !important;
+  }
+  .dl-workspace .dl-bottom-nav-item .dl-bottom-nav-icon-wrap,
+  .dl-workspace .dl-bottom-nav-item.is-active .dl-bottom-nav-icon-wrap {
+    flex-basis: 20px !important; width: 20px !important; height: 20px !important;
+  }
+  .dl-workspace .dl-bottom-nav-item .dl-bottom-nav-icon,
+  .dl-workspace .dl-bottom-nav-item.is-active .dl-bottom-nav-icon {
+    width: 20px !important; height: 20px !important;
+  }
+  .dl-workspace .dl-bottom-nav-label,
+  .dl-workspace .dl-bottom-nav-item.is-active .dl-bottom-nav-label {
+    font-size: 10px !important; line-height: 12px !important;
+  }
+  .dl-workspace .dl-bottom-nav-item.is-active::before { top: 3px; }
+  .dl-workspace > main { padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px)) !important; }
+}

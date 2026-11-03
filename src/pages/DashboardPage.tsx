@@ -3,7 +3,6 @@ import { useNavigation } from '../context/NavigationContext';
 import { storageService } from '../services/storage';
 import { isSupabaseConfigured } from '../lib/supabase';
 import { BottomNav } from '../components/layout/BottomNav';
-import { StackedBars } from '../components/charts/StackedBars';
 import { StatusBadge } from '../components/common/Badge';
 import { CarFront, MessageCircle, Eye, Bell, Plus, ChevronRight, ArrowUpRight, CircleAlert, Share2 } from 'lucide-react';
 
@@ -15,7 +14,6 @@ export const DashboardPage: React.FC = () => {
   const [enquiries, setEnquiries] = useState(() => isLive ? [] : storageService.getEnquiries());
   const [loading, setLoading] = useState(isLive);
   const [loadError, setLoadError] = useState('');
-  const [period, setPeriod] = useState('7d');
 
   const load = async () => {
     setLoading(true);
@@ -39,7 +37,6 @@ export const DashboardPage: React.FC = () => {
   const availableCount = vehicles.filter(v => v.status === 'available').length;
   const recent = useMemo(() => [...enquiries].sort((a,b) => new Date(b.createdAt).getTime()-new Date(a.createdAt).getTime()).slice(0,4), [enquiries]);
   const visits = dealership.storefrontViews || 0;
-  const rate = visits > 0 ? Math.min(100, Math.round((enquiries.length / visits) * 100)) : 0;
   const money = (v: number, currency: string) => `${currency === 'ZAR' ? 'R' : '$'}${v.toLocaleString()}`;
   const fullPublicUrl = `${window.location.origin}/showroom/${encodeURIComponent(dealership.slug)}`;
   const greeting = new Date().getHours() < 12 ? 'Good Morning' : new Date().getHours() < 17 ? 'Good Afternoon' : 'Good Evening';
@@ -93,12 +90,6 @@ export const DashboardPage: React.FC = () => {
           {[{label:'Store visits',value:visits.toLocaleString(),icon:Eye},{label:'Enquiries',value:enquiries.length.toString(),icon:MessageCircle},{label:'Cars sold',value:soldCount.toString(),icon:CarFront}].map(item => {const Icon=item.icon;return <div key={item.label} className="rounded-2xl bg-white border border-[#ededed] p-3 min-w-0"><Icon size={18} className="text-[#f47716] mb-2"/><p className="text-xl sm:text-2xl font-extrabold tabular-nums truncate">{loading?'—':item.value}</p><p className="text-[10px] sm:text-[11px] text-[#777] mt-1 leading-tight">{item.label}</p></div>;})}
         </section>
 
-        <section className="mb-5">
-          <div className="mb-3 flex items-center justify-between">
-            <div><h2 className="font-extrabold text-sm">Traffic overview</h2><p className="text-[11px] text-[#888] mt-0.5">Interactive chart preview · sample data</p></div>
-          </div>
-          <StackedBars colour="Mono" bars={20} gap={5} />
-        </section>
 
         <section className="mb-5">
           <div className="flex items-center justify-between mb-3"><h2 className="font-extrabold text-sm">Recent leads</h2><button onClick={()=>navigate('/app/enquiries')} className="text-xs font-bold text-[#f47716] flex items-center gap-1">See all <ChevronRight size={14}/></button></div>

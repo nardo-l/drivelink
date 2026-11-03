@@ -15,10 +15,11 @@ export const BottomNav: React.FC = () => {
     { label: 'More', path: '/app/more', icon: LayoutGrid },
   ];
 
+  const normalizedPath = currentPath.replace(/\\/+$/, '') || '/';
   const isItemActive = (path: string) => {
-    if (path === '/app') return currentPath === '/app';
-    if (path === '/app/vehicles') return currentPath.startsWith('/app/vehicles');
-    if (path === '/app/enquiries') return currentPath.startsWith('/app/enquiries');
+    if (path === '/app') return normalizedPath === '/app';
+    if (path === '/app/vehicles') return normalizedPath === path || normalizedPath.startsWith(`${path}/`);
+    if (path === '/app/enquiries') return normalizedPath === path || normalizedPath.startsWith(`${path}/`);
     // Analytics, settings, billing, notifications and support live under More.
     return [
       '/app/more',
@@ -28,7 +29,7 @@ export const BottomNav: React.FC = () => {
       '/app/billing',
       '/app/notifications',
       '/app/support',
-    ].some((morePath) => currentPath === morePath || currentPath.startsWith(`${morePath}/`));
+    ].some((morePath) => normalizedPath === morePath || normalizedPath.startsWith(`${morePath}/`));
   };
 
   return (
@@ -47,6 +48,7 @@ export const BottomNav: React.FC = () => {
             onClick={() => navigate(item.path)}
             aria-current={isActive ? 'page' : undefined}
             aria-label={item.label}
+            title={item.label}
             className={`dl-bottom-nav-item ${isActive ? 'is-active' : ''}`}
           >
             <span className="dl-bottom-nav-icon-wrap">
