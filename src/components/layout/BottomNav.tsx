@@ -1,31 +1,61 @@
 import React from 'react';
-import { Home, CarFront, UsersRound, Ellipsis } from 'lucide-react';
+import { Home, CarFront, UsersRound, LayoutGrid } from 'lucide-react';
 import { useNavigation } from '../../context/NavigationContext';
 import { storageService } from '../../services/storage';
 
 export const BottomNav: React.FC = () => {
   const { currentPath, navigate } = useNavigation();
   const enquiries = storageService.getEnquiries();
-  const newEnquiriesCount = enquiries.filter((e) => e.stage === 'new').length;
+  const newEnquiriesCount = enquiries.filter((enquiry) => enquiry.stage === 'new').length;
+
   const navItems = [
     { label: 'Home', path: '/app', icon: Home },
     { label: 'Garage', path: '/app/vehicles', icon: CarFront },
     { label: 'Leads', path: '/app/enquiries', icon: UsersRound, badge: newEnquiriesCount },
-    { label: 'More', path: '/app/more', icon: Ellipsis },
+    { label: 'More', path: '/app/more', icon: LayoutGrid },
   ];
+
+  const isItemActive = (path: string) => {
+    if (path === '/app') return currentPath === '/app';
+    if (path === '/app/vehicles') return currentPath.startsWith('/app/vehicles');
+    if (path === '/app/enquiries') return currentPath.startsWith('/app/enquiries');
+    // Analytics, settings, billing, notifications and support live under More.
+    return [
+      '/app/more',
+      '/app/analytics',
+      '/app/settings',
+      '/app/storefront',
+      '/app/billing',
+      '/app/notifications',
+      '/app/support',
+    ].some((morePath) => currentPath === morePath || currentPath.startsWith(`${morePath}/`));
+  };
+
   return (
-    <nav aria-label="Main navigation" className="dl-bottom-nav sticky bottom-0 z-40 bg-white/95 backdrop-blur-xl border-t border-black/[0.06] px-2 pt-2 pb-safe flex items-center justify-around shrink-0">
+    <nav
+      aria-label="Main navigation"
+      className="dl-bottom-nav fixed z-40 flex items-center"
+    >
       {navItems.map((item) => {
         const Icon = item.icon;
-        const isActive = item.path === '/app' ? currentPath === '/app' : currentPath.startsWith(item.path);
+        const isActive = isItemActive(item.path);
+
         return (
-          <button key={item.label} onClick={() => navigate(item.path)} aria-current={isActive ? 'page' : undefined}
-            className={`flex flex-col items-center justify-center min-w-[58px] min-h-[48px] px-2 py-1 relative rounded-xl transition-colors ${isActive ? 'text-[#f47716]' : 'text-[#999]' }`}>
-            <span className="relative">
-              <Icon className={`w-[20px] h-[20px] ${isActive ? 'stroke-[2.5]' : 'stroke-[1.8]'}`} />
-              {item.badge !== undefined && item.badge > 0 && <span className="absolute -top-1.5 -right-2 bg-[#f47716] text-white font-bold text-[9px] min-w-4 h-4 px-1 rounded-full flex items-center justify-center">{item.badge}</span>}
+          <button
+            key={item.label}
+            type="button"
+            onClick={() => navigate(item.path)}
+            aria-current={isActive ? 'page' : undefined}
+            aria-label={item.label}
+            className={`dl-bottom-nav-item ${isActive ? 'is-active' : ''}`}
+          >
+            <span className="dl-bottom-nav-icon-wrap">
+              <Icon aria-hidden="true" className="dl-bottom-nav-icon" />
+              {item.badge !== undefined && item.badge > 0 && (
+                <span className="dl-bottom-nav-badge">{item.badge > 99 ? '99+' : item.badge}</span>
+              )}
             </span>
-            <span className={`text-[9px] mt-1 tracking-wide ${isActive ? 'font-extrabold' : 'font-semibold'}`}>{item.label}</span>
+            <span className="dl-bottom-nav-label">{item.label}</span>
           </button>
         );
       })}
