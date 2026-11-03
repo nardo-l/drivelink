@@ -95,7 +95,7 @@ export const DashboardPage: React.FC = () => {
       <button
         type="button"
         onClick={() => setShareOpen(true)}
-        className="fixed z-40 right-4 sm:right-8 inline-flex h-11 items-center gap-2 rounded-full bg-black px-4 text-sm font-semibold text-white shadow-xl shadow-black/20 transition-transform hover:-translate-y-0.5 active:scale-95" style={{ bottom: "calc(env(safe-area-inset-bottom, 0px) + 100px)" }}
+        className="fixed z-40 right-4 sm:right-8 inline-flex h-11 items-center gap-2 rounded-full bg-black px-4 text-sm font-semibold text-white shadow-xl shadow-black/20 transition-transform hover:-translate-y-0.5 active:scale-95" style={{ bottom: "calc(env(safe-area-inset-bottom, 0px) + 88px)" }}
         aria-label="Share your storefront"
       >
         <Share2 size={18}/><span>Share storefront</span>
