@@ -15,7 +15,7 @@ export const BottomNav: React.FC = () => {
     { label: 'More', path: '/app/more', icon: LayoutGrid },
   ];
 
-  const normalizedPath = currentPath.replace(/\\/+$/, '') || '/';
+  const normalizedPath = currentPath.replace(/\/+$/, '') || '/';
   const isItemActive = (path: string) => {
     if (path === '/app') return normalizedPath === '/app';
     if (path === '/app/vehicles') return normalizedPath === path || normalizedPath.startsWith(`${path}/`);
