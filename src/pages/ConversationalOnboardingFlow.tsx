@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import './ConversationalOnboardingFlow.css';
-import { ArrowLeft, ArrowRight, Check, Copy, Car, Truck, Bus, Crown, Eye, EyeOff, Link2, Loader2, MessageCircle } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, Copy, Car, Truck, Bus, Crown, Eye, EyeOff, Link2, Loader2, MessageCircle, CreditCard, BarChart3, Users, Lock } from 'lucide-react';
 import { useNavigation } from '../context/NavigationContext';
 import { storageService } from '../services/storage';
 import { supabaseService } from '../services/supabaseService';
@@ -9,7 +9,7 @@ import { OnboardingState, SellerType } from '../types';
 import { toE164 } from '../utils/phoneUtils';
 import { MARKETING_CAR_IMAGES } from '../utils/marketingCarImages';
 
-const TOTAL = 6;
+const TOTAL = 7;
 const initialState = (): OnboardingState => ({
   currentStep: 1,
   account: { businessName: '', email: '', password: '', handle: '' },
@@ -164,7 +164,7 @@ export const OnboardingFlow: React.FC = () => {
       if (existing) {
         storageService.saveDealership(existing);
         storageService.setUserSession({ isLoggedIn: true, email: user.email || '', dealershipId: existing.id, userId: user.id });
-        update({ currentStep: 6, isCompleted: true });
+        navigate('/app');
         return;
       }
       const dealer = await supabaseService.createDealership({
@@ -185,8 +185,8 @@ export const OnboardingFlow: React.FC = () => {
       });
       storageService.saveDealership(dealer);
       storageService.setUserSession({ isLoggedIn: true, email: user.email || data.account.email, dealershipId: dealer.id, userId: user.id });
-      update({ currentStep: 6, isCompleted: true });
-      showToast('Your DriveLink showroom is ready!');
+      update({ currentStep: 7, isCompleted: true });
+      showToast('Your 3-day DriveLink Pro trial is active!');
     } catch (e: any) {
       const message = String(e?.message || '');
       if (String(e?.code || '') === '23505' || message.toLowerCase().includes('duplicate key')) {
@@ -243,11 +243,11 @@ export const OnboardingFlow: React.FC = () => {
         <button type="button" onClick={back} aria-label="Go back" className="flex h-10 items-center gap-2 rounded-full px-2 text-sm font-medium text-gray-600 hover:bg-gray-50" disabled={step===6}>
           {step!==6 && <><ArrowLeft size={17}/> Back</>}
         </button>
-        <span className="text-xs font-medium text-gray-500">{step===6?'Ready':`Setup ${step} of 5`}</span>
+        <span className="text-xs font-medium text-gray-500">{step===6?'DriveLink Pro':step===7?'Ready':`Setup ${step} of 5`}</span>
       </header>
-      <div className="mb-8 flex items-center justify-center gap-2" aria-label={`Setup step ${step} of 6`}>
-        {Array.from({length:6},(_,i)=><span key={i} className={`h-1.5 rounded-full transition-all duration-300 ${i+1===step?'w-7 bg-[#0A0A0A]':i+1<step?'w-2 bg-[#0A0A0A]':'w-2 bg-gray-200'}`} />)}
-      </div>
+      {step <= 5 && <div className="mb-8 flex items-center justify-center gap-2" aria-label={`Setup step ${step} of 5`}>
+        {Array.from({length:5},(_,i)=><span key={i} className={`h-1.5 rounded-full transition-all duration-300 ${i+1===step?'w-7 bg-[#0A0A0A]':i+1<step?'w-2 bg-[#0A0A0A]':'w-2 bg-gray-200'}`} />)}
+      </div>}
 
       {step === 1 && <form onSubmit={finish} className="di-setup-screen flex flex-1 flex-col">
         <div className="mb-9 text-center"><div className="mx-auto mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-black text-white"><Link2 size={24}/></div><h1 className="text-[30px] font-bold leading-tight tracking-tight">Create your account.</h1><p className="mt-2 text-sm leading-6 text-gray-500">Set up your Drive Link account to build your dealership showroom.</p></div>
@@ -295,12 +295,35 @@ export const OnboardingFlow: React.FC = () => {
         <label className="mt-8 block"><span className="mb-2 block text-xs font-semibold text-gray-700">Your public link</span><div className="flex h-12 items-center overflow-hidden rounded-[15px] border border-[#E5E7EB] px-3 focus-within:border-black"><span className="whitespace-nowrap text-xs text-gray-500">drivelink.co/</span><input aria-label="Showroom link name" className="h-full min-w-0 flex-1 px-2 text-sm outline-none" value={data.showroom.handle} onChange={e=>updateShowroom({handle:e.target.value.toLowerCase().replace(/[^a-z0-9-]/g,'-').replace(/--+/g,'-').replace(/^-|-$/g,'')})} placeholder="moyo-motors"/></div></label>
         <div className="mt-4 rounded-[15px] border border-[#E5E7EB] p-4 text-sm" aria-live="polite">{checking?<span className="flex items-center gap-2 text-gray-500"><Loader2 size={15} className="animate-spin"/> Checking availability…</span>:available===true?<span className="text-gray-800">✓ This link is available</span>:available===false?<span className="text-red-600">This link is unavailable. Try another.</span>:<span className="text-gray-500">Use at least 3 letters, numbers or hyphens.</span>}</div>
         {error&&<p role="alert" className="mt-3 text-sm text-red-600">{error}</p>}
-        <button type="button" onClick={finishExistingSession} disabled={busy||checking||!validSlug||available!==true} className="mt-auto flex h-12 w-full items-center justify-center gap-2 rounded-full bg-black text-sm font-semibold text-white disabled:opacity-40">{busy?<><Loader2 size={17} className="animate-spin"/> Saving your showroom…</>:<>Create showroom <ArrowRight size={17}/></>}</button>
+        <button type="button" onClick={()=>setStep(6)} disabled={checking||!validSlug||available!==true} className="mt-auto flex h-12 w-full items-center justify-center gap-2 rounded-full bg-black text-sm font-semibold text-white disabled:opacity-40">Continue <ArrowRight size={17}/></button>
       </section>}
 
-      {step === 6 && <section className="di-setup-screen flex flex-1 flex-col items-center justify-center text-center">
+      {step === 6 && <section className="dl-pro-paywall">
+        <header className="dl-pro-header">
+          <div className="dl-pro-brand"><svg viewBox="0 0 64 34" aria-hidden="true"><path d="M3 25c8-1 10-10 19-12 7-2 15 0 22 1 6 1 9 4 15 4M8 25h47M20 12l5-7c2-3 5-4 9-3l14 3 8 7" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/><circle cx="18" cy="26" r="4" fill="none" stroke="currentColor" strokeWidth="2"/><circle cx="49" cy="26" r="4" fill="none" stroke="currentColor" strokeWidth="2"/></svg><span>DriveLink</span></div>
+          <button type="button" className="dl-pro-close" aria-label="Back to showroom link" onClick={()=>setStep(5)}><span aria-hidden="true">×</span></button>
+        </header>
+        <div className="dl-pro-hero"><img src={MARKETING_CAR_IMAGES.hero} alt="Premium vehicle outside a modern dealership"/><div className="dl-pro-hero-shade"/></div>
+        <div className="dl-pro-intro"><h1>Upgrade to<br/>DriveLink Pro</h1><p>Unlock more features and grow your dealership online.</p></div>
+        <div className="dl-pro-timeline">
+          <div className="dl-pro-timeline-line"/>
+          <div className="dl-pro-step is-current"><div className="dl-pro-step-icon"><Crown size={24} fill="currentColor"/></div><div className="dl-pro-step-copy"><strong>3-Day Free Trial</strong><span>Try all premium features for free.</span></div></div>
+          <div className="dl-pro-step"><div className="dl-pro-step-icon is-outline"><CreditCard size={23}/></div><div className="dl-pro-step-copy"><strong>Then $3.99 / month</strong><span>After 3 days, continue with DriveLink Pro for $3.99 per month. No payment is taken today.</span></div></div>
+        </div>
+        <div className="dl-pro-features">
+          <div><Car size={21}/><span>Online Dealership Showroom</span></div>
+          <div><BarChart3 size={21}/><span>Advanced Analytics &amp; Insights</span></div>
+          <div><Users size={21}/><span>Manage Buyer Leads</span></div>
+          <div><MessageCircle size={21}/><span>WhatsApp Enquiries</span></div>
+          <div><Car size={21}/><span>Vehicle Inventory Management</span></div>
+        </div>
+        {error&&<p role="alert" className="dl-pro-error">{error}</p>}
+        <div className="dl-pro-price-card"><div className="dl-pro-price"><strong>$3.99</strong><span>/ month</span><em>Premium Plan</em></div><button type="button" disabled={busy} onClick={finishExistingSession}>{busy?<><Loader2 size={19} className="animate-spin"/> Activating your trial…</>:<>Start 3-Day Free Trial <ArrowRight size={22}/></>}</button><p><Lock size={13}/> No credit card required for free trial</p></div>
+      </section>}
+
+      {step === 7 && <section className="di-setup-screen flex flex-1 flex-col items-center justify-center text-center">
         <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-black text-white"><Check size={32}/></div>
-        <h1 className="text-[30px] font-bold tracking-tight">Your showroom is ready.</h1><p className="mt-3 max-w-xs text-sm leading-6 text-gray-500">Your dealership is now online. Share your link and start adding vehicles.</p>
+        <h1 className="text-[30px] font-bold tracking-tight">Your DriveLink Pro trial is active.</h1><p className="mt-3 max-w-xs text-sm leading-6 text-gray-500">You have 3 days of full access. Your trial ends in 72 hours, then the plan is $3.99 per month. No payment was taken to start your trial.</p>
         <div className="mt-8 flex w-full items-center gap-3 rounded-[16px] border border-[#E5E7EB] p-4 text-left"><Link2 size={18} className="shrink-0 text-gray-500"/><span className="min-w-0 flex-1 truncate text-sm font-medium">drivelink.co/{data.showroom.handle}</span><button type="button" onClick={copyShowroomLink} aria-label="Copy showroom link" className="rounded-full p-2 hover:bg-gray-100"><Copy size={17}/></button></div>
         <button type="button" onClick={share} className="mt-4 flex h-12 w-full items-center justify-center gap-2 rounded-full border border-[#E5E7EB] text-sm font-semibold"><MessageCircle size={17}/> Share on WhatsApp</button>
         <button type="button" onClick={()=>navigate('/app')} className="mt-auto flex h-12 w-full items-center justify-center gap-2 rounded-full bg-black text-sm font-semibold text-white">Go to dashboard <ArrowRight size={17}/></button>
