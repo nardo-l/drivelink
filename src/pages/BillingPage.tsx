@@ -321,6 +321,22 @@ export const BillingPage: React.FC = () => {
           </div>
         )}
 
+        <div className="sticky bottom-0 -mx-5 mt-auto bg-gradient-to-t from-[#F7F8FA] via-[#F7F8FA] to-transparent px-5 pb-[max(12px,env(safe-area-inset-bottom))] pt-5">
+          <button
+            type="button"
+            onClick={startPayment}
+            disabled={paying || loading}
+            className="flex h-14 w-full items-center justify-center gap-2 rounded-full bg-[#0A0F1E] px-5 text-sm font-bold text-white shadow-[0_8px_20px_rgba(10,15,30,0.16)] transition hover:bg-slate-800 active:scale-[0.99] disabled:opacity-60"
+          >
+            {paying ? <Loader2 className="h-4 w-4 animate-spin" /> : <CreditCard className="h-4 w-4" />}
+            {paying ? 'Connecting to NardoPay…' : `${isRenewal ? 'Renew now' : 'Subscribe now'} · ${selectedPlan === 'yearly' ? '$32' : '$3.99'}`}
+            {!paying && <ExternalLink className="h-3.5 w-3.5" />}
+          </button>
+          <p className="mt-2 text-center text-[10px] leading-4 text-slate-400">
+            You'll be redirected to NardoPay to pay {selectedPlan === 'yearly' ? '$32' : '$3.99'} with EcoCash or another available method.
+          </p>
+        </div>
+
         {checkoutId && (
           <section className="rounded-[20px] border border-amber-100 bg-amber-50 p-4 text-xs text-amber-900">
             <p className="font-extrabold">
@@ -405,21 +421,6 @@ export const BillingPage: React.FC = () => {
           <span>Payments are verified with NardoPay before access is extended. Renewals are manual; DriveLink will never charge you automatically.</span>
         </div>
 
-        <div className="sticky bottom-0 -mx-5 mt-auto bg-gradient-to-t from-[#F7F8FA] via-[#F7F8FA] to-transparent px-5 pb-[max(12px,env(safe-area-inset-bottom))] pt-5">
-          <button
-            type="button"
-            onClick={startPayment}
-            disabled={paying || loading}
-            className="flex h-14 w-full items-center justify-center gap-2 rounded-full bg-[#0A0F1E] px-5 text-sm font-bold text-white shadow-[0_8px_20px_rgba(10,15,30,0.16)] transition hover:bg-slate-800 active:scale-[0.99] disabled:opacity-60"
-          >
-            {paying ? <Loader2 className="h-4 w-4 animate-spin" /> : <CreditCard className="h-4 w-4" />}
-            {paying ? 'Connecting to NardoPay…' : `${isRenewal ? 'Renew now' : 'Subscribe now'} · ${selectedPlan === 'yearly' ? '$32' : '$3.99'}`}
-            {!paying && <ExternalLink className="h-3.5 w-3.5" />}
-          </button>
-          <p className="mt-2 text-center text-[10px] leading-4 text-slate-400">
-            You'll be redirected to NardoPay to pay {selectedPlan === 'yearly' ? '$32' : '$3.99'} with EcoCash or another available method.
-          </p>
-        </div>
       </main>
     </div>
   );
