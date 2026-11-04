@@ -46,7 +46,9 @@ export const EnquiriesPage: React.FC = () => {
   const [deleteTarget, setDeleteTarget] = useState<Enquiry | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [swipedId, setSwipedId] = useState<string | null>(null);
+  const [pullDistance, setPullDistance] = useState(0);
   const touchStart = useRef<{ x: number; y: number } | null>(null);
+  const pullStartY = useRef<number | null>(null);
 
   const load = useCallback(async (quiet = false) => {
     if (quiet) setRefreshing(true); else setLoading(true);
@@ -123,6 +125,31 @@ export const EnquiriesPage: React.FC = () => {
     } catch (e: any) { showToast(e?.message || 'Could not update enquiry.'); }
   };
 
+  const quickUpdateStage = async (enquiry: Enquiry, nextStage: EnquiryStage) => {
+    try {
+      const updated = await storageService.updateEnquiryStageAsync(enquiry.id, nextStage);
+      if (updated) {
+        const next = leads.map(item => item.id === updated.id ? updated : item);
+        setLeads(next);
+        window.dispatchEvent(new CustomEvent('drivelink:enquiries-updated', { detail: { unread: next.filter(item => item.stage === 'new').length } }));
+      }
+    } catch (e: any) { showToast(e?.message || 'Could not update enquiry.'); }
+  };
+
+  const handlePullStart = (event: React.TouchEvent<HTMLElement>) => {
+    if (window.scrollY <= 0) pullStartY.current = event.touches[0]?.clientY ?? null;
+  };
+  const handlePullMove = (event: React.TouchEvent<HTMLElement>) => {
+    if (pullStartY.current === null || refreshing) return;
+    const distance = Math.max(0, Math.min(90, (event.touches[0]?.clientY ?? 0) - pullStartY.current));
+    if (distance > 0) setPullDistance(distance);
+  };
+  const handlePullEnd = () => {
+    if (pullDistance > 62 && !refreshing) void load(true);
+    pullStartY.current = null;
+    setPullDistance(0);
+  };
+
   const confirmContacted = (enquiry: Enquiry) => {
     if (enquiry.stage === 'new' && window.confirm('Mark this enquiry as Contacted?')) void markContacted(enquiry);
   };
@@ -194,7 +221,8 @@ export const EnquiriesPage: React.FC = () => {
         </div>
       </header>
 
-      <main className="enquiries-main">
+      <main className="enquiries-main" onTouchStart={handlePullStart} onTouchMove={handlePullMove} onTouchEnd={handlePullEnd}>
+        {(refreshing || pullDistance > 12) && <div className="enquiries-pull-indicator" style={{ height: refreshing ? 36 : Math.min(36, pullDistance * .55) }}><RefreshCw size={14} className={refreshing ? 'animate-spin' : ''}/><span>{refreshing ? 'Refreshing enquiries…' : pullDistance > 62 ? 'Release to refresh' : 'Pull to refresh'}</span></div>}
         {counts.all > 0 && (
           <section className="enquiries-summary-strip" aria-label="Enquiry summary">
             <div><strong>{counts.new}</strong><span>New</span></div>
@@ -250,8 +278,8 @@ export const EnquiriesPage: React.FC = () => {
               return (
                 <article key={enquiry.id} className={`enquiry-card-wrap ${swipedId === enquiry.id ? 'is-swiped' : ''}`} onTouchStart={event => onTouchStart(event, enquiry.id)} onTouchEnd={event => onTouchEnd(event, enquiry.id)}>
                   <div className="enquiry-swipe-actions" aria-hidden={swipedId !== enquiry.id}>
-                    <button type="button" onClick={() => { setSwipedId(null); void storageService.updateEnquiryStageAsync(enquiry.id, 'contacted').then(updated => { if (updated) setLeads(list => list.map(item => item.id === updated.id ? updated : item)); }); }}><Check size={15}/> Contacted</button>
-                    <button type="button" onClick={() => { setSwipedId(null); void storageService.updateEnquiryStageAsync(enquiry.id, 'sold').then(updated => { if (updated) setLeads(list => list.map(item => item.id === updated.id ? updated : item)); }); }}><Check size={15}/> Converted</button>
+                    <button type="button" onClick={() => { setSwipedId(null); void quickUpdateStage(enquiry, 'contacted'); }}><Check size={15}/> Contacted</button>
+                    <button type="button" onClick={() => { setSwipedId(null); void quickUpdateStage(enquiry, 'sold'); }}><Check size={15}/> Converted</button>
                     <button type="button" className="delete" onClick={() => setDeleteTarget(enquiry)}><Trash2 size={15}/> Delete</button>
                   </div>
                   <div className="enquiry-card" style={{ animationDelay: `${Math.min(index, 8) * 35}ms` }}>
