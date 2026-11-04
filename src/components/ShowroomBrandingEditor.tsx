@@ -12,13 +12,14 @@ interface ShowroomBrandingEditorProps {
   logoUrl?: string | null;
   bannerUrl?: string | null;
   onChange: (value: BrandingValue) => void;
+  onUploadingChange?: (busy: boolean) => void;
   className?: string;
 }
 
 const emptyAsset = (url: string | null = null): AssetState => ({ url, busy: false, progress: 0, error: '', pendingFile: null });
 
 export const ShowroomBrandingEditor: React.FC<ShowroomBrandingEditorProps> = ({
-  dealershipName, logoUrl = null, bannerUrl = null, onChange, className = '',
+  dealershipName, logoUrl = null, bannerUrl = null, onChange, onUploadingChange, className = '',
 }) => {
   const [logo, setLogo] = useState<AssetState>(() => emptyAsset(logoUrl));
   const [banner, setBanner] = useState<AssetState>(() => emptyAsset(bannerUrl));
@@ -30,6 +31,7 @@ export const ShowroomBrandingEditor: React.FC<ShowroomBrandingEditorProps> = ({
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const [drag, setDrag] = useState<{ x: number; y: number } | null>(null);
   const [cropError, setCropError] = useState('');
+  const [activeTasks, setActiveTasks] = useState(0);
   const cropRef = useRef<HTMLDivElement>(null);
   const fileInputRefs = { logo: useRef<HTMLInputElement>(null), banner: useRef<HTMLInputElement>(null) };
   const initials = useMemo(() => dealershipName.trim().split(/\s+/).filter(Boolean).slice(0, 2).map(word => word[0]).join('').toUpperCase() || 'DL', [dealershipName]);
@@ -70,6 +72,7 @@ export const ShowroomBrandingEditor: React.FC<ShowroomBrandingEditorProps> = ({
 
   const uploadCropped = async (kind: BrandingKind, file: File, localPreview?: string) => {
     updateAsset(kind, { busy: true, progress: 0, error: '', pendingFile: file, ...(localPreview ? { url: localPreview } : {}) });
+    setActiveTasks(value => value + 1);
     try {
       const url = await supabaseService.uploadShowroomBrandingAsset(file, kind, progress => updateAsset(kind, { progress }));
       if (localPreview) URL.revokeObjectURL(localPreview);
@@ -77,7 +80,7 @@ export const ShowroomBrandingEditor: React.FC<ShowroomBrandingEditorProps> = ({
       notifyChange(kind, url);
     } catch (error: any) {
       updateAsset(kind, { busy: false, error: error?.message || 'Upload failed. Your image is saved here — try again.' });
-    }
+    } finally { setActiveTasks(value => Math.max(0, value - 1)); }
   };
 
   const confirmCrop = async () => {
@@ -121,13 +124,14 @@ export const ShowroomBrandingEditor: React.FC<ShowroomBrandingEditorProps> = ({
   const remove = async (kind: BrandingKind) => {
     const asset = kind === 'logo' ? logo : banner;
     updateAsset(kind, { busy: true, error: '' });
+    setActiveTasks(value => value + 1);
     try {
       await supabaseService.removeShowroomBrandingAsset(kind, asset.url);
       updateAsset(kind, { url: null, busy: false, progress: 0, pendingFile: null, error: '' });
       notifyChange(kind, null);
     } catch (error: any) {
       updateAsset(kind, { busy: false, error: error?.message || 'Could not remove this image. Please try again.' });
-    }
+    } finally { setActiveTasks(value => Math.max(0, value - 1)); }
   };
 
   const renderUpload = (kind: BrandingKind, title: string, hint: string) => {
