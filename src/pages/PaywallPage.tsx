@@ -73,7 +73,18 @@ export const PaywallPage: React.FC = () => {
   }, [checkoutId, transactionId, refreshAccess]);
 
   React.useEffect(() => {
-    if (checkoutId) void checkCheckout();
+    if (!checkoutId) return;
+    let attempts = 0;
+    void checkCheckout();
+    const timer = window.setInterval(() => {
+      attempts += 1;
+      if (attempts >= 10) {
+        window.clearInterval(timer);
+        return;
+      }
+      void checkCheckout();
+    }, 3000);
+    return () => window.clearInterval(timer);
   }, [checkoutId, checkCheckout]);
 
   const subscribe = async () => {
