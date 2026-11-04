@@ -1,5 +1,5 @@
 import React from 'react';
-import { Check, Loader2, LockKeyhole, ShieldCheck } from 'lucide-react';
+import { Check, Loader2, LockKeyhole, ShieldCheck, Store, CarFront, MessageCircle, CalendarDays, Sparkles } from 'lucide-react';
 import { useNavigation } from '../context/NavigationContext';
 import { supabase } from '../lib/supabase';
 import { supabaseService } from '../services/supabaseService';
@@ -115,60 +115,103 @@ export const PaywallPage: React.FC = () => {
   };
 
   const features = [
-    'Your dealership showroom and public link',
-    'Vehicle inventory, photos and listings',
-    'Buyer enquiries and lead management',
-    'Analytics, notifications and store settings',
+    { title: 'Your showroom and public link', caption: 'Stays live for your buyers', Icon: Store, tint: 'bg-sky-50 text-sky-700' },
+    { title: 'Inventory, photos and listings', caption: "Everything you've added is safe", Icon: CarFront, tint: 'bg-indigo-50 text-indigo-700' },
+    { title: 'Enquiries and lead management', caption: 'Never miss a buyer', Icon: MessageCircle, tint: 'bg-amber-50 text-amber-700' },
   ];
 
   return (
-    <main className="min-h-[100dvh] w-full bg-[#F7F8FA] px-4 py-8 text-slate-950 flex items-center justify-center">
-      <section className="w-full max-w-[440px] rounded-[30px] border border-slate-200 bg-white p-6 shadow-[0_24px_70px_rgba(15,23,42,0.08)] sm:p-8">
-        <div className="mx-auto mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-950 text-white">
-          <LockKeyhole size={22} />
-        </div>
-        <p className="text-center text-[10px] font-extrabold tracking-[0.2em] text-slate-400">DRIVE LINK PRO</p>
-        <h1 className="mt-2 text-center text-[27px] font-black tracking-tight">Your free trial has ended</h1>
-        <p className="mx-auto mt-2 max-w-[330px] text-center text-sm leading-6 text-slate-500">
-          Subscribe to unlock your dealership workspace and continue where you left off.
-        </p>
+    <main className="relative flex min-h-[100dvh] w-full justify-center overflow-y-auto bg-[linear-gradient(180deg,#DCEEFF_0%,#EFF7FF_19%,#F8FAFC_36%,#FFFFFF_58%)] px-5 pb-[max(20px,env(safe-area-inset-bottom))] pt-[max(28px,env(safe-area-inset-top))] text-[#0A0F1E]">
+      <section className="flex min-h-[calc(100dvh-max(28px,env(safe-area-inset-top))-max(20px,env(safe-area-inset-bottom)))] w-full max-w-[430px] flex-col">
+        <header className="flex flex-col items-center text-center">
+          <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-full bg-white/75 text-slate-500 shadow-sm ring-1 ring-white/90">
+            <LockKeyhole size={17} strokeWidth={1.8} />
+          </div>
+          <h1 className="text-[27px] font-extrabold leading-[1.12] tracking-[-0.045em] text-[#0A0F1E]">Your free trial has ended</h1>
+          <p className="mt-2 text-[13px] font-medium text-slate-500">Subscribe to unlock your dealership workspace</p>
+        </header>
 
-        <div className="mt-7 grid grid-cols-2 gap-3">
-          <button type="button" onClick={() => setPlan('monthly')} className={`rounded-2xl border p-4 text-left ${plan === 'monthly' ? 'border-slate-950 bg-slate-50 ring-1 ring-slate-950' : 'border-slate-200 bg-white'}`}>
-            <span className="text-xs font-semibold text-slate-500">Monthly</span>
-            <strong className="mt-1 block text-[27px] font-black">$3.99</strong>
-            <span className="text-[11px] text-slate-500">Every 30 days</span>
+        <div className="mt-7 space-y-4">
+          {features.map(({ title, caption, Icon, tint }) => (
+            <div key={title} className="flex items-center gap-3.5">
+              <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-[15px] ${tint}`}>
+                <Icon size={20} strokeWidth={1.8} />
+              </div>
+              <div className="min-w-0">
+                <p className="text-[13px] font-bold leading-5 tracking-[-0.015em] text-[#0A0F1E]">{title}</p>
+                <p className="mt-0.5 text-[11px] leading-4 text-slate-500">{caption}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-7">
+          <p className="mb-3 text-center text-[12px] font-bold tracking-[-0.01em] text-slate-600">Choose your plan</p>
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              type="button"
+              onClick={() => setPlan('monthly')}
+              aria-pressed={plan === 'monthly'}
+              className={`relative min-w-0 rounded-[20px] border bg-white/90 p-3.5 text-left transition-all duration-200 ease-out ${plan === 'monthly' ? 'border-[#0A0F1E] border-2 shadow-[0_8px_22px_rgba(15,23,42,0.10)]' : 'border-slate-200 shadow-[0_2px_8px_rgba(15,23,42,0.025)] hover:border-slate-300'}`}
+            >
+              {plan === 'monthly' && <span className="absolute right-3 top-3 flex h-5 w-5 items-center justify-center rounded-full bg-[#0A0F1E] text-white"><Check size={12} strokeWidth={3} /></span>}
+              <span className="mb-3 flex h-7 w-7 items-center justify-center rounded-[10px] bg-slate-100 text-slate-600"><CalendarDays size={15} /></span>
+              <span className="block text-[11px] font-semibold text-slate-500">Monthly</span>
+              <span className="mt-1 flex items-baseline gap-1 whitespace-nowrap">
+                <strong className="text-[25px] font-extrabold leading-none tracking-[-0.055em] text-[#0A0F1E]">$3.99</strong>
+                <span className="text-[10px] font-medium text-slate-500">/mo</span>
+              </span>
+              <span className="mt-2 block text-[10px] leading-4 text-slate-500">Billed every 30 days</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setPlan('yearly')}
+              aria-pressed={plan === 'yearly'}
+              className={`relative min-w-0 rounded-[20px] border bg-white/95 p-3.5 text-left transition-all duration-200 ease-out ${plan === 'yearly' ? 'border-[#0A0F1E] border-2 shadow-[0_8px_22px_rgba(15,23,42,0.10)]' : 'border-slate-200 shadow-[0_2px_8px_rgba(15,23,42,0.025)] hover:border-slate-300'}`}
+            >
+              <span className="absolute -top-2.5 left-3 rounded-full bg-[#0A0F1E] px-2 py-1 text-[8px] font-extrabold tracking-[0.08em] text-white">BEST VALUE</span>
+              {plan === 'yearly' && <span className="absolute right-3 top-3 flex h-5 w-5 items-center justify-center rounded-full bg-[#0A0F1E] text-white"><Check size={12} strokeWidth={3} /></span>}
+              <span className="mb-3 flex h-7 w-7 items-center justify-center rounded-[10px] bg-sky-50 text-sky-700"><Sparkles size={15} /></span>
+              <span className="block text-[11px] font-semibold text-slate-500">Yearly</span>
+              <span className="mt-1 flex items-baseline gap-1 whitespace-nowrap">
+                <strong className="text-[25px] font-extrabold leading-none tracking-[-0.055em] text-[#0A0F1E]">$2.67</strong>
+                <span className="text-[10px] font-medium text-slate-500">/mo</span>
+              </span>
+              <span className="mt-2 block text-[10px] leading-4 text-slate-500">Billed $32 per year · Save 33%</span>
+            </button>
+          </div>
+        </div>
+
+        <div className="mt-auto pt-6">
+          {message && <div role="status" className="mb-3 rounded-2xl border border-amber-200 bg-amber-50 px-3.5 py-3 text-[11px] leading-5 text-amber-900">{message}</div>}
+
+          <button
+            type="button"
+            onClick={subscribe}
+            disabled={busy || checking}
+            className="flex h-14 w-full items-center justify-center gap-2 rounded-full bg-[#0A0F1E] px-5 text-[14px] font-bold tracking-[-0.01em] text-white shadow-[0_8px_20px_rgba(10,15,30,0.16)] transition-all duration-200 hover:bg-slate-800 active:scale-[0.99] disabled:opacity-60"
+          >
+            {busy ? <Loader2 size={17} className="animate-spin" /> : <ShieldCheck size={17} />}
+            {busy ? 'Connecting to NardoPay…' : `Subscribe now · ${plan === 'yearly' ? '$2.67/mo' : '$3.99/mo'}`}
           </button>
-          <button type="button" onClick={() => setPlan('yearly')} className={`relative rounded-2xl border p-4 text-left ${plan === 'yearly' ? 'border-slate-950 bg-slate-50 ring-1 ring-slate-950' : 'border-slate-200 bg-white'}`}>
-            <span className="absolute -top-2.5 right-3 rounded-full bg-slate-950 px-2.5 py-1 text-[9px] font-extrabold text-white">BEST VALUE</span>
-            <span className="text-xs font-semibold text-slate-500">Yearly</span>
-            <strong className="mt-1 block text-[27px] font-black">$32</strong>
-            <span className="text-[11px] text-slate-500">12 months · Save 33%</span>
-          </button>
-        </div>
 
-        <div className="mt-6 rounded-2xl bg-slate-50 p-4">
-          <p className="text-xs font-extrabold">Everything you’ve built stays safe</p>
-          <p className="mt-1 text-[11px] leading-5 text-slate-500">Your data is kept intact while your workspace is locked.</p>
-          <ul className="mt-3 space-y-2.5">
-            {features.map(feature => <li key={feature} className="flex items-start gap-2 text-xs text-slate-700"><Check size={15} className="mt-0.5 shrink-0 text-slate-950" />{feature}</li>)}
-          </ul>
-        </div>
+          {plan === 'yearly' && <p className="mt-2 text-center text-[10px] font-medium text-slate-500">Yearly plan billed as a single $32 payment</p>}
 
-        {message && <div role="status" className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs leading-5 text-amber-900">{message}</div>}
+          {checkoutId && (
+            <button type="button" onClick={checkCheckout} disabled={checking} className="mt-3 flex h-10 w-full items-center justify-center gap-2 rounded-full border border-slate-200 bg-white/80 text-[11px] font-semibold text-slate-600 disabled:opacity-50">
+              {checking && <Loader2 size={13} className="animate-spin" />}
+              {checking ? 'Checking payment…' : "I've paid — check my payment"}
+            </button>
+          )}
 
-        <button type="button" onClick={subscribe} disabled={busy || checking} className="mt-5 flex h-12 w-full items-center justify-center gap-2 rounded-full bg-slate-950 text-sm font-extrabold text-white hover:bg-slate-800 disabled:opacity-60">
-          {busy ? <Loader2 size={17} className="animate-spin" /> : <ShieldCheck size={17} />}
-          {busy ? 'Connecting to NardoPay…' : 'Subscribe now'}
-        </button>
-        {checkoutId && <button type="button" onClick={checkCheckout} disabled={checking} className="mt-2 flex h-11 w-full items-center justify-center gap-2 rounded-full border border-slate-200 text-xs font-bold text-slate-700 disabled:opacity-50">
-          {checking && <Loader2 size={14} className="animate-spin" />} {checking ? 'Checking payment…' : "I've paid — check my payment"}
-        </button>}
-        <div className="mt-5 flex items-center justify-center gap-5 text-xs font-semibold text-slate-500">
-          <button type="button" onClick={refreshAccess} disabled={checking} className="underline underline-offset-4 disabled:opacity-50">Restore purchase</button>
-          <button type="button" onClick={logout} disabled={busy} className="underline underline-offset-4 disabled:opacity-50">Log out</button>
+          <div className="mt-4 flex items-center justify-center gap-6 text-[11px] font-semibold text-slate-500">
+            <button type="button" onClick={refreshAccess} disabled={checking} className="transition-colors hover:text-[#0A0F1E] disabled:opacity-50">Restore purchase</button>
+            <span className="h-3 w-px bg-slate-200" />
+            <button type="button" onClick={logout} disabled={busy} className="transition-colors hover:text-[#0A0F1E] disabled:opacity-50">Log out</button>
+          </div>
+          <p className="mx-auto mt-3 max-w-[330px] text-center text-[9px] leading-[1.45] text-slate-400">Payments are verified securely by NardoPay. Your dealership data is never deleted when access expires.</p>
         </div>
-        <p className="mt-5 text-center text-[10px] leading-5 text-slate-400">Payments are verified securely by NardoPay. Your dealership data is never deleted when access expires.</p>
       </section>
     </main>
   );
