@@ -285,14 +285,27 @@ export const OnboardingFlow: React.FC = () => {
     catch { setError('Could not copy the link. Please copy it from the address shown.'); }
   };
 
-  return <main className="min-h-[100dvh] bg-white px-4 py-5 text-[#0A0A0A] sm:py-8">
-    <section className="mx-auto flex min-h-[calc(100dvh-40px)] w-full max-w-[430px] flex-col rounded-[28px] bg-white px-1 py-3 sm:min-h-[780px] sm:px-5">
-      <header className="mb-7 flex items-center justify-between">
+  React.useEffect(() => {
+    if (step !== 7) return;
+    const previousOverflow = document.body.style.overflow;
+    document.documentElement.classList.add('dl-pro-active');
+    document.body.classList.add('dl-pro-active');
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.documentElement.classList.remove('dl-pro-active');
+      document.body.classList.remove('dl-pro-active');
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [step]);
+
+  return <main className={step === 7 ? 'dl-pro-page' : 'min-h-[100dvh] bg-white px-4 py-5 text-[#0A0A0A] sm:py-8'}>
+    <section className={step === 7 ? 'dl-pro-page-inner' : 'mx-auto flex min-h-[calc(100dvh-40px)] w-full max-w-[430px] flex-col rounded-[28px] bg-white px-1 py-3 sm:min-h-[780px] sm:px-5'}>
+      {step !== 7 && <header className="mb-7 flex items-center justify-between">
         <button type="button" onClick={back} aria-label="Go back" className="flex h-10 items-center gap-2 rounded-full px-2 text-sm font-medium text-gray-600 hover:bg-gray-50" disabled={step===6||step===7}>
           {step!==6 && step!==7 && <><ArrowLeft size={17}/> Back</>}
         </button>
         <span className="text-xs font-medium text-gray-500">{step===6?'Notifications':step===7?'DriveLink Pro':step===8?'Ready':`Setup ${step} of 5`}</span>
-      </header>
+      </header>}
       {step <= 5 && <div className="mb-8 flex items-center justify-center gap-2" aria-label={`Setup step ${step} of 5`}>
         {Array.from({length:5},(_,i)=><span key={i} className={`h-1.5 rounded-full transition-all duration-300 ${i+1===step?'w-7 bg-[#0A0A0A]':i+1<step?'w-2 bg-[#0A0A0A]':'w-2 bg-gray-200'}`} />)}
       </div>}
@@ -366,7 +379,10 @@ export const OnboardingFlow: React.FC = () => {
           <div><Car size={21}/><span>Vehicle Inventory Management</span></div>
         </div>
         {error&&<p role="alert" className="dl-pro-error">{error}</p>}
-        <div className="dl-pro-price-card"><div className="dl-pro-price"><strong>$3.99</strong><span>/ month</span><em>Premium Plan</em></div><button type="button" disabled={busy} onClick={finishExistingSession}>{busy?<><Loader2 size={19} className="animate-spin"/> Activating your trial…</>:<>Start 3-Day Free Trial <ArrowRight size={22}/></>}</button><p><Lock size={13}/> No credit card required for free trial</p></div>
+        <footer className="dl-pro-sticky-footer">
+          <button type="button" disabled={busy} onClick={finishExistingSession}>{busy?<><Loader2 size={19} className="animate-spin"/> Activating your trial…</>:<>Start 3-day free trial <ArrowRight size={20}/></>}</button>
+          <p>No payment is taken today. Then $3.99/month.</p>
+        </footer>
       </section>}
 
       {step === 6 && <section className="dl-notify-screen di-setup-screen flex flex-1 flex-col" aria-label="Get notified">
