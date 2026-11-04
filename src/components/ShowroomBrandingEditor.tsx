@@ -148,7 +148,7 @@ export const ShowroomBrandingEditor: React.FC<ShowroomBrandingEditorProps> = ({
       </div> : <button type="button" className="sb-upload-button" onClick={() => fileInputRefs[kind].current?.click()} disabled={asset.busy}>
         <span className="sb-upload-icon"><Upload size={17}/></span><span>Upload {kind}</span>
       </button>}
-      <input ref={fileInputRefs[kind]} type="file" accept="image/png,image/jpeg,image/webp" className="hidden" onChange={e => { const file = e.target.files?.[0]; if (file) openCrop(kind, file); e.currentTarget.value = ''; }} />
+      <input ref={fileInputRefs[kind]} type="file" accept="image/*" className="hidden" onChange={e => { const file = e.target.files?.[0]; if (file) openCrop(kind, file); e.currentTarget.value = ''; }} />
       {asset.error && <p className="sb-inline-error">{asset.error}</p>}
     </div>;
   };
