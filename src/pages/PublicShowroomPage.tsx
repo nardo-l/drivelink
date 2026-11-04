@@ -1,74 +1,50 @@
-import React from 'react';
-import { useEffect, useState } from 'react';
-import { ArrowRight, Menu, X } from 'lucide-react';
-import { useNavigation } from '../context/NavigationContext';
-import { storageService } from '../services/storage';
-import { supabaseService } from '../services/supabaseService';
-import { isSupabaseConfigured } from '../lib/supabase';
-import type { Dealership, Vehicle } from '../types';
+import React,{useEffect,useMemo,useRef,useState} from 'react';
+import {ArrowRight,CarFront,Filter,Heart,MapPin,MessageCircle,Phone,Search,Share2,X,SlidersHorizontal} from 'lucide-react';
+import {useNavigation} from '../context/NavigationContext';
+import {storageService} from '../services/storage';
+import {supabaseService} from '../services/supabaseService';
+import {isSupabaseConfigured} from '../lib/supabase';
+import type {Dealership,Vehicle} from '../types';
+import './PublicShowroomPage.css';
 
-interface PublicShowroomPageProps { slug?: string; previewDealership?: Dealership; previewVehicles?: Vehicle[]; }
-
-export const PublicShowroomPage: React.FC<PublicShowroomPageProps> = ({ slug, previewDealership, previewVehicles }) => {
-  const { navigate } = useNavigation();
-  const [dealer, setDealer] = useState<Dealership | null>(previewDealership || null);
-  const [vehicles, setVehicles] = useState<Vehicle[]>(previewVehicles || []);
-  const [loading, setLoading] = useState(!previewDealership);
-  const [menuOpen, setMenuOpen] = useState(false);
-
-  useEffect(() => {
-    let active = true;
-    const load = async () => {
-      if (previewDealership) { setDealer(previewDealership); setVehicles(previewVehicles || []); setLoading(false); return; }
-      if (!slug) { setDealer(storageService.getDealership()); setVehicles(storageService.getVehicles()); setLoading(false); return; }
-      try {
-        if (isSupabaseConfigured()) {
-          const found = await supabaseService.getDealershipBySlug(slug);
-          if (!active) return;
-          setDealer(found);
-          if (found) {
-            const inventory = await supabaseService.getVehicles(found.id, true);
-            if (active) setVehicles(inventory.filter(v => v.status === 'available'));
-            supabaseService.incrementStorefrontViews(found.slug).catch(() => undefined);
-          }
-        } else {
-          const local = storageService.getDealership();
-          if (local.slug === slug) { setDealer(local); setVehicles(storageService.getVehicles().filter(v => v.status === 'available')); }
-          else setDealer(null);
-        }
-      } catch { if (active) setDealer(null); }
-      finally { if (active) setLoading(false); }
-    };
-    load();
-    return () => { active = false; };
-  }, [slug, previewDealership, previewVehicles]);
-
-  if (loading) return <div className="dl-cinematic-loading">Loading showroom…</div>;
-  if (!dealer) return <div className="dl-cinematic-loading"><h1>Showroom unavailable</h1><p>This dealership link may be incorrect or unpublished.</p></div>;
-
-  const heroPhoto = dealer.coverUrl || '';
-  const title = dealer.tagline?.trim() || 'Drive Your Dream Today.';
-  const description = dealer.bio?.trim() || 'Premium cars. Great deals. Trusted dealership.';
-  const dealerInitials = dealer.name.trim().split(/\s+/).filter(Boolean).slice(0, 2).map(part => part[0]).join('').toUpperCase() || 'DL';
-  const browse = () => navigate('/' + encodeURIComponent(dealer.slug) + '/browse');
-
-  return (
-    <main className="dl-cinematic-storefront" style={{ backgroundImage: heroPhoto ? 'linear-gradient(90deg,rgba(0,0,0,.76),rgba(0,0,0,.16)),linear-gradient(0deg,rgba(0,0,0,.38),transparent 55%),url(' + JSON.stringify(heroPhoto) + ')' : 'linear-gradient(135deg,#172235 0%,#35445b 52%,#111827 100%)' }}>
-      <header className="dl-cinematic-header">
-        <button className="dl-cinematic-brand" onClick={browse} aria-label="Explore dealership inventory">
-          {dealer.logoUrl ? <img src={dealer.logoUrl} alt="" /> : <span>{dealerInitials}</span>}
-          <span><strong>{dealer.name}</strong><small>{[dealer.city, dealer.country].filter(Boolean).join(', ')}</small></span>
-        </button>
-        <button className="dl-cinematic-menu" onClick={() => setMenuOpen(v => !v)} aria-label="Open menu">{menuOpen ? <X/> : <Menu/>}</button>
-        {menuOpen && <div className="dl-cinematic-menu-panel"><button onClick={browse}>Explore cars</button><button onClick={() => navigate('/' + dealer.slug + '/contact')}>Contact dealership</button></div>}
-      </header>
-      <section className="dl-cinematic-copy">
-        <p className="dl-cinematic-eyebrow">{dealer.city}{dealer.city && dealer.country ? ' · ' : ''}{dealer.country}</p>
-        <h1>{title}</h1>
-        <p className="dl-cinematic-description">{description}</p>
-        <button className="dl-explore-button" onClick={browse}>Explore Cars <span><ArrowRight/></span></button>
-      </section>
-      <div className="dl-cinematic-footer"><span>{vehicles.length} {vehicles.length === 1 ? 'vehicle' : 'vehicles'} available</span><span className="dl-cinematic-dots"><i/><i/><i/></span></div>
-    </main>
-  );
+export const PublicShowroomPage:React.FC<{slug?:string;previewDealership?:Dealership;previewVehicles?:Vehicle[]}>=({slug,previewDealership,previewVehicles})=>{
+ const {navigate,showToast}=useNavigation();
+ const [dealer,setDealer]=useState<Dealership|null>(previewDealership||null),[vehicles,setVehicles]=useState<Vehicle[]>(previewVehicles||[]),[loading,setLoading]=useState(!previewDealership);
+ const [query,setQuery]=useState(''),[make,setMake]=useState('All'),[savedOnly,setSavedOnly]=useState(false),[saved,setSaved]=useState<string[]>([]);
+ const [filterOpen,setFilterOpen]=useState(false),[minPrice,setMinPrice]=useState(''),[maxPrice,setMaxPrice]=useState(''),[yearFrom,setYearFrom]=useState(''),[yearTo,setYearTo]=useState(''),[transmission,setTransmission]=useState('All'),[fuel,setFuel]=useState('All');
+ const [showSearch,setShowSearch]=useState(false),[fabVisible,setFabVisible]=useState(true),[bannerLoaded,setBannerLoaded]=useState(false);
+ const listingRef=useRef<HTMLElement>(null),searchRef=useRef<HTMLInputElement>(null),lastScroll=useRef(0);
+ useEffect(()=>{try{setSaved(JSON.parse(localStorage.getItem('drivelink:saved-vehicles')||'[]'));}catch{}},[]);
+ useEffect(()=>{let active=true;const load=async()=>{try{if(previewDealership){setDealer(previewDealership);setVehicles(previewVehicles||[]);setLoading(false);return;}if(!slug){setDealer(storageService.getDealership());setVehicles(storageService.getVehicles());setLoading(false);return;}if(isSupabaseConfigured()){const found=await supabaseService.getDealershipBySlug(slug);if(!active)return;setDealer(found);if(found){const inventory=await supabaseService.getVehicles(found.id,true);if(active)setVehicles(inventory);void supabaseService.incrementStorefrontViews(found.slug).catch(()=>undefined);}}else{const local=storageService.getDealership();if(local.slug===slug){setDealer(local);setVehicles(storageService.getVehicles());}else setDealer(null);}}catch{if(active)setDealer(null);}finally{if(active)setLoading(false);}};void load();return()=>{active=false;};},[slug,previewDealership,previewVehicles]);
+ useEffect(()=>{const handler=()=>{const y=window.scrollY;setFabVisible(y<40||y<lastScroll.current);lastScroll.current=y;};window.addEventListener('scroll',handler,{passive:true});return()=>window.removeEventListener('scroll',handler);},[]);
+ useEffect(()=>{if(!dealer)return;const city=dealer.city||dealer.country;document.title=dealer.name+' | Cars available';const setMeta=(key:string,value:string,property=false)=>{let el=document.querySelector('meta['+(property?'property':'name')+'="'+key+'"]') as HTMLMetaElement|null;if(!el){el=document.createElement('meta');el.setAttribute(property?'property':'name',key);document.head.appendChild(el);}el.content=value;};setMeta('og:title',dealer.name,true);setMeta('og:description',vehicles.filter(v=>v.status==='available').length+' cars available in '+city,true);if(dealer.coverUrl)setMeta('og:image',dealer.coverUrl,true);setMeta('description',vehicles.filter(v=>v.status==='available').length+' cars available in '+city+'. Browse the showroom at '+dealer.name+'.');return()=>{document.title='DriveLink | Online Showrooms for Car Dealerships';};},[dealer,vehicles]);
+ const available=vehicles.filter(v=>v.status==='available'),makes=useMemo(()=>Array.from(new Set(available.map(v=>v.make).filter(Boolean))).sort(),[available]);
+ const filtered=useMemo(()=>vehicles.filter(v=>{const hay=[v.year,v.make,v.model,v.fuel,v.colour,v.description].join(' ').toLowerCase();if(v.status==='draft')return false;if(query&&!hay.includes(query.toLowerCase()))return false;if(make!=='All'&&v.make!==make)return false;if(savedOnly&&!saved.includes(v.id))return false;if(minPrice&&v.price<Number(minPrice))return false;if(maxPrice&&v.price>Number(maxPrice))return false;if(yearFrom&&v.year<Number(yearFrom))return false;if(yearTo&&v.year>Number(yearTo))return false;if(transmission!=='All'&&v.transmission!==transmission)return false;if(fuel!=='All'&&v.fuel!==fuel)return false;return true;}).sort((a,b)=>(a.status==='sold'?1:0)-(b.status==='sold'?1:0)),[vehicles,query,make,savedOnly,saved,minPrice,maxPrice,yearFrom,yearTo,transmission,fuel]);
+ if(loading)return <main className="dl-public-showroom"><div className="dl-ps-skeleton dl-ps-header-skeleton"/><div className="dl-ps-skeleton dl-ps-banner-skeleton"/><div className="dl-ps-skeleton dl-ps-card-skeleton"/></main>;
+ if(!dealer)return <main className="dl-public-showroom dl-ps-unavailable"><h1>Showroom unavailable</h1><p>This dealership link may be incorrect or unpublished.</p></main>;
+ const initials=dealer.name.trim().split(/\s+/).slice(0,2).map(x=>x[0]).join('').toUpperCase()||'DL';
+ const waNumber=(dealer.whatsapp||dealer.phone||'').replace(/\D/g,'');
+ const wa=(message:string)=>waNumber?'https://wa.me/'+waNumber+'?text='+encodeURIComponent(message):'';
+ const generalMessage='Hi, I\'m interested in a car from your showroom';
+ const money=(v:Vehicle)=>new Intl.NumberFormat('en-US',{style:'currency',currency:v.currency||dealer.currency,maximumFractionDigits:0}).format(v.price);
+ const toggleSave=(id:string)=>setSaved(old=>{const next=old.includes(id)?old.filter(x=>x!==id):[...old,id];localStorage.setItem('drivelink:saved-vehicles',JSON.stringify(next));return next;});
+ const share=async()=>{const url=window.location.href;if(navigator.share){try{await navigator.share({title:dealer.name,text:available.length+' cars available in '+(dealer.city||dealer.country),url});}catch{}}else{await navigator.clipboard?.writeText(url);showToast('Showroom link copied');}};
+ const clear=()=>{setMinPrice('');setMaxPrice('');setYearFrom('');setYearTo('');setTransmission('All');setFuel('All');setMake('All');setSavedOnly(false);setQuery('');};
+ const scrollCars=()=>listingRef.current?.scrollIntoView({behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});
+ const card=(v:Vehicle)=><article className={'dl-ps-car '+(v.status==='sold'?'is-sold':'')} key={v.id}><button className="dl-ps-photo" onClick={()=>navigate('/showroom/'+dealer.slug+'/vehicle/'+v.id)} aria-label={'View '+v.year+' '+v.make+' '+v.model}>{v.photos?.[0]?<img loading="lazy" decoding="async" src={v.photos[0]} alt={v.year+' '+v.make+' '+v.model}/>:<span className="dl-ps-no-photo"><CarFront/></span>}<span className="dl-ps-photo-shade"/>{v.status!=='available'&&<span className={'dl-ps-status '+v.status}>{v.status==='reserved'?'Reserved':'Sold'}</span>}<button className={'dl-ps-heart '+(saved.includes(v.id)?'saved':'')} onClick={e=>{e.stopPropagation();toggleSave(v.id);}} aria-label="Save vehicle"><Heart fill={saved.includes(v.id)?'currentColor':'none'}/></button><span className="dl-ps-photo-count">{v.photos?.length||0} photos</span><div className="dl-ps-photo-copy"><strong>{v.year} {v.make} {v.model}</strong><small>{v.year} <i/> {v.mileageKm.toLocaleString()} km <i/> {v.fuel}</small><b>{money(v)}</b></div><span className="dl-ps-view">View details <i><ArrowRight size={14}/></i></span></button></article>;
+ return <main className="dl-public-showroom">
+  <header className="dl-ps-header"><div className="dl-ps-brand">{dealer.logoUrl?<img src={dealer.logoUrl} alt={dealer.name}/>:<span>{initials}</span>}<div><strong>{dealer.name}</strong>{(dealer.city||dealer.country)&&<small><MapPin size={11}/>{[dealer.city,dealer.country].filter(Boolean).join(', ')}</small>}</div></div><div className="dl-ps-header-actions"><button onClick={()=>{setShowSearch(true);setTimeout(()=>searchRef.current?.focus(),50);}} aria-label="Search cars"><Search/></button><button onClick={share} aria-label="Share showroom"><Share2/></button></div></header>
+  <section className="dl-ps-banner-wrap">{dealer.coverUrl?<><div className="dl-ps-banner-skeleton" style={{display:bannerLoaded?'none':'block'}}/><img className="dl-ps-banner" src={dealer.coverUrl} alt={dealer.name+' showroom banner'} fetchPriority="high" onLoad={()=>setBannerLoaded(true)}/></>:<div className="dl-ps-banner dl-ps-banner-placeholder"><span>{dealer.logoUrl?<img src={dealer.logoUrl} alt=""/>:initials}</span></div>}</section>
+  <section className="dl-ps-intro"><h1>Find your next car.</h1><p>{available.length} cars available{dealer.city?' · '+dealer.city:''}</p><div className="dl-ps-cta"><button onClick={scrollCars}>Explore cars <i><ArrowRight size={15}/></i></button>{waNumber&&<a href={wa(generalMessage)} target="_blank" rel="noreferrer" onClick={()=>{}}><MessageCircle size={16}/>WhatsApp</a>}</div></section>
+  <section className="dl-ps-listing" ref={listingRef} id="available-cars">
+   <div className="dl-ps-search-row"><label><Search size={17}/><input ref={searchRef} value={query} onChange={e=>setQuery(e.target.value)} placeholder="Search cars..."/>{query&&<button onClick={()=>setQuery('')}><X size={15}/></button>}</label><button className="dl-ps-filter-trigger" onClick={()=>setFilterOpen(true)} aria-label="Filters"><SlidersHorizontal/></button></div>
+   {showSearch&&<div className="dl-ps-search-focus"><span>Search inventory</span><button onClick={()=>setShowSearch(false)}>Done</button></div>}
+   {(makes.length>1||saved.length>0)&&<div className="dl-ps-chips"><button className={make==='All'&&!savedOnly?'active':''} onClick={()=>{setMake('All');setSavedOnly(false);}}>All <small>{available.length}</small></button>{makes.map(m=><button key={m} className={make===m&&!savedOnly?'active':''} onClick={()=>{setMake(m);setSavedOnly(false);}}>{m} <small>{available.filter(v=>v.make===m).length}</small></button>)}{saved.length>0&&<button className={savedOnly?'active':''} onClick={()=>setSavedOnly(v=>!v)}><Heart size={12}/>Saved</button>}</div>}
+   <div className="dl-ps-section-title"><h2>Available cars</h2><span>{filtered.length} cars</span></div>
+   {filtered.length?<div className="dl-ps-grid">{filtered.map(card)}</div>:vehicles.length===0?<div className="dl-ps-empty"><CarFront/><h3>No cars listed yet</h3><p>Check back soon or contact the dealership.</p>{waNumber&&<a href={wa(generalMessage)} target="_blank" rel="noreferrer">Message us on WhatsApp</a>}</div>:<div className="dl-ps-empty"><Search/><h3>No cars match your search</h3><button onClick={clear}>Clear filters</button></div>}
+  </section>
+  <footer className="dl-ps-footer"><strong>{dealer.name}</strong>{dealer.phone&&<a href={'tel:'+dealer.phone}><Phone size={14}/>{dealer.phone}</a>}{dealer.address&&<p><MapPin size={14}/>{dealer.address}</p>}<a className="dl-ps-powered" href="https://drivelink.app.zw">Powered by DriveLink</a></footer>
+  {waNumber&&<a className={'dl-ps-floating-wa '+(!fabVisible?'hidden':'')} href={wa(generalMessage)} target="_blank" rel="noreferrer" aria-label="Message dealership on WhatsApp"><MessageCircle/></a>}
+  {filterOpen&&<div className="dl-ps-backdrop" onClick={()=>setFilterOpen(false)}><section className="dl-ps-filter-sheet" onClick={e=>e.stopPropagation()}><div className="dl-ps-handle"/><header><h2>Filters</h2><button onClick={()=>setFilterOpen(false)}><X/></button></header><div className="dl-ps-filter-grid"><label>Minimum price<input type="number" value={minPrice} onChange={e=>setMinPrice(e.target.value)} placeholder="Any"/></label><label>Maximum price<input type="number" value={maxPrice} onChange={e=>setMaxPrice(e.target.value)} placeholder="Any"/></label><label>Year from<input type="number" value={yearFrom} onChange={e=>setYearFrom(e.target.value)} placeholder="Any"/></label><label>Year to<input type="number" value={yearTo} onChange={e=>setYearTo(e.target.value)} placeholder="Any"/></label></div><label className="dl-ps-filter-select">Transmission<select value={transmission} onChange={e=>setTransmission(e.target.value)}><option>All</option><option>Automatic</option><option>Manual</option></select></label><label className="dl-ps-filter-select">Fuel type<select value={fuel} onChange={e=>setFuel(e.target.value)}><option>All</option>{Array.from(new Set(vehicles.map(v=>v.fuel))).map(f=><option key={f}>{f}</option>)}</select></label><div className="dl-ps-sheet-actions"><button onClick={clear}>Clear all</button><button onClick={()=>setFilterOpen(false)}>Show {filtered.length} cars</button></div></section></div>}
+ </main>;
 };
