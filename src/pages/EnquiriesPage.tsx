@@ -1,42 +1,328 @@
-import React,{useEffect,useMemo,useState} from 'react';
-import {Search,MessageCircle,Phone,Clock,CarFront,ChevronRight,CheckCircle2,MessageSquareText} from 'lucide-react';
-import {useNavigation} from '../context/NavigationContext';
-import {storageService} from '../services/storage';
-import {Enquiry,EnquiryStage,Vehicle} from '../types';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  Search, MessageCircle, Phone, ChevronRight, X, Share2, Copy,
+  RefreshCw, ArrowUpRight, Trash2, Check, UserRound, CarFront,
+} from 'lucide-react';
+import { useNavigation } from '../context/NavigationContext';
+import { storageService } from '../services/storage';
+import { Enquiry, EnquiryStage, Vehicle } from '../types';
+import './EnquiriesPage.css';
 
-const stages:{id:EnquiryStage|'all';label:string}[]=[{id:'all',label:'All'},{id:'new',label:'New'},{id:'contacted',label:'Contacted'},{id:'negotiating',label:'Negotiating'},{id:'sold',label:'Converted'},{id:'lost',label:'Lost'}];
-const stageTone:Record<EnquiryStage,string>={new:'bg-[#fff0e5] text-[#d95f0a]',contacted:'bg-[#f1f1ef] text-[#555]',negotiating:'bg-[#fff5df] text-[#9b6a00]',sold:'bg-[#eaf5eb] text-[#31723a]',lost:'bg-[#f2f2f2] text-[#777]'};
+type EnquiryFilter = 'all' | 'new' | 'contacted' | 'converted' | 'lost';
+const filters: { id: EnquiryFilter; label: string }[] = [
+  { id: 'all', label: 'All' },
+  { id: 'new', label: 'New' },
+  { id: 'contacted', label: 'Contacted' },
+  { id: 'converted', label: 'Converted' },
+  { id: 'lost', label: 'Lost' },
+];
 
-export const EnquiriesPage:React.FC=()=>{
- const {showToast}=useNavigation();
- const [leads,setLeads]=useState<Enquiry[]>([]);const [vehicles,setVehicles]=useState<Vehicle[]>([]);
- const [filter,setFilter]=useState<EnquiryStage|'all'>('all');const [search,setSearch]=useState('');
- const [active,setActive]=useState<Enquiry|null>(null);const [stage,setStage]=useState<EnquiryStage>('new');const [notes,setNotes]=useState('');
- const [loading,setLoading]=useState(true);const [saving,setSaving]=useState(false);const [error,setError]=useState('');
- const load=async()=>{setLoading(true);setError('');try{const [e,v]=await Promise.all([storageService.getEnquiriesAsync(),storageService.getVehiclesAsync()]);setLeads(e);setVehicles(v);}catch(e:any){setError(e?.message||'Could not load enquiries.');setLeads([]);}finally{setLoading(false);}};
- useEffect(()=>{void load();},[]);
- const counts=useMemo(()=>({all:leads.length,new:leads.filter(x=>x.stage==='new').length,contacted:leads.filter(x=>x.stage==='contacted').length,negotiating:leads.filter(x=>x.stage==='negotiating').length,sold:leads.filter(x=>x.stage==='sold').length,lost:leads.filter(x=>x.stage==='lost').length}),[leads]);
- const visible=useMemo(()=>leads.filter(x=>{if(filter!=='all'&&x.stage!==filter)return false;const v=vehicles.find(v=>v.id===x.vehicleId);return [x.buyerName,x.buyerPhone,x.message,v?`${v.make} ${v.model}`:''].join(' ').toLowerCase().includes(search.toLowerCase().trim());}).sort((a,b)=>new Date(b.createdAt).getTime()-new Date(a.createdAt).getTime()),[leads,vehicles,filter,search]);
- const vehicleFor=(lead:Enquiry)=>vehicles.find(v=>v.id===lead.vehicleId);
- const open=(lead:Enquiry)=>{setActive(lead);setStage(lead.stage);setNotes(lead.notes||'');};
- const save=async()=>{if(!active)return;setSaving(true);try{const updated=await storageService.updateEnquiryStageAsync(active.id,stage,notes);if(!updated)throw new Error('Lead could not be updated.');setLeads(list=>list.map(x=>x.id===updated.id?updated:x));setActive(updated);showToast('Lead updated');}catch(e:any){showToast(e?.message||'Could not update lead.');}finally{setSaving(false);}};
- const wa=(lead:Enquiry)=>{const phone=lead.buyerPhone.replace(/\D/g,'');const v=vehicleFor(lead);return phone?`https://wa.me/${phone}?text=${encodeURIComponent(`Hi ${lead.buyerName}, thanks for your enquiry${v?` about the ${v.year} ${v.make} ${v.model}`:''}. How can I help?`)}`:'';};
- return <div className="dl-workspace min-h-full flex flex-col">
-  <header className="sticky top-0 z-20 !bg-white/95 border-b border-[#eee] px-4 sm:px-7 py-4"><div className="max-w-5xl mx-auto flex justify-between items-center"><div><p className="text-[10px] uppercase tracking-[.16em] font-extrabold text-[#999]">Customer relationship management</p><h1 className="text-2xl font-black mt-1">Leads</h1><p className="text-xs text-[#888] mt-0.5">Manage your enquiries</p></div></div></header>
-  <main className="flex-1 px-4 sm:px-7 py-4 pb-[110px] max-w-5xl w-full mx-auto">
-   <div className="grid grid-cols-3 gap-2 mb-4">{[{label:'All leads',n:counts.all},{label:'New',n:counts.new},{label:'Converted',n:counts.sold}].map(x=><div key={x.label} className="rounded-2xl bg-white border border-[#eee] p-3"><strong className="text-2xl">{loading?'—':x.n}</strong><p className="text-[10px] text-[#888] mt-1">{x.label}</p></div>)}</div>
-   <div className="relative mb-3"><Search className="absolute left-4 top-1/2 -translate-y-1/2 text-[#999]" size={16}/><input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search leads..." className="w-full !rounded-full !pl-11 !bg-white !text-sm"/></div>
-   <div className="flex gap-2 overflow-x-auto pb-3">{stages.map(s=><button key={s.id} onClick={()=>setFilter(s.id)} className={`shrink-0 rounded-full px-4 py-2 text-xs font-bold ${filter===s.id?'bg-[#171717] text-white':'bg-white border border-[#e9e9e9] text-[#777]'}`}>{s.label} ({counts[s.id]})</button>)}</div>
-   {error&&<div className="bg-red-50 text-red-700 rounded-xl p-3 text-xs">{error}</div>}
-   {loading?<div className="space-y-3 mt-3">{[1,2,3].map(n=><div key={n} className="h-20 rounded-2xl bg-white animate-pulse"/>)}</div>:visible.length===0?<div className="rounded-3xl bg-white border border-dashed border-[#ddd] text-center p-10 mt-3"><MessageSquareText className="mx-auto text-[#bbb]" size={28}/><p className="font-extrabold mt-3">{leads.length?'No matching leads':'No enquiries yet'}</p><p className="text-xs text-[#888] mt-1">Customer enquiries will appear here when buyers contact you.</p></div>:<div className="space-y-2 mt-2">{visible.map(lead=>{const v=vehicleFor(lead);return <button key={lead.id} onClick={()=>open(lead)} className="w-full text-left rounded-[20px] bg-white border border-[#eee] p-3.5 flex items-center gap-3"><span className="w-11 h-11 rounded-full bg-[#f1f1ef] flex items-center justify-center font-bold text-sm shrink-0">{lead.buyerName.trim().slice(0,1).toUpperCase()}</span><span className="flex-1 min-w-0"><span className="flex items-center gap-2"><strong className="text-sm truncate">{lead.buyerName}</strong>{lead.stage==='new'&&<i className="w-2 h-2 bg-[#f47716] rounded-full"/>}</span><span className="block text-xs text-[#888] truncate mt-0.5">{v?`${v.make} ${v.model}`:lead.message}</span></span><span className="text-right shrink-0"><span className={`block rounded-full px-2 py-1 text-[9px] font-extrabold ${stageTone[lead.stage]}`}>{lead.stage}</span><span className="block text-[9px] text-[#aaa] mt-1">{new Date(lead.createdAt).toLocaleDateString()}</span></span><ChevronRight size={15} className="text-[#bbb]"/></button>;})}</div>}
-  </main>
-  {active&&<div className="fixed inset-0 z-50 bg-black/35 flex items-end sm:items-center justify-center sm:p-5"><section role="dialog" aria-modal="true" aria-label="Lead details" className="w-full max-w-lg max-h-[92vh] overflow-y-auto bg-[#f7f7f6] rounded-t-[28px] sm:rounded-[28px] p-5"><div className="flex justify-between items-start"><div><p className="text-[10px] uppercase tracking-widest font-bold text-[#999]">Lead details</p><h2 className="text-xl font-black mt-1">{active.buyerName}</h2><p className="text-xs text-[#888] mt-1">{active.buyerPhone}</p></div><button onClick={()=>setActive(null)} className="w-9 h-9 rounded-full bg-white border border-[#eee]">×</button></div>
-   <div className="flex gap-2 mt-4">{active.buyerPhone&&<a href={`tel:${active.buyerPhone}`} className="flex-1 text-center rounded-full bg-[#171717] text-white py-3 text-xs font-bold"><Phone size={14} className="inline mr-1"/> Call</a>}{wa(active)&&<a href={wa(active)} target="_blank" rel="noreferrer" className="flex-1 text-center rounded-full dl-accent-button py-3 text-xs font-bold"><MessageCircle size={14} className="inline mr-1"/> WhatsApp</a>}</div>
-   {vehicleFor(active)&&<div className="bg-white rounded-2xl p-3 mt-4 flex gap-3 items-center"><div className="w-20 h-16 rounded-xl bg-[#eee] overflow-hidden">{vehicleFor(active)?.photos?.[0]&&<img src={vehicleFor(active)?.photos[0]} alt="" className="w-full h-full object-cover"/>}</div><div><p className="text-[10px] text-[#999]">Interested vehicle</p><strong className="text-sm">{vehicleFor(active)?.year} {vehicleFor(active)?.make} {vehicleFor(active)?.model}</strong><p className="text-sm font-black">{vehicleFor(active)?.currency==='ZAR'?'R':'$'}{vehicleFor(active)?.price.toLocaleString()}</p></div></div>}
-   <div className="bg-white rounded-2xl p-4 mt-3"><p className="text-[10px] uppercase tracking-widest font-bold text-[#999] mb-2">Original message</p><p className="text-sm leading-relaxed">{active.message}</p><p className="text-[10px] text-[#aaa] mt-3">{new Date(active.createdAt).toLocaleString()}</p></div>
-   <label className="block mt-4 text-xs font-bold">Lead status<select value={stage} onChange={e=>setStage(e.target.value as EnquiryStage)} className="block w-full mt-2 !bg-white">{stages.filter(x=>x.id!=='all').map(x=><option key={x.id} value={x.id}>{x.label}</option>)}</select></label>
-   <label className="block mt-3 text-xs font-bold">Internal notes<textarea value={notes} onChange={e=>setNotes(e.target.value)} rows={3} placeholder="Add a note about this buyer..." className="block w-full mt-2 !bg-white"/></label>
-   <button onClick={save} disabled={saving} className="w-full rounded-full dl-accent-button py-3.5 text-sm font-extrabold mt-4 disabled:opacity-50">{saving?'Saving...':'Save lead updates'}</button>
-  </section></div>}
- </div>;
+const isContacted = (stage: EnquiryStage) => stage === 'contacted' || stage === 'negotiating';
+const displayStage = (stage: EnquiryStage) => stage === 'negotiating' ? 'Contacted' : stage === 'sold' ? 'Converted' : stage.charAt(0).toUpperCase() + stage.slice(1);
+const initials = (name: string) => name.trim().split(/\s+/).filter(Boolean).slice(0, 2).map(part => part[0]).join('').toUpperCase() || 'B';
+const timeAgo = (date: string) => {
+  const seconds = Math.max(0, Math.floor((Date.now() - new Date(date).getTime()) / 1000));
+  if (!Number.isFinite(seconds)) return '';
+  if (seconds < 60) return 'Now';
+  if (seconds < 3600) return `${Math.floor(seconds / 60)}m`;
+  if (seconds < 86400) return `${Math.floor(seconds / 3600)}h`;
+  if (seconds < 172800) return 'Yesterday';
+  return new Date(date).toLocaleDateString(undefined, { day: 'numeric', month: 'short' });
+};
+
+export const EnquiriesPage: React.FC = () => {
+  const { showToast, navigate } = useNavigation();
+  const [leads, setLeads] = useState<Enquiry[]>([]);
+  const [vehicles, setVehicles] = useState<Vehicle[]>([]);
+  const [filter, setFilter] = useState<EnquiryFilter>('all');
+  const [search, setSearch] = useState('');
+  const [active, setActive] = useState<Enquiry | null>(null);
+  const [stage, setStage] = useState<EnquiryStage>('new');
+  const [notes, setNotes] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+  const [deleteTarget, setDeleteTarget] = useState<Enquiry | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [swipedId, setSwipedId] = useState<string | null>(null);
+  const touchStart = useRef<{ x: number; y: number } | null>(null);
+
+  const load = useCallback(async (quiet = false) => {
+    if (quiet) setRefreshing(true); else setLoading(true);
+    setError('');
+    try {
+      const [enquiries, inventory] = await Promise.all([
+        storageService.getEnquiriesAsync(),
+        storageService.getVehiclesAsync(),
+      ]);
+      setLeads(enquiries);
+      setVehicles(inventory);
+      window.dispatchEvent(new CustomEvent('drivelink:enquiries-updated', { detail: { unread: enquiries.filter(item => item.stage === 'new').length } }));
+    } catch (e: any) {
+      setError(e?.message || 'Could not load enquiries.');
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  }, []);
+
+  useEffect(() => { void load(); }, [load]);
+
+  const counts = useMemo(() => ({
+    all: leads.length,
+    new: leads.filter(item => item.stage === 'new').length,
+    contacted: leads.filter(item => isContacted(item.stage)).length,
+    converted: leads.filter(item => item.stage === 'sold').length,
+    lost: leads.filter(item => item.stage === 'lost').length,
+  }), [leads]);
+
+  const vehicleFor = (enquiry: Enquiry) => vehicles.find(vehicle => vehicle.id === enquiry.vehicleId);
+  const visible = useMemo(() => leads.filter(item => {
+    const statusMatch = filter === 'all'
+      || (filter === 'new' && item.stage === 'new')
+      || (filter === 'contacted' && isContacted(item.stage))
+      || (filter === 'converted' && item.stage === 'sold')
+      || (filter === 'lost' && item.stage === 'lost');
+    if (!statusMatch) return false;
+    const vehicle = vehicles.find(entry => entry.id === item.vehicleId);
+    const query = search.toLowerCase().trim();
+    return !query || [item.buyerName, item.buyerPhone, item.message, vehicle ? `${vehicle.year} ${vehicle.make} ${vehicle.model}` : ''].join(' ').toLowerCase().includes(query);
+  }).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()), [leads, vehicles, filter, search]);
+
+  const open = (enquiry: Enquiry) => {
+    setActive(enquiry);
+    setStage(enquiry.stage);
+    setNotes(enquiry.notes || '');
+    setSwipedId(null);
+  };
+
+  const save = async (nextStage = stage) => {
+    if (!active) return;
+    setSaving(true);
+    try {
+      const updated = await storageService.updateEnquiryStageAsync(active.id, nextStage, notes);
+      if (!updated) throw new Error('Enquiry could not be updated.');
+      setLeads(list => list.map(item => item.id === updated.id ? updated : item));
+      setActive(updated);
+      setStage(updated.stage);
+      window.dispatchEvent(new CustomEvent('drivelink:enquiries-updated', { detail: { unread: leads.filter(item => item.id !== updated.id ? item.stage === 'new' : updated.stage === 'new').length } }));
+      showToast('Enquiry updated');
+    } catch (e: any) {
+      showToast(e?.message || 'Could not update enquiry.');
+    } finally { setSaving(false); }
+  };
+
+  const markContacted = async (enquiry: Enquiry) => {
+    try {
+      const updated = await storageService.updateEnquiryStageAsync(enquiry.id, 'contacted');
+      if (updated) {
+        setLeads(list => list.map(item => item.id === updated.id ? updated : item));
+        window.dispatchEvent(new CustomEvent('drivelink:enquiries-updated', { detail: { unread: leads.filter(item => item.id !== updated.id && item.stage === 'new').length } }));
+      }
+    } catch (e: any) { showToast(e?.message || 'Could not update enquiry.'); }
+  };
+
+  const confirmContacted = (enquiry: Enquiry) => {
+    if (enquiry.stage === 'new' && window.confirm('Mark this enquiry as Contacted?')) void markContacted(enquiry);
+  };
+
+  const whatsappUrl = (enquiry: Enquiry) => {
+    const phone = enquiry.buyerPhone.replace(/\D/g, '');
+    if (!phone) return '';
+    const vehicle = vehicleFor(enquiry);
+    const car = vehicle ? `the ${vehicle.year} ${vehicle.make} ${vehicle.model}` : 'our showroom';
+    return `https://wa.me/${phone}?text=${encodeURIComponent(`Hi ${enquiry.buyerName}, thanks for your interest in ${car}. How can I help?`)}`;
+  };
+
+  const shareShowroom = async () => {
+    try {
+      const dealer = storageService.getDealership();
+      const url = `${window.location.origin}/${dealer.slug}`;
+      if (navigator.share) await navigator.share({ title: dealer.name, text: 'Browse our showroom', url });
+      else { await navigator.clipboard.writeText(url); showToast('Showroom link copied'); }
+    } catch (e: any) {
+      if (e?.name !== 'AbortError') {
+        try { const url = `${window.location.origin}/${storageService.getDealership().slug}`; await navigator.clipboard.writeText(url); showToast('Showroom link copied'); }
+        catch { showToast('Could not share the showroom link.'); }
+      }
+    }
+  };
+
+  const previewShowroom = () => {
+    try { navigate(`/${storageService.getDealership().slug}`); }
+    catch { navigate('/app/settings'); }
+  };
+
+  const deleteEnquiry = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    try {
+      await storageService.deleteEnquiryAsync(deleteTarget.id);
+      const remaining = leads.filter(item => item.id !== deleteTarget.id);
+      setLeads(remaining);
+      window.dispatchEvent(new CustomEvent('drivelink:enquiries-updated', { detail: { unread: remaining.filter(item => item.stage === 'new').length } }));
+      if (active?.id === deleteTarget.id) setActive(null);
+      showToast('Enquiry deleted');
+    } catch (e: any) { showToast(e?.message || 'Could not delete enquiry.'); }
+    finally { setDeleting(false); setDeleteTarget(null); setSwipedId(null); }
+  };
+
+  const onTouchStart = (event: React.TouchEvent<HTMLElement>, id: string) => {
+    const touch = event.touches[0];
+    touchStart.current = { x: touch.clientX, y: touch.clientY };
+  };
+  const onTouchEnd = (event: React.TouchEvent<HTMLElement>, id: string) => {
+    if (!touchStart.current) return;
+    const touch = event.changedTouches[0];
+    const dx = touch.clientX - touchStart.current.x;
+    const dy = touch.clientY - touchStart.current.y;
+    if (Math.abs(dx) > 55 && Math.abs(dx) > Math.abs(dy)) setSwipedId(dx < 0 ? id : null);
+    touchStart.current = null;
+  };
+
+  const statusClass = (enquiry: Enquiry) => enquiry.stage === 'new' ? 'new'
+    : isContacted(enquiry.stage) ? 'contacted' : enquiry.stage === 'sold' ? 'converted' : 'lost';
+
+  return (
+    <div className="dl-workspace enquiries-page">
+      <header className="enquiries-header">
+        <div className="enquiries-header-inner">
+          <p className="enquiries-eyebrow">ENQUIRIES</p>
+          <h1>Enquiries</h1>
+          <p className="enquiries-summary">{loading ? 'Loading enquiries…' : <>{counts.new} new <span>·</span> {counts.all} total</>}</p>
+        </div>
+      </header>
+
+      <main className="enquiries-main">
+        {counts.all > 0 && (
+          <section className="enquiries-summary-strip" aria-label="Enquiry summary">
+            <div><strong>{counts.new}</strong><span>New</span></div>
+            <i/>
+            <div><strong>{counts.contacted}</strong><span>Contacted</span></div>
+            <i/>
+            <div><strong>{counts.converted}</strong><span>Converted</span></div>
+          </section>
+        )}
+
+        <div className="enquiries-search">
+          <Search size={18}/>
+          <input value={search} onChange={event => setSearch(event.target.value)} placeholder="Search by name, phone or car" aria-label="Search enquiries"/>
+          {search && <button type="button" aria-label="Clear search" onClick={() => setSearch('')}><X size={16}/></button>}
+        </div>
+
+        <div className="enquiries-filter-viewport">
+          <div className="enquiries-filter-row" role="group" aria-label="Filter enquiries">
+            {filters.map(item => (
+              <button type="button" key={item.id} onClick={() => setFilter(item.id)} aria-pressed={filter === item.id} className={`enquiries-filter-chip ${filter === item.id ? 'is-selected' : ''}`}>
+                <span>{item.label}</span>{item.id !== 'all' && <small>{counts[item.id]}</small>}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {error && <div className="enquiries-error" role="alert">{error}<button type="button" onClick={() => void load()}>Try again</button></div>}
+
+        {loading ? (
+          <div className="enquiries-skeleton-list" aria-label="Loading enquiries">
+            {[1, 2, 3].map(index => <div className="enquiries-skeleton" key={index}><span/><div><i/><i/><b/></div></div>)}
+          </div>
+        ) : leads.length === 0 ? (
+          <section className="enquiries-empty">
+            <div className="enquiries-empty-icon"><MessageCircle size={34} strokeWidth={1.7}/></div>
+            <h2>No enquiries yet</h2>
+            <p>Share your showroom link and buyer messages will show up here.</p>
+            <button type="button" className="enquiries-empty-cta" onClick={() => void shareShowroom()}><Share2 size={17}/> Share my showroom link</button>
+            <button type="button" className="enquiries-preview-link" onClick={previewShowroom}>Preview my showroom <ArrowUpRight size={14}/></button>
+          </section>
+        ) : visible.length === 0 ? (
+          <section className="enquiries-no-results">
+            <div className="enquiries-empty-icon small"><Search size={23}/></div>
+            <h2>No enquiries found</h2>
+            <p>Try another search or clear your filters.</p>
+            <button type="button" onClick={() => { setSearch(''); setFilter('all'); }}>Clear filters</button>
+          </section>
+        ) : (
+          <div className="enquiries-list">
+            {visible.map((enquiry, index) => {
+              const vehicle = vehicleFor(enquiry);
+              const carName = vehicle ? `${vehicle.year} ${vehicle.make} ${vehicle.model}` : 'your showroom';
+              return (
+                <article key={enquiry.id} className={`enquiry-card-wrap ${swipedId === enquiry.id ? 'is-swiped' : ''}`} onTouchStart={event => onTouchStart(event, enquiry.id)} onTouchEnd={event => onTouchEnd(event, enquiry.id)}>
+                  <div className="enquiry-swipe-actions" aria-hidden={swipedId !== enquiry.id}>
+                    <button type="button" onClick={() => { setSwipedId(null); void storageService.updateEnquiryStageAsync(enquiry.id, 'contacted').then(updated => { if (updated) setLeads(list => list.map(item => item.id === updated.id ? updated : item)); }); }}><Check size={15}/> Contacted</button>
+                    <button type="button" onClick={() => { setSwipedId(null); void storageService.updateEnquiryStageAsync(enquiry.id, 'sold').then(updated => { if (updated) setLeads(list => list.map(item => item.id === updated.id ? updated : item)); }); }}><Check size={15}/> Converted</button>
+                    <button type="button" className="delete" onClick={() => setDeleteTarget(enquiry)}><Trash2 size={15}/> Delete</button>
+                  </div>
+                  <div className="enquiry-card" style={{ animationDelay: `${Math.min(index, 8) * 35}ms` }}>
+                    <div className="enquiry-card-main" onClick={() => open(enquiry)} role="button" tabIndex={0} onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); open(enquiry); } }}>
+                      <div className="enquiry-avatar">{initials(enquiry.buyerName)}</div>
+                      <div className="enquiry-buyer">
+                        <div className="enquiry-name-line"><strong>{enquiry.buyerName}</strong>{enquiry.stage === 'new' && <i className="enquiry-unread-dot"/>}</div>
+                        <p>Asked about {carName}</p>
+                      </div>
+                      <div className="enquiry-time">{timeAgo(enquiry.createdAt)}</div>
+                      <ChevronRight className="enquiry-chevron" size={15}/>
+                    </div>
+                    <div className="enquiry-card-footer">
+                      <span className={`enquiry-status ${statusClass(enquiry)}`}>{displayStage(enquiry.stage)}</span>
+                      <div className="enquiry-contact-actions">
+                        {whatsappUrl(enquiry) && <a href={whatsappUrl(enquiry)} target="_blank" rel="noreferrer" onClick={() => confirmContacted(enquiry)}><MessageCircle size={13}/> WhatsApp</a>}
+                        {enquiry.buyerPhone && <a href={`tel:${enquiry.buyerPhone}`} onClick={() => confirmContacted(enquiry)}><Phone size={13}/> Call</a>}
+                      </div>
+                    </div>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        )}
+        {refreshing && <div className="enquiries-refreshing"><RefreshCw size={14} className="animate-spin"/> Updating enquiries…</div>}
+      </main>
+
+      {active && (
+        <div className="enquiries-modal-backdrop" onClick={() => setActive(null)}>
+          <section role="dialog" aria-modal="true" aria-label="Enquiry details" className="enquiries-detail-sheet" onClick={event => event.stopPropagation()}>
+            <div className="enquiries-sheet-handle"/>
+            <div className="enquiries-detail-heading">
+              <div><p className="enquiries-detail-eyebrow">ENQUIRY DETAILS</p><h2>{active.buyerName}</h2><p>{active.buyerPhone}</p></div>
+              <button type="button" onClick={() => setActive(null)} aria-label="Close details"><X size={19}/></button>
+            </div>
+            <div className="enquiries-detail-actions">
+              {active.buyerPhone && <a href={`tel:${active.buyerPhone}`} onClick={() => confirmContacted(active)}><Phone size={15}/> Call</a>}
+              {whatsappUrl(active) && <a href={whatsappUrl(active)} target="_blank" rel="noreferrer" onClick={() => confirmContacted(active)}><MessageCircle size={15}/> WhatsApp</a>}
+            </div>
+            {vehicleFor(active) && <div className="enquiries-vehicle-detail">
+              {vehicleFor(active)?.photos?.[0] ? <img src={vehicleFor(active)?.photos[0]} alt={`${vehicleFor(active)?.make} ${vehicleFor(active)?.model}`}/> : <div className="enquiries-vehicle-placeholder"><CarFront size={25}/></div>}
+              <div><small>INTERESTED VEHICLE</small><strong>{vehicleFor(active)?.year} {vehicleFor(active)?.make} {vehicleFor(active)?.model}</strong><b>{vehicleFor(active)?.currency === 'ZAR' ? 'R' : '$'}{vehicleFor(active)?.price.toLocaleString()}</b></div>
+            </div>}
+            <div className="enquiries-message-card"><small>BUYER MESSAGE</small><p>{active.message}</p><time>{new Date(active.createdAt).toLocaleString()}</time></div>
+            <label className="enquiries-status-field">Enquiry status
+              <select value={stage} onChange={event => setStage(event.target.value as EnquiryStage)}>
+                <option value="new">New</option>
+                <option value="contacted">Contacted</option>
+                {active.stage === 'negotiating' && <option value="negotiating">Contacted</option>}
+                <option value="sold">Converted</option>
+                <option value="lost">Lost</option>
+              </select>
+            </label>
+            <label className="enquiries-status-field">Internal notes<textarea value={notes} onChange={event => setNotes(event.target.value)} rows={3} placeholder="Add a note about this buyer…"/></label>
+            <button type="button" disabled={saving} onClick={() => void save()} className="enquiries-save-button">{saving ? 'Saving…' : 'Save enquiry updates'}</button>
+            <button type="button" className="enquiries-delete-detail" onClick={() => setDeleteTarget(active)}><Trash2 size={14}/> Delete enquiry</button>
+          </section>
+        </div>
+      )}
+
+      {deleteTarget && (
+        <div className="enquiries-confirm-backdrop" onClick={() => !deleting && setDeleteTarget(null)}>
+          <section role="dialog" aria-modal="true" aria-label="Confirm enquiry deletion" className="enquiries-confirm-dialog" onClick={event => event.stopPropagation()}>
+            <div className="enquiries-confirm-icon"><Trash2 size={20}/></div>
+            <h2>Delete this enquiry?</h2>
+            <p>This will permanently remove the enquiry from your inbox.</p>
+            <div><button type="button" disabled={deleting} onClick={() => setDeleteTarget(null)}>Cancel</button><button type="button" disabled={deleting} onClick={() => void deleteEnquiry()}>{deleting ? 'Deleting…' : 'Delete enquiry'}</button></div>
+          </section>
+        </div>
+      )}
+    </div>
+  );
 };
