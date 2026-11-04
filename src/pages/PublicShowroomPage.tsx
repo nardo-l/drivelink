@@ -49,13 +49,14 @@ export const PublicShowroomPage: React.FC<PublicShowroomPageProps> = ({ slug, pr
   const heroPhoto = dealer.coverUrl || '';
   const title = dealer.tagline?.trim() || 'Drive Your Dream Today.';
   const description = dealer.bio?.trim() || 'Premium cars. Great deals. Trusted dealership.';
+  const dealerInitials = dealer.name.trim().split(/\\s+/).filter(Boolean).slice(0, 2).map(part => part[0]).join('').toUpperCase() || 'DL';
   const browse = () => navigate('/' + encodeURIComponent(dealer.slug) + '/browse');
 
   return (
     <main className="dl-cinematic-storefront" style={{ backgroundImage: heroPhoto ? 'linear-gradient(90deg,rgba(0,0,0,.76),rgba(0,0,0,.16)),linear-gradient(0deg,rgba(0,0,0,.38),transparent 55%),url(' + JSON.stringify(heroPhoto) + ')' : 'linear-gradient(135deg,#172235 0%,#35445b 52%,#111827 100%)' }}>
       <header className="dl-cinematic-header">
         <button className="dl-cinematic-brand" onClick={browse} aria-label="Explore dealership inventory">
-          {dealer.logoUrl ? <img src={dealer.logoUrl} alt="" /> : <span>{dealer.name.slice(0,2).toUpperCase()}</span>}
+          {dealer.logoUrl ? <img src={dealer.logoUrl} alt="" /> : <span>{dealerInitials}</span>}
           <span><strong>{dealer.name}</strong><small>{[dealer.city, dealer.country].filter(Boolean).join(', ')}</small></span>
         </button>
         <button className="dl-cinematic-menu" onClick={() => setMenuOpen(v => !v)} aria-label="Open menu">{menuOpen ? <X/> : <Menu/>}</button>
