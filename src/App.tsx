@@ -91,6 +91,9 @@ function AppContent() {
             const liveDealer = await supabaseService.getCurrentDealership();
             if (liveDealer) {
               storageService.saveDealership(liveDealer);
+              await verifySubscription();
+            } else {
+              setSubscriptionState('setup');
             }
             storageService.setUserSession({
               isLoggedIn: true,
@@ -115,6 +118,13 @@ function AppContent() {
       setSessionChecked(true);
     }
   }, [isConfigured, isDemo, verifySubscription]);
+
+  React.useEffect(() => {
+    const current = storageService.getUserSession();
+    if (isConfigured && !isDemo && sessionChecked && current.isLoggedIn && current.dealershipId && ['setup', 'checking'].includes(subscriptionState)) {
+      void verifySubscription();
+    }
+  }, [currentPath, sessionChecked, subscriptionState, isConfigured, isDemo, verifySubscription]);
 
   // Route matching logic
   const renderRoute = () => {
@@ -266,8 +276,8 @@ function AppContent() {
   return (
     <DeviceFrame>
 
-      {forcePaywall ? <PaywallPage /> : blockUntilVerified ? <div className="flex min-h-[100dvh] items-center justify-center bg-white px-6 text-center text-sm text-gray-500">Verifying your DriveLink subscription…</div> : renderRoute()}
-      {!forcePaywall && subscriptionState === 'trial' && trialDaysLeft !== null && trialDaysLeft > 0 && trialDaysLeft <= 2 && dealerAppRoute && <div className="sticky top-0 z-30 flex items-center justify-center gap-2 border-b border-amber-200 bg-amber-50 px-4 py-2.5 text-xs font-bold text-amber-900"><span className="h-1.5 w-1.5 rounded-full bg-amber-500" />{trialDaysLeft} {trialDaysLeft === 1 ? 'day' : 'days'} left in your free trial <button onClick={() => navigate('/app/billing')} className="underline underline-offset-2">View plans</button></div>}
+      {!forcePaywall && !blockUntilVerified && subscriptionState === 'trial' && trialDaysLeft !== null && trialDaysLeft > 0 && trialDaysLeft <= 2 && dealerAppRoute && <div className="sticky top-0 z-30 flex items-center justify-center gap-2 border-b border-amber-200 bg-amber-50 px-4 py-2.5 text-xs font-bold text-amber-900"><span className="h-1.5 w-1.5 rounded-full bg-amber-500" />{trialDaysLeft} {trialDaysLeft === 1 ? 'day' : 'days'} left in your free trial <button onClick={() => navigate('/app/billing')} className="underline underline-offset-2">View plans</button></div>}
+      {forcePaywall || (blockUntilVerified && subscriptionState === 'unverified') ? <PaywallPage /> : blockUntilVerified ? <div className="flex min-h-[100dvh] items-center justify-center bg-white px-6 text-center text-sm text-gray-500">Verifying your DriveLink subscription…</div> : renderRoute()}
       {!forcePaywall && !blockUntilVerified && (['/app', '/app/vehicles', '/app/enquiries', '/app/more'].includes(currentPath) || (currentPath === '/' && storageService.getUserSession().isLoggedIn && !!storageService.getUserSession().dealershipId)) && <BottomNav />}
 
       {/* Global Toast Notification */}
