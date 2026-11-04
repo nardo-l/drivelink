@@ -391,7 +391,7 @@ export const OnboardingFlow: React.FC = () => {
         <ShowroomBrandingEditor dealershipName={data.showroom.businessName} logoUrl={data.branding.logoPreview || null} bannerUrl={data.branding.coverPreview || null} onChange={value => update({ branding: { ...data.branding, logoPreview: value.logoUrl, coverPreview: value.bannerUrl } })} onUploadingChange={setBrandingBusy}/>
         {error && <p role="alert" className="sb-inline-error">{error}</p>}
         <div className="sb-onboarding-actions">
-          <button type="button" disabled={busy || brandingBusy || (!data.branding.logoPreview && !data.branding.coverPreview)} onClick={() => setStep(7)}>Continue <ArrowRight size={18}/></button>
+          <button type="button" disabled={busy || brandingBusy || (!data.branding.logoPreview && !data.branding.coverPreview)} onClick={() => setStep(7)}>{brandingBusy ? <><Loader2 size={17} className="animate-spin"/> Uploading…</> : <>Continue <ArrowRight size={18}/></>}</button>
           <button type="button" onClick={() => setStep(7)}>Skip for now</button>
         </div>
       </section>}
