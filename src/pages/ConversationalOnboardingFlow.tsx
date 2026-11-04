@@ -86,12 +86,12 @@ export const OnboardingFlow: React.FC = () => {
     const dealershipId = storageService.getUserSession().dealershipId;
     if (Notification.permission === 'granted') {
       void notificationService.enablePush(dealershipId, false)
-        .then(() => setData(prev => ({ ...prev, currentStep: 8 })))
+        .then(() => setData(prev => ({ ...prev, currentStep: 8, isCompleted: true })))
         .catch(err => console.warn('Existing notification permission could not be registered:', err));
     } else if (Notification.permission === 'denied') {
       void notificationService.dismissOnboardingPrompt(dealershipId)
         .catch(err => console.warn('Could not save denied notification prompt:', err))
-        .finally(() => setData(prev => ({ ...prev, currentStep: 8 })));
+        .finally(() => setData(prev => ({ ...prev, currentStep: 8, isCompleted: true })));
     }
   }, [data.currentStep]);
 
@@ -132,7 +132,7 @@ export const OnboardingFlow: React.FC = () => {
     return () => { active = false; window.clearTimeout(timer); };
   }, [data.showroom.handle]);
 
-  const setStep = (next: number) => { update({ currentStep: Math.max(1, Math.min(TOTAL, next)) }); setError(''); window.scrollTo({ top: 0, behavior: 'smooth' }); };
+  const setStep = (next: number) => { update({ currentStep: Math.max(1, Math.min(TOTAL, next)), ...(next === 8 ? { isCompleted: true } : {}) }); setError(''); window.scrollTo({ top: 0, behavior: 'smooth' }); };
   const back = () => { if (step === 1) { try { localStorage.removeItem('drivelink_intro_completed_v1'); } catch {} setIntroDone(false); setIntroStep(5); } else setStep(step - 1); };
   const validSlug = /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(data.showroom.handle);
   const validWhatsapp = data.contact.whatsappNumber.replace(/[^0-9]/g, '').length >= 7;
