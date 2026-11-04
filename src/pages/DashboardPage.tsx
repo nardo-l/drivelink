@@ -4,7 +4,7 @@ import { storageService } from '../services/storage';
 import { supabaseService } from '../services/supabaseService';
 import { isSupabaseConfigured, supabase } from '../lib/supabase';
 import { StatusBadge } from '../components/common/Badge';
-import { Bell, CarFront, ChevronRight, Clock3, Eye, MessageCircle, Plus, RefreshCw, Share2, ArrowUpRight } from 'lucide-react';
+import { Bell, CarFront, ChevronRight, Eye, MessageCircle, Plus, RefreshCw, Share2, ArrowUpRight } from 'lucide-react';
 import './DashboardPage.css';
 
 type SubscriptionStatus = {
