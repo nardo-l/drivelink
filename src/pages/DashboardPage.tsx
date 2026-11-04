@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigation } from '../context/NavigationContext';
 import { storageService } from '../services/storage';
 import { supabaseService } from '../services/supabaseService';
-import { isSupabaseConfigured } from '../lib/supabase';
+import { isSupabaseConfigured, supabase } from '../lib/supabase';
 import { StatusBadge } from '../components/common/Badge';
 import { CarFront, MessageCircle, Eye, Bell, Plus, ChevronRight, ArrowUpRight, CircleAlert, Share2, Clock3 } from 'lucide-react';
 
@@ -53,7 +53,7 @@ export const DashboardPage: React.FC = () => {
     let active = true;
     const loadSubscription = async () => {
       try {
-        const { data, error } = await (await import('../lib/supabase')).supabase.functions.invoke('drivelink-payments', {
+        const { data, error } = await supabase.functions.invoke('drivelink-payments', {
           body: { action: 'status' },
         });
         if (error) throw error;
