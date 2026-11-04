@@ -1,6 +1,6 @@
 import React from 'react';
 import {
-  ArrowLeft, Check, Clock3, CreditCard, ExternalLink, Loader2, ShieldCheck,
+  ArrowLeft, Check, CreditCard, ExternalLink, Loader2, ShieldCheck,
 } from 'lucide-react';
 import { useNavigation } from '../context/NavigationContext';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
@@ -405,13 +405,6 @@ export const BillingPage: React.FC = () => {
           <span>Payments are verified with NardoPay before access is extended. Renewals are manual; DriveLink will never charge you automatically.</span>
         </div>
 
-        <button
-          type="button"
-          onClick={startPayment}
-          disabled={paying || loading}
-          className="order-[-1] hidden"
-          aria-hidden="true"
-        />
         <div className="sticky bottom-0 -mx-5 mt-auto bg-gradient-to-t from-[#F7F8FA] via-[#F7F8FA] to-transparent px-5 pb-[max(12px,env(safe-area-inset-bottom))] pt-5">
           <button
             type="button"
