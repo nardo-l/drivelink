@@ -69,33 +69,37 @@ export const notificationService = {
     });
     if (error) throw error;
   },
-  async enablePush(dealershipId: string): Promise<void> {
-    if (!('serviceWorker' in navigator) || !('PushManager' in window)) throw new Error('This browser does not support Web Push.');
+  isPushSupported(): boolean {
+    if (typeof window === 'undefined' || !('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window)) return false;
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    const installed = (window.matchMedia?.('(display-mode: standalone)').matches ?? false) || (navigator as any).standalone === true;
+    return !(isIOS && !installed);
+  },
+  async enablePush(dealershipId: string, requestPermission = true): Promise<void> {
+    if (!this.isPushSupported()) throw new Error('This browser does not support Web Push in its current mode.');
     if (!vapidPublicKey) throw new Error('VITE_VAPID_PUBLIC_KEY is not configured in the app environment.');
-    const permission = await Notification.requestPermission();
-    if (permission !== 'granted') throw new Error('Notification permission was not granted.');
+    let permission = Notification.permission;
+    if (permission === 'default' && requestPermission) permission = await Notification.requestPermission();
+    if (permission !== 'granted') throw new Error(permission === 'denied' ? 'Notifications are blocked in your browser settings.' : 'Notification permission was not granted.');
     const registration = await navigator.serviceWorker.register('/sw.js');
-    const subscription = await registration.pushManager.subscribe({
-      userVisibleOnly: true, applicationServerKey: urlBase64ToUint8Array(vapidPublicKey) as BufferSource,
-    });
+    const existing = await registration.pushManager.getSubscription();
+    const subscription = existing || await registration.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlBase64ToUint8Array(vapidPublicKey) as BufferSource });
     const json = subscription.toJSON();
-    const keys = json.keys;
-    if (!json.endpoint || !keys?.p256dh || !keys.auth) throw new Error('The browser returned an incomplete push subscription.');
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
-    if (userError || !user) throw new Error('Sign in again before enabling notifications.');
-    const { error } = await (supabase as any).from('push_subscriptions').upsert({
-      dealership_id: dealershipId, user_id: user.id, endpoint: json.endpoint, p256dh: keys.p256dh,
-      auth: keys.auth, user_agent: navigator.userAgent, updated_at: new Date().toISOString(),
-    }, { onConflict: 'endpoint' });
+    if (!json.endpoint || !json.keys?.p256dh || !json.keys.auth) throw new Error('The browser returned an incomplete push subscription.');
+    const { error } = await supabase.functions.invoke('drivelink-push-subscriptions', { body: { action: 'upsert', dealershipId, subscription: json, userAgent: navigator.userAgent } });
     if (error) throw error;
     await this.updatePreferences(dealershipId, { push_enabled: true });
+  },
+  async dismissOnboardingPrompt(dealershipId: string): Promise<void> {
+    const { error } = await (supabase as any).from('notification_preferences').upsert({ dealership_id: dealershipId, notifications_prompt_dismissed_at: new Date().toISOString() }, { onConflict: 'dealership_id' });
+    if (error) throw error;
   },
   async disablePush(dealershipId: string): Promise<void> {
     if (!('serviceWorker' in navigator)) return;
     const registration = await navigator.serviceWorker.getRegistration('/sw.js');
     const subscription = await registration?.pushManager.getSubscription();
     if (!subscription) return;
-    const { error } = await (supabase as any).from('push_subscriptions').delete().eq('endpoint', subscription.endpoint);
+    const { error } = await supabase.functions.invoke('drivelink-push-subscriptions', { body: { action: 'delete', dealershipId, endpoint: subscription.endpoint } });
     if (error) throw error;
     await subscription.unsubscribe();
     await this.updatePreferences(dealershipId, { push_enabled: false });
