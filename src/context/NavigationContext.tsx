@@ -16,7 +16,7 @@ const NavigationContext = createContext<NavigationContextType | undefined>(undef
 function getPathFromUrl(): string {
   if (typeof window === 'undefined') return '/';
   const hash = window.location.hash.replace(/^#/, '');
-  if (hash) return hash;
+  if (hash) return hash.split('?')[0];
   return window.location.pathname || '/';
 }
 
