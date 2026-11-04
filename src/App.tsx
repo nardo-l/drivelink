@@ -243,7 +243,7 @@ function AppContent() {
     // Public dealership inventory browsing and contact routes
     const showroomBrowseMatch = currentPath.match(/^\/showroom\/([^/]+)\/browse\/?$/);
     if (showroomBrowseMatch) {
-      return <PublicStorefrontBrowsePage slug={decodeURIComponent(showroomBrowseMatch[1])} />;
+      return <PublicShowroomPage slug={decodeURIComponent(showroomBrowseMatch[1])} />;
     }
 
     const showroomContactMatch = currentPath.match(/^\/showroom\/([^/]+)\/contact\/?$/);
@@ -270,7 +270,7 @@ function AppContent() {
     }
     const vanityBrowseMatch = currentPath.match(/^\/([^/]+)\/browse\/?$/);
     if (vanityBrowseMatch) {
-      return <PublicStorefrontBrowsePage slug={decodeURIComponent(vanityBrowseMatch[1])} />;
+      return <PublicShowroomPage slug={decodeURIComponent(vanityBrowseMatch[1])} />;
     }
     const vanityContactMatch = currentPath.match(/^\/([^/]+)\/contact\/?$/);
     if (vanityContactMatch) {
