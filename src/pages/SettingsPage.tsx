@@ -4,6 +4,8 @@ import { storageService } from '../services/storage';
 import { supabaseService } from '../services/supabaseService';
 import { isSupabaseConfigured } from '../lib/supabase';
 import { CurrencyCode } from '../types';
+import { notificationService } from '../services/notificationService';
+import { Bell } from 'lucide-react';
 import {
   Building2, Phone, MessageCircle, MapPin, Globe, ExternalLink,
   Save, Loader2, Upload, Image as ImageIcon,
@@ -29,6 +31,9 @@ export const SettingsPage: React.FC = () => {
   const [isUploadingCover, setIsUploadingCover] = useState(false);
   const [logoError, setLogoError] = useState<string | null>(null);
   const [coverError, setCoverError] = useState<string | null>(null);
+  const [pushEnabled, setPushEnabled] = useState(false);
+  const [pushBusy, setPushBusy] = useState(false);
+  const [pushPermission, setPushPermission] = useState<NotificationPermission>(() => typeof Notification === 'undefined' ? 'default' : Notification.permission);
 
   React.useEffect(() => {
     const fetchDealership = async () => {
@@ -57,6 +62,16 @@ export const SettingsPage: React.FC = () => {
     };
     fetchDealership();
   }, []);
+
+  React.useEffect(() => { notificationService.isPushEnabled().then(setPushEnabled).catch(() => setPushEnabled(false)); }, []);
+  const toggleNotifications = async () => {
+    setPushBusy(true);
+    try {
+      if (pushEnabled) { await notificationService.disablePush(current.id); setPushEnabled(false); showToast('Notifications turned off'); }
+      else { await notificationService.enablePush(current.id, true); setPushEnabled(true); setPushPermission(Notification.permission); showToast('Notifications enabled'); }
+    } catch (error: any) { setPushPermission(typeof Notification === 'undefined' ? 'default' : Notification.permission); showToast(error?.message || 'Could not update notification settings'); }
+    finally { setPushBusy(false); }
+  };
 
   const handleUploadLogo = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -295,6 +310,12 @@ export const SettingsPage: React.FC = () => {
             </button>
           </div>
           <p className="mt-2 text-[10px] text-[#999]">Share this link so buyers can view your dealership and available cars.</p>
+        </section>
+
+        <section className="rounded-2xl border border-[#E7E7E7] bg-white p-4 shadow-[0_2px_10px_rgba(20,20,20,0.025)]">
+          <div className="flex items-center justify-between gap-3"><div className="flex items-center gap-3"><div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#F4F4F4] text-[#242424]"><Bell size={18}/></div><div><h2 className="text-sm font-bold text-[#292929]">Notifications</h2><p className="mt-0.5 text-[11px] text-[#888]">Get alerts for new buyer enquiries and account updates.</p></div></div><button type="button" role="switch" aria-checked={pushEnabled} disabled={pushBusy || !notificationService.isPushSupported()} onClick={toggleNotifications} className={`relative h-7 w-12 shrink-0 rounded-full transition ${pushEnabled?'bg-[#0A0F1E]':'bg-[#D5D7DC]'} disabled:opacity-50`}><span className={`absolute top-1 h-5 w-5 rounded-full bg-white shadow transition-all ${pushEnabled?'left-6':'left-1'}`}/></button></div>
+          {!notificationService.isPushSupported() && <p className="mt-3 text-xs leading-5 text-[#777]">To receive notifications on iPhone, add DriveLink to your Home Screen using Safari’s Share menu, then choose “Add to Home Screen”.</p>}
+          {pushPermission==='denied' && <p className="mt-3 text-xs leading-5 text-[#777]">Notifications are blocked by your browser. Open your browser’s site settings for DriveLink and allow notifications, then return here.</p>}
         </section>
 
         <button type="submit" disabled={isUploadingLogo || isUploadingCover}
