@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import './ConversationalOnboardingFlow.css';
-import { ArrowLeft, ArrowRight, Check, Copy, Car, Truck, Bus, Crown, Eye, EyeOff, Link2, Loader2, MessageCircle, CreditCard, BarChart3, Users, Lock } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, Copy, Car, Truck, Bus, Crown, Eye, EyeOff, Link2, Loader2, MessageCircle, CreditCard, BarChart3, Users } from 'lucide-react';
 import { useNavigation } from '../context/NavigationContext';
 import { storageService } from '../services/storage';
 import { supabaseService } from '../services/supabaseService';
@@ -79,6 +79,7 @@ export const OnboardingFlow: React.FC = () => {
       if (dealer) {
         storageService.saveDealership(dealer);
         storageService.setUserSession({ isLoggedIn: true, email: user.email || '', dealershipId: dealer.id, userId: user.id });
+        console.info('[DriveLink onboarding] Get notified skipped: redirected (existing dealership found during session restore).');
         navigate('/app');
       } else {
         try { localStorage.setItem('drivelink_intro_completed_v1', 'true'); } catch {}
@@ -281,6 +282,7 @@ export const OnboardingFlow: React.FC = () => {
   };
   const continueWithoutNotifications = async () => {
     try { localStorage.setItem('drivelink_notifications_prompt_dismissed_at', new Date().toISOString()); } catch {}
+    console.info('[DriveLink onboarding] Get notified skipped: dismissed by user.');
     setStep(7);
   };
   const enableOnboardingNotifications = async () => {
@@ -302,7 +304,7 @@ export const OnboardingFlow: React.FC = () => {
 
   return <main className={step === 7 ? 'dl-pro-page' : 'min-h-[100dvh] bg-white px-4 py-5 text-[#0A0A0A] sm:py-8'}>
     <section className={step === 7 ? 'dl-pro-page-inner' : 'mx-auto flex min-h-[calc(100dvh-40px)] w-full max-w-[430px] flex-col rounded-[28px] bg-white px-1 py-3 sm:min-h-[780px] sm:px-5'}>
-      {step !== 7 && <header className="mb-7 flex items-center justify-between">
+      {step < 6 && <header className="mb-7 flex items-center justify-between">
         <button type="button" onClick={back} aria-label="Go back" className="flex h-10 items-center gap-2 rounded-full px-2 text-sm font-medium text-gray-600 hover:bg-gray-50" disabled={step===6||step===7}>
           {step!==6 && step!==7 && <><ArrowLeft size={17}/> Back</>}
         </button>
