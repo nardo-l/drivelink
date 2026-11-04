@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
-  Search, MessageCircle, Phone, ChevronRight, X, Share2, Copy,
-  RefreshCw, ArrowUpRight, Trash2, Check, UserRound, CarFront,
+  Search, MessageCircle, Phone, ChevronRight, X, Share2,
+  RefreshCw, ArrowUpRight, Trash2, Check, CarFront,
 } from 'lucide-react';
 import { useNavigation } from '../context/NavigationContext';
 import { storageService } from '../services/storage';
@@ -195,7 +195,7 @@ export const EnquiriesPage: React.FC = () => {
     finally { setDeleting(false); setDeleteTarget(null); setSwipedId(null); }
   };
 
-  const onTouchStart = (event: React.TouchEvent<HTMLElement>, id: string) => {
+  const onTouchStart = (event: React.TouchEvent<HTMLElement>) => {
     const touch = event.touches[0];
     touchStart.current = { x: touch.clientX, y: touch.clientY };
   };
@@ -278,7 +278,7 @@ export const EnquiriesPage: React.FC = () => {
               const vehicle = vehicleFor(enquiry);
               const carName = vehicle ? `${vehicle.year} ${vehicle.make} ${vehicle.model}` : 'your showroom';
               return (
-                <article key={enquiry.id} className={`enquiry-card-wrap ${swipedId === enquiry.id ? 'is-swiped' : ''}`} onTouchStart={event => onTouchStart(event, enquiry.id)} onTouchEnd={event => onTouchEnd(event, enquiry.id)}>
+                <article key={enquiry.id} className={`enquiry-card-wrap ${swipedId === enquiry.id ? 'is-swiped' : ''}`} onTouchStart={onTouchStart} onTouchEnd={event => onTouchEnd(event, enquiry.id)}>
                   <div className="enquiry-swipe-actions" aria-hidden={swipedId !== enquiry.id}>
                     <button type="button" onClick={() => { setSwipedId(null); void quickUpdateStage(enquiry, 'contacted'); }}><Check size={15}/> Contacted</button>
                     <button type="button" onClick={() => { setSwipedId(null); void quickUpdateStage(enquiry, 'sold'); }}><Check size={15}/> Converted</button>
@@ -330,8 +330,7 @@ export const EnquiriesPage: React.FC = () => {
             <label className="enquiries-status-field">Enquiry status
               <select value={stage} onChange={event => setStage(event.target.value as EnquiryStage)}>
                 <option value="new">New</option>
-                <option value="contacted">Contacted</option>
-                {active.stage === 'negotiating' && <option value="negotiating">Contacted</option>}
+                <option value={active.stage === 'negotiating' ? 'negotiating' : 'contacted'}>Contacted</option>
                 <option value="sold">Converted</option>
                 <option value="lost">Lost</option>
               </select>
