@@ -198,7 +198,6 @@ export const BillingPage: React.FC = () => {
   const statusTone = hasAccess
     ? expiringSoon ? 'bg-amber-50 text-amber-700' : 'bg-emerald-50 text-emerald-700'
     : expired ? 'bg-rose-50 text-rose-700' : 'bg-slate-100 text-slate-600';
-  const selectedAmount = selectedPlan === 'yearly' ? 32 : 3.99;
   const isRenewal = active || inGrace;
   const progressStart = trialActive
     ? (subscription?.trial_started_at ? new Date(subscription.trial_started_at).getTime() : now)
@@ -321,7 +320,7 @@ export const BillingPage: React.FC = () => {
           </div>
         )}
 
-        <div className="sticky bottom-0 -mx-5 mt-auto bg-gradient-to-t from-[#F7F8FA] via-[#F7F8FA] to-transparent px-5 pb-[max(12px,env(safe-area-inset-bottom))] pt-5">
+        <div className="-mx-5 px-5 pt-1">
           <button
             type="button"
             onClick={startPayment}
