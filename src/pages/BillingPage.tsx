@@ -70,8 +70,8 @@ export const BillingPage: React.FC = () => {
         body: { action: 'initiate', plan_code: selectedPlan },
       });
       if (invokeError) throw invokeError;
-      if (!data?.redirectUrl) throw new Error(data?.error || 'Paynow did not return a checkout link.');
-      window.location.assign(data.redirectUrl);
+      if (!data?.url) throw new Error(data?.error || 'NardoPay did not return a checkout link.');
+      window.location.assign(data.url);
     } catch (e: any) {
       setError(e?.message || 'Could not start your EcoCash payment.');
       setPaying(false);
@@ -126,7 +126,7 @@ export const BillingPage: React.FC = () => {
             <span className="text-3xl font-black tracking-tight">${selectedAmount.toFixed(2)}</span>
             <span className="text-xs text-white/60">/ {selectedDuration}</span>
           </div>
-          {selectedPlan === 'yearly' ? <p className="mt-1 text-xs text-white/65">Pay once for 12 months. That's just $2.67/month — save $15.88 (33%) compared with paying monthly.</p> : <p className="mt-1 text-xs text-white/65">$3.99 every 30 days. Pay securely through Paynow using EcoCash.</p>}
+          {selectedPlan === 'yearly' ? <p className="mt-1 text-xs text-white/65">Pay once for 12 months. That's just $2.67/month — save $15.88 (33%) compared with paying monthly.</p> : <p className="mt-1 text-xs text-white/65">$3.99 every 30 days. Pay securely through NardoPay using EcoCash or another available payment method.</p>}
           <div className="mt-5 flex items-center justify-between border-t border-white/15 pt-4">
             <span className="text-xs text-white/65">Subscription status</span>
             <span className="text-xs font-bold">{loading ? 'Checking…' : statusLabel}</span>
@@ -154,10 +154,10 @@ export const BillingPage: React.FC = () => {
           )}
           <button onClick={startPayment} disabled={paying || loading || trialActive} className="mt-4 w-full h-12 rounded-full bg-slate-950 hover:bg-slate-800 text-white text-xs font-extrabold flex items-center justify-center gap-2 disabled:opacity-50">
             {paying ? <Loader2 className="w-4 h-4 animate-spin" /> : <CreditCard className="w-4 h-4" />}
-            {paying ? 'Connecting to Paynow…' : trialActive ? 'Trial active — no payment due' : active || inGrace ? 'Renew for ${selectedAmount.toFixed(2)}' : 'Subscribe for ${selectedAmount.toFixed(2)}'}
+            {paying ? 'Connecting to NardoPay…' : trialActive ? 'Trial active — no payment due' : active || inGrace ? 'Renew for ${selectedAmount.toFixed(2)}' : 'Subscribe for ${selectedAmount.toFixed(2)}'}
             {!paying && <ExternalLink className="w-3.5 h-3.5" />}
           </button>
-          <p className="text-[10px] text-slate-400 text-center mt-2">You will be redirected to Paynow. Select EcoCash to complete your ${selectedPlan === 'yearly' ? 'annual' : 'monthly'} payment.</p>
+          <p className="text-[10px] text-slate-400 text-center mt-2">You will be redirected to NardoPay to complete your ${selectedPlan === 'yearly' ? 'annual' : 'monthly'} payment.</p>
         </section>
 
         <section className="rounded-2xl bg-white border border-slate-100 p-4 shadow-sm">
@@ -178,7 +178,7 @@ export const BillingPage: React.FC = () => {
 
         <div className="flex items-start gap-2 px-1 text-[10px] text-slate-500 leading-relaxed">
           <ShieldCheck className="w-4 h-4 shrink-0" />
-          <span>Payments are verified directly with Paynow before subscription access is extended. EcoCash renewals are manual; DriveLink will not charge you automatically.</span>
+          <span>Payments are verified with NardoPay before subscription access is extended. Renewals are manual; DriveLink will not charge you automatically.</span>
         </div>
       </main>
     </div>
