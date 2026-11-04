@@ -697,4 +697,70 @@ export const supabaseService = {
 
     return publicUrl;
   },
+
+  async uploadShowroomBrandingAsset(file: File, type: 'logo' | 'banner', onProgress?: (percent: number) => void): Promise<string> {
+    if (!isSupabaseConfigured()) throw new Error('Supabase Storage is not configured.');
+    const user = await this.getCurrentUser();
+    if (!user) throw new Error('Please sign in before uploading showroom branding.');
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.access_token) throw new Error('Your session has expired. Please sign in again.');
+    const path = `${user.id}/${type}.webp`;
+    const url = `${supabase.supabaseUrl}/storage/v1/object/dealership-branding/${encodeURIComponent(user.id)}/${encodeURIComponent(type)}.webp`;
+    await new Promise<void>((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', url);
+      xhr.setRequestHeader('Authorization', `Bearer ${session.access_token}`);
+      xhr.setRequestHeader('apikey', supabase.supabaseKey);
+      xhr.setRequestHeader('Content-Type', file.type || 'image/webp');
+      xhr.setRequestHeader('x-upsert', 'true');
+      xhr.setRequestHeader('cache-control', '3600');
+      xhr.upload.onprogress = event => { if (event.lengthComputable && onProgress) onProgress(Math.round((event.loaded / event.total) * 100)); };
+      xhr.onload = () => {
+        if (xhr.status >= 200 && xhr.status < 300) { onProgress?.(100); resolve(); }
+        else {
+          let message = 'Image upload failed. Please try again.';
+          try { message = JSON.parse(xhr.responseText)?.message || message; } catch {}
+          reject(new Error(message));
+        }
+      };
+      xhr.onerror = () => reject(new Error('Network error while uploading. Check your connection and retry.'));
+      xhr.onabort = () => reject(new Error('Upload cancelled.'));
+      xhr.send(file);
+    });
+    const { data } = supabase.storage.from('dealership-branding').getPublicUrl(path);
+    const publicUrl = data.publicUrl;
+    const dealer = await this.getCurrentDealership().catch(() => null);
+    if (dealer) {
+      const previousUrl = type === 'logo' ? dealer.logoUrl : dealer.coverUrl;
+      await this.updateDealership(dealer.id, type === 'logo' ? { logoUrl: publicUrl } : { coverUrl: publicUrl });
+      if (previousUrl && previousUrl !== publicUrl) await this.removeLegacyBrandingObject(previousUrl);
+    }
+    return publicUrl;
+  },
+
+  async removeShowroomBrandingAsset(type: 'logo' | 'banner', currentUrl?: string | null): Promise<void> {
+    if (!isSupabaseConfigured()) return;
+    const user = await this.getCurrentUser();
+    if (!user) throw new Error('Please sign in before changing showroom branding.');
+    const path = `${user.id}/${type}.webp`;
+    const { error } = await supabase.storage.from('dealership-branding').remove([path]);
+    if (error && !/not found|does not exist/i.test(error.message)) throw error;
+    const dealer = await this.getCurrentDealership().catch(() => null);
+    if (dealer) {
+      await this.updateDealership(dealer.id, type === 'logo' ? { logoUrl: '' } : { coverUrl: '' });
+      if (currentUrl) await this.removeLegacyBrandingObject(currentUrl);
+    }
+  },
+
+  async removeLegacyBrandingObject(publicUrl: string): Promise<void> {
+    const marker = '/storage/v1/object/public/dealership-assets/';
+    const index = publicUrl.indexOf(marker);
+    if (index < 0) return;
+    const path = publicUrl.slice(index + marker.length).split('?')[0].split('/').map(part => decodeURIComponent(part)).join('/');
+    if (path) {
+      const { error } = await supabase.storage.from('dealership-assets').remove([path]);
+      if (error) console.warn('Legacy showroom branding cleanup could not remove old object:', error.message);
+    }
+  },
+
 };
