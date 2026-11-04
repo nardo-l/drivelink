@@ -4,7 +4,9 @@ self.addEventListener('push', (event) => {
   const title = payload.title || 'DriveLink';
   const options = {
     body: payload.body || 'You have an update from your dealership.',
-        data: payload.data || { url: '/#/app/notifications' },
+    icon: '/icon.svg',
+    badge: '/icon.svg',
+    data: payload.data || { url: '/#/app/notifications' },
     tag: payload.tag || 'drivelink-notification',
     renotify: false,
   };
