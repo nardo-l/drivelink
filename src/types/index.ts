@@ -2,7 +2,7 @@ export type VehicleStatus = 'available' | 'reserved' | 'sold' | 'draft';
 export type TransmissionType = 'Automatic' | 'Manual';
 export type FuelType = 'Hybrid' | 'Petrol' | 'Diesel' | 'Electric';
 export type StorefrontTemplate = 'signature' | 'inventory_first' | 'independent';
-export type CurrencyCode = 'USD' | 'ZAR';
+export type CurrencyCode = 'USD' | 'ZAR' | 'ZWG';
 
 export interface Vehicle {
   id: string;
@@ -163,7 +163,7 @@ export function dealershipRowToModel(row: DealershipRow, totalEnquiries: number 
     phone: row.phone || row.whatsapp || '',
     whatsapp: row.whatsapp || '',
     email: row.email || '',
-    currency: (row.currency === 'ZAR' ? 'ZAR' : 'USD') as CurrencyCode,
+    currency: (row.currency === 'ZWG' ? 'ZWG' : row.currency === 'ZAR' ? 'ZAR' : 'USD') as CurrencyCode,
     template: (row.template as StorefrontTemplate) || 'signature',
     logoUrl: row.logo_url || undefined,
     coverUrl: row.banner_url || row.cover_url || undefined,
