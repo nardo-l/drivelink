@@ -22,6 +22,7 @@ export const ShowroomBrandingEditor: React.FC<ShowroomBrandingEditorProps> = ({
 }) => {
   const [logo, setLogo] = useState<AssetState>(() => emptyAsset(logoUrl));
   const [banner, setBanner] = useState<AssetState>(() => emptyAsset(bannerUrl));
+  const latestUrls = useRef<BrandingValue>({ logoUrl: logoUrl || null, bannerUrl: bannerUrl || null });
   const [cropKind, setCropKind] = useState<BrandingKind | null>(null);
   const [cropSource, setCropSource] = useState<string | null>(null);
   const [cropImage, setCropImage] = useState<HTMLImageElement | null>(null);
@@ -35,12 +36,13 @@ export const ShowroomBrandingEditor: React.FC<ShowroomBrandingEditorProps> = ({
   const cropWidth = cropRef.current?.clientWidth || Math.min(320, window.innerWidth - 48);
   const cropHeight = cropRef.current?.clientHeight || cropWidth / (cropKind === 'logo' ? 1 : 3);
 
-  useEffect(() => { setLogo(prev => ({ ...prev, url: logoUrl || null })); }, [logoUrl]);
-  useEffect(() => { setBanner(prev => ({ ...prev, url: bannerUrl || null })); }, [bannerUrl]);
+  useEffect(() => { latestUrls.current.logoUrl = logoUrl || null; setLogo(prev => ({ ...prev, url: logoUrl || null })); }, [logoUrl]);
+  useEffect(() => { latestUrls.current.bannerUrl = bannerUrl || null; setBanner(prev => ({ ...prev, url: bannerUrl || null })); }, [bannerUrl]);
   useEffect(() => () => { if (cropSource) URL.revokeObjectURL(cropSource); }, [cropSource]);
 
   const notifyChange = (kind: BrandingKind, url: string | null) => {
-    onChange({ logoUrl: kind === 'logo' ? url : logo.url, bannerUrl: kind === 'banner' ? url : banner.url });
+    latestUrls.current = { ...latestUrls.current, [kind === 'logo' ? 'logoUrl' : 'bannerUrl']: url };
+    onChange(latestUrls.current);
   };
   const updateAsset = (kind: BrandingKind, patch: Partial<AssetState>) => {
     const setter = kind === 'logo' ? setLogo : setBanner;
