@@ -13,6 +13,7 @@ export const PaywallPage: React.FC = () => {
   const [busy, setBusy] = React.useState(false);
   const [message, setMessage] = React.useState('');
   const [checkoutId, setCheckoutId] = React.useState<string | null>(null);
+  const [transactionId, setTransactionId] = React.useState<string | null>(null);
   const [checking, setChecking] = React.useState(false);
 
   React.useEffect(() => {
@@ -20,6 +21,7 @@ export const PaywallPage: React.FC = () => {
     const params = new URLSearchParams(query);
     const checkout = params.get('checkout');
     if (checkout) setCheckoutId(checkout);
+    setTransactionId(params.get('transaction_id') || params.get('transactionId'));
   }, []);
 
   const refreshAccess = React.useCallback(async () => {
@@ -52,7 +54,7 @@ export const PaywallPage: React.FC = () => {
     setMessage('Checking your NardoPay payment…');
     try {
       const { data, error } = await supabase.functions.invoke('drivelink-payments', {
-        body: { action: 'check', checkout_id: checkoutId },
+        body: { action: 'check', checkout_id: checkoutId, transaction_id: transactionId || undefined },
       });
       if (error) throw error;
       if (data?.paid || data?.status === 'completed') {
@@ -68,7 +70,7 @@ export const PaywallPage: React.FC = () => {
     } finally {
       setChecking(false);
     }
-  }, [checkoutId, refreshAccess]);
+  }, [checkoutId, transactionId, refreshAccess]);
 
   React.useEffect(() => {
     if (checkoutId) void checkCheckout();
