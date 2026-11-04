@@ -108,7 +108,7 @@ Deno.serve(async (req: Request) => {
   const webhookToken = Deno.env.get("NARDOPAY_WEBHOOK_TOKEN") || "";
   const suppliedToken = new URL(req.url).searchParams.get("token") || "";
   const suppliedSignature = req.headers.get("X-NardoPay-Signature") || "";
-  const validSignature = webhookSecret ? await verifySignature(rawBody, suppliedSignature, webhookSecret) : false;
+  const validSignature = webhookSecret ? await verifySignature(JSON.stringify(payload), suppliedSignature, webhookSecret) : false;
   const validToken = webhookToken ? constantTimeEqual(suppliedToken, webhookToken) : false;
   if (!validSignature && !validToken) return json({ error: "Unauthorized webhook." }, 401);
 
