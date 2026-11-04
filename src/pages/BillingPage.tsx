@@ -159,7 +159,7 @@ export const BillingPage: React.FC = () => {
         <section className="rounded-3xl bg-slate-950 text-white p-5 shadow-lg">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-white/65">Choose your DriveLink Pro plan</span>
-            <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-white/10">ECOCASH</span>
+            <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-white/10">NARDOPAY</span>
           </div>
           <div className="mt-4 grid grid-cols-2 gap-2">
             <button type="button" onClick={() => setSelectedPlan('monthly')} className={`relative rounded-2xl border p-3 text-left transition ${selectedPlan === 'monthly' ? 'border-white bg-white/10 ring-1 ring-white/50' : 'border-white/15 bg-white/[0.03]'}`}>
@@ -216,7 +216,7 @@ export const BillingPage: React.FC = () => {
           )}
           <button onClick={startPayment} disabled={paying || loading || trialActive} className="mt-4 w-full h-12 rounded-full bg-slate-950 hover:bg-slate-800 text-white text-xs font-extrabold flex items-center justify-center gap-2 disabled:opacity-50">
             {paying ? <Loader2 className="w-4 h-4 animate-spin" /> : <CreditCard className="w-4 h-4" />}
-            {paying ? 'Connecting to NardoPay…' : trialActive ? 'Trial active — no payment due' : active || inGrace ? 'Renew for ${selectedAmount.toFixed(2)}' : 'Subscribe for ${selectedAmount.toFixed(2)}'}
+            {paying ? 'Connecting to NardoPay…' : trialActive ? 'Trial active — no payment due' : active || inGrace ? `Renew for ${selectedAmount.toFixed(2)}` : `Subscribe for ${selectedAmount.toFixed(2)}`}
             {!paying && <ExternalLink className="w-3.5 h-3.5" />}
           </button>
           <p className="text-[10px] text-slate-400 text-center mt-2">You will be redirected to NardoPay to complete your ${selectedPlan === 'yearly' ? 'annual' : 'monthly'} payment.</p>
