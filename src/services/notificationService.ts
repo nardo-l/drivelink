@@ -98,10 +98,11 @@ export const notificationService = {
     if (!('serviceWorker' in navigator)) return;
     const registration = await navigator.serviceWorker.getRegistration('/sw.js');
     const subscription = await registration?.pushManager.getSubscription();
-    if (!subscription) return;
-    const { error } = await supabase.functions.invoke('drivelink-push-subscriptions', { body: { action: 'delete', dealershipId, endpoint: subscription.endpoint } });
-    if (error) throw error;
-    await subscription.unsubscribe();
+    if (subscription) {
+      const { error } = await supabase.functions.invoke('drivelink-push-subscriptions', { body: { action: 'delete', dealershipId, endpoint: subscription.endpoint } });
+      if (error) throw error;
+      await subscription.unsubscribe();
+    }
     await this.updatePreferences(dealershipId, { push_enabled: false });
   },
   async isPushEnabled(): Promise<boolean> {
