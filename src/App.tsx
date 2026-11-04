@@ -19,7 +19,6 @@ import { supabase } from './lib/supabase';
 import { NotificationsPage } from './pages/NotificationsPage';
 import { PublicShowroomPage } from './pages/PublicShowroomPage';
 import { PublicVehicleDetailPage } from './pages/PublicVehicleDetailPage';
-import { PublicStorefrontBrowsePage } from './pages/PublicStorefrontBrowsePage';
 import { PublicStorefrontContactPage } from './pages/PublicStorefrontContactPage';
 import { isSupabaseConfigured } from './lib/supabase';
 import { supabaseService } from './services/supabaseService';
