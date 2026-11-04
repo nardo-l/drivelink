@@ -5,10 +5,11 @@ import { supabaseService } from '../services/supabaseService';
 import { isSupabaseConfigured } from '../lib/supabase';
 import { CurrencyCode } from '../types';
 import { notificationService } from '../services/notificationService';
+import { ShowroomBrandingEditor } from '../components/ShowroomBrandingEditor';
 import { Bell } from 'lucide-react';
 import {
   Building2, Phone, MessageCircle, MapPin, Globe, ExternalLink,
-  Save, Loader2, Upload, Image as ImageIcon,
+  Save, Loader2,
 } from 'lucide-react';
 
 export const SettingsPage: React.FC = () => {
@@ -27,10 +28,6 @@ export const SettingsPage: React.FC = () => {
   const [stickerText, setStickerText] = useState(current.stickerText || 'Good cars brighter days');
   const [logoUrl, setLogoUrl] = useState<string>(current.logoUrl || '');
   const [coverUrl, setCoverUrl] = useState<string>(current.coverUrl || '');
-  const [isUploadingLogo, setIsUploadingLogo] = useState(false);
-  const [isUploadingCover, setIsUploadingCover] = useState(false);
-  const [logoError, setLogoError] = useState<string | null>(null);
-  const [coverError, setCoverError] = useState<string | null>(null);
   const [pushEnabled, setPushEnabled] = useState(false);
   const [pushBusy, setPushBusy] = useState(false);
   const [pushPermission, setPushPermission] = useState<NotificationPermission>(() => typeof Notification === 'undefined' ? 'default' : Notification.permission);
@@ -52,8 +49,8 @@ export const SettingsPage: React.FC = () => {
             setCurrency(live.currency || 'USD');
             setBio(live.bio || '');
             setStickerText(live.stickerText || 'Good cars brighter days');
-            if (live.logoUrl) setLogoUrl(live.logoUrl);
-            if (live.coverUrl) setCoverUrl(live.coverUrl);
+            setLogoUrl(live.logoUrl || '');
+            setCoverUrl(live.coverUrl || '');
           }
         } catch (e) {
           console.warn('Could not fetch live dealership on mount in Settings:', e);
@@ -73,88 +70,6 @@ export const SettingsPage: React.FC = () => {
     finally { setPushBusy(false); }
   };
 
-  const handleUploadLogo = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const validTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp'];
-    if (!validTypes.includes(file.type)) {
-      setLogoError('Please select a PNG, JPG, or WebP image.');
-      return;
-    }
-    if (file.size > 5 * 1024 * 1024) {
-      setLogoError('Logo file size must be less than 5MB.');
-      return;
-    }
-    setLogoError(null);
-
-    // 1. Immediate local preview
-    const localPreview = URL.createObjectURL(file);
-    setLogoUrl(localPreview);
-    setIsUploadingLogo(true);
-
-    try {
-      if (isSupabaseConfigured() && !storageService.isDemoModeActive()) {
-        const publicUrl = await supabaseService.uploadDealershipAsset(current.id, file, 'logo');
-        URL.revokeObjectURL(localPreview);
-        setLogoUrl(publicUrl);
-        storageService.updateDealership({ logoUrl: publicUrl });
-        showToast('Logo uploaded successfully!');
-      } else {
-        storageService.updateDealership({ logoUrl: localPreview });
-        showToast('Logo updated');
-      }
-    } catch (err: any) {
-      console.error('Logo upload error:', err);
-      setLogoError(err?.message || 'Logo upload failed');
-      showToast(err?.message || 'Logo upload failed');
-    } finally {
-      setIsUploadingLogo(false);
-      e.target.value = '';
-    }
-  };
-
-  const handleUploadCover = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const validTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp'];
-    if (!validTypes.includes(file.type)) {
-      setCoverError('Please select a PNG, JPG, or WebP image.');
-      return;
-    }
-    if (file.size > 5 * 1024 * 1024) {
-      setCoverError('Cover banner file size must be less than 5MB.');
-      return;
-    }
-    setCoverError(null);
-
-    // 1. Immediate local preview
-    const localPreview = URL.createObjectURL(file);
-    setCoverUrl(localPreview);
-    setIsUploadingCover(true);
-
-    try {
-      if (isSupabaseConfigured() && !storageService.isDemoModeActive()) {
-        const publicUrl = await supabaseService.uploadDealershipAsset(current.id, file, 'cover');
-        URL.revokeObjectURL(localPreview);
-        setCoverUrl(publicUrl);
-        storageService.updateDealership({ coverUrl: publicUrl });
-        showToast('Showroom cover uploaded successfully!');
-      } else {
-        storageService.updateDealership({ coverUrl: localPreview });
-        showToast('Cover updated');
-      }
-    } catch (err: any) {
-      console.error('Cover upload error:', err);
-      setCoverError(err?.message || 'Cover banner upload failed');
-      showToast(err?.message || 'Cover upload failed');
-    } finally {
-      setIsUploadingCover(false);
-      e.target.value = '';
-    }
-  };
-
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     await storageService.updateDealershipAsync({
@@ -169,8 +84,8 @@ export const SettingsPage: React.FC = () => {
       bio,
       stickerText,
       template: current.template || 'signature',
-      logoUrl: logoUrl || undefined,
-      coverUrl: coverUrl || undefined,
+      logoUrl,
+      coverUrl,
     });
     showToast('Settings saved successfully!');
   };
@@ -237,48 +152,13 @@ export const SettingsPage: React.FC = () => {
         </section>
 
         <section className="rounded-2xl border border-[#E7E7E7] bg-white p-4 shadow-[0_2px_10px_rgba(20,20,20,0.025)]">
-          <div className="mb-3 flex items-center justify-between">
-            <div>
-              <h2 className="text-sm font-bold text-[#292929]">Store logo</h2>
-              <p className="mt-0.5 text-[11px] text-[#888]">Your dealership identity</p>
-            </div>
-            {isUploadingLogo && <Loader2 className="h-4 w-4 animate-spin text-[#F47716]" />}
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="flex h-[68px] w-[68px] shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-[#E8E8E8] bg-[#F7F7F7]">
-              {logoUrl ? <img src={logoUrl} alt="Current dealership logo" className="h-full w-full object-contain" /> :
-                <span className="text-lg font-extrabold text-[#777]">{name ? name.slice(0, 2).toUpperCase() : 'DL'}</span>}
-            </div>
-            <div className="min-w-0 flex-1">
-              <label className="inline-flex h-9 cursor-pointer items-center gap-2 rounded-lg border border-[#E5E5E5] px-3 text-xs font-bold text-[#333] transition hover:bg-[#F8F8F8]">
-                <Upload className="h-3.5 w-3.5" /> Change logo
-                <input type="file" accept="image/png,image/jpeg,image/webp" onChange={handleUploadLogo} disabled={isUploadingLogo} className="hidden" />
-              </label>
-              <p className="mt-1.5 text-[10px] text-[#999]">PNG, JPG or WebP · Up to 5MB</p>
-            </div>
-          </div>
-          {logoError && <p className="mt-2 text-xs text-rose-600">{logoError}</p>}
-        </section>
-
-        <section className="rounded-2xl border border-[#E7E7E7] bg-white p-4 shadow-[0_2px_10px_rgba(20,20,20,0.025)]">
-          <div className="mb-3 flex items-center justify-between">
-            <div>
-              <h2 className="text-sm font-bold text-[#292929]">Banner image</h2>
-              <p className="mt-0.5 text-[11px] text-[#888]">The main image buyers see on your store</p>
-            </div>
-            {isUploadingCover && <Loader2 className="h-4 w-4 animate-spin text-[#F47716]" />}
-          </div>
-          <div className="relative aspect-[16/5] w-full overflow-hidden rounded-xl border border-[#E8E8E8] bg-[#F1F1F1]">
-            {coverUrl ? <img src={coverUrl} alt="Current store banner" className="h-full w-full object-cover" /> :
-              <div className="flex h-full flex-col items-center justify-center gap-1 text-[#999]"><ImageIcon className="h-6 w-6" /><span className="text-[11px]">No banner image yet</span></div>}
-            {isUploadingCover && <div className="absolute inset-0 flex items-center justify-center bg-black/40"><Loader2 className="h-5 w-5 animate-spin text-white" /></div>}
-          </div>
-          <label className="mt-3 inline-flex h-9 cursor-pointer items-center gap-2 rounded-lg border border-[#E5E5E5] px-3 text-xs font-bold text-[#333] transition hover:bg-[#F8F8F8]">
-            <Upload className="h-3.5 w-3.5" /> Change banner
-            <input type="file" accept="image/png,image/jpeg,image/webp" onChange={handleUploadCover} disabled={isUploadingCover} className="hidden" />
-          </label>
-          <p className="mt-1.5 text-[10px] text-[#999]">Recommended 1200 × 400px · Up to 5MB</p>
-          {coverError && <p className="mt-2 text-xs text-rose-600">{coverError}</p>}
+          <div className="mb-4"><h2 className="text-sm font-bold text-[#292929]">Brand your showroom</h2><p className="mt-1 text-[11px] text-[#888]">Your logo and banner help buyers recognise your dealership.</p></div>
+          <ShowroomBrandingEditor
+            dealershipName={name}
+            logoUrl={logoUrl || null}
+            bannerUrl={coverUrl || null}
+            onChange={value => { setLogoUrl(value.logoUrl || ''); setCoverUrl(value.bannerUrl || ''); }}
+          />
         </section>
 
         <section className="rounded-2xl border border-[#E7E7E7] bg-white p-4 shadow-[0_2px_10px_rgba(20,20,20,0.025)]">
@@ -318,7 +198,7 @@ export const SettingsPage: React.FC = () => {
           {pushPermission==='denied' && <p className="mt-3 text-xs leading-5 text-[#777]">Notifications are blocked by your browser. Open your browser’s site settings for DriveLink and allow notifications, then return here.</p>}
         </section>
 
-        <button type="submit" disabled={isUploadingLogo || isUploadingCover}
+        <button type="submit"
           className="mt-1 flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#F47716] text-sm font-extrabold text-white shadow-[0_5px_14px_rgba(244,119,22,0.2)] transition hover:bg-[#E96B0C] active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60">
           <Save className="h-4 w-4" /> Save changes
         </button>
