@@ -33,6 +33,8 @@ export const ShowroomBrandingEditor: React.FC<ShowroomBrandingEditorProps> = ({
   const [cropError, setCropError] = useState('');
   const [activeTasks, setActiveTasks] = useState(0);
   const cropRef = useRef<HTMLDivElement>(null);
+  const pointers = useRef(new Map<number, { x: number; y: number }>());
+  const pinchStart = useRef<{ distance: number; zoom: number; offset: { x: number; y: number }; midpoint: { x: number; y: number } } | null>(null);
   const fileInputRefs = { logo: useRef<HTMLInputElement>(null), banner: useRef<HTMLInputElement>(null) };
   const initials = useMemo(() => dealershipName.trim().split(/\s+/).filter(Boolean).slice(0, 2).map(word => word[0]).join('').toUpperCase() || 'DL', [dealershipName]);
   const cropWidth = cropRef.current?.clientWidth || Math.min(390, window.innerWidth - 68);
@@ -71,6 +73,27 @@ export const ShowroomBrandingEditor: React.FC<ShowroomBrandingEditorProps> = ({
     updateAsset(kind, { error: '' });
   };
 
+  const openExistingCrop = async (kind: BrandingKind) => {
+    const asset = kind === 'logo' ? logo : banner;
+    if (!asset.url) return;
+    try {
+      const response = await fetch(asset.url, { cache: 'no-store' });
+      if (!response.ok) throw new Error('Could not load the current image for repositioning.');
+      const blob = await response.blob();
+      const file = new File([blob], kind + '-reposition.' + (blob.type.includes('png') ? 'png' : blob.type.includes('webp') ? 'webp' : 'jpg'), { type: blob.type || 'image/jpeg' });
+      openCrop(kind, file);
+    } catch (error: any) { updateAsset(kind, { error: error?.message || 'Could not reopen this image. Please try again.' }); }
+  };
+
+  const clampCropOffset = (next: { x: number; y: number }, nextZoom = zoom) => {
+    if (!cropRef.current || !cropImage) return next;
+    const w = cropRef.current.clientWidth, h = cropRef.current.clientHeight;
+    const base = Math.max(w / cropImage.naturalWidth, h / cropImage.naturalHeight);
+    const maxX = Math.max(0, (cropImage.naturalWidth * base * nextZoom - w) / 2);
+    const maxY = Math.max(0, (cropImage.naturalHeight * base * nextZoom - h) / 2);
+    return { x: Math.max(-maxX, Math.min(maxX, next.x)), y: Math.max(-maxY, Math.min(maxY, next.y)) };
+  };
+
   const uploadCropped = async (kind: BrandingKind, file: File, localPreview?: string) => {
     updateAsset(kind, { busy: true, progress: 0, error: '', pendingFile: file, ...(localPreview ? { url: localPreview } : {}) });
     setActiveTasks(value => value + 1);
@@ -99,8 +122,8 @@ export const ShowroomBrandingEditor: React.FC<ShowroomBrandingEditorProps> = ({
     const sx = Math.max(0, Math.min(cropImage.naturalWidth - sourceW, centerX - sourceW / 2));
     const sy = Math.max(0, Math.min(cropImage.naturalHeight - sourceH, centerY - sourceH / 2));
     const canvas = document.createElement('canvas');
-    canvas.width = kind === 'logo' ? 512 : 1600;
-    canvas.height = kind === 'logo' ? 512 : 533;
+    canvas.width = kind === 'logo' ? 512 : 1500;
+    canvas.height = kind === 'logo' ? 512 : 500;
     const ctx = canvas.getContext('2d');
     if (!ctx) { setCropError('Could not prepare this image. Please try again.'); return; }
     ctx.imageSmoothingEnabled = true;
@@ -171,16 +194,32 @@ export const ShowroomBrandingEditor: React.FC<ShowroomBrandingEditorProps> = ({
       {renderUpload('logo', 'Logo', 'Square, at least 400x400px. PNG or JPG.')}
       {renderUpload('banner', 'Banner', 'Wide image, 1500x500px works best.')}
     </div>
-    {cropKind && cropImage && <div className="sb-crop-backdrop" role="dialog" aria-modal="true" aria-label={`Crop ${cropKind}`}>
+    {cropKind && cropImage && <div className="sb-crop-backdrop" role="dialog" aria-modal="true" aria-label={"Crop " + cropKind}>
       <div className="sb-crop-sheet">
-        <div className="sb-crop-heading"><div><strong>Adjust {cropKind}</strong><span>Drag to position and zoom to fit.</span></div><button type="button" onClick={() => { setCropKind(null); setCropImage(null); if (cropSource) URL.revokeObjectURL(cropSource); setCropSource(null); }} aria-label="Close crop"><X size={20}/></button></div>
-        <div ref={cropRef} className={`sb-crop-viewport ${cropKind === 'logo' ? 'is-square' : 'is-banner'}`} onPointerDown={e => { (e.currentTarget as HTMLDivElement).setPointerCapture(e.pointerId); setDrag({ x: e.clientX - offset.x, y: e.clientY - offset.y }); }} onPointerMove={e => { if (drag) setOffset({ x: e.clientX - drag.x, y: e.clientY - drag.y }); }} onPointerUp={() => setDrag(null)} onPointerCancel={() => setDrag(null)}>
-          <img draggable={false} src={cropSource || ''} alt="Crop preview" style={{ width: cropImage ? Math.max(1, cropImage.naturalWidth * Math.max(cropWidth / cropImage.naturalWidth, cropHeight / cropImage.naturalHeight)) : '100%', height: cropImage ? Math.max(1, cropImage.naturalHeight * Math.max(cropWidth / cropImage.naturalWidth, cropHeight / cropImage.naturalHeight)) : '100%', transform: `translate(calc(-50% + ${offset.x}px), calc(-50% + ${offset.y}px)) scale(${zoom})` }} />
+        <div className="sb-crop-heading"><div><strong>Position your {cropKind}</strong><span>Move the image and pinch or zoom to frame it.</span></div><button type="button" onClick={() => { setCropKind(null); setCropImage(null); if (cropSource) URL.revokeObjectURL(cropSource); setCropSource(null); }} aria-label="Cancel crop"><X size={20}/></button></div>
+        <div ref={cropRef} className={"sb-crop-viewport " + (cropKind === "logo" ? "is-square" : "is-banner")}
+          onPointerDown={e => {
+            (e.currentTarget as HTMLDivElement).setPointerCapture(e.pointerId);
+            pointers.current.set(e.pointerId, {x:e.clientX,y:e.clientY});
+            const pts=Array.from(pointers.current.values());
+            if(pts.length===2){const dx=pts[1].x-pts[0].x,dy=pts[1].y-pts[0].y;pinchStart.current={distance:Math.hypot(dx,dy),zoom,offset:{...offset},midpoint:{x:(pts[0].x+pts[1].x)/2,y:(pts[0].y+pts[1].y)/2}};setDrag(null);}
+            else setDrag({x:e.clientX-offset.x,y:e.clientY-offset.y});
+          }}
+          onPointerMove={e => {
+            if(!pointers.current.has(e.pointerId)) return;
+            pointers.current.set(e.pointerId,{x:e.clientX,y:e.clientY});
+            const pts=Array.from(pointers.current.values());
+            if(pts.length===2 && pinchStart.current){const dx=pts[1].x-pts[0].x,dy=pts[1].y-pts[0].y,mid={x:(pts[0].x+pts[1].x)/2,y:(pts[0].y+pts[1].y)/2};const z=Math.max(1,Math.min(4,pinchStart.current.zoom*Math.hypot(dx,dy)/Math.max(1,pinchStart.current.distance)));setZoom(z);setOffset(clampCropOffset({x:pinchStart.current.offset.x+mid.x-pinchStart.current.midpoint.x,y:pinchStart.current.offset.y+mid.y-pinchStart.current.midpoint.y},z));}
+            else if(drag) setOffset(clampCropOffset({x:e.clientX-drag.x,y:e.clientY-drag.y}));
+          }}
+          onPointerUp={e=>{pointers.current.delete(e.pointerId);if(pointers.current.size<2)pinchStart.current=null;setDrag(null);}}
+          onPointerCancel={e=>{pointers.current.delete(e.pointerId);pinchStart.current=null;setDrag(null);}}>
+          <img draggable={false} src={cropSource || ""} alt="Crop preview" style={{width:Math.max(1,cropImage.naturalWidth*Math.max(cropWidth/cropImage.naturalWidth,cropHeight/cropImage.naturalHeight)),height:Math.max(1,cropImage.naturalHeight*Math.max(cropWidth/cropImage.naturalWidth,cropHeight/cropImage.naturalHeight)),transform:"translate(-50%, -50%) translate("+offset.x+"px, "+offset.y+"px) scale("+zoom+")"}} />
           <span className="sb-crop-frame"/>
         </div>
-        <label className="sb-zoom"><ZoomIn size={17}/><span>Zoom</span><input type="range" min="1" max="3" step="0.05" value={zoom} onChange={e => setZoom(Number(e.target.value))}/></label>
+        <label className="sb-zoom"><ZoomIn size={17}/><span>Zoom</span><input type="range" min="1" max="4" step="0.05" value={zoom} onChange={e=>{const z=Number(e.target.value);setZoom(z);setOffset(v=>clampCropOffset(v,z));}}/></label>
         {cropError && <p className="sb-inline-error">{cropError}</p>}
-        <button type="button" className="sb-crop-confirm" onClick={() => void confirmCrop()}>Use this image <Check size={17}/></button>
+        <div className="sb-crop-actions"><button type="button" className="sb-crop-cancel" onClick={()=>{setCropKind(null);setCropImage(null);if(cropSource)URL.revokeObjectURL(cropSource);setCropSource(null);}}>Cancel</button><button type="button" className="sb-crop-confirm" onClick={()=>void confirmCrop()}>Done <Check size={17}/></button></div>
       </div>
     </div>}
   </div>;
