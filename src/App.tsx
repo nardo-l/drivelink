@@ -166,7 +166,7 @@ function AppContent() {
 
     // Sign-up and onboarding continue to use the current six-slide flow.
     if (currentPath === '/signup' || currentPath === '/onboarding') {
-      if (isLive && session.isLoggedIn && session.dealershipId) return <DashboardPage />;
+      if (isLive && session.isLoggedIn && session.dealershipId) { console.info('[DriveLink onboarding] Get notified skipped: redirected (existing dealership session).'); return <DashboardPage />; }
       return <OnboardingFlow />;
     }
 
