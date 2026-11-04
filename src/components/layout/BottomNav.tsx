@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Home, Car, MessageCircle, MoreVertical } from 'lucide-react';
 import { useNavigation } from '../../context/NavigationContext';
+import { storageService } from '../../services/storage';
 
 type Tab = { label: string; path: string; icon: React.ComponentType<{ size?: number; strokeWidth?: number }> };
 
@@ -12,6 +13,16 @@ const tabs: Tab[] = [
 
 export const BottomNav: React.FC = () => {
   const { currentPath, navigate } = useNavigation();
+  const [unreadEnquiries, setUnreadEnquiries] = useState(() => storageService.getEnquiries().filter(item => item.stage === 'new').length);
+  useEffect(() => {
+    const update = (event: Event) => {
+      const detail = (event as CustomEvent<{ unread?: number }>).detail;
+      if (typeof detail?.unread === 'number') setUnreadEnquiries(detail.unread);
+      else setUnreadEnquiries(storageService.getEnquiries().filter(item => item.stage === 'new').length);
+    };
+    window.addEventListener('drivelink:enquiries-updated', update);
+    return () => window.removeEventListener('drivelink:enquiries-updated', update);
+  }, []);
   const isActive = (path: string) => path === '/app'
     ? currentPath === '/app' || currentPath === '/'
     : currentPath === path || currentPath.startsWith(path + '/');
@@ -37,11 +48,11 @@ export const BottomNav: React.FC = () => {
               key={path}
               type="button"
               onClick={() => navigate(path)}
-              aria-label={label}
+              aria-label={label === 'Enquiries' && unreadEnquiries > 0 ? `Enquiries, ${unreadEnquiries} new` : label}
               aria-current={active ? 'page' : undefined}
               className={`flex h-14 min-w-0 flex-1 flex-col items-center justify-center gap-0.5 rounded-full transition-colors duration-150 active:scale-95 ${active ? 'bg-[#ECE8E6] text-[#111111]' : 'bg-transparent text-gray-500'}`}
             >
-              <Icon size={22} strokeWidth={active ? 2.4 : 1.8} />
+              <span className="relative inline-flex"><Icon size={22} strokeWidth={active ? 2.4 : 1.8} />{label === 'Enquiries' && unreadEnquiries > 0 && <i aria-hidden="true" className="absolute -right-2 -top-1 min-w-[15px] h-[15px] rounded-full bg-[#3987E8] px-1 text-[8px] leading-[15px] text-white not-italic font-extrabold">{unreadEnquiries > 99 ? '99+' : unreadEnquiries}</i>}</span>
               <span className="text-[11px] font-medium leading-4">{label}</span>
             </button>
           );
