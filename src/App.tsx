@@ -52,6 +52,8 @@ function AppContent() {
   }, []);
   const isDemo = storageService.isDemoModeActive();
   const isConfigured = isSupabaseConfigured();
+  const previewQuery = typeof window !== 'undefined' ? `${window.location.search}&${window.location.hash.split('?')[1] || ''}` : '';
+  const forceNotificationsPreview = import.meta.env.DEV && new URLSearchParams(previewQuery.replace(/^\\?/, '')).get('onboarding') === 'notifications';
 
   // Restore authenticated Supabase session on page refresh
   React.useEffect(() => {
@@ -147,8 +149,6 @@ function AppContent() {
     const isLive = isConfigured && !isDemo;
     const session = storageService.getUserSession();
     const isProtectedRoute = currentPath.startsWith('/app');
-    const previewQuery = typeof window !== 'undefined' ? `${window.location.search}&${window.location.hash.split('?')[1] || ''}` : '';
-    const forceNotificationsPreview = import.meta.env.DEV && new URLSearchParams(previewQuery.replace(/^\\?/, '')).get('onboarding') === 'notifications';
     if (forceNotificationsPreview) return <OnboardingFlow />;
     if (isLive && !sessionChecked) {
       return <div className="flex min-h-[100dvh] items-center justify-center bg-white text-sm text-gray-500">Loading your Drive Link account…</div>;
