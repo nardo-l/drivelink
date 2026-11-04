@@ -261,7 +261,7 @@ export const BillingPage: React.FC = () => {
           ) : (
             <>
               <h2 className="mt-4 text-[21px] font-extrabold tracking-[-0.04em]">
-                {expired ? 'Your subscription has expired' : 'Your workspace is locked'}
+                'Your workspace is locked'
               </h2>
               <p className="mt-1 text-xs leading-5 text-slate-500">
                 Subscribe to unlock it. Your data is safe.
@@ -395,9 +395,12 @@ export const BillingPage: React.FC = () => {
                           </button>
                         )}
                       </div>
-                      <span className={`shrink-0 rounded-full px-2.5 py-1 text-[10px] font-bold ${status.className}`}>
-                        {status.label}
-                      </span>
+                      <div className="shrink-0 text-right">
+                        <span className={`inline-flex rounded-full px-2.5 py-1 text-[10px] font-bold ${status.className}`}>
+                          {status.label}
+                        </span>
+                        {isPending && <p className="mt-1 text-[9px] text-amber-700">Waiting for payment</p>}
+                      </div>
                     </div>
                   );
                 })}
