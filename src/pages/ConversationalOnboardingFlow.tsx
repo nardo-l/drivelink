@@ -215,9 +215,11 @@ export const OnboardingFlow: React.FC = () => {
       storageService.setUserSession({ isLoggedIn: true, email: user.email || data.account.email, dealershipId: dealer.id, userId: user.id });
       if (localStorage.getItem('drivelink_notifications_prompt_dismissed_at')) {
         await notificationService.dismissOnboardingPrompt(dealer.id).catch(err => console.warn('Could not persist notification prompt dismissal:', err));
+        localStorage.removeItem('drivelink_notifications_prompt_dismissed_at');
       } else if ('Notification' in window && Notification.permission === 'granted' && notificationService.isPushSupported()) {
         await notificationService.enablePush(dealer.id, false).catch(err => console.warn('Could not register the approved push subscription after dealership setup:', err));
       }
+      localStorage.removeItem('drivelink_notification_permission_granted');
       update({ currentStep: 8, isCompleted: true });
       showToast('Your 3-day DriveLink Pro trial is active!');
     } catch (e: any) {
