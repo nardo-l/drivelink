@@ -289,7 +289,12 @@ export const OnboardingFlow: React.FC = () => {
     setBusy(true); setError('');
     try {
       const permission = Notification.permission === 'default' ? await Notification.requestPermission() : Notification.permission;
-      if (permission !== 'granted') throw new Error(permission === 'denied' ? 'Notifications are blocked in your browser settings. You can re-enable them in Settings.' : 'Notification permission was not granted.');
+      if (permission === 'denied') {
+        console.info('[DriveLink onboarding] Get notified skipped: denied.');
+        setStep(7);
+        return;
+      }
+      if (permission !== 'granted') throw new Error('Notification permission was not granted.');
       localStorage.removeItem('drivelink_notifications_prompt_dismissed_at');
       localStorage.setItem('drivelink_notification_permission_granted', 'true');
       setStep(7);
