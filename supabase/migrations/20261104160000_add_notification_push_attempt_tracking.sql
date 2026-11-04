@@ -1,0 +1,1 @@
+alter table public.notifications add column if not exists push_attempted_at timestamptz;
