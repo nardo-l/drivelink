@@ -32,6 +32,8 @@ export const ShowroomBrandingEditor: React.FC<ShowroomBrandingEditorProps> = ({
   const cropRef = useRef<HTMLDivElement>(null);
   const fileInputRefs = { logo: useRef<HTMLInputElement>(null), banner: useRef<HTMLInputElement>(null) };
   const initials = useMemo(() => dealershipName.trim().split(/\\s+/).filter(Boolean).slice(0, 2).map(word => word[0]).join('').toUpperCase() || 'DL', [dealershipName]);
+  const cropWidth = cropRef.current?.clientWidth || Math.min(320, window.innerWidth - 48);
+  const cropHeight = cropRef.current?.clientHeight || cropWidth / (cropKind === 'logo' ? 1 : 3);
 
   useEffect(() => { setLogo(prev => ({ ...prev, url: logoUrl || null })); }, [logoUrl]);
   useEffect(() => { setBanner(prev => ({ ...prev, url: bannerUrl || null })); }, [bannerUrl]);
@@ -166,7 +168,7 @@ export const ShowroomBrandingEditor: React.FC<ShowroomBrandingEditorProps> = ({
       <div className="sb-crop-sheet">
         <div className="sb-crop-heading"><div><strong>Adjust {cropKind}</strong><span>Drag to position and zoom to fit.</span></div><button type="button" onClick={() => { setCropKind(null); setCropImage(null); if (cropSource) URL.revokeObjectURL(cropSource); setCropSource(null); }} aria-label="Close crop"><X size={20}/></button></div>
         <div ref={cropRef} className={`sb-crop-viewport ${cropKind === 'logo' ? 'is-square' : 'is-banner'}`} onPointerDown={e => { (e.currentTarget as HTMLDivElement).setPointerCapture(e.pointerId); setDrag({ x: e.clientX - offset.x, y: e.clientY - offset.y }); }} onPointerMove={e => { if (drag) setOffset({ x: e.clientX - drag.x, y: e.clientY - drag.y }); }} onPointerUp={() => setDrag(null)} onPointerCancel={() => setDrag(null)}>
-          <img draggable={false} src={cropSource || ''} alt="Crop preview" style={{ width: cropImage ? Math.max(1, cropImage.naturalWidth * Math.max((cropRef.current?.clientWidth || 300) / cropImage.naturalWidth, (cropRef.current?.clientHeight || 100) / cropImage.naturalHeight)) : '100%', height: cropImage ? Math.max(1, cropImage.naturalHeight * Math.max((cropRef.current?.clientWidth || 300) / cropImage.naturalWidth, (cropRef.current?.clientHeight || 100) / cropImage.naturalHeight)) : '100%', transform: `translate(calc(-50% + ${offset.x}px), calc(-50% + ${offset.y}px)) scale(${zoom})` }} />
+          <img draggable={false} src={cropSource || ''} alt="Crop preview" style={{ width: cropImage ? Math.max(1, cropImage.naturalWidth * Math.max(cropWidth / cropImage.naturalWidth, cropHeight / cropImage.naturalHeight)) : '100%', height: cropImage ? Math.max(1, cropImage.naturalHeight * Math.max(cropWidth / cropImage.naturalWidth, cropHeight / cropImage.naturalHeight)) : '100%', transform: `translate(calc(-50% + ${offset.x}px), calc(-50% + ${offset.y}px)) scale(${zoom})` }} />
           <span className="sb-crop-frame"/>
         </div>
         <label className="sb-zoom"><ZoomIn size={17}/><span>Zoom</span><input type="range" min="1" max="3" step="0.05" value={zoom} onChange={e => setZoom(Number(e.target.value))}/></label>
