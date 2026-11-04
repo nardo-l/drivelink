@@ -174,3 +174,6 @@ html:has(.dl-pro-page),body:has(.dl-pro-page){overflow:hidden!important;backgrou
 .sb-onboarding-actions>button:last-child{align-self:center;padding:5px 12px;border:0;background:transparent;color:#828a98;font-size:12px;font-weight:650}
 @media(max-width:380px){.sb-onboarding-screen{gap:13px;padding-right:0;padding-left:0}.sb-screen-heading h1{font-size:27px}.sb-upload-row{padding:11px}.sb-preview-identity{padding-bottom:13px}}
 @media(max-height:760px){.sb-onboarding-screen{gap:11px}.sb-upload-list{gap:8px}.sb-preview-logo{width:58px;height:58px;margin-top:-29px}.sb-onboarding-actions{padding-top:0}}
+
+.sb-onboarding-page{min-height:100dvh;padding:calc(env(safe-area-inset-top,0px) + 12px) 16px calc(env(safe-area-inset-bottom,0px) + 12px);background:#f7f8fa;color:#0A0F1E}
+.sb-onboarding-shell{display:flex;width:100%;max-width:430px;min-height:calc(100dvh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px) - 24px);flex-direction:column;margin:0 auto}
