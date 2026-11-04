@@ -117,6 +117,9 @@ async function createScheduledNotifications() {
       if (subscription.status === "active" && paidHours !== null && paidHours <= 24 && paidHours > 0) {
         await insertNotification(dealer.id, "subscription", "Your subscription expires tomorrow", "Renew now to avoid interruption to your dealership workspace.", `renew-1d:${paidEnd!.toISOString()}`, { url: "/app/billing" });
       }
+      if ((subscription.status === "expired" || (subscription.status === "active" && paidHours !== null && paidHours <= 0)) && paidEnd) {
+        await insertNotification(dealer.id, "subscription", "Your subscription has expired", "Your DriveLink access has ended. Renew your plan to restore full access to your dealership workspace.", `subscription-expired:${paidEnd.toISOString()}`, { url: "/app/billing" });
+      }
       if (subscription.status === "grace_period" && graceEnd && graceEnd.getTime() <= now.getTime()) {
         await insertNotification(dealer.id, "subscription", "Your grace period has ended", "Your account is now view-only. Renew your subscription to restore full access.", `grace-ended:${graceEnd.toISOString()}`, { url: "/app/billing" });
       }
