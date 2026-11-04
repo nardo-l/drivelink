@@ -92,7 +92,7 @@ Deno.serve(async (req: Request) => {
     return new Response("OK", { status: 200 });
   }
 
-  let body: { action?: string } = {};
+  let body: { action?: string; plan_code?: string } = {};
   try { body = await req.json(); } catch { return json({ error: "Invalid request body" }, 400); }
   const token = (req.headers.get("Authorization") || "").replace(/^Bearer\s+/i, "");
   if (!token) return json({ error: "Authentication required" }, 401);
@@ -105,6 +105,9 @@ Deno.serve(async (req: Request) => {
   if (dealershipError || !dealership) return json({ error: "No dealership profile was found." }, 404);
 
   if (body.action === "initiate") {
+    const planCode = body.plan_code === "yearly" ? "yearly" : "monthly";
+    const planAmount = planCode === "yearly" ? 32.00 : 3.99;
+    const planLabel = planCode === "yearly" ? "annual" : "monthly";
     const reference = `DL-${crypto.randomUUID()}`;
     const email = user.email || dealership.email || "";
     const returnUrl = `${configuredAppUrl.replace(/\/$/, "")}/#/app/billing`;
@@ -112,8 +115,8 @@ Deno.serve(async (req: Request) => {
     const fields: Record<string, string> = {
       id: integrationId,
       reference,
-      amount: "3.99",
-      additionalinfo: "DriveLink monthly subscription",
+      amount: planAmount.toFixed(2),
+      additionalinfo: `DriveLink ${planLabel} subscription`,
       returnurl: returnUrl,
       resulturl: resultUrl,
       authemail: email,
@@ -125,8 +128,8 @@ Deno.serve(async (req: Request) => {
     );
 
     const { error: insertError } = await admin.from("dealership_subscription_payments").insert({
-      dealership_id: dealership.id, user_id: user.id, reference, amount: 3.99,
-      currency: "USD", payment_method: "EcoCash", status: "created",
+      dealership_id: dealership.id, user_id: user.id, reference, amount: planAmount,
+      plan_code: planCode, currency: "USD", payment_method: "EcoCash", status: "created",
     });
     if (insertError) return json({ error: "Could not create payment record." }, 500);
 
