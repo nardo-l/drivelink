@@ -30,7 +30,7 @@ export const DashboardPage: React.FC = () => {
   const [performanceError, setPerformanceError] = useState('');
   const [performanceRetry, setPerformanceRetry] = useState(0);
   const [subscription, setSubscription] = useState<SubscriptionStatus | null>(null);
-  const [serverOffset, setServerOffset] = useState(0);
+  const serverClock = useRef({ serverMs: Date.now(), monotonicMs: performance.now() });
   const [subscriptionNow, setSubscriptionNow] = useState(Date.now());
   const [subscriptionLoading, setSubscriptionLoading] = useState(false);
   const expiryCheck = useRef(false);
@@ -66,42 +66,40 @@ export const DashboardPage: React.FC = () => {
     if (!isLive) return null;
     const { data, error } = await supabase.functions.invoke('drivelink-payments', { body: { action: 'status' } });
     if (error) throw error;
-    if (data?.server_now) setServerOffset(new Date(data.server_now).getTime() - Date.now());
+    const serverMs = data?.server_now ? new Date(data.server_now).getTime() : serverClock.current.serverMs + (performance.now() - serverClock.current.monotonicMs);
+    serverClock.current = { serverMs, monotonicMs: performance.now() };
     setSubscription(data?.subscription || null);
-    setSubscriptionNow(Date.now() + (data?.server_now ? new Date(data.server_now).getTime() - Date.now() : serverOffset));
+    setSubscriptionNow(serverMs);
     return data?.subscription || null;
   };
-  useEffect(() => {
-    if (!isLive) return;
-    let active = true;
-    (async () => {
-      try {
-        const { data, error } = await supabase.functions.invoke('drivelink-payments', { body: { action: 'status' } });
-        if (error) throw error;
-        if (!active) return;
-        const offset = data?.server_now ? new Date(data.server_now).getTime() - Date.now() : 0;
-        setServerOffset(offset);
-        setSubscriptionNow(Date.now() + offset);
-        setSubscription(data?.subscription || null);
-      } catch { if (active) setSubscription(null); }
-    })();
-    return () => { active = false; };
-  }, [isLive]);
 
   useEffect(() => {
-    const tick = () => { if (document.visibilityState === 'visible') setSubscriptionNow(Date.now() + serverOffset); };
+    if (!isLive) return;
     let timer: number | undefined;
-    const start = () => {
+    const tick = () => setSubscriptionNow(serverClock.current.serverMs + (performance.now() - serverClock.current.monotonicMs));
+    const sync = async () => { try { await refreshSubscription(); } catch { tick(); } };
+    const restart = () => {
       if (timer !== undefined) window.clearInterval(timer);
       tick();
-      if (document.visibilityState === 'visible') timer = window.setInterval(tick, 1000);
+      if (document.visibilityState === 'visible') {
+        timer = window.setInterval(tick, 1000);
+        void sync();
+      }
     };
-    const onVisibility = () => start();
+    void sync();
+    if (document.visibilityState === 'visible') timer = window.setInterval(tick, 1000);
+    const onVisibility = () => {
+      if (document.visibilityState === 'visible') restart();
+      else if (timer !== undefined) window.clearInterval(timer);
+    };
     document.addEventListener('visibilitychange', onVisibility);
-    window.addEventListener('focus', start);
-    start();
-    return () => { if (timer !== undefined) window.clearInterval(timer); document.removeEventListener('visibilitychange', onVisibility); window.removeEventListener('focus', start); };
-  }, [serverOffset]);
+    window.addEventListener('focus', restart);
+    return () => {
+      if (timer !== undefined) window.clearInterval(timer);
+      document.removeEventListener('visibilitychange', onVisibility);
+      window.removeEventListener('focus', restart);
+    };
+  }, [isLive]);
 
   useEffect(() => {
     if (!isLive || !subscription?.trial_ends_at || subscription.status !== 'trial') return;
@@ -110,7 +108,7 @@ export const DashboardPage: React.FC = () => {
     expiryCheck.current = true;
     setSubscriptionLoading(true);
     refreshSubscription().then(latest => {
-      if (latest?.status === 'expired' || (latest?.status !== 'trial' && latest?.status !== 'active' && latest?.status !== 'grace_period')) {
+      if (latest && (latest.status === 'expired' || (latest.status !== 'trial' && latest.status !== 'active' && latest.status !== 'grace_period'))) {
         navigate('/app/billing');
       } else {
         expiryCheck.current = false;
