@@ -49,7 +49,7 @@ export const PublicShowroomPage: React.FC<PublicShowroomPageProps> = ({ slug, pr
   const heroPhoto = dealer.coverUrl || '';
   const title = dealer.tagline?.trim() || 'Drive Your Dream Today.';
   const description = dealer.bio?.trim() || 'Premium cars. Great deals. Trusted dealership.';
-  const dealerInitials = dealer.name.trim().split(/\\s+/).filter(Boolean).slice(0, 2).map(part => part[0]).join('').toUpperCase() || 'DL';
+  const dealerInitials = dealer.name.trim().split(/\s+/).filter(Boolean).slice(0, 2).map(part => part[0]).join('').toUpperCase() || 'DL';
   const browse = () => navigate('/' + encodeURIComponent(dealer.slug) + '/browse');
 
   return (
