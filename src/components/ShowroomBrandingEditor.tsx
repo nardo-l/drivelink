@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { ImagePlus, Upload, X, Check, Loader2, RefreshCw, Trash2, Move, ZoomIn } from 'lucide-react';
+import { Upload, X, Check, Loader2, RefreshCw, ZoomIn } from 'lucide-react';
 import { supabaseService } from '../services/supabaseService';
 import './ShowroomBrandingEditor.css';
 
@@ -32,8 +32,8 @@ export const ShowroomBrandingEditor: React.FC<ShowroomBrandingEditorProps> = ({
   const [cropError, setCropError] = useState('');
   const cropRef = useRef<HTMLDivElement>(null);
   const fileInputRefs = { logo: useRef<HTMLInputElement>(null), banner: useRef<HTMLInputElement>(null) };
-  const initials = useMemo(() => dealershipName.trim().split(/\\s+/).filter(Boolean).slice(0, 2).map(word => word[0]).join('').toUpperCase() || 'DL', [dealershipName]);
-  const cropWidth = cropRef.current?.clientWidth || Math.min(320, window.innerWidth - 48);
+  const initials = useMemo(() => dealershipName.trim().split(/\s+/).filter(Boolean).slice(0, 2).map(word => word[0]).join('').toUpperCase() || 'DL', [dealershipName]);
+  const cropWidth = cropRef.current?.clientWidth || Math.min(390, window.innerWidth - 68);
   const cropHeight = cropRef.current?.clientHeight || cropWidth / (cropKind === 'logo' ? 1 : 3);
 
   useEffect(() => { latestUrls.current.logoUrl = logoUrl || null; setLogo(prev => ({ ...prev, url: logoUrl || null })); }, [logoUrl]);
