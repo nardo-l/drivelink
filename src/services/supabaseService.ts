@@ -356,6 +356,36 @@ export const supabaseService = {
     return (data || []).map(row => ({ view_date: row.view_date, views: Number(row.views) || 0 }));
   },
 
+  async getDealershipPerformance(dealershipId: string, days: number): Promise<{ visits: number; enquiries: number }> {
+    if (!isSupabaseConfigured()) return { visits: 0, enquiries: 0 };
+    if (!dealershipId) throw new Error('A dealership is required to load performance.');
+
+    const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
+    const [visitResult, enquiryResult] = await Promise.all([
+      supabase
+        .from('storefront_view_events')
+        .select('id', { count: 'exact', head: true })
+        .eq('dealership_id', dealershipId)
+        .gte('viewed_at', since),
+      supabase
+        .from('enquiries')
+        .select('id', { count: 'exact', head: true })
+        .eq('dealership_id', dealershipId)
+        .gte('created_at', since),
+    ]);
+
+    if (visitResult.error) {
+      console.error('Failed to load dealership visit activity:', visitResult.error);
+      throw visitResult.error;
+    }
+    if (enquiryResult.error) {
+      console.error('Failed to load dealership enquiry activity:', enquiryResult.error);
+      throw enquiryResult.error;
+    }
+
+    return { visits: visitResult.count || 0, enquiries: enquiryResult.count || 0 };
+  },
+
   // ---------------------------------------------------------------------------
   // VEHICLES
   // ---------------------------------------------------------------------------
