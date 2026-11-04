@@ -164,7 +164,7 @@ export const ShowroomBrandingEditor: React.FC<ShowroomBrandingEditorProps> = ({
     return <div className="sb-upload-row" key={kind}>
       <div className="sb-upload-copy"><strong>{title}</strong><span>{hint}</span></div>
       {asset.url ? <div className="sb-upload-selected">
-        <div className={`sb-thumb ${aspect}`}>
+        <div className={`sb-thumb ${kind === "logo" ? "is-logo" : "is-banner"} ${aspect}`}>
           <img src={asset.url} alt={title} />
           {asset.busy && <div className="sb-progress"><span style={{ width: asset.progress ? `${asset.progress}%` : '24%' }} /></div>}
         </div>
