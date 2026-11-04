@@ -23,6 +23,7 @@ type Payment = {
   status: string;
   paid_at: string | null;
   created_at: string;
+  payment_method?: string;
 };
 
 const dateLabel = (value?: string | null) => value
@@ -37,6 +38,9 @@ export const BillingPage: React.FC = () => {
   const [paying, setPaying] = React.useState(false);
   const [selectedPlan, setSelectedPlan] = React.useState<'monthly' | 'yearly'>('yearly');
   const [error, setError] = React.useState('');
+  const [checkoutId, setCheckoutId] = React.useState<string | null>(null);
+  const [transactionId, setTransactionId] = React.useState<string | null>(null);
+  const [paymentCheck, setPaymentCheck] = React.useState<'idle' | 'checking' | 'pending' | 'completed' | 'failed'>('idle');
 
   const loadStatus = React.useCallback(async () => {
     if (!isSupabaseConfigured() || storageService.isDemoModeActive()) {
@@ -60,7 +64,56 @@ export const BillingPage: React.FC = () => {
     }
   }, []);
 
-  React.useEffect(() => { loadStatus(); }, [loadStatus]);
+
+  React.useEffect(() => {
+    loadStatus();
+    const hashQuery = window.location.hash.split('?')[1] || '';
+    const params = new URLSearchParams(hashQuery);
+    const checkout = params.get('checkout');
+    const transaction = params.get('transaction_id') || params.get('transactionId');
+    if (checkout) setCheckoutId(checkout);
+    if (transaction) setTransactionId(transaction);
+  }, [loadStatus]);
+
+  const checkPayment = React.useCallback(async () => {
+    if (!checkoutId) return;
+    setPaymentCheck('checking');
+    try {
+      const { data, error: invokeError } = await supabase.functions.invoke('drivelink-payments', {
+        body: { action: 'check', checkout_id: checkoutId, transaction_id: transactionId || undefined },
+      });
+      if (invokeError) throw invokeError;
+      if (data?.paid || data?.status === 'completed') {
+        setPaymentCheck('completed');
+        setCheckoutId(null);
+        await loadStatus();
+        return;
+      }
+      if (data?.status === 'failed' || data?.status === 'cancelled') {
+        setPaymentCheck('failed');
+        return;
+      }
+      setPaymentCheck('pending');
+    } catch {
+      setPaymentCheck('pending');
+    }
+  }, [checkoutId, transactionId, loadStatus]);
+
+  React.useEffect(() => {
+    if (!checkoutId) return;
+    let attempts = 0;
+    void checkPayment();
+    const timer = window.setInterval(() => {
+      attempts += 1;
+      if (attempts >= 10) {
+        window.clearInterval(timer);
+        return;
+      }
+      void checkPayment();
+    }, 3000);
+    return () => window.clearInterval(timer);
+  }, [checkoutId, checkPayment]);
+
 
   const startPayment = async () => {
     setPaying(true);
@@ -73,7 +126,7 @@ export const BillingPage: React.FC = () => {
       if (!data?.url) throw new Error(data?.error || 'NardoPay did not return a checkout link.');
       window.location.assign(data.url);
     } catch (e: any) {
-      setError(e?.message || 'Could not start your EcoCash payment.');
+      setError(e?.message || 'Could not start your NardoPay payment.');
       setPaying(false);
     }
   };
@@ -133,7 +186,16 @@ export const BillingPage: React.FC = () => {
           </div>
         </section>
 
-        {error && <div role="alert" className="rounded-2xl border border-rose-200 bg-rose-50 p-3 text-xs text-rose-700">{error}</div>}
+        {error && <div role="alert" className="rounded-2xl border border-rose-200 bg-rose-50 p-3 text-xs text-rose-700">{error}</div>
+        {checkoutId && <section className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-xs text-amber-900">
+          <p className="font-extrabold">{paymentCheck === 'checking' ? 'Checking your payment…' : paymentCheck === 'failed' ? 'Payment was not completed' : 'Waiting for payment confirmation'}</p>
+          <p className="mt-1 leading-relaxed">{paymentCheck === 'failed' ? 'The payment was declined or cancelled. You can start a new checkout when ready.' : 'NardoPay is processing your checkout. Your subscription will activate only after the payment is verified.'}</p>
+          <button type="button" onClick={checkPayment} disabled={paymentCheck === 'checking'} className="mt-3 rounded-full bg-slate-950 px-4 py-2 font-bold text-white disabled:opacity-50">
+            {paymentCheck === 'checking' ? 'Checking…' : "I've paid, check my payment"}
+          </button>
+        </section>}
+        {paymentCheck === 'completed' && <div role="status" className="rounded-2xl border border-emerald-200 bg-emerald-50 p-3 text-xs font-semibold text-emerald-800">Payment confirmed. Your DriveLink subscription is active.</div>}
+}
 
         <section className="rounded-2xl bg-white border border-slate-100 p-4 shadow-sm">
           <div className="flex items-center justify-between mb-3">
@@ -168,7 +230,7 @@ export const BillingPage: React.FC = () => {
             <div className="divide-y divide-slate-100">
               {payments.map((payment) => (
                 <div key={payment.reference} className="py-3 flex items-center justify-between gap-3">
-                  <div><p className="text-xs font-bold">$ {Number(payment.amount).toFixed(2)} · EcoCash</p><p className="text-[10px] text-slate-400 mt-0.5">{dateLabel(payment.paid_at || payment.created_at)}</p></div>
+                  <div><p className="text-xs font-bold">$ {Number(payment.amount).toFixed(2)} · {payment.payment_method || 'NardoPay'}</p><p className="text-[10px] text-slate-400 mt-0.5">{dateLabel(payment.paid_at || payment.created_at)}</p></div>
                   <span className={`text-[10px] font-bold capitalize ${payment.status === 'paid' ? 'text-emerald-700' : payment.status === 'pending' ? 'text-amber-700' : 'text-slate-500'}`}>{payment.status}</span>
                 </div>
               ))}
