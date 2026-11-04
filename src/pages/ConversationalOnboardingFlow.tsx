@@ -35,8 +35,9 @@ export const OnboardingFlow: React.FC = () => {
       const raw = localStorage.getItem('drivelink_onboarding_v1');
       if (!raw) return initialState();
       const saved = JSON.parse(raw);
-      if (saved.flowVersion === 2 && saved.currentStep >= 1 && saved.currentStep <= TOTAL) {
-        return { ...initialState(), ...saved, account: { ...initialState().account, ...saved.account, password: '' } };
+      if ((saved.flowVersion === 3 || saved.flowVersion === 2) && saved.currentStep >= 1 && saved.currentStep <= 8) {
+        const migratedStep = saved.flowVersion === 2 && saved.currentStep >= 6 ? saved.currentStep + 1 : saved.currentStep;
+        return { ...initialState(), ...saved, currentStep: Math.min(TOTAL, migratedStep), branding: { ...initialState().branding, ...saved.branding }, account: { ...initialState().account, ...saved.account, password: '' } };
       }
       // Legacy drafts must re-authenticate first; a live session is advanced to setup below.
       return { ...initialState(), ...saved, currentStep: 1, account: { ...initialState().account, ...saved.account, password: '' } };
@@ -145,7 +146,7 @@ export const OnboardingFlow: React.FC = () => {
     storageService.saveOnboardingState({ ...data, currentStep: step, isCompleted: false } as OnboardingState);
     try {
       const draft = JSON.parse(localStorage.getItem('drivelink_onboarding_v1') || '{}');
-      localStorage.setItem('drivelink_onboarding_v1', JSON.stringify({ ...draft, flowVersion: 2 }));
+      localStorage.setItem('drivelink_onboarding_v1', JSON.stringify({ ...draft, flowVersion: 3 }));
     } catch {}
   }, [data]);
   useEffect(() => {
