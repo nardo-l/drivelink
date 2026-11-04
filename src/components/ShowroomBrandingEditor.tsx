@@ -41,6 +41,7 @@ export const ShowroomBrandingEditor: React.FC<ShowroomBrandingEditorProps> = ({
   useEffect(() => { latestUrls.current.logoUrl = logoUrl || null; setLogo(prev => ({ ...prev, url: logoUrl || null })); }, [logoUrl]);
   useEffect(() => { latestUrls.current.bannerUrl = bannerUrl || null; setBanner(prev => ({ ...prev, url: bannerUrl || null })); }, [bannerUrl]);
   useEffect(() => () => { if (cropSource) URL.revokeObjectURL(cropSource); }, [cropSource]);
+  useEffect(() => { onUploadingChange?.(activeTasks > 0); }, [activeTasks, onUploadingChange]);
 
   const notifyChange = (kind: BrandingKind, url: string | null) => {
     latestUrls.current = { ...latestUrls.current, [kind === 'logo' ? 'logoUrl' : 'bannerUrl']: url };
