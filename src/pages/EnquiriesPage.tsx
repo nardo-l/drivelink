@@ -255,6 +255,8 @@ export const EnquiriesPage: React.FC = () => {
           <div className="enquiries-skeleton-list" aria-label="Loading enquiries">
             {[1, 2, 3].map(index => <div className="enquiries-skeleton" key={index}><span/><div><i/><i/><b/></div></div>)}
           </div>
+        ) : error && leads.length === 0 ? (
+          <section className="enquiries-no-results"><div className="enquiries-empty-icon small"><RefreshCw size={22}/></div><h2>Couldn’t load enquiries</h2><p>Your enquiries haven’t been changed. Check your connection and try again.</p><button type="button" onClick={() => void load()}>Try again</button></section>
         ) : leads.length === 0 ? (
           <section className="enquiries-empty">
             <div className="enquiries-empty-icon"><MessageCircle size={34} strokeWidth={1.7}/></div>
@@ -282,7 +284,7 @@ export const EnquiriesPage: React.FC = () => {
                     <button type="button" onClick={() => { setSwipedId(null); void quickUpdateStage(enquiry, 'sold'); }}><Check size={15}/> Converted</button>
                     <button type="button" className="delete" onClick={() => setDeleteTarget(enquiry)}><Trash2 size={15}/> Delete</button>
                   </div>
-                  <div className="enquiry-card" style={{ animationDelay: `${Math.min(index, 8) * 35}ms` }}>
+                  <div className={`enquiry-card ${enquiry.stage === 'new' ? 'is-new' : ''}`} style={{ animationDelay: `${Math.min(index, 8) * 35}ms` }}>
                     <div className="enquiry-card-main" onClick={() => open(enquiry)} role="button" tabIndex={0} onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); open(enquiry); } }}>
                       <div className="enquiry-avatar">{initials(enquiry.buyerName)}</div>
                       <div className="enquiry-buyer">
