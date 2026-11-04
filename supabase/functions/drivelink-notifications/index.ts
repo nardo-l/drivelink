@@ -156,24 +156,39 @@ async function deliverPendingPush() {
         .eq("dealership_id", notification.dealership_id).not("push_sent_at", "is", null).gte("push_sent_at", since);
       if ((count || 0) >= 2) continue;
     }
-    const { data: subscriptions } = await db.from("push_subscriptions").select("id,endpoint,p256dh,auth").eq("dealership_id", notification.dealership_id);
+    if (!pushReady) {
+      console.error("Push delivery skipped: VAPID keys are not configured");
+      continue;
+    }
+    const { data: subscriptions, error: subscriptionsError } = await db.from("push_subscriptions").select("id,endpoint,p256dh,auth").eq("dealership_id", notification.dealership_id);
+    if (subscriptionsError) {
+      console.error("Could not load push subscriptions", notification.dealership_id, subscriptionsError);
+      continue;
+    }
+    let deliveredForNotification = 0;
     for (const sub of subscriptions || []) {
       try {
         await webpush.sendNotification({ endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } }, JSON.stringify({
           title: notification.title, body: notification.body, data: { ...notification.data, url: notification.data?.url || "/app/notifications" }, tag: notification.category,
         }));
         sent++;
+        deliveredForNotification++;
         await db.from("push_subscriptions").update({ last_success_at: new Date().toISOString(), last_error: null }).eq("id", sub.id);
       } catch (err) {
         const status = (err as any)?.statusCode;
         if (status === 404 || status === 410) {
           await db.from("push_subscriptions").delete().eq("id", sub.id); removed++;
         } else {
+          console.error("Push delivery failed", notification.id, sub.id, err);
           await db.from("push_subscriptions").update({ last_error: String(err).slice(0, 500) }).eq("id", sub.id);
         }
       }
     }
-    await db.from("notifications").update({ push_sent_at: new Date().toISOString() }).eq("id", notification.id);
+    // Keep undelivered notifications pending so transient failures and newly registered devices can retry.
+    if (deliveredForNotification > 0) {
+      const { error: markError } = await db.from("notifications").update({ push_sent_at: new Date().toISOString() }).eq("id", notification.id);
+      if (markError) console.error("Could not mark notification as delivered", notification.id, markError);
+    }
   }
   return { pending: pending?.length || 0, sent, removed };
 }
