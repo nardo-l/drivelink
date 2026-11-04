@@ -1580,3 +1580,11 @@ body, .dl-frame, .dl-workspace { color: #171717; background: #FAF9F6 !important;
 @keyframes stb-pop { from { transform:translateY(.18em);opacity:0;filter:blur(2px); } to { transform:none;opacity:1;filter:blur(0); } }
 
 
+
+
+/* Brand assets always fill their intended frame; keep image and fallback geometry identical. */
+.dl-cinematic-brand{display:flex;align-items:center}
+.dl-cinematic-brand img{display:block;width:48px!important;height:48px!important;min-width:48px;min-height:48px;aspect-ratio:1/1;flex:none;object-fit:cover!important;object-position:center!important;border-radius:50%;padding:0!important;max-width:none!important;max-height:none!important;overflow:hidden}
+.dl-vehicle-dealer-card{display:flex;align-items:center}
+.dl-vehicle-dealer-card img{display:block;width:44px!important;height:44px!important;min-width:44px;min-height:44px;aspect-ratio:1/1;flex:none;object-fit:cover!important;object-position:center!important;border-radius:50%;padding:0!important;max-width:none!important;max-height:none!important;overflow:hidden}
+.dl-cinematic-storefront{background-size:cover!important;background-position:center!important}
