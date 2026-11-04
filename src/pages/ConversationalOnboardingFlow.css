@@ -96,7 +96,7 @@
 @media(prefers-reduced-motion:reduce){.dl-pro-price-card>button{transition:none}}
 
 /* Post-signup notification permission screen */
-.dl-notify-screen{position:relative;min-height:0;overflow:hidden;padding:7px 1px 0;color:#0A0F1E}
+.dl-notify-screen{position:relative;min-height:0;overflow:hidden;margin:-8px -12px -12px;padding:18px 16px calc(env(safe-area-inset-bottom,0px) + 14px);border-radius:22px;background:linear-gradient(155deg,#fbfcfe 0%,#f3f5f8 100%);color:#0A0F1E}
 .dl-notify-bell{display:grid;place-items:center;width:48px;height:48px;margin:0 0 20px;border:1px solid #e7e9ee;border-radius:17px;background:#f1f2f5;color:#111827}
 .dl-notify-screen h1{margin:0;font-size:clamp(27px,7.5vw,30px);font-weight:800;letter-spacing:-.045em;line-height:1.05}
 .dl-notify-subtitle{max-width:315px;margin:10px 0 0;color:#737987;font-size:14px;line-height:1.5}
