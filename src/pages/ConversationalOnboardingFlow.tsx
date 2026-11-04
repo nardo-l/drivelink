@@ -8,8 +8,10 @@ import { isSupabaseConfigured } from '../lib/supabase';
 import { OnboardingState, SellerType } from '../types';
 import { toE164 } from '../utils/phoneUtils';
 import { MARKETING_CAR_IMAGES } from '../utils/marketingCarImages';
+import { notificationService } from '../services/notificationService';
+import { Bell, MessageSquare, Eye as EyeIcon, CreditCard as CreditCardIcon } from 'lucide-react';
 
-const TOTAL = 7;
+const TOTAL = 8;
 const initialState = (): OnboardingState => ({
   currentStep: 1,
   account: { businessName: '', email: '', password: '', handle: '' },
@@ -185,7 +187,7 @@ export const OnboardingFlow: React.FC = () => {
       });
       storageService.saveDealership(dealer);
       storageService.setUserSession({ isLoggedIn: true, email: user.email || data.account.email, dealershipId: dealer.id, userId: user.id });
-      update({ currentStep: 7, isCompleted: true });
+      update({ currentStep: 7 });
       showToast('Your 3-day DriveLink Pro trial is active!');
     } catch (e: any) {
       const message = String(e?.message || '');
@@ -231,6 +233,26 @@ export const OnboardingFlow: React.FC = () => {
     const message = encodeURIComponent(`View our vehicles at ${url}`);
     window.open(`https://wa.me/?text=${message}`, '_blank', 'noopener,noreferrer');
   };
+  const continueWithoutNotifications = async () => {
+    try { await notificationService.dismissOnboardingPrompt(storageService.getUserSession().dealershipId); }
+    catch (e) { console.warn('Could not save notification prompt dismissal:', e); }
+    setStep(8);
+  };
+  const enableOnboardingNotifications = async () => {
+    setBusy(true); setError('');
+    try { await notificationService.enablePush(storageService.getUserSession().dealershipId, true); setStep(8); }
+    catch (e: any) { setError(e?.message || 'Could not enable notifications. You can try again in Settings.'); }
+    finally { setBusy(false); }
+  };
+  useEffect(() => {
+    if (step !== 7 || !notificationService.isPushSupported()) return;
+    if (Notification.permission === 'granted') {
+      void notificationService.enablePush(storageService.getUserSession().dealershipId, false).then(() => setStep(8)).catch(err => console.warn('Existing notification permission could not be registered:', err));
+    } else if (Notification.permission === 'denied') {
+      void continueWithoutNotifications();
+    }
+  }, [step]);
+
   const copyShowroomLink = async () => {
     const url = `${window.location.origin}/showroom/${data.showroom.handle}`;
     try { await navigator.clipboard.writeText(url); showToast('Showroom link copied'); }
@@ -240,10 +262,10 @@ export const OnboardingFlow: React.FC = () => {
   return <main className="min-h-[100dvh] bg-white px-4 py-5 text-[#0A0A0A] sm:py-8">
     <section className="mx-auto flex min-h-[calc(100dvh-40px)] w-full max-w-[430px] flex-col rounded-[28px] bg-white px-1 py-3 sm:min-h-[780px] sm:px-5">
       <header className="mb-7 flex items-center justify-between">
-        <button type="button" onClick={back} aria-label="Go back" className="flex h-10 items-center gap-2 rounded-full px-2 text-sm font-medium text-gray-600 hover:bg-gray-50" disabled={step===6}>
-          {step!==6 && <><ArrowLeft size={17}/> Back</>}
+        <button type="button" onClick={back} aria-label="Go back" className="flex h-10 items-center gap-2 rounded-full px-2 text-sm font-medium text-gray-600 hover:bg-gray-50" disabled={step===6||step===7}>
+          {step!==6 && step!==7 && <><ArrowLeft size={17}/> Back</>}
         </button>
-        <span className="text-xs font-medium text-gray-500">{step===6?'DriveLink Pro':step===7?'Ready':`Setup ${step} of 5`}</span>
+        <span className="text-xs font-medium text-gray-500">{step===6?'DriveLink Pro':step===7?'Notifications':step===8?'Ready':`Setup ${step} of 5`}</span>
       </header>
       {step <= 5 && <div className="mb-8 flex items-center justify-center gap-2" aria-label={`Setup step ${step} of 5`}>
         {Array.from({length:5},(_,i)=><span key={i} className={`h-1.5 rounded-full transition-all duration-300 ${i+1===step?'w-7 bg-[#0A0A0A]':i+1<step?'w-2 bg-[#0A0A0A]':'w-2 bg-gray-200'}`} />)}
@@ -321,7 +343,24 @@ export const OnboardingFlow: React.FC = () => {
         <div className="dl-pro-price-card"><div className="dl-pro-price"><strong>$3.99</strong><span>/ month</span><em>Premium Plan</em></div><button type="button" disabled={busy} onClick={finishExistingSession}>{busy?<><Loader2 size={19} className="animate-spin"/> Activating your trial…</>:<>Start 3-Day Free Trial <ArrowRight size={22}/></>}</button><p><Lock size={13}/> No credit card required for free trial</p></div>
       </section>}
 
-      {step === 7 && <section className="di-setup-screen flex flex-1 flex-col items-center justify-center text-center">
+      {step === 7 && <section className="dl-notify-screen di-setup-screen flex flex-1 flex-col" aria-label="Get notified">
+        <div className="dl-notify-bell"><Bell size={21} strokeWidth={1.8}/></div>
+        <h1>Get notified</h1>
+        <p className="dl-notify-subtitle">Know the moment a buyer enquires about one of your cars.</p>
+        {notificationService.isPushSupported() ? <div className="dl-notify-preview" aria-hidden="true">
+          <div className="dl-notify-phone"/>
+          <div className="dl-notify-card dl-notify-card-one"><span className="dl-notify-icon"><MessageSquare size={16}/></span><span className="dl-notify-copy"><b>New enquiry</b><small>Tendai asked about your Toyota Aqua</small></span><time>2m</time></div>
+          <div className="dl-notify-card dl-notify-card-two"><span className="dl-notify-icon"><EyeIcon size={16}/></span><span className="dl-notify-copy"><b>Showroom link viewed</b><small>12 people viewed your showroom today</small></span><time>1h</time></div>
+          <div className="dl-notify-card dl-notify-card-three"><span className="dl-notify-icon"><CreditCardIcon size={16}/></span><span className="dl-notify-copy"><b>Subscription reminder</b><small>Your plan renews in 5 days</small></span><time>2h</time></div>
+        </div> : <div className="dl-notify-ios"><div className="dl-notify-ios-icon"><Bell size={25}/></div><b>To get notifications on iPhone, add DriveLink to your Home Screen</b><ol><li>Tap the Share icon in Safari.</li><li>Choose <strong>Add to Home Screen</strong>.</li><li>Open DriveLink from your Home Screen.</li></ol></div>}
+        {error&&<p role="alert" className="dl-notify-error">{error}</p>}
+        <div className="dl-notify-actions">
+          {notificationService.isPushSupported() && <button type="button" disabled={busy} onClick={enableOnboardingNotifications}>{busy?<><Loader2 size={17} className="animate-spin"/> Enabling…</>:<>Turn on notifications <ArrowRight size={18}/></>}</button>}
+          <button type="button" className="dl-notify-skip" onClick={continueWithoutNotifications}>Not right now</button>
+        </div>
+      </section>}
+
+      {step === 8 && <section className="di-setup-screen flex flex-1 flex-col items-center justify-center text-center">
         <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-black text-white"><Check size={32}/></div>
         <h1 className="text-[30px] font-bold tracking-tight">Your DriveLink Pro trial is active.</h1><p className="mt-3 max-w-xs text-sm leading-6 text-gray-500">You have 3 days of full access. When your trial ends, you can subscribe for $3.99 per month through EcoCash. No payment is taken today.</p>
         <div className="mt-8 flex w-full items-center gap-3 rounded-[16px] border border-[#E5E7EB] p-4 text-left"><Link2 size={18} className="shrink-0 text-gray-500"/><span className="min-w-0 flex-1 truncate text-sm font-medium">drivelink.co/{data.showroom.handle}</span><button type="button" onClick={copyShowroomLink} aria-label="Copy showroom link" className="rounded-full p-2 hover:bg-gray-100"><Copy size={17}/></button></div>
