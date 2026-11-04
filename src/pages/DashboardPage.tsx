@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigation } from '../context/NavigationContext';
 import { storageService } from '../services/storage';
+import { supabaseService } from '../services/supabaseService';
 import { isSupabaseConfigured } from '../lib/supabase';
 import { StatusBadge } from '../components/common/Badge';
 import { CarFront, MessageCircle, Eye, Bell, Plus, ChevronRight, ArrowUpRight, CircleAlert, Share2 } from 'lucide-react';
@@ -13,6 +14,12 @@ export const DashboardPage: React.FC = () => {
   const [enquiries, setEnquiries] = useState(() => isLive ? [] : storageService.getEnquiries());
   const [loading, setLoading] = useState(isLive);
   const [loadError, setLoadError] = useState('');
+  const [performancePeriod, setPerformancePeriod] = useState<7 | 30 | 90>(7);
+  const [performance, setPerformance] = useState({ visits: 0, enquiries: 0 });
+  const [performanceLoading, setPerformanceLoading] = useState(true);
+  const [performanceError, setPerformanceError] = useState('');
+  const [performanceRetry, setPerformanceRetry] = useState(0);
+  const [animatedRate, setAnimatedRate] = useState(0);
 
   const load = async () => {
     setLoading(true);
@@ -30,6 +37,45 @@ export const DashboardPage: React.FC = () => {
     } finally { setLoading(false); }
   };
   useEffect(() => { void load(); }, []);
+
+  useEffect(() => {
+    if (!dealership.id) return;
+    let active = true;
+    setPerformanceLoading(true);
+    setPerformanceError('');
+    setAnimatedRate(0);
+    const loadPerformance = async () => {
+      try {
+        let result = { visits: 0, enquiries: 0 };
+        if (isLive) {
+          result = await supabaseService.getDealershipPerformance(dealership.id, performancePeriod);
+        } else {
+          const since = Date.now() - performancePeriod * 24 * 60 * 60 * 1000;
+          result = {
+            visits: 0,
+            enquiries: enquiries.filter(item => new Date(item.createdAt).getTime() >= since).length,
+          };
+        }
+        if (active) setPerformance(result);
+      } catch (error: any) {
+        if (active) setPerformanceError(error?.message || "Couldn't load performance");
+      } finally {
+        if (active) setPerformanceLoading(false);
+      }
+    };
+    void loadPerformance();
+    return () => { active = false; };
+  }, [dealership.id, performancePeriod, performanceRetry, isLive, enquiries]);
+
+  const enquiryRate = performance.visits > 0
+    ? Math.round((performance.enquiries / performance.visits) * 100)
+    : 0;
+  const ringRate = Math.min(100, Math.max(0, enquiryRate));
+  useEffect(() => {
+    if (performanceLoading || performanceError) return;
+    const frame = window.requestAnimationFrame(() => setAnimatedRate(ringRate));
+    return () => window.cancelAnimationFrame(frame);
+  }, [ringRate, performanceLoading, performanceError]);
 
   const newLeads = enquiries.filter(e => e.stage === 'new').length;
   const soldCount = vehicles.filter(v => v.status === 'sold').length;
@@ -89,6 +135,68 @@ export const DashboardPage: React.FC = () => {
           {[{label:'Store visits',value:visits.toLocaleString(),icon:Eye},{label:'Enquiries',value:enquiries.length.toString(),icon:MessageCircle},{label:'Cars sold',value:soldCount.toString(),icon:CarFront}].map(item => {const Icon=item.icon;return <div key={item.label} className="rounded-2xl bg-white border border-[#ededed] p-3 min-w-0"><Icon size={18} className="text-[#f47716] mb-2"/><p className="text-xl sm:text-2xl font-extrabold tabular-nums truncate">{loading?'—':item.value}</p><p className="text-[10px] sm:text-[11px] text-[#777] mt-1 leading-tight">{item.label}</p></div>;})}
         </section>
 
+        <section className="rounded-[24px] bg-white border border-[#ededed] p-5 mb-5">
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0">
+              <h2 className="text-xl font-extrabold tracking-tight">Performance overview</h2>
+              <p className="text-xs text-[#888] mt-1">Based on recorded activity</p>
+            </div>
+            <label className="relative shrink-0">
+              <span className="sr-only">Performance period</span>
+              <select
+                value={performancePeriod}
+                onChange={event => setPerformancePeriod(Number(event.target.value) as 7 | 30 | 90)}
+                className="appearance-none rounded-full border border-[#e8e8e8] bg-white pl-3 pr-8 py-2 text-xs font-semibold text-[#333] outline-none focus:border-[#f47716] focus:ring-2 focus:ring-orange-100"
+              >
+                <option value={7}>7 days</option>
+                <option value={30}>30 days</option>
+                <option value={90}>90 days</option>
+              </select>
+              <ChevronRight size={14} className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 rotate-90 text-[#777]"/>
+            </label>
+          </div>
+
+          {performanceError ? (
+            <div role="alert" className="mt-5 rounded-2xl bg-[#fafafa] border border-[#eeeeee] p-4 flex items-center justify-between gap-3">
+              <p className="text-xs text-[#777]">Couldn't load performance</p>
+              <button type="button" onClick={() => setPerformanceRetry(value => value + 1)} className="text-xs font-bold text-[#f47716]">Retry</button>
+            </div>
+          ) : (
+            <div className="mt-5 flex items-center gap-5 min-w-0">
+              <div className="w-24 h-24 shrink-0 relative flex items-center justify-center" aria-label={performanceLoading ? 'Loading enquiry rate' : (enquiryRate + '% enquiry rate')}>
+                {performanceLoading ? (
+                  <div className="w-24 h-24 rounded-full border-[9px] border-[#f0f0f0] animate-pulse"/>
+                ) : (
+                  <>
+                    <svg viewBox="0 0 100 100" className="w-24 h-24 -rotate-90" aria-hidden="true">
+                      <circle cx="50" cy="50" r="40" fill="none" stroke="#eeeeee" strokeWidth="8"/>
+                      <circle cx="50" cy="50" r="40" fill="none" stroke="#f47716" strokeWidth="8" strokeLinecap="round" strokeDasharray={2 * Math.PI * 40} strokeDashoffset={2 * Math.PI * 40 * (1 - animatedRate / 100)} style={{ transition: 'stroke-dashoffset 600ms ease-out' }}/>
+                    </svg>
+                    <div className="absolute inset-0 flex flex-col items-center justify-center">
+                      <strong className="text-[21px] leading-none font-extrabold tabular-nums">{enquiryRate}%</strong>
+                      <span className="text-[9px] text-[#888] mt-1">Enquiry rate</span>
+                    </div>
+                  </>
+                )}
+              </div>
+              <div className="flex-1 min-w-0">
+                {performanceLoading ? (
+                  <div className="space-y-2 animate-pulse">
+                    <div className="h-4 w-3/4 rounded bg-[#eeeeee]"/>
+                    <div className="h-3 w-full rounded bg-[#f2f2f2]"/>
+                    <div className="h-6 w-20 rounded-full bg-[#f2f2f2]"/>
+                  </div>
+                ) : (
+                  <>
+                    <h3 className="text-sm font-extrabold leading-snug">Your dealership activity</h3>
+                    <p className="text-xs text-[#777] leading-relaxed mt-1">{performance.enquiries.toLocaleString()} enquiries from {performance.visits.toLocaleString()} recorded visits.</p>
+                    <span className="inline-flex mt-3 rounded-full bg-[#fff2e9] px-3 py-1.5 text-[10px] font-bold text-[#d9681b]">Last {performancePeriod} days</span>
+                  </>
+                )}
+              </div>
+            </div>
+          )}
+        </section>
 
         <section className="mb-5">
           <div className="flex items-center justify-between mb-3"><h2 className="font-extrabold text-sm">Recent leads</h2><button onClick={()=>navigate('/app/enquiries')} className="text-xs font-bold text-[#f47716] flex items-center gap-1">See all <ChevronRight size={14}/></button></div>
