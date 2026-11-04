@@ -32,7 +32,9 @@ function AppContent() {
   const [sessionChecked, setSessionChecked] = React.useState(false);
   const [subscriptionState, setSubscriptionState] = React.useState<'checking' | 'trial' | 'active' | 'expired' | 'unverified' | 'setup'>('checking');
   const [trialEndsAt, setTrialEndsAt] = React.useState<string | null>(null);
+  const [accessEndsAt, setAccessEndsAt] = React.useState<string | null>(null);
   const verifySubscription = React.useCallback(async () => {
+    setSubscriptionState('checking');
     try {
       const { data, error } = await supabase.functions.invoke('drivelink-payments', { body: { action: 'status' } });
       if (error) throw error;
@@ -41,6 +43,7 @@ function AppContent() {
       const trialValid = subscription?.status === 'trial' && subscription?.trial_ends_at && new Date(subscription.trial_ends_at).getTime() > now;
       const paidValid = subscription?.status === 'active' && subscription?.current_period_end && new Date(subscription.current_period_end).getTime() > now;
       setTrialEndsAt(subscription?.trial_ends_at || null);
+      setAccessEndsAt(trialValid ? subscription.trial_ends_at : paidValid ? subscription.current_period_end : null);
       setSubscriptionState(trialValid ? 'trial' : paidValid ? 'active' : 'expired');
     } catch (error) {
       console.warn('Subscription access verification failed:', error);
@@ -108,6 +111,7 @@ function AppContent() {
           storageService.clearSession();
           setSubscriptionState('setup');
           setTrialEndsAt(null);
+          setAccessEndsAt(null);
         }
       });
 
@@ -121,10 +125,21 @@ function AppContent() {
 
   React.useEffect(() => {
     const current = storageService.getUserSession();
-    if (isConfigured && !isDemo && sessionChecked && current.isLoggedIn && current.dealershipId && ['setup', 'checking'].includes(subscriptionState)) {
+    if (isConfigured && !isDemo && sessionChecked && current.isLoggedIn && current.dealershipId) {
       void verifySubscription();
     }
-  }, [currentPath, sessionChecked, subscriptionState, isConfigured, isDemo, verifySubscription]);
+  }, [currentPath, sessionChecked, isConfigured, isDemo, verifySubscription]);
+
+  React.useEffect(() => {
+    if (!accessEndsAt || !['trial', 'active'].includes(subscriptionState)) return;
+    const delay = new Date(accessEndsAt).getTime() - Date.now() + 1000;
+    if (delay <= 0) {
+      void verifySubscription();
+      return;
+    }
+    const timer = window.setTimeout(() => void verifySubscription(), delay);
+    return () => window.clearTimeout(timer);
+  }, [accessEndsAt, subscriptionState, verifySubscription]);
 
   // Route matching logic
   const renderRoute = () => {
