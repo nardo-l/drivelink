@@ -186,7 +186,7 @@ export const BillingPage: React.FC = () => {
           </div>
         </section>
 
-        {error && <div role="alert" className="rounded-2xl border border-rose-200 bg-rose-50 p-3 text-xs text-rose-700">{error}</div>
+        {error && <div role="alert" className="rounded-2xl border border-rose-200 bg-rose-50 p-3 text-xs text-rose-700">{error}</div>}
         {checkoutId && <section className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-xs text-amber-900">
           <p className="font-extrabold">{paymentCheck === 'checking' ? 'Checking your payment…' : paymentCheck === 'failed' ? 'Payment was not completed' : 'Waiting for payment confirmation'}</p>
           <p className="mt-1 leading-relaxed">{paymentCheck === 'failed' ? 'The payment was declined or cancelled. You can start a new checkout when ready.' : 'NardoPay is processing your checkout. Your subscription will activate only after the payment is verified.'}</p>
@@ -195,7 +195,6 @@ export const BillingPage: React.FC = () => {
           </button>
         </section>}
         {paymentCheck === 'completed' && <div role="status" className="rounded-2xl border border-emerald-200 bg-emerald-50 p-3 text-xs font-semibold text-emerald-800">Payment confirmed. Your DriveLink subscription is active.</div>}
-}
 
         <section className="rounded-2xl bg-white border border-slate-100 p-4 shadow-sm">
           <div className="flex items-center justify-between mb-3">
