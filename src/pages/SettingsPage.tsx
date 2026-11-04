@@ -157,7 +157,7 @@ export const SettingsPage: React.FC = () => {
             dealershipName={name}
             logoUrl={logoUrl || null}
             bannerUrl={coverUrl || null}
-            onChange={value => { setLogoUrl(value.logoUrl || ''); setCoverUrl(value.bannerUrl || ''); }}
+            onChange={value => { setLogoUrl(value.logoUrl || ''); setCoverUrl(value.bannerUrl || ''); storageService.updateDealership({ logoUrl: value.logoUrl || '', coverUrl: value.bannerUrl || '' }); }}
           />
         </section>
 
