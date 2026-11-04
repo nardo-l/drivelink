@@ -14,6 +14,8 @@ import { SettingsPage } from './pages/SettingsPage';
 import { MorePage } from './pages/MorePage';
 import { SupportPage } from './pages/SupportPage';
 import { BillingPage } from './pages/BillingPage';
+import { PaywallPage } from './pages/PaywallPage';
+import { supabase } from './lib/supabase';
 import { NotificationsPage } from './pages/NotificationsPage';
 import { PublicShowroomPage } from './pages/PublicShowroomPage';
 import { PublicVehicleDetailPage } from './pages/PublicVehicleDetailPage';
@@ -28,6 +30,23 @@ import { BottomNav } from './components/layout/BottomNav';
 function AppContent() {
   const { currentPath, navigate, toast, showToast } = useNavigation();
   const [sessionChecked, setSessionChecked] = React.useState(false);
+  const [subscriptionState, setSubscriptionState] = React.useState<'checking' | 'trial' | 'active' | 'expired' | 'unverified' | 'setup'>('checking');
+  const [trialEndsAt, setTrialEndsAt] = React.useState<string | null>(null);
+  const verifySubscription = React.useCallback(async () => {
+    try {
+      const { data, error } = await supabase.functions.invoke('drivelink-payments', { body: { action: 'status' } });
+      if (error) throw error;
+      const subscription = data?.subscription;
+      const now = Date.now();
+      const trialValid = subscription?.status === 'trial' && subscription?.trial_ends_at && new Date(subscription.trial_ends_at).getTime() > now;
+      const paidValid = subscription?.status === 'active' && subscription?.current_period_end && new Date(subscription.current_period_end).getTime() > now;
+      setTrialEndsAt(subscription?.trial_ends_at || null);
+      setSubscriptionState(trialValid ? 'trial' : paidValid ? 'active' : 'expired');
+    } catch (error) {
+      console.warn('Subscription access verification failed:', error);
+      setSubscriptionState('unverified');
+    }
+  }, []);
   const isDemo = storageService.isDemoModeActive();
   const isConfigured = isSupabaseConfigured();
 
@@ -40,6 +59,9 @@ function AppContent() {
             const liveDealer = await supabaseService.getCurrentDealership();
             if (liveDealer) {
               storageService.saveDealership(liveDealer);
+              await verifySubscription();
+            } else {
+              setSubscriptionState('setup');
             }
             storageService.setUserSession({
               isLoggedIn: true,
@@ -54,6 +76,7 @@ function AppContent() {
         } else {
           // No active Supabase session; ensure unauthenticated state
           storageService.clearSession();
+          setSubscriptionState('setup');
         }
         setSessionChecked(true);
       }).catch((err) => {
@@ -80,6 +103,8 @@ function AppContent() {
           }
         } else {
           storageService.clearSession();
+          setSubscriptionState('setup');
+          setTrialEndsAt(null);
         }
       });
 
@@ -89,7 +114,7 @@ function AppContent() {
     } else {
       setSessionChecked(true);
     }
-  }, [isConfigured, isDemo]);
+  }, [isConfigured, isDemo, verifySubscription]);
 
   // Route matching logic
   const renderRoute = () => {
@@ -232,10 +257,17 @@ function AppContent() {
     return <WelcomePage />;
   };
 
+  const currentSession = storageService.getUserSession();
+  const dealerAppRoute = currentPath.startsWith('/app') || (currentPath === '/' && currentSession.isLoggedIn && !!currentSession.dealershipId);
+  const trialDaysLeft = trialEndsAt ? Math.ceil((new Date(trialEndsAt).getTime() - Date.now()) / 86400000) : null;
+  const forcePaywall = isConfigured && !isDemo && dealerAppRoute && currentSession.isLoggedIn && !!currentSession.dealershipId && subscriptionState === 'expired';
+  const blockUntilVerified = isConfigured && !isDemo && dealerAppRoute && currentSession.isLoggedIn && !!currentSession.dealershipId && ['checking', 'unverified'].includes(subscriptionState);
+
   return (
     <DeviceFrame>
 
-      {renderRoute()}
+      {forcePaywall ? <PaywallPage /> : blockUntilVerified ? <div className="flex min-h-[100dvh] items-center justify-center bg-white px-6 text-center text-sm text-gray-500">Verifying your DriveLink subscription…</div> : renderRoute()}
+      {!forcePaywall && subscriptionState === 'trial' && trialDaysLeft !== null && trialDaysLeft > 0 && trialDaysLeft <= 2 && dealerAppRoute && <div className="sticky top-0 z-30 flex items-center justify-center gap-2 border-b border-amber-200 bg-amber-50 px-4 py-2.5 text-xs font-bold text-amber-900"><span className="h-1.5 w-1.5 rounded-full bg-amber-500" />{trialDaysLeft} {trialDaysLeft === 1 ? 'day' : 'days'} left in your free trial <button onClick={() => navigate('/app/billing')} className="underline underline-offset-2">View plans</button></div>}
       {(['/app', '/app/vehicles', '/app/enquiries', '/app/more'].includes(currentPath) || (currentPath === '/' && storageService.getUserSession().isLoggedIn && !!storageService.getUserSession().dealershipId)) && <BottomNav />}
 
       {/* Global Toast Notification */}
