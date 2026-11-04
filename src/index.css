@@ -1588,3 +1588,7 @@ body, .dl-frame, .dl-workspace { color: #171717; background: #FAF9F6 !important;
 .dl-vehicle-dealer-card{display:flex;align-items:center}
 .dl-vehicle-dealer-card img{display:block;width:44px!important;height:44px!important;min-width:44px;min-height:44px;aspect-ratio:1/1;flex:none;object-fit:cover!important;object-position:center!important;border-radius:50%;padding:0!important;max-width:none!important;max-height:none!important;overflow:hidden}
 .dl-cinematic-storefront{background-size:cover!important;background-position:center!important}
+
+/* All public showroom identity marks use a true cover crop in a fixed square frame. */
+.dl-store-dealer img,.dl-contact-profile>img{display:block;width:48px!important;height:48px!important;min-width:48px;min-height:48px;aspect-ratio:1/1;flex:none;object-fit:cover!important;object-position:center!important;border-radius:50%;padding:0!important;max-width:none!important;max-height:none!important;overflow:hidden}
+.dl-contact-profile>img{width:88px!important;height:88px!important;min-width:88px;min-height:88px}
