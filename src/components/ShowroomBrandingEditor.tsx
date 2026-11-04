@@ -37,7 +37,7 @@ export const ShowroomBrandingEditor: React.FC<ShowroomBrandingEditorProps> = ({
   const pinchStart = useRef<{ distance: number; zoom: number; offset: { x: number; y: number }; midpoint: { x: number; y: number } } | null>(null);
   const fileInputRefs = { logo: useRef<HTMLInputElement>(null), banner: useRef<HTMLInputElement>(null) };
   const initials = useMemo(() => dealershipName.trim().split(/\s+/).filter(Boolean).slice(0, 2).map(word => word[0]).join('').toUpperCase() || 'DL', [dealershipName]);
-  const cropWidth = cropRef.current?.clientWidth || Math.min(390, window.innerWidth - 68);
+  const cropWidth = cropRef.current?.clientWidth || (cropKind === 'banner' ? Math.min(560, window.innerWidth - 36) : Math.min(430, window.innerWidth - 36, window.innerHeight * 0.54));
   const cropHeight = cropRef.current?.clientHeight || cropWidth / (cropKind === 'logo' ? 1 : 3);
 
   useEffect(() => { latestUrls.current.logoUrl = logoUrl || null; setLogo(prev => ({ ...prev, url: logoUrl || null })); }, [logoUrl]);
