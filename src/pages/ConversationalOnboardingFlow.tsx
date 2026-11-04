@@ -81,6 +81,20 @@ export const OnboardingFlow: React.FC = () => {
     }).catch(error => console.warn('Could not restore onboarding session:', error));
     return () => { active = false; };
   }, []);
+  useEffect(() => {
+    if (data.currentStep !== 7 || !notificationService.isPushSupported()) return;
+    const dealershipId = storageService.getUserSession().dealershipId;
+    if (Notification.permission === 'granted') {
+      void notificationService.enablePush(dealershipId, false)
+        .then(() => setData(prev => ({ ...prev, currentStep: 8 })))
+        .catch(err => console.warn('Existing notification permission could not be registered:', err));
+    } else if (Notification.permission === 'denied') {
+      void notificationService.dismissOnboardingPrompt(dealershipId)
+        .catch(err => console.warn('Could not save denied notification prompt:', err))
+        .finally(() => setData(prev => ({ ...prev, currentStep: 8 })));
+    }
+  }, [data.currentStep]);
+
   const introTouchStart = useRef<number | null>(null);
   const handleIntroTouchStart = (event: React.TouchEvent<HTMLElement>) => { introTouchStart.current = event.changedTouches[0]?.clientX ?? null; };
   const handleIntroTouchEnd = (event: React.TouchEvent<HTMLElement>) => {
@@ -244,15 +258,6 @@ export const OnboardingFlow: React.FC = () => {
     catch (e: any) { setError(e?.message || 'Could not enable notifications. You can try again in Settings.'); }
     finally { setBusy(false); }
   };
-  useEffect(() => {
-    if (step !== 7 || !notificationService.isPushSupported()) return;
-    if (Notification.permission === 'granted') {
-      void notificationService.enablePush(storageService.getUserSession().dealershipId, false).then(() => setStep(8)).catch(err => console.warn('Existing notification permission could not be registered:', err));
-    } else if (Notification.permission === 'denied') {
-      void continueWithoutNotifications();
-    }
-  }, [step]);
-
   const copyShowroomLink = async () => {
     const url = `${window.location.origin}/showroom/${data.showroom.handle}`;
     try { await navigator.clipboard.writeText(url); showToast('Showroom link copied'); }
