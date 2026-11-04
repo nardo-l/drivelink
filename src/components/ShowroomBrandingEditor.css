@@ -54,7 +54,7 @@
 .sb-crop-heading span{color:#aab2bf}
 .sb-crop-heading button{background:#222936;color:#fff}
 .sb-crop-viewport{align-self:center;flex:none;max-width:100%;border-radius:0;background:#111722;touch-action:none;user-select:none}
-.sb-crop-viewport.is-square{width:min(100%, min(430px, 54dvh));aspect-ratio:1;border-radius:50%;overflow:hidden}
+.sb-crop-viewport.is-square{width:min(100%, min(430px, 54dvh));aspect-ratio:1;border-radius:0;overflow:hidden}
 .sb-crop-viewport.is-banner{width:min(100%, 560px);aspect-ratio:3/1;border-radius:12px}
 .sb-crop-viewport>img{max-width:none;max-height:none}
 .sb-crop-frame{inset:0;border:1px solid rgba(255,255,255,.92);box-shadow:0 0 0 999px rgba(0,0,0,.48)}
