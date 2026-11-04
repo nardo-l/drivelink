@@ -201,6 +201,7 @@ export const OnboardingFlow: React.FC = () => {
   };
 
   const finishExistingSession = async () => {
+    if (brandingBusy) { setError('Your showroom images are still uploading. Please wait a moment.'); return; }
     setBusy(true); setError('');
     try {
       const user = await supabaseService.getCurrentUser();
@@ -417,7 +418,7 @@ export const OnboardingFlow: React.FC = () => {
         </div>
         {error&&<p role="alert" className="dl-pro-error">{error}</p>}
         <footer className="dl-pro-sticky-footer">
-          <button type="button" disabled={busy} onClick={finishExistingSession}>{busy?<><Loader2 size={19} className="animate-spin"/> Activating your trial…</>:<>Start 3-day free trial <ArrowRight size={20}/></>}</button>
+          <button type="button" disabled={busy || brandingBusy} onClick={finishExistingSession}>{busy?<><Loader2 size={19} className="animate-spin"/> Activating your trial…</>:<>Start 3-day free trial <ArrowRight size={20}/></>}</button>
           <p>No payment is taken today. Then $3.99/month.</p>
         </footer>
       </section>}
