@@ -4,7 +4,7 @@ import { storageService } from '../services/storage';
 import { supabaseService } from '../services/supabaseService';
 import { isSupabaseConfigured } from '../lib/supabase';
 import { StatusBadge } from '../components/common/Badge';
-import { CarFront, MessageCircle, Eye, Bell, Plus, ChevronRight, ArrowUpRight, CircleAlert, Share2 } from 'lucide-react';
+import { CarFront, MessageCircle, Eye, Bell, Plus, ChevronRight, ArrowUpRight, CircleAlert, Share2, Clock3 } from 'lucide-react';
 
 export const DashboardPage: React.FC = () => {
   const { navigate, showToast } = useNavigation();
@@ -20,6 +20,14 @@ export const DashboardPage: React.FC = () => {
   const [performanceError, setPerformanceError] = useState('');
   const [performanceRetry, setPerformanceRetry] = useState(0);
   const [animatedRate, setAnimatedRate] = useState(0);
+  const [subscription, setSubscription] = useState<{
+    status: string;
+    trial_started_at: string | null;
+    trial_ends_at: string | null;
+    current_period_end: string | null;
+    grace_until: string | null;
+  } | null>(null);
+  const [subscriptionNow, setSubscriptionNow] = useState(Date.now());
 
   const load = async () => {
     setLoading(true);
@@ -37,6 +45,33 @@ export const DashboardPage: React.FC = () => {
     } finally { setLoading(false); }
   };
   useEffect(() => { void load(); }, []);
+
+  // Read the existing subscription record through the authenticated billing endpoint.
+  // This is read-only: it never creates a trial or initiates a payment.
+  useEffect(() => {
+    if (!isLive) return;
+    let active = true;
+    const loadSubscription = async () => {
+      try {
+        const { data, error } = await (await import('../lib/supabase')).supabase.functions.invoke('drivelink-payments', {
+          body: { action: 'status' },
+        });
+        if (error) throw error;
+        if (active) setSubscription(data?.subscription || null);
+      } catch {
+        // Keep the dashboard usable if billing status is temporarily unavailable.
+        if (active) setSubscription(null);
+      }
+    };
+    void loadSubscription();
+    return () => { active = false; };
+  }, [isLive]);
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setSubscriptionNow(Date.now()), 1000);
+    return () => window.clearInterval(timer);
+  }, []);
+
 
   useEffect(() => {
     if (!dealership.id) return;
@@ -119,6 +154,48 @@ export const DashboardPage: React.FC = () => {
           </div>
         </header>
 
+
+        {isLive && subscription && (() => {
+          const trialStart = subscription.trial_started_at ? new Date(subscription.trial_started_at).getTime() : 0;
+          const trialEnd = subscription.trial_ends_at ? new Date(subscription.trial_ends_at).getTime() : 0;
+          const periodEnd = subscription.current_period_end ? new Date(subscription.current_period_end).getTime() : 0;
+          const graceEnd = subscription.grace_until ? new Date(subscription.grace_until).getTime() : 0;
+          const isTrial = subscription.status === 'trial' && trialEnd > subscriptionNow;
+          const isSubscribed = (subscription.status === 'active' && periodEnd >= subscriptionNow) ||
+            (subscription.status === 'grace_period' && graceEnd >= subscriptionNow);
+          if (!isTrial && !isSubscribed && trialEnd && subscriptionNow >= trialEnd) {
+            return <section className="mb-4 rounded-[24px] border border-[#e8e8e8] bg-white p-4 shadow-[0_2px_12px_rgba(0,0,0,.025)]">
+              <div className="flex items-center gap-3"><span className="grid h-12 w-12 place-items-center rounded-full bg-[#f3f3f3]"><Clock3 size={25}/></span><div className="min-w-0 flex-1"><h2 className="font-extrabold text-[15px]">Your free trial has ended</h2><p className="text-xs text-[#777] mt-0.5">Upgrade to keep enjoying DriveLink Pro.</p></div><span className="rounded-full bg-[#f3f3f3] px-3 py-1 text-[10px] font-bold text-[#555]">Ended</span></div>
+              <button onClick={()=>navigate('/app/billing')} className="mt-4 flex h-12 w-full items-center justify-center gap-2 rounded-full bg-black text-sm font-bold text-white">Explore Plans <ChevronRight size={18}/></button>
+            </section>;
+          }
+          if (isSubscribed) {
+            return <section className="mb-4 rounded-[24px] border border-[#e8e8e8] bg-white p-4 shadow-[0_2px_12px_rgba(0,0,0,.025)]">
+              <div className="flex items-center gap-3"><span className="grid h-12 w-12 place-items-center rounded-full bg-[#f3f3f3]"><Clock3 size={25}/></span><div className="min-w-0 flex-1"><h2 className="font-extrabold text-[15px]">DriveLink Pro</h2><p className="text-xs text-[#777] mt-0.5">Your subscription is active</p></div><span className="rounded-full bg-[#f1f1f1] px-3 py-1 text-[10px] font-bold text-[#222]">Active</span></div>
+              <div className="mt-3 flex items-center justify-between text-xs text-[#777]"><span>Current period ends</span><strong className="text-[#222]">{new Date(periodEnd || graceEnd).toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric'})}</strong></div>
+              <button onClick={()=>navigate('/app/billing')} className="mt-3 flex h-11 w-full items-center justify-center gap-2 rounded-full border border-[#e7e7e7] text-sm font-bold">Manage subscription <ChevronRight size={17}/></button>
+            </section>;
+          }
+          if (!isTrial) return null;
+          const total = Math.max(1, trialEnd - trialStart);
+          const remaining = Math.max(0, trialEnd - subscriptionNow);
+          const progress = Math.min(100, Math.max(0, (remaining / total) * 100));
+          const days = Math.floor(remaining / 86400000);
+          const hours = Math.floor((remaining % 86400000) / 3600000);
+          const minutes = Math.floor((remaining % 3600000) / 60000);
+          const pad = (value:number) => String(value).padStart(2,'0');
+          return <section className="mb-4 rounded-[24px] border border-[#e8e8e8] bg-white p-4 shadow-[0_2px_12px_rgba(0,0,0,.025)]">
+            <div className="flex items-center gap-3">
+              <span className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-[#f3f3f3]"><Clock3 size={25} strokeWidth={1.8}/></span>
+              <div className="min-w-0 flex-1 border-l border-[#dedede] pl-3"><h2 className="text-[15px] font-extrabold">Free trial</h2><p className="text-xs text-[#777]">Enjoy all DriveLink features</p></div>
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-[#f1f1f1] px-3 py-1.5 text-[10px] font-bold text-[#222]"><span className="h-2 w-2 rounded-full bg-black"/>Active</span>
+            </div>
+            <p className="mt-4 text-center text-[clamp(19px,5vw,25px)] font-extrabold tracking-tight tabular-nums">{pad(days)} days : {pad(hours)} hrs : {pad(minutes)} min</p>
+            <div className="mt-3 h-2.5 overflow-hidden rounded-full bg-[#e9e9e9]" role="progressbar" aria-label="Free trial time remaining" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(progress)}><div className="h-full rounded-full bg-black transition-[width] duration-500" style={{width:progress+'%'}}/></div>
+            <div className="mt-2 flex items-center justify-between text-[11px] text-[#777]"><span>Trial period remaining</span><span>Upgrade anytime</span></div>
+            <button onClick={()=>navigate('/app/billing')} className="mt-4 flex h-12 w-full items-center justify-center gap-2 rounded-full bg-black text-sm font-bold text-white">Explore Plans <ChevronRight size={19}/></button>
+          </section>;
+        })()}
         <section className="rounded-[24px] bg-white border border-[#ededed] p-4 flex items-center gap-4 mb-4">
           <div className="w-24 h-20 rounded-2xl bg-[#f1f1ef] overflow-hidden shrink-0 flex items-center justify-center">
             {vehicles[0]?.photos?.[0] ? <img src={vehicles[0].photos[0]} alt={vehicles[0].make} className="w-full h-full object-cover"/> : <CarFront size={34} className="text-[#aaa]"/>}
