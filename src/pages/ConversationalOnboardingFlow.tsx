@@ -28,7 +28,7 @@ const initialState = (): OnboardingState => ({
 export const OnboardingFlow: React.FC = () => {
   const { navigate, showToast } = useNavigation();
   const previewQuery = typeof window !== 'undefined' ? `${window.location.search}&${window.location.hash.split('?')[1] || ''}` : '';
-  const forceNotificationsPreview = import.meta.env.DEV && new URLSearchParams(previewQuery.replace(/^\?/, '')).get('onboarding') === 'notifications';
+  const forceNotificationsPreview = import.meta.env.DEV && new URLSearchParams(previewQuery).get('onboarding') === 'notifications';
   const [data, setData] = useState<OnboardingState>(() => {
     try {
       const raw = localStorage.getItem('drivelink_onboarding_v1');
