@@ -35,6 +35,7 @@ export const BillingPage: React.FC = () => {
   const [payments, setPayments] = React.useState<Payment[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [paying, setPaying] = React.useState(false);
+  const [selectedPlan, setSelectedPlan] = React.useState<'monthly' | 'yearly'>('yearly');
   const [error, setError] = React.useState('');
 
   const loadStatus = React.useCallback(async () => {
@@ -66,7 +67,7 @@ export const BillingPage: React.FC = () => {
     setError('');
     try {
       const { data, error: invokeError } = await supabase.functions.invoke('drivelink-payments', {
-        body: { action: 'initiate' },
+        body: { action: 'initiate', plan_code: selectedPlan },
       });
       if (invokeError) throw invokeError;
       if (!data?.redirectUrl) throw new Error(data?.error || 'Paynow did not return a checkout link.');
@@ -78,6 +79,8 @@ export const BillingPage: React.FC = () => {
   };
 
   const now = Date.now();
+  const selectedAmount = selectedPlan === 'yearly' ? 32 : 3.99;
+  const selectedDuration = selectedPlan === 'yearly' ? '365 days' : '30 days';
   const end = subscription?.current_period_end ? new Date(subscription.current_period_end).getTime() : 0;
   const graceEnd = subscription?.grace_until ? new Date(subscription.grace_until).getTime() : 0;
   const trialEnd = subscription?.trial_ends_at ? new Date(subscription.trial_ends_at).getTime() : 0;
@@ -102,14 +105,28 @@ export const BillingPage: React.FC = () => {
       <main className="flex-1 px-5 py-5 pb-10 flex flex-col gap-4">
         <section className="rounded-3xl bg-slate-950 text-white p-5 shadow-lg">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-white/65">DriveLink monthly plan</span>
+            <span className="text-xs font-semibold text-white/65">Choose your DriveLink Pro plan</span>
             <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-white/10">ECOCASH</span>
           </div>
-          <div className="mt-4 flex items-end gap-2">
-            <span className="text-4xl font-black tracking-tight">$3.99</span>
-            <span className="text-sm text-white/60 pb-1">/ 30 days</span>
+          <div className="mt-4 grid grid-cols-2 gap-2">
+            <button type="button" onClick={() => setSelectedPlan('monthly')} className={`relative rounded-2xl border p-3 text-left transition ${selectedPlan === 'monthly' ? 'border-white bg-white/10 ring-1 ring-white/50' : 'border-white/15 bg-white/[0.03]'}`}>
+              <span className="block text-[11px] text-white/65">Monthly</span>
+              <strong className="mt-1 block text-2xl font-black tracking-tight">$3.99</strong>
+              <span className="text-[10px] text-white/60">per 30 days</span>
+              {selectedPlan === 'monthly' && <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-white"/>}
+            </button>
+            <button type="button" onClick={() => setSelectedPlan('yearly')} className={`relative rounded-2xl border p-3 text-left transition ${selectedPlan === 'yearly' ? 'border-white bg-white/10 ring-1 ring-white/50' : 'border-white/15 bg-white/[0.03]'}`}>
+              <span className="inline-flex items-center rounded-full bg-white px-2 py-0.5 text-[9px] font-extrabold text-black">BEST VALUE · SAVE 33%</span>
+              <strong className="mt-1 block text-2xl font-black tracking-tight">$32</strong>
+              <span className="text-[10px] text-white/60">per year</span>
+              {selectedPlan === 'yearly' && <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-white"/>}
+            </button>
           </div>
-          <p className="text-xs text-white/65 mt-2">$3.99 per month after your 3-day free trial. Pay securely through Paynow using EcoCash. Renew manually each month.</p>
+          <div className="mt-4 flex items-baseline gap-2">
+            <span className="text-3xl font-black tracking-tight">${selectedAmount.toFixed(2)}</span>
+            <span className="text-xs text-white/60">/ {selectedDuration}</span>
+          </div>
+          {selectedPlan === 'yearly' ? <p className="mt-1 text-xs text-white/65">Pay once for 12 months. That's just $2.67/month — save $15.88 (33%) compared with paying monthly.</p> : <p className="mt-1 text-xs text-white/65">$3.99 every 30 days. Pay securely through Paynow using EcoCash.</p>}
           <div className="mt-5 flex items-center justify-between border-t border-white/15 pt-4">
             <span className="text-xs text-white/65">Subscription status</span>
             <span className="text-xs font-bold">{loading ? 'Checking…' : statusLabel}</span>
@@ -130,17 +147,17 @@ export const BillingPage: React.FC = () => {
               <div className="flex justify-between"><span className="text-slate-500">{trialActive ? 'Free trial ends' : 'Current period ends'}</span><strong>{dateLabel(trialActive ? subscription?.trial_ends_at : subscription?.current_period_end)}</strong></div>
               {trialActive && <div className="rounded-xl bg-emerald-50 text-emerald-800 p-3 leading-relaxed">Your 3-day DriveLink Pro trial is active. No payment is taken during the trial. Choose a plan after it ends to continue.</div>}
               {inGrace && <div className="rounded-xl bg-amber-50 text-amber-800 p-3 leading-relaxed">Your subscription is in its 3-day grace period. Renew now to avoid interruption.</div>}
-              {active && end - now <= 5 * 24 * 60 * 60 * 1000 && <div className="rounded-xl bg-amber-50 text-amber-800 p-3 leading-relaxed flex items-start gap-2"><Clock3 className="w-4 h-4 shrink-0 mt-0.5" /><span>Your subscription is nearing its renewal date ({dateLabel(subscription?.current_period_end)}). Renew for $3.99 to keep your access uninterrupted.</span></div>}
+              {active && end - now <= 5 * 24 * 60 * 60 * 1000 && <div className="rounded-xl bg-amber-50 text-amber-800 p-3 leading-relaxed flex items-start gap-2"><Clock3 className="w-4 h-4 shrink-0 mt-0.5" /><span>Your subscription is nearing its renewal date ({dateLabel(subscription?.current_period_end)}). Renew for your selected plan to keep your access uninterrupted.</span></div>}
               {active && end - now > 5 * 24 * 60 * 60 * 1000 && <div className="rounded-xl bg-emerald-50 text-emerald-800 p-3 flex items-start gap-2"><CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5" /><span>Your subscription is active. Renew before the end date to keep your access uninterrupted.</span></div>}
               {!active && !inGrace && !trialActive && <div className="rounded-xl bg-slate-50 text-slate-600 p-3">Subscribe or renew to keep your DriveLink account active.</div>}
             </div>
           )}
           <button onClick={startPayment} disabled={paying || loading || trialActive} className="mt-4 w-full h-12 rounded-full bg-slate-950 hover:bg-slate-800 text-white text-xs font-extrabold flex items-center justify-center gap-2 disabled:opacity-50">
             {paying ? <Loader2 className="w-4 h-4 animate-spin" /> : <CreditCard className="w-4 h-4" />}
-            {paying ? 'Connecting to Paynow…' : trialActive ? 'Trial active — no payment due' : active || inGrace ? 'Renew for $3.99' : 'Subscribe for $3.99'}
+            {paying ? 'Connecting to Paynow…' : trialActive ? 'Trial active — no payment due' : active || inGrace ? 'Renew for ${selectedAmount.toFixed(2)}' : 'Subscribe for ${selectedAmount.toFixed(2)}'}
             {!paying && <ExternalLink className="w-3.5 h-3.5" />}
           </button>
-          <p className="text-[10px] text-slate-400 text-center mt-2">You will be redirected to Paynow. Select EcoCash to complete payment.</p>
+          <p className="text-[10px] text-slate-400 text-center mt-2">You will be redirected to Paynow. Select EcoCash to complete your ${selectedPlan === 'yearly' ? 'annual' : 'monthly'} payment.</p>
         </section>
 
         <section className="rounded-2xl bg-white border border-slate-100 p-4 shadow-sm">
