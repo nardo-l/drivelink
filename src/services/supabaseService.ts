@@ -729,7 +729,7 @@ export const supabaseService = {
       xhr.send(file);
     });
     const { data } = supabase.storage.from('dealership-branding').getPublicUrl(path);
-    const publicUrl = data.publicUrl;
+    const publicUrl = `${data.publicUrl}?v=${Date.now()}`;
     const dealer = await this.getCurrentDealership().catch(() => null);
     if (dealer) {
       const previousUrl = type === 'logo' ? dealer.logoUrl : dealer.coverUrl;
