@@ -120,6 +120,19 @@ export const OnboardingFlow: React.FC = () => {
 
 
   const step = data.currentStep || 1;
+  React.useEffect(() => {
+    if (step !== 7) return;
+    const previousOverflow = document.body.style.overflow;
+    document.documentElement.classList.add('dl-pro-active');
+    document.body.classList.add('dl-pro-active');
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.documentElement.classList.remove('dl-pro-active');
+      document.body.classList.remove('dl-pro-active');
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [step]);
+
   const countryCode = data.contact.country === 'South Africa' ? '+27' : '+263';
   const update = (patch: Partial<OnboardingState>) => setData(prev => ({ ...prev, ...patch }));
   const updateContact = (patch: Partial<OnboardingState['contact']>) => setData(prev => ({ ...prev, contact: { ...prev.contact, ...patch } }));
@@ -286,19 +299,6 @@ export const OnboardingFlow: React.FC = () => {
     try { await navigator.clipboard.writeText(url); showToast('Showroom link copied'); }
     catch { setError('Could not copy the link. Please copy it from the address shown.'); }
   };
-
-  React.useEffect(() => {
-    if (step !== 7) return;
-    const previousOverflow = document.body.style.overflow;
-    document.documentElement.classList.add('dl-pro-active');
-    document.body.classList.add('dl-pro-active');
-    document.body.style.overflow = 'hidden';
-    return () => {
-      document.documentElement.classList.remove('dl-pro-active');
-      document.body.classList.remove('dl-pro-active');
-      document.body.style.overflow = previousOverflow;
-    };
-  }, [step]);
 
   return <main className={step === 7 ? 'dl-pro-page' : 'min-h-[100dvh] bg-white px-4 py-5 text-[#0A0A0A] sm:py-8'}>
     <section className={step === 7 ? 'dl-pro-page-inner' : 'mx-auto flex min-h-[calc(100dvh-40px)] w-full max-w-[430px] flex-col rounded-[28px] bg-white px-1 py-3 sm:min-h-[780px] sm:px-5'}>
