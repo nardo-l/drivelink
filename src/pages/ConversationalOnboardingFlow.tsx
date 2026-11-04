@@ -27,6 +27,8 @@ const initialState = (): OnboardingState => ({
 
 export const OnboardingFlow: React.FC = () => {
   const { navigate, showToast } = useNavigation();
+  const previewQuery = typeof window !== 'undefined' ? `${window.location.search}&${window.location.hash.split('?')[1] || ''}` : '';
+  const forceNotificationsPreview = import.meta.env.DEV && new URLSearchParams(previewQuery.replace(/^\?/, '')).get('onboarding') === 'notifications';
   const [data, setData] = useState<OnboardingState>(() => {
     try {
       const raw = localStorage.getItem('drivelink_onboarding_v1');
@@ -63,6 +65,12 @@ export const OnboardingFlow: React.FC = () => {
   };
   const advanceIntro = () => introStep === introSlides.length - 1 ? finishIntro() : setIntroStep(value => Math.min(value + 1, introSlides.length - 1));
   useEffect(() => {
+    if (forceNotificationsPreview) {
+      setIntroDone(true);
+      setData(prev => ({ ...prev, currentStep: 6, isCompleted: false }));
+      console.info('[DriveLink onboarding] Get notified shown: dev preview query parameter.');
+      return;
+    }
     let active = true;
     supabaseService.getCurrentUser().then(async user => {
       if (!active || !user) return;
@@ -82,24 +90,22 @@ export const OnboardingFlow: React.FC = () => {
     return () => { active = false; };
   }, []);
   useEffect(() => {
-    if (data.currentStep !== 7 || typeof window === 'undefined') return;
-    const dealershipId = storageService.getUserSession().dealershipId;
-    if ('Notification' in window && Notification.permission === 'denied') {
-      void notificationService.dismissOnboardingPrompt(dealershipId)
-        .catch(err => console.warn('Could not save denied notification prompt:', err))
-        .finally(() => setData(prev => ({ ...prev, currentStep: 8, isCompleted: true })));
-      return;
+    if (data.currentStep !== 6 || typeof window === 'undefined' || forceNotificationsPreview) return;
+    const supported = notificationService.isPushSupported();
+    const permission = 'Notification' in window ? Notification.permission : 'unsupported';
+    const dismissed = Boolean(localStorage.getItem('drivelink_notifications_prompt_dismissed_at'));
+    let reason = '';
+    if (!supported) reason = 'unsupported';
+    else if (permission === 'granted') reason = 'already granted';
+    else if (permission === 'denied') reason = 'denied';
+    else if (dismissed) reason = 'dismissed';
+    if (reason) {
+      console.info(`[DriveLink onboarding] Get notified skipped: ${reason}.`);
+      setData(prev => ({ ...prev, currentStep: 7 }));
+    } else {
+      console.info('[DriveLink onboarding] Get notified shown: notifications supported, permission default, prompt not dismissed.');
     }
-    if ('Notification' in window && Notification.permission === 'granted') {
-      if (!notificationService.isPushSupported()) {
-        setData(prev => ({ ...prev, currentStep: 8, isCompleted: true }));
-        return;
-      }
-      void notificationService.enablePush(dealershipId, false)
-        .then(() => setData(prev => ({ ...prev, currentStep: 8, isCompleted: true })))
-        .catch(err => console.warn('Existing notification permission could not be registered:', err));
-    }
-  }, [data.currentStep]);
+  }, [data.currentStep, forceNotificationsPreview]);
 
   const introTouchStart = useRef<number | null>(null);
   const handleIntroTouchStart = (event: React.TouchEvent<HTMLElement>) => { introTouchStart.current = event.changedTouches[0]?.clientX ?? null; };
@@ -207,7 +213,12 @@ export const OnboardingFlow: React.FC = () => {
       });
       storageService.saveDealership(dealer);
       storageService.setUserSession({ isLoggedIn: true, email: user.email || data.account.email, dealershipId: dealer.id, userId: user.id });
-      update({ currentStep: 7 });
+      if (localStorage.getItem('drivelink_notifications_prompt_dismissed_at')) {
+        await notificationService.dismissOnboardingPrompt(dealer.id).catch(err => console.warn('Could not persist notification prompt dismissal:', err));
+      } else if ('Notification' in window && Notification.permission === 'granted' && notificationService.isPushSupported()) {
+        await notificationService.enablePush(dealer.id, false).catch(err => console.warn('Could not register the approved push subscription after dealership setup:', err));
+      }
+      update({ currentStep: 8, isCompleted: true });
       showToast('Your 3-day DriveLink Pro trial is active!');
     } catch (e: any) {
       const message = String(e?.message || '');
@@ -254,14 +265,18 @@ export const OnboardingFlow: React.FC = () => {
     window.open(`https://wa.me/?text=${message}`, '_blank', 'noopener,noreferrer');
   };
   const continueWithoutNotifications = async () => {
-    try { await notificationService.dismissOnboardingPrompt(storageService.getUserSession().dealershipId); }
-    catch (e) { console.warn('Could not save notification prompt dismissal:', e); }
-    setStep(8);
+    try { localStorage.setItem('drivelink_notifications_prompt_dismissed_at', new Date().toISOString()); } catch {}
+    setStep(7);
   };
   const enableOnboardingNotifications = async () => {
     setBusy(true); setError('');
-    try { await notificationService.enablePush(storageService.getUserSession().dealershipId, true); setStep(8); }
-    catch (e: any) { setError(e?.message || 'Could not enable notifications. You can try again in Settings.'); }
+    try {
+      const permission = Notification.permission === 'default' ? await Notification.requestPermission() : Notification.permission;
+      if (permission !== 'granted') throw new Error(permission === 'denied' ? 'Notifications are blocked in your browser settings. You can re-enable them in Settings.' : 'Notification permission was not granted.');
+      localStorage.removeItem('drivelink_notifications_prompt_dismissed_at');
+      localStorage.setItem('drivelink_notification_permission_granted', 'true');
+      setStep(7);
+    } catch (e: any) { setError(e?.message || 'Could not enable notifications. You can try again in Settings.'); }
     finally { setBusy(false); }
   };
   const copyShowroomLink = async () => {
@@ -276,7 +291,7 @@ export const OnboardingFlow: React.FC = () => {
         <button type="button" onClick={back} aria-label="Go back" className="flex h-10 items-center gap-2 rounded-full px-2 text-sm font-medium text-gray-600 hover:bg-gray-50" disabled={step===6||step===7}>
           {step!==6 && step!==7 && <><ArrowLeft size={17}/> Back</>}
         </button>
-        <span className="text-xs font-medium text-gray-500">{step===6?'DriveLink Pro':step===7?'Notifications':step===8?'Ready':`Setup ${step} of 5`}</span>
+        <span className="text-xs font-medium text-gray-500">{step===6?'Notifications':step===7?'DriveLink Pro':step===8?'Ready':`Setup ${step} of 5`}</span>
       </header>
       {step <= 5 && <div className="mb-8 flex items-center justify-center gap-2" aria-label={`Setup step ${step} of 5`}>
         {Array.from({length:5},(_,i)=><span key={i} className={`h-1.5 rounded-full transition-all duration-300 ${i+1===step?'w-7 bg-[#0A0A0A]':i+1<step?'w-2 bg-[#0A0A0A]':'w-2 bg-gray-200'}`} />)}
@@ -331,10 +346,10 @@ export const OnboardingFlow: React.FC = () => {
         <button type="button" onClick={()=>setStep(6)} disabled={checking||!validSlug||available!==true} className="mt-auto flex h-12 w-full items-center justify-center gap-2 rounded-full bg-black text-sm font-semibold text-white disabled:opacity-40">Continue <ArrowRight size={17}/></button>
       </section>}
 
-      {step === 6 && <section className="dl-pro-paywall">
+      {step === 7 && <section className="dl-pro-paywall">
         <header className="dl-pro-header">
           <div className="dl-pro-brand"><svg viewBox="0 0 64 34" aria-hidden="true"><path d="M3 25c8-1 10-10 19-12 7-2 15 0 22 1 6 1 9 4 15 4M8 25h47M20 12l5-7c2-3 5-4 9-3l14 3 8 7" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/><circle cx="18" cy="26" r="4" fill="none" stroke="currentColor" strokeWidth="2"/><circle cx="49" cy="26" r="4" fill="none" stroke="currentColor" strokeWidth="2"/></svg><span>DriveLink</span></div>
-          <button type="button" className="dl-pro-close" aria-label="Back to showroom link" onClick={()=>setStep(5)}><span aria-hidden="true">×</span></button>
+          <button type="button" className="dl-pro-close" aria-label="Back to showroom link" onClick={()=>setStep(6)}><span aria-hidden="true">×</span></button>
         </header>
         <div className="dl-pro-hero"><img src={MARKETING_CAR_IMAGES.hero} alt="Premium vehicle outside a modern dealership"/><div className="dl-pro-hero-shade"/></div>
         <div className="dl-pro-intro"><h1>Upgrade to<br/>DriveLink Pro</h1><p>Unlock more features and grow your dealership online.</p></div>
@@ -354,7 +369,7 @@ export const OnboardingFlow: React.FC = () => {
         <div className="dl-pro-price-card"><div className="dl-pro-price"><strong>$3.99</strong><span>/ month</span><em>Premium Plan</em></div><button type="button" disabled={busy} onClick={finishExistingSession}>{busy?<><Loader2 size={19} className="animate-spin"/> Activating your trial…</>:<>Start 3-Day Free Trial <ArrowRight size={22}/></>}</button><p><Lock size={13}/> No credit card required for free trial</p></div>
       </section>}
 
-      {step === 7 && <section className="dl-notify-screen di-setup-screen flex flex-1 flex-col" aria-label="Get notified">
+      {step === 6 && <section className="dl-notify-screen di-setup-screen flex flex-1 flex-col" aria-label="Get notified">
         <div className="dl-notify-bell"><Bell size={21} strokeWidth={1.8}/></div>
         <h1>Get notified</h1>
         <p className="dl-notify-subtitle">Know the moment a buyer enquires about one of your cars.</p>
