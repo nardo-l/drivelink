@@ -113,16 +113,25 @@ Deno.serve(async (req: Request) => {
   if (!validSignature && !validToken) return json({ error: "Unauthorized webhook." }, 401);
 
   const event = String(payload.event ?? "");
-  if (event === "payment.failed") return json({ received: true });
-  if (event !== "payment.completed" && event !== "subscription.renewed") return json({ received: true });
-
-  const transactionId = String(payload.transaction_id ?? "");
   const metadata = payload.metadata && typeof payload.metadata === "object"
     ? payload.metadata as Record<string, unknown> : {};
   const checkoutId = String(metadata.checkout_id ?? "");
-  if (!transactionId || !checkoutId) return json({ received: true });
-
   const admin = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false } });
+
+  if (event === "payment.failed") {
+    if (checkoutId) {
+      const failedStatus = String(payload.status ?? "").toLowerCase() === "cancelled" ? "cancelled" : "failed";
+      await admin.from("dealership_subscription_payments").update({
+        status: failedStatus, raw_status: "NardoPay " + failedStatus,
+        updated_at: new Date().toISOString(),
+      }).eq("id", checkoutId).neq("status", "paid");
+    }
+    return json({ received: true });
+  }
+  if (event !== "payment.completed" && event !== "subscription.renewed") return json({ received: true });
+
+  const transactionId = String(payload.transaction_id ?? "");
+  if (!transactionId || !checkoutId) return json({ received: true });
   const { data: payment, error } = await admin.from("dealership_subscription_payments")
     .select("id, reference, dealership_id, user_id, amount, currency, plan_code, status, paynow_reference")
     .eq("id", checkoutId).maybeSingle();
