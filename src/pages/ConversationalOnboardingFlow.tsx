@@ -35,7 +35,7 @@ export const OnboardingFlow: React.FC = () => {
       const raw = localStorage.getItem('drivelink_onboarding_v1');
       if (!raw) return initialState();
       const saved = JSON.parse(raw);
-      if ((saved.flowVersion === 3 || saved.flowVersion === 2) && saved.currentStep >= 1 && saved.currentStep <= 8) {
+      if ((saved.flowVersion === 3 || saved.flowVersion === 2) && saved.currentStep >= 1 && saved.currentStep <= TOTAL) {
         const migratedStep = saved.flowVersion === 2 && saved.currentStep >= 6 ? saved.currentStep + 1 : saved.currentStep;
         return { ...initialState(), ...saved, currentStep: Math.min(TOTAL, migratedStep), branding: { ...initialState().branding, ...saved.branding }, account: { ...initialState().account, ...saved.account, password: '' } };
       }
