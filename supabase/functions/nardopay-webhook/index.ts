@@ -89,6 +89,13 @@ async function verifyAndApply(admin: ReturnType<typeof createClient>, payment: P
     console.error("Subscription activation failed", applyError?.message ?? "RPC returned false");
     throw new Error("Could not activate subscription.");
   }
+  const { error: notificationError } = await admin.from("notifications").upsert({
+    dealership_id: payment.dealership_id, category: "subscription", title: "Payment confirmed",
+    body: `Your DriveLink ${payment.plan_code} subscription payment has been confirmed. Your plan is now active.`,
+    data: { url: "/app/billing", paymentReference: payment.reference },
+    dedupe_key: `payment-confirmed:${payment.id}`,
+  }, { onConflict: "dealership_id,dedupe_key", ignoreDuplicates: true });
+  if (notificationError) console.error("Could not create payment confirmation notification", notificationError);
   return true;
 }
 
