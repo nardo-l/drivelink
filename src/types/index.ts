@@ -208,7 +208,7 @@ export function vehicleRowToModel(row: VehicleRow): Vehicle {
     model: row.model,
     year: row.year,
     price: Number(row.price),
-    currency: (row.currency === 'ZAR' ? 'ZAR' : 'USD') as CurrencyCode,
+    currency: (row.currency === 'ZWG' ? 'ZWG' : row.currency === 'ZAR' ? 'ZAR' : 'USD') as CurrencyCode,
     mileageKm: Number(row.mileage_km),
     transmission: (row.transmission as TransmissionType) || 'Automatic',
     fuel: (row.fuel as FuelType) || 'Petrol',
