@@ -323,11 +323,11 @@ export const OnboardingFlow: React.FC = () => {
     catch { setError('Could not copy the link. Please copy it from the address shown.'); }
   };
 
-  return <main className={step === 8 ? 'dl-pro-page' : 'min-h-[100dvh] bg-white px-4 py-5 text-[#0A0A0A] sm:py-8'}>
-    <section className={step === 8 ? 'dl-pro-page-inner' : 'mx-auto flex min-h-[calc(100dvh-40px)] w-full max-w-[430px] flex-col rounded-[28px] bg-white px-1 py-3 sm:min-h-[780px] sm:px-5'}>
+  return <main className={step === 8 ? 'dl-pro-page' : step === 6 ? 'sb-onboarding-page' : 'min-h-[100dvh] bg-white px-4 py-5 text-[#0A0A0A] sm:py-8'}>
+    <section className={step === 8 ? 'dl-pro-page-inner' : step === 6 ? 'sb-onboarding-shell' : 'mx-auto flex min-h-[calc(100dvh-40px)] w-full max-w-[430px] flex-col rounded-[28px] bg-white px-1 py-3 sm:min-h-[780px] sm:px-5'}>
       {step < 7 && <header className="mb-7 flex items-center justify-between">
-        <button type="button" onClick={back} aria-label="Go back" className="flex h-10 items-center gap-2 rounded-full px-2 text-sm font-medium text-gray-600 hover:bg-gray-50" disabled={step===6||step===7}>
-          {step!==6 && step!==7 && <><ArrowLeft size={17}/> Back</>}
+        <button type="button" onClick={back} aria-label="Go back" className="flex h-10 items-center gap-2 rounded-full px-2 text-sm font-medium text-gray-600 hover:bg-gray-50" disabled={step===7}>
+          {step!==7 && <><ArrowLeft size={17}/> Back</>}
         </button>
         <span className="text-xs font-medium text-gray-500">{step===6?'Brand your showroom':step===7?'Notifications':step===8?'DriveLink Pro':step===9?'Ready':`Setup ${step} of 5`}</span>
       </header>}
