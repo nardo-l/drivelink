@@ -147,6 +147,9 @@ function AppContent() {
     const isLive = isConfigured && !isDemo;
     const session = storageService.getUserSession();
     const isProtectedRoute = currentPath.startsWith('/app');
+    const previewQuery = typeof window !== 'undefined' ? `${window.location.search}&${window.location.hash.split('?')[1] || ''}` : '';
+    const forceNotificationsPreview = import.meta.env.DEV && new URLSearchParams(previewQuery.replace(/^\\?/, '')).get('onboarding') === 'notifications';
+    if (forceNotificationsPreview) return <OnboardingFlow />;
     if (isLive && !sessionChecked) {
       return <div className="flex min-h-[100dvh] items-center justify-center bg-white text-sm text-gray-500">Loading your Drive Link account…</div>;
     }
@@ -156,7 +159,7 @@ function AppContent() {
     // Public landing page stays separate from the current onboarding flow.
     // Returning dealers with a completed setup go straight to their dashboard.
     if (currentPath === '/' || currentPath === '') {
-      if (isLive && session.isLoggedIn && session.dealershipId) return <DashboardPage />;
+      if (isLive && session.isLoggedIn && session.dealershipId) { console.info('[DriveLink onboarding] Get notified skipped: redirected (existing dealership session).'); return <DashboardPage />; }
       if (isLive && session.isLoggedIn && !session.dealershipId) return <OnboardingFlow />;
       return <WelcomePage />;
     }
@@ -168,7 +171,7 @@ function AppContent() {
     }
 
     if (currentPath === '/login') {
-      if (isLive && session.isLoggedIn) return session.dealershipId ? <DashboardPage /> : <OnboardingFlow />;
+      if (isLive && session.isLoggedIn) { if (session.dealershipId) { console.info('[DriveLink onboarding] Get notified skipped: redirected (existing dealership session).'); return <DashboardPage />; } return <OnboardingFlow />; }
       return <LoginPage />;
     }
 
@@ -285,8 +288,8 @@ function AppContent() {
   const currentSession = storageService.getUserSession();
   const dealerAppRoute = currentSession.isLoggedIn && !!currentSession.dealershipId && (currentPath.startsWith('/app') || ['/', '/login', '/signup', '/onboarding'].includes(currentPath));
   const trialDaysLeft = trialEndsAt ? Math.ceil((new Date(trialEndsAt).getTime() - Date.now()) / 86400000) : null;
-  const forcePaywall = isConfigured && !isDemo && dealerAppRoute && currentSession.isLoggedIn && !!currentSession.dealershipId && subscriptionState === 'expired';
-  const blockUntilVerified = isConfigured && !isDemo && dealerAppRoute && currentSession.isLoggedIn && !!currentSession.dealershipId && ['checking', 'unverified'].includes(subscriptionState);
+  const forcePaywall = !forceNotificationsPreview && isConfigured && !isDemo && dealerAppRoute && currentSession.isLoggedIn && !!currentSession.dealershipId && subscriptionState === 'expired';
+  const blockUntilVerified = !forceNotificationsPreview && isConfigured && !isDemo && dealerAppRoute && currentSession.isLoggedIn && !!currentSession.dealershipId && ['checking', 'unverified'].includes(subscriptionState);
 
   return (
     <DeviceFrame>
