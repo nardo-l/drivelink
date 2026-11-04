@@ -268,7 +268,7 @@ function AppContent() {
   };
 
   const currentSession = storageService.getUserSession();
-  const dealerAppRoute = currentPath.startsWith('/app') || (currentPath === '/' && currentSession.isLoggedIn && !!currentSession.dealershipId);
+  const dealerAppRoute = currentSession.isLoggedIn && !!currentSession.dealershipId && (currentPath.startsWith('/app') || ['/', '/login', '/signup', '/onboarding'].includes(currentPath));
   const trialDaysLeft = trialEndsAt ? Math.ceil((new Date(trialEndsAt).getTime() - Date.now()) / 86400000) : null;
   const forcePaywall = isConfigured && !isDemo && dealerAppRoute && currentSession.isLoggedIn && !!currentSession.dealershipId && subscriptionState === 'expired';
   const blockUntilVerified = isConfigured && !isDemo && dealerAppRoute && currentSession.isLoggedIn && !!currentSession.dealershipId && ['checking', 'unverified'].includes(subscriptionState);
