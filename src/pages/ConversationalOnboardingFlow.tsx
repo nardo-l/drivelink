@@ -46,6 +46,7 @@ export const OnboardingFlow: React.FC = () => {
   const [available, setAvailable] = useState<boolean | null>(null);
   const [checking, setChecking] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [brandingBusy, setBrandingBusy] = useState(false);
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [introDone, setIntroDone] = useState(() => {
@@ -387,10 +388,10 @@ export const OnboardingFlow: React.FC = () => {
       {step === 6 && <section className="sb-onboarding-screen">
         <div className="sb-stage-progress"><span>Step 2 of 4</span><div><i className="is-done"/><i className="is-current"/><i/><i/></div></div>
         <div className="sb-screen-heading"><h1>Brand your showroom</h1><p>Add your logo and banner so buyers recognise your dealership.</p></div>
-        <ShowroomBrandingEditor dealershipName={data.showroom.businessName} logoUrl={data.branding.logoPreview || null} bannerUrl={data.branding.coverPreview || null} onChange={value => update({ branding: { ...data.branding, logoPreview: value.logoUrl, coverPreview: value.bannerUrl } })}/>
+        <ShowroomBrandingEditor dealershipName={data.showroom.businessName} logoUrl={data.branding.logoPreview || null} bannerUrl={data.branding.coverPreview || null} onChange={value => update({ branding: { ...data.branding, logoPreview: value.logoUrl, coverPreview: value.bannerUrl } })} onUploadingChange={setBrandingBusy}/>
         {error && <p role="alert" className="sb-inline-error">{error}</p>}
         <div className="sb-onboarding-actions">
-          <button type="button" disabled={busy || (!data.branding.logoPreview && !data.branding.coverPreview)} onClick={() => setStep(7)}>Continue <ArrowRight size={18}/></button>
+          <button type="button" disabled={busy || brandingBusy || (!data.branding.logoPreview && !data.branding.coverPreview)} onClick={() => setStep(7)}>Continue <ArrowRight size={18}/></button>
           <button type="button" onClick={() => setStep(7)}>Skip for now</button>
         </div>
       </section>}
