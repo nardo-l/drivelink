@@ -138,7 +138,7 @@ async function createScheduledNotifications() {
 
 async function deliverPendingPush() {
   const { data: pending, error } = await db.from("notifications").select("id,dealership_id,category,title,body,data,created_at")
-    .is("push_sent_at", null).order("created_at", { ascending: true }).limit(300);
+    .is("push_sent_at", null).is("push_attempted_at", null).order("created_at", { ascending: true }).limit(300);
   if (error) throw error;
   let sent = 0; let removed = 0;
   for (const notification of pending || []) {
@@ -149,7 +149,7 @@ async function deliverPendingPush() {
     };
     const prefKey = preferenceField[notification.category];
     if (prefs?.push_enabled === false || (prefKey && prefs?.[prefKey] === false)) {
-      await db.from("notifications").update({ push_sent_at: new Date().toISOString() }).eq("id", notification.id);
+      await db.from("notifications").update({ push_sent_at: new Date().toISOString(), push_attempted_at: new Date().toISOString() }).eq("id", notification.id);
       continue;
     }
     const urgent = notification.category === "enquiry" && !String(notification.title).toLowerCase().includes("waiting");
@@ -166,6 +166,11 @@ async function deliverPendingPush() {
     const { data: subscriptions, error: subscriptionsError } = await db.from("push_subscriptions").select("id,endpoint,p256dh,auth").eq("dealership_id", notification.dealership_id);
     if (subscriptionsError) {
       console.error("Could not load push subscriptions", notification.dealership_id, subscriptionsError);
+      continue;
+    }
+    if (!subscriptions?.length) {
+      // No registered device: retire this push attempt without pretending it was delivered.
+      await db.from("notifications").update({ push_attempted_at: new Date().toISOString() }).eq("id", notification.id);
       continue;
     }
     let deliveredForNotification = 0;
