@@ -30,7 +30,7 @@ export const DashboardPage: React.FC = () => {
   const [performanceError, setPerformanceError] = useState('');
   const [performanceRetry, setPerformanceRetry] = useState(0);
   const [subscription, setSubscription] = useState<SubscriptionStatus | null>(null);
-  const serverClock = useRef({ serverMs: Date.now(), monotonicMs: performance.now() });
+  const serverClock = useRef({ serverMs: Date.now(), monotonicMs: window.performance.now() });
   const [subscriptionNow, setSubscriptionNow] = useState(Date.now());
   const [subscriptionLoading, setSubscriptionLoading] = useState(false);
   const expiryCheck = useRef(false);
@@ -66,8 +66,8 @@ export const DashboardPage: React.FC = () => {
     if (!isLive) return null;
     const { data, error } = await supabase.functions.invoke('drivelink-payments', { body: { action: 'status' } });
     if (error) throw error;
-    const serverMs = data?.server_now ? new Date(data.server_now).getTime() : serverClock.current.serverMs + (performance.now() - serverClock.current.monotonicMs);
-    serverClock.current = { serverMs, monotonicMs: performance.now() };
+    const serverMs = data?.server_now ? new Date(data.server_now).getTime() : serverClock.current.serverMs + (window.performance.now() - serverClock.current.monotonicMs);
+    serverClock.current = { serverMs, monotonicMs: window.performance.now() };
     setSubscription(data?.subscription || null);
     setSubscriptionNow(serverMs);
     return data?.subscription || null;
@@ -76,7 +76,7 @@ export const DashboardPage: React.FC = () => {
   useEffect(() => {
     if (!isLive) return;
     let timer: number | undefined;
-    const tick = () => setSubscriptionNow(serverClock.current.serverMs + (performance.now() - serverClock.current.monotonicMs));
+    const tick = () => setSubscriptionNow(serverClock.current.serverMs + (window.performance.now() - serverClock.current.monotonicMs));
     const sync = async () => { try { await refreshSubscription(); } catch { tick(); } };
     const restart = () => {
       if (timer !== undefined) window.clearInterval(timer);
