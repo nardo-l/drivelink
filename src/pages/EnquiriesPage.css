@@ -32,6 +32,7 @@
 .enquiry-card-wrap{position:relative;overflow:hidden;border-radius:20px;touch-action:pan-y}
 .enquiry-card{position:relative;z-index:1;padding:13px 13px 11px;border:1px solid #E9ECF1;border-radius:20px;background:#fff;box-shadow:0 5px 18px rgba(10,15,30,.045);animation:enquiry-enter .38s cubic-bezier(.2,.75,.25,1) both;transition:transform .22s ease}
 .enquiry-card.is-new{border-color:#DCEBFB;box-shadow:0 5px 18px rgba(57,135,232,.075)}
+.enquiry-card.is-new:after{content:"";position:absolute;inset:0;border-radius:inherit;background:rgba(57,135,232,.075);pointer-events:none;animation:enquiry-new-flash 1.8s ease-out both}
 .enquiry-card-wrap.is-swiped .enquiry-card{transform:translateX(-235px)}
 .enquiry-card-main{display:flex;align-items:center;gap:10px;min-width:0;cursor:pointer;outline-offset:3px}
 .enquiry-avatar{width:42px;height:42px;display:grid;place-items:center;flex:none;border-radius:50%;background:#EDF0F5;color:#586477;font-size:12px;font-weight:850;letter-spacing:.02em}
@@ -111,6 +112,7 @@
 .enquiries-confirm-dialog button{height:43px;flex:1;border:1px solid #E6E9EE;border-radius:999px;background:#fff;color:#465064;font-size:10px;font-weight:750}
 .enquiries-confirm-dialog button:last-child{border-color:#B33E43;background:#B33E43;color:#fff}
 .enquiries-confirm-dialog button:disabled{opacity:.5}
+@keyframes enquiry-new-flash{0%{opacity:1}100%{opacity:0}}
 @keyframes enquiry-enter{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:translateY(0)}}
 @keyframes enquiry-shimmer{to{background-position:-200% 0}}
 @media(min-width:640px){.enquiries-main{padding-right:24px;padding-left:24px}.enquiries-filter-viewport{margin-left:-24px;margin-right:-24px}.enquiries-filter-row{padding-left:24px}}
