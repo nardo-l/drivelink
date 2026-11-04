@@ -145,7 +145,7 @@ export const VehiclesListPage: React.FC = () => {
           <div className="min-w-0">
             <p className="garage-eyebrow">INVENTORY</p>
             <h1>Garage</h1>
-            <p className="garage-summary">{vehicles.length} {vehicles.length === 1 ? 'vehicle' : 'vehicles'} <span>·</span> {counts.available} available</p>
+            <p className="garage-summary">{loading ? 'Loading your inventory…' : <>{vehicles.length} {vehicles.length === 1 ? 'vehicle' : 'vehicles'} <span>·</span> {counts.available} available</>}</p>
           </div>
           {vehicles.length > 0 && (
             <button type="button" onClick={() => navigate('/app/vehicles/new')} aria-label="Add vehicle" className="garage-header-add">
@@ -231,7 +231,7 @@ export const VehiclesListPage: React.FC = () => {
                 tabIndex={0}
                 aria-label={`${vehicle.year} ${vehicle.make} ${vehicle.model}, ${statusLabel[vehicle.status] || vehicle.status}`}
                 onClick={() => openVehicle(vehicle)}
-                onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); openVehicle(vehicle); } }}
+                onKeyDown={event => { if (event.target !== event.currentTarget) return; if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); openVehicle(vehicle); } }}
                 className="garage-vehicle-card"
                 style={{ animationDelay: `${Math.min(index, 7) * 45}ms` }}
               >
