@@ -10,7 +10,7 @@
 .enquiries-summary{margin:5px 0 0;color:#858E9C;font-size:11px;font-weight:600;font-variant-numeric:tabular-nums}
 .enquiries-summary span{padding:0 4px;color:#B9BFC8}
 .enquiries-main{width:100%;max-width:700px;margin:0 auto;padding:16px 16px calc(env(safe-area-inset-bottom,0px) + 112px)}
-.enquiries-summary-strip{height:66px;display:flex;align-items:center;justify-content:space-around;margin-bottom:15px;padding:0 8px;border:1px solid #ECEEF2;border-radius:17px;background:#fff;box-shadow:0 4px 16px rgba(10,15,30,.035)}
+.enquiries-pull-indicator{display:flex;align-items:center;justify-content:center;gap:8px;overflow:hidden;color:#858E9C;font-size:10px;font-weight:650;transition:height .12s ease}\n.enquiries-summary-strip{height:66px;display:flex;align-items:center;justify-content:space-around;margin-bottom:15px;padding:0 8px;border:1px solid #ECEEF2;border-radius:17px;background:#fff;box-shadow:0 4px 16px rgba(10,15,30,.035)}
 .enquiries-summary-strip>div{min-width:0;display:flex;flex:1;flex-direction:column;align-items:center;gap:2px}
 .enquiries-summary-strip strong{color:#0A0F1E;font-size:17px;line-height:1.1;font-weight:850;font-variant-numeric:tabular-nums}
 .enquiries-summary-strip span{color:#929AA7;font-size:9px;font-weight:650}
