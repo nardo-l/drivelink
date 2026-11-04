@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { ImagePlus, Upload, X, Check, Loader2, RefreshCw, Trash2, Move, ZoomIn } from 'lucide-react';
 import { supabaseService } from '../services/supabaseService';
+import './ShowroomBrandingEditor.css';
 
 type BrandingKind = 'logo' | 'banner';
 type BrandingValue = { logoUrl: string | null; bannerUrl: string | null };
