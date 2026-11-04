@@ -95,6 +95,7 @@ export interface DealershipRow {
   template: string;
   logo_url: string | null;
   cover_url: string | null;
+  banner_url: string | null;
   bio: string | null;
   tagline: string | null;
   sticker_text: string | null;
@@ -165,7 +166,7 @@ export function dealershipRowToModel(row: DealershipRow, totalEnquiries: number 
     currency: (row.currency === 'ZAR' ? 'ZAR' : 'USD') as CurrencyCode,
     template: (row.template as StorefrontTemplate) || 'signature',
     logoUrl: row.logo_url || undefined,
-    coverUrl: row.cover_url || undefined,
+    coverUrl: row.banner_url || row.cover_url || undefined,
     isVerified: Boolean(row.is_verified),
     isPublished: row.is_published !== false,
     storefrontViews: Number(row.storefront_views) || 0,
@@ -189,7 +190,7 @@ export function dealershipModelToRow(model: Partial<Dealership>, userId?: string
   if (model.currency !== undefined) row.currency = model.currency;
   if (model.template !== undefined) row.template = model.template;
   if (model.logoUrl !== undefined) row.logo_url = model.logoUrl;
-  if (model.coverUrl !== undefined) row.cover_url = model.coverUrl;
+  if (model.coverUrl !== undefined) { row.cover_url = model.coverUrl; row.banner_url = model.coverUrl; }
   if (model.bio !== undefined) row.bio = model.bio;
   if (model.tagline !== undefined) row.tagline = model.tagline;
   if (model.stickerText !== undefined) row.sticker_text = model.stickerText;
