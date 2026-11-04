@@ -231,8 +231,8 @@ Deno.serve(async (req: Request) => {
       }
     }
     const { data: payments } = await admin.from("dealership_subscription_payments")
-      .select("reference, amount, currency, status, payment_method, paid_at, created_at")
-      .eq("dealership_id", dealership.id).order("created_at", { ascending: false }).limit(8);
+      .select("id, reference, amount, currency, status, payment_method, paid_at, created_at, paynow_reference")
+      .eq("dealership_id", dealership.id).order("created_at", { ascending: false }).limit(50);
     return json({ subscription, payments: payments || [] });
   }
   return json({ error: "Unknown action." }, 400);
