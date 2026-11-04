@@ -53,7 +53,7 @@ function AppContent() {
   const isDemo = storageService.isDemoModeActive();
   const isConfigured = isSupabaseConfigured();
   const previewQuery = typeof window !== 'undefined' ? `${window.location.search}&${window.location.hash.split('?')[1] || ''}` : '';
-  const forceNotificationsPreview = import.meta.env.DEV && new URLSearchParams(previewQuery.replace(/^\\?/, '')).get('onboarding') === 'notifications';
+  const forceNotificationsPreview = import.meta.env.DEV && new URLSearchParams(previewQuery).get('onboarding') === 'notifications';
 
   // Restore authenticated Supabase session on page refresh
   React.useEffect(() => {
