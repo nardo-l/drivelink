@@ -82,16 +82,22 @@ export const OnboardingFlow: React.FC = () => {
     return () => { active = false; };
   }, []);
   useEffect(() => {
-    if (data.currentStep !== 7 || !notificationService.isPushSupported()) return;
+    if (data.currentStep !== 7 || typeof window === 'undefined') return;
     const dealershipId = storageService.getUserSession().dealershipId;
-    if (Notification.permission === 'granted') {
-      void notificationService.enablePush(dealershipId, false)
-        .then(() => setData(prev => ({ ...prev, currentStep: 8, isCompleted: true })))
-        .catch(err => console.warn('Existing notification permission could not be registered:', err));
-    } else if (Notification.permission === 'denied') {
+    if ('Notification' in window && Notification.permission === 'denied') {
       void notificationService.dismissOnboardingPrompt(dealershipId)
         .catch(err => console.warn('Could not save denied notification prompt:', err))
         .finally(() => setData(prev => ({ ...prev, currentStep: 8, isCompleted: true })));
+      return;
+    }
+    if ('Notification' in window && Notification.permission === 'granted') {
+      if (!notificationService.isPushSupported()) {
+        setData(prev => ({ ...prev, currentStep: 8, isCompleted: true }));
+        return;
+      }
+      void notificationService.enablePush(dealershipId, false)
+        .then(() => setData(prev => ({ ...prev, currentStep: 8, isCompleted: true })))
+        .catch(err => console.warn('Existing notification permission could not be registered:', err));
     }
   }, [data.currentStep]);
 
