@@ -33,6 +33,7 @@ export interface Database {
           template: string;
           logo_url: string | null;
           cover_url: string | null;
+          banner_url: string | null;
           bio: string | null;
           tagline: string | null;
           sticker_text: string | null;
@@ -58,6 +59,7 @@ export interface Database {
           template?: string;
           logo_url?: string | null;
           cover_url?: string | null;
+          banner_url?: string | null;
           bio?: string | null;
           tagline?: string | null;
           sticker_text?: string | null;
