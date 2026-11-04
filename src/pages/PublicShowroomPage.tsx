@@ -1,5 +1,5 @@
 import React,{useEffect,useMemo,useRef,useState} from 'react';
-import {ArrowRight,CarFront,Filter,Heart,MapPin,MessageCircle,Phone,Search,Share2,X,SlidersHorizontal} from 'lucide-react';
+import {ArrowRight,CarFront,Heart,MapPin,MessageCircle,Phone,Search,Share2,X,SlidersHorizontal} from 'lucide-react';
 import {useNavigation} from '../context/NavigationContext';
 import {storageService} from '../services/storage';
 import {supabaseService} from '../services/supabaseService';
