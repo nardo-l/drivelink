@@ -564,6 +564,15 @@ export const supabaseService = {
     return mapEnquiryFromRow(data);
   },
 
+  async deleteEnquiry(enquiryId: string): Promise<void> {
+    if (!isSupabaseConfigured()) return;
+    const { error } = await supabase.from('enquiries').delete().eq('id', enquiryId);
+    if (error) {
+      console.error('Error deleting enquiry from Supabase:', error);
+      throw error;
+    }
+  },
+
   async updateEnquiryStage(enquiryId: string, stage: EnquiryStage, notes?: string): Promise<Enquiry> {
     if (!isSupabaseConfigured()) {
       throw new Error('Supabase is not configured.');
