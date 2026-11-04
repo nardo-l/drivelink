@@ -391,6 +391,15 @@ export const storageService = {
     return localEnquiry;
   },
 
+  async deleteEnquiryAsync(id: string): Promise<boolean> {
+    if (isSupabaseConfigured()) {
+      await supabaseService.deleteEnquiry(id);
+    }
+    const remaining = this.getEnquiries().filter(enquiry => enquiry.id !== id);
+    this.saveEnquiries(remaining);
+    return remaining.length >= 0;
+  },
+
   async updateEnquiryStageAsync(
     id: string,
     stage: EnquiryStage,
