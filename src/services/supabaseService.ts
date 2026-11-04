@@ -37,7 +37,7 @@ export function mapDealershipFromRow(row: DealershipRow): Dealership {
     currency: (row.currency || 'USD') as CurrencyCode,
     template: (row.template || 'signature') as StorefrontTemplate,
     logoUrl: row.logo_url || undefined,
-    coverUrl: row.cover_url || undefined,
+    coverUrl: row.banner_url || row.cover_url || undefined,
     isVerified: row.is_verified,
     isPublished: row.is_published,
     storefrontViews: row.storefront_views || 0,
@@ -65,6 +65,7 @@ export function mapDealershipToRow(
     template: d.template || 'signature',
     logo_url: d.logoUrl || null,
     cover_url: d.coverUrl || null,
+    banner_url: d.coverUrl || null,
     bio: d.bio || null,
     tagline: d.tagline || null,
     sticker_text: d.stickerText || null,
@@ -314,7 +315,7 @@ export const supabaseService = {
     if (updates.currency !== undefined) dbPayload.currency = updates.currency;
     if (updates.template !== undefined) dbPayload.template = updates.template;
     if (updates.logoUrl !== undefined) dbPayload.logo_url = updates.logoUrl;
-    if (updates.coverUrl !== undefined) dbPayload.cover_url = updates.coverUrl;
+    if (updates.coverUrl !== undefined) { dbPayload.cover_url = updates.coverUrl; dbPayload.banner_url = updates.coverUrl; }
     if (updates.bio !== undefined) dbPayload.bio = updates.bio;
     if (updates.tagline !== undefined) dbPayload.tagline = updates.tagline;
     if (updates.stickerText !== undefined) dbPayload.sticker_text = updates.stickerText;
