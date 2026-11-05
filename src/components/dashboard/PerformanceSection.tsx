@@ -1,4 +1,5 @@
 import React, { memo, useEffect, useState } from 'react';
+import { Select } from '../common/Select';
 import { supabaseService } from '../../services/supabaseService';
 import { useNavigation } from '../../context/NavigationContext';
 
@@ -137,15 +138,14 @@ export const PerformanceSection = memo(function PerformanceSection({
     <section className="dl-performance-card mb-4">
       <div className="flex items-start justify-between gap-3">
         <div><h2>Performance</h2><p>Showroom activity over time</p></div>
-        <select
+        <Select
           aria-label="Performance period"
-          value={period}
-          onChange={event => onPeriodChange(Number(event.target.value) as 7 | 30 | 90)}
-        >
-          <option value={7}>7 days</option>
-          <option value={30}>30 days</option>
-          <option value={90}>90 days</option>
-        </select>
+          value={String(period)}
+          compact
+          title="Performance period"
+          options={[{ value: '7', label: '7 days' }, { value: '30', label: '30 days' }, { value: '90', label: '90 days' }]}
+          onChange={value => onPeriodChange(Number(value) as 7 | 30 | 90)}
+        />
       </div>
 
       <div className="dl-performance-chart" aria-live="polite" aria-busy={loading && !hasData}>
