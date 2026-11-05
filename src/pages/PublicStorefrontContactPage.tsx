@@ -75,7 +75,7 @@ export const PublicStorefrontContactPage: React.FC<{ slug: string }> = ({ slug }
       {sent ? <div className="dl-contact-success"><strong>Enquiry sent.</strong><span>Thank you. Your message has been delivered to the dealership.</span></div> : <>
         <label>Your name<input value={name} onChange={e => setName(e.target.value)} required placeholder="Full name"/></label>
         <label>Phone / WhatsApp number<input type="tel" value={phone} onChange={e => setPhone(e.target.value)} required placeholder="+263… or +27…"/></label>
-        <div className="dl-contact-select"><span>Vehicle of interest (optional)</span><Select value={vehicleId} title="Vehicle of interest" placeholder="General enquiry" options={[{value:'',label:'General enquiry'},...vehicles.map(v=>({value:v.id,label:`${v.year} ${v.make} ${v.model}`}))]} onChange={setVehicleId}/></div>
+        <div className="dl-contact-select"><span>Vehicle of interest (optional)</span><Select name="vehicleId" aria-label="Vehicle of interest" value={vehicleId} title="Vehicle of interest" placeholder="General enquiry" options={[{value:'',label:'General enquiry'},...vehicles.map(v=>({value:v.id,label:`${v.year} ${v.make} ${v.model}`}))]} onChange={setVehicleId}/></div>
         <label>Message<textarea rows={4} value={message} onChange={e => setMessage(e.target.value)} required placeholder="How can the dealership help?"/></label>
         {error && <p className="dl-contact-error">{error}</p>}
         <button type="submit" disabled={sending}>{sending ? 'Sending…' : 'Send Enquiry'}</button>
