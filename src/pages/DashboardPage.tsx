@@ -5,7 +5,7 @@ import { supabaseService } from '../services/supabaseService';
 import { isSupabaseConfigured, supabase } from '../lib/supabase';
 import { StatusBadge } from '../components/common/Badge';
 import { PerformanceSection } from '../components/dashboard/PerformanceSection';
-import { Bell, CarFront, ChevronRight, Eye, MessageCircle, Plus, RefreshCw, Share2, ArrowUpRight } from 'lucide-react';
+import { Bell, CarFront, ChevronRight, Eye, MessageCircle, Plus, Share2, ArrowUpRight } from 'lucide-react';
 import './DashboardPage.css';
 
 type SubscriptionStatus = {
@@ -23,7 +23,6 @@ export const DashboardPage: React.FC = () => {
   const [vehicles, setVehicles] = useState(() => isLive ? [] : storageService.getVehicles());
   const [enquiries, setEnquiries] = useState(() => isLive ? [] : storageService.getEnquiries());
   const [loading, setLoading] = useState(isLive);
-  const [refreshing, setRefreshing] = useState(false);
   const [loadError, setLoadError] = useState('');
   const [performancePeriod, setPerformancePeriod] = useState<7 | 30 | 90>(7);
   const [performance, setPerformance] = useState({ visits: 0, enquiries: 0 });
@@ -33,17 +32,6 @@ export const DashboardPage: React.FC = () => {
   const serverClock = useRef({ serverMs: Date.now(), monotonicMs: window.performance.now() });
   const [subscriptionLoading, setSubscriptionLoading] = useState(false);
   const expiryCheck = useRef(false);
-  const pullStart = useRef<number | null>(null);
-  const touchStart = (event: React.TouchEvent<HTMLElement>) => {
-    if (event.currentTarget.scrollTop === 0) pullStart.current = event.touches[0]?.clientY ?? null;
-  };
-  const touchEnd = (event: React.TouchEvent<HTMLElement>) => {
-    const start = pullStart.current;
-    pullStart.current = null;
-    const end = event.changedTouches[0]?.clientY;
-    if (start !== null && end !== undefined && end - start > 85 && !refreshing) void refreshDashboard();
-  };
-
   const load = async () => {
     setLoading(true);
     setLoadError('');
@@ -103,13 +91,6 @@ export const DashboardPage: React.FC = () => {
     return () => window.clearTimeout(timer);
   }, [isLive, subscription]);
 
-  const refreshDashboard = async () => {
-    if (refreshing) return;
-    setRefreshing(true);
-    await Promise.all([load(), refreshSubscription().catch(() => null)]);
-    setRefreshing(false);
-  };
-
   const newLeads = enquiries.filter(e => e.stage === 'new').length;
   const soldCount = vehicles.filter(v => v.status === 'sold').length;
   const availableCount = vehicles.filter(v => v.status === 'available').length;
@@ -128,8 +109,7 @@ export const DashboardPage: React.FC = () => {
 
   return (
     <div className="dl-workspace dl-dashboard relative min-h-full flex flex-col text-[#0A0F1E]">
-      <main className="dl-dashboard-main flex-1 overflow-y-auto px-4 sm:px-7 pt-5 pb-[calc(120px+env(safe-area-inset-bottom))] w-full max-w-5xl mx-auto" onTouchStart={touchStart} onTouchEnd={touchEnd}>
-        {refreshing && <div className="flex justify-center pb-3 text-[10px] font-semibold text-[#7d8591]"><RefreshCw size={13} className="mr-2 animate-spin"/>Refreshing dashboard</div>}
+      <main className="dl-dashboard-main flex-1 overflow-y-auto px-4 sm:px-7 pt-5 pb-[calc(120px+env(safe-area-inset-bottom))] w-full max-w-5xl mx-auto">
         <header className="dl-dashboard-header flex items-center justify-between gap-3 mb-5">
           <div className="flex min-w-0 items-center gap-3">
             <div className="dl-dealer-avatar shrink-0">
@@ -179,7 +159,7 @@ export const DashboardPage: React.FC = () => {
           dealershipId={dealership.id || ''}
           period={performancePeriod}
           isLive={isLive}
-          enquiries={enquiries}
+          enquiries={isLive ? undefined : enquiries}
           showroomUrl={fullPublicUrl}
           onPeriodChange={setPerformancePeriod}
           onData={setPerformance}
