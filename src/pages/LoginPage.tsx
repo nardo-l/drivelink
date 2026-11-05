@@ -5,6 +5,7 @@ import { supabaseService } from '../services/supabaseService';
 import { isSupabaseConfigured } from '../lib/supabase';
 import { ArrowRight, Eye, EyeOff, Loader2, AlertCircle, Mail, LockKeyhole } from 'lucide-react';
 import { MARKETING_CAR_IMAGES } from '../utils/marketingCarImages';
+import { DriveLinkLogo } from '../components/common/DriveLinkLogo';
 
 export const LoginPage: React.FC = () => {
   const { navigate, showToast } = useNavigation();
@@ -77,14 +78,7 @@ export const LoginPage: React.FC = () => {
             fetchPriority="high"
           />
           <div className="dl-login-hero-shade" aria-hidden="true" />
-          <div className="dl-login-brand">
-            <svg viewBox="0 0 72 28" role="img" aria-label="DriveLink" className="dl-login-brand-mark">
-              <path d="M3 19c8-9 17-9 27-9 7-6 15-7 22-3l12 8 5 1" fill="none" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M7 20h57" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-            </svg>
-            <span className="dl-login-brand-name">DriveLink</span>
-            <span className="dl-login-brand-subtitle">DEALER PORTAL</span>
-          </div>
+          <div className="dl-login-brand"><DriveLinkLogo variant="light" size="md" showTagline /></div>
 
           <div className="dl-login-intro">
             <h1>Welcome back</h1>
