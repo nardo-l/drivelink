@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Select } from '../components/common/Select';
 import {
   Search, MessageCircle, Phone, ChevronRight, X, Share2,
   RefreshCw, ArrowUpRight, Trash2, Check, CarFront,
@@ -327,14 +328,7 @@ export const EnquiriesPage: React.FC = () => {
               <div><small>INTERESTED VEHICLE</small><strong>{vehicleFor(active)?.year} {vehicleFor(active)?.make} {vehicleFor(active)?.model}</strong><b>{vehicleFor(active)?.currency === 'ZAR' ? 'R' : '$'}{vehicleFor(active)?.price.toLocaleString()}</b></div>
             </div>}
             <div className="enquiries-message-card"><small>BUYER MESSAGE</small><p>{active.message}</p><time>{new Date(active.createdAt).toLocaleString()}</time></div>
-            <label className="enquiries-status-field">Enquiry status
-              <select value={stage} onChange={event => setStage(event.target.value as EnquiryStage)}>
-                <option value="new">New</option>
-                <option value={active.stage === 'negotiating' ? 'negotiating' : 'contacted'}>Contacted</option>
-                <option value="sold">Converted</option>
-                <option value="lost">Lost</option>
-              </select>
-            </label>
+            <div className="enquiries-status-field"><span>Enquiry status</span><Select value={stage} title="Enquiry status" options={[{value:'new',label:'New'},{value:active.stage === 'negotiating' ? 'negotiating' : 'contacted',label:'Contacted'},{value:'sold',label:'Converted'},{value:'lost',label:'Lost'}]} onChange={value=>setStage(value as EnquiryStage)}/></div>
             <label className="enquiries-status-field">Internal notes<textarea value={notes} onChange={event => setNotes(event.target.value)} rows={3} placeholder="Add a note about this buyer…"/></label>
             <button type="button" disabled={saving} onClick={() => void save()} className="enquiries-save-button">{saving ? 'Saving…' : 'Save enquiry updates'}</button>
             <button type="button" className="enquiries-delete-detail" onClick={() => setDeleteTarget(active)}><Trash2 size={14}/> Delete enquiry</button>
