@@ -47,7 +47,13 @@ const TrialBanner: React.FC<TrialBannerProps> = ({ subscriptionState, trialEndsA
     return () => window.clearInterval(timer);
   }, [serverNow]);
 
-            const showTrial = subscriptionState === 'trial' && trialRemainingMs !== null && trialRemainingMs > 0 && trialRemainingMs <= 2 * 86400000;
+  const trialRemainingMs = trialEndsAt ? new Date(trialEndsAt).getTime() - now : null;
+  const trialDaysLeft = trialRemainingMs !== null ? Math.ceil(trialRemainingMs / 86400000) : null;
+  const trialHoursLeft = trialRemainingMs !== null ? Math.max(0, Math.floor(trialRemainingMs / 3600000)) : 0;
+  const trialMinutesLeft = trialRemainingMs !== null ? Math.max(0, Math.floor((trialRemainingMs % 3600000) / 60000)) : 0;
+  const paidDaysLeft = accessEndsAt ? Math.ceil((new Date(accessEndsAt).getTime() - now) / 86400000) : null;
+
+  const showTrial = subscriptionState === 'trial' && trialRemainingMs !== null && trialRemainingMs > 0 && trialRemainingMs <= 2 * 86400000;
   const showPaid = subscriptionState === 'active' && paidDaysLeft !== null && paidDaysLeft > 0 && paidDaysLeft <= 5;
 
   if (!showTrial && !showPaid) return null;
