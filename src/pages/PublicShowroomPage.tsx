@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { DriveLinkLogo } from '../components/common/DriveLinkLogo';
 import { Select } from '../components/common/Select';
-import { CalendarDays, CarFront, Fuel, Gauge, Heart, MapPin, MessageCircle, Phone, Search, Share2, SlidersHorizontal, X, ArrowRight } from 'lucide-react';
+import { CalendarDays, CarFront, Fuel, Gauge, Heart, MapPin, Phone, Search, Share2, SlidersHorizontal, X, ArrowRight } from 'lucide-react';
 import { useNavigation } from '../context/NavigationContext';
 import { storageService } from '../services/storage';
 import { supabaseService } from '../services/supabaseService';
@@ -21,7 +21,7 @@ export const PublicShowroomPage: React.FC<{ slug?: string; previewDealership?: D
   const [vehicles, setVehicles] = useState<Vehicle[]>(previewVehicles || []);
   const [loading, setLoading] = useState(!previewDealership);
   const sessionKey = 'drivelink:showroom-seen:' + (slug || previewDealership?.slug || 'preview');
-  const [showLanding, setShowLanding] = useState(() => {
+  const [showLanding] = useState(() => {
     if (typeof window === 'undefined') return true;
     if (window.location.pathname.endsWith('/browse')) return false;
     try { return window.sessionStorage.getItem(sessionKey) !== '1'; } catch { return true; }
@@ -38,7 +38,6 @@ export const PublicShowroomPage: React.FC<{ slug?: string; previewDealership?: D
   const [transmission, setTransmission] = useState('All');
   const [fuel, setFuel] = useState('All');
   const [fabVisible, setFabVisible] = useState(true);
-  const [bannerLoaded, setBannerLoaded] = useState(false);
   const listingRef = useRef<HTMLElement>(null);
   const footerRef = useRef<HTMLElement>(null);
   const lastScroll = useRef(0);
@@ -206,7 +205,7 @@ export const PublicShowroomPage: React.FC<{ slug?: string; previewDealership?: D
           {dealer.coverUrl ? (
             <>
               <div className="dl-ps-landing-placeholder" />
-              <img className="dl-ps-landing-image" src={dealer.coverUrl} alt="" fetchPriority="high" loading="eager" decoding="async" onLoad={() => setBannerLoaded(true)} />
+              <img className="dl-ps-landing-image" src={dealer.coverUrl} alt="" fetchPriority="high" loading="eager" decoding="async" />
             </>
           ) : <div className="dl-ps-landing-fallback" />}
           <div className="dl-ps-landing-top-shade" />
