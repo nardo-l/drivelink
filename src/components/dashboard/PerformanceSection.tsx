@@ -18,6 +18,23 @@ type Props = {
 const CACHE_TTL = 60_000;
 const performanceCache = new Map<string, { data: PerformanceData; updatedAt: number }>();
 
+const PerformanceBars = memo(function PerformanceBars({ data }: { data: PerformanceData }) {
+  return (
+    <div className="dl-bars">
+      <div className="dl-bar-row">
+        <span>Visits</span>
+        <div><i style={{ width: (data.visits / maxBar * 100) + '%' }} /></div>
+        <strong>{data.visits.toLocaleString()}</strong>
+      </div>
+      <div className="dl-bar-row is-light">
+        <span>Enquiries</span>
+        <div><i style={{ width: (data.enquiries / maxBar * 100) + '%' }} /></div>
+        <strong>{data.enquiries.toLocaleString()}</strong>
+      </div>
+    </div>
+  );
+});
+
 export const PerformanceSection = memo(function PerformanceSection({
   dealershipId,
   period,
@@ -146,18 +163,7 @@ export const PerformanceSection = memo(function PerformanceSection({
             <button onClick={shareLink}>Share link</button>
           </div>
         ) : (
-          <div className="dl-bars">
-            <div className="dl-bar-row">
-              <span>Visits</span>
-              <div><i style={{ width: (data.visits / maxBar * 100) + '%' }} /></div>
-              <strong>{data.visits.toLocaleString()}</strong>
-            </div>
-            <div className="dl-bar-row is-light">
-              <span>Enquiries</span>
-              <div><i style={{ width: (data.enquiries / maxBar * 100) + '%' }} /></div>
-              <strong>{data.enquiries.toLocaleString()}</strong>
-            </div>
-          </div>
+          <PerformanceBars data={data} />
         )}
       </div>
     </section>
