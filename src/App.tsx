@@ -27,6 +27,46 @@ import { Check } from 'lucide-react';
 import { BottomNav } from './components/layout/BottomNav';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
 
+type TrialBannerProps = {
+  subscriptionState: 'trial' | 'active' | 'expired' | 'checking' | 'unverified' | 'setup';
+  trialEndsAt: string | null;
+  accessEndsAt: string | null;
+  serverNow: number;
+  onNavigate: (path: string) => void;
+};
+
+const TrialBanner: React.FC<TrialBannerProps> = ({ subscriptionState, trialEndsAt, accessEndsAt, serverNow, onNavigate }) => {
+  const [now, setNow] = React.useState(serverNow);
+
+  // Keep the countdown clock local to this banner so its ticks do not render AppContent or Home.
+  React.useEffect(() => {
+    const startedAt = window.performance.now();
+    const tick = () => setNow(serverNow + (window.performance.now() - startedAt));
+    tick();
+    const timer = window.setInterval(tick, 60_000);
+    return () => window.clearInterval(timer);
+  }, [serverNow]);
+
+            const showTrial = subscriptionState === 'trial' && trialRemainingMs !== null && trialRemainingMs > 0 && trialRemainingMs <= 2 * 86400000;
+  const showPaid = subscriptionState === 'active' && paidDaysLeft !== null && paidDaysLeft > 0 && paidDaysLeft <= 5;
+
+  if (!showTrial && !showPaid) return null;
+
+  return (
+    <div className={`sticky top-0 z-30 flex min-h-[40px] items-center justify-center gap-2 border-b border-[#e5e7eb] px-3 py-2 text-center text-[11px] font-medium text-[#0A0F1E] ${subscriptionState === 'trial' && trialRemainingMs !== null && trialRemainingMs <= 6 * 3600000 ? 'bg-[#fff8eb]' : 'bg-[#f3f4f6]'}`} style={{ paddingTop: 'max(8px, env(safe-area-inset-top))' }}>
+      <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${subscriptionState === 'trial' && trialRemainingMs !== null && trialRemainingMs <= 6 * 3600000 ? 'bg-amber-500' : 'bg-[#0A0F1E]'}`} />
+      <span>{subscriptionState === 'trial'
+        ? trialRemainingMs! <= 6 * 3600000
+          ? 'Your free trial ends today'
+          : trialRemainingMs! < 86400000
+            ? `Free trial ends in ${trialHoursLeft}h ${trialMinutesLeft}m`
+            : `${trialDaysLeft} ${trialDaysLeft === 1 ? 'day' : 'days'} left in your free trial`
+        : `Pro renews in ${paidDaysLeft} days ·`}</span>
+      <button onClick={() => onNavigate('/app/billing')} className="shrink-0 font-extrabold underline underline-offset-2">{subscriptionState === 'trial' ? 'View plans' : 'Renew'}</button>
+    </div>
+  );
+};
+
 function AppContent() {
   const safeDashboard = () => <ErrorBoundary label="dashboard"><DashboardPage /></ErrorBoundary>;
   const { currentPath, navigate, toast, showToast } = useNavigation();
@@ -52,10 +92,6 @@ function AppContent() {
       console.warn('Subscription access verification failed:', error);
       setSubscriptionState('unverified');
     }
-  }, []);
-  React.useEffect(() => {
-    const timer = window.setInterval(() => setSubscriptionServerNow(value => value + 60000), 60000);
-    return () => window.clearInterval(timer);
   }, []);
   const isDemo = storageService.isDemoModeActive();
   const isConfigured = isSupabaseConfigured();
@@ -306,19 +342,16 @@ function AppContent() {
     <DeviceFrame>
 
       {!forcePaywall && !blockUntilVerified && dealerAppRoute && (
-        (subscriptionState === 'trial' && trialRemainingMs !== null && trialRemainingMs > 0 && trialRemainingMs <= 2 * 86400000) ||
-        (subscriptionState === 'active' && paidDaysLeft !== null && paidDaysLeft > 0 && paidDaysLeft <= 5)
-      ) && <ErrorBoundary label="trial banner"><div className={`sticky top-0 z-30 flex min-h-[40px] items-center justify-center gap-2 border-b border-[#e5e7eb] px-3 py-2 text-center text-[11px] font-medium text-[#0A0F1E] ${subscriptionState === 'trial' && trialRemainingMs !== null && trialRemainingMs <= 6 * 3600000 ? 'bg-[#fff8eb]' : 'bg-[#f3f4f6]'}`} style={{paddingTop:'max(8px, env(safe-area-inset-top))'}}>
-        <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${subscriptionState === 'trial' && trialRemainingMs !== null && trialRemainingMs <= 6 * 3600000 ? 'bg-amber-500' : 'bg-[#0A0F1E]'}`} />
-        <span>{subscriptionState === 'trial'
-          ? trialRemainingMs! <= 6 * 3600000
-            ? 'Your free trial ends today'
-            : trialRemainingMs! < 86400000
-              ? `Free trial ends in ${trialHoursLeft}h ${trialMinutesLeft}m`
-              : `${trialDaysLeft} ${trialDaysLeft === 1 ? 'day' : 'days'} left in your free trial`
-          : `Pro renews in ${paidDaysLeft} days ·`}</span>
-        <button onClick={() => navigate('/app/billing')} className="shrink-0 font-extrabold underline underline-offset-2">{subscriptionState === 'trial' ? 'View plans' : 'Renew'}</button>
-      </div></ErrorBoundary>}
+        <ErrorBoundary label="trial banner">
+          <TrialBanner
+            subscriptionState={subscriptionState}
+            trialEndsAt={trialEndsAt}
+            accessEndsAt={accessEndsAt}
+            serverNow={subscriptionServerNow}
+            onNavigate={navigate}
+          />
+        </ErrorBoundary>
+      )}
       {forcePaywall || (blockUntilVerified && subscriptionState === 'unverified') ? <PaywallPage /> : blockUntilVerified ? <div className="flex min-h-[100dvh] items-center justify-center bg-white px-6 text-center text-sm text-gray-500">Verifying your DriveLink subscription…</div> : renderRoute()}
       {!forcePaywall && !blockUntilVerified && (['/app', '/app/vehicles', '/app/enquiries', '/app/more'].includes(currentPath) || (currentPath === '/' && storageService.getUserSession().isLoggedIn && !!storageService.getUserSession().dealershipId)) && <BottomNav />}
 
