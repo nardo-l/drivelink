@@ -179,7 +179,7 @@ export const PublicShowroomPage: React.FC<{ slug?: string; previewDealership?: D
   }, [dealer, vehicles]);
 
   const available = useMemo(() => vehicles.filter(v => v.status === 'available'), [vehicles]);
-  const makes = useMemo(() => Array.from(new Set(available.map(v => v.make).filter(Boolean))).sort(), [available]);
+  const makes = useMemo(() => Array.from(new Set(vehicles.filter(v => v.status !== 'draft').map(v => v.make).filter(Boolean))).sort(), [available]);
   const filtered = useMemo(() => vehicles.filter(v => {
     const hay = [v.year, v.make, v.model, v.fuel, v.colour, v.description].join(' ').toLowerCase();
     if (v.status === 'draft') return false;
