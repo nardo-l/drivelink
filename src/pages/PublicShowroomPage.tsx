@@ -51,7 +51,7 @@ export const PublicShowroomPage: React.FC<{ slug?: string; previewDealership?: D
     setShowLanding(!isBrowseRoute);
   }, [sessionKey, currentPath, slug, navigate]);
 
-  const [bannerFailed, setBannerFailed] = useState(false);
+  const [bannerFailed, setBannerFailed] = useState(false);\n  const [fallbackImageFailed, setFallbackImageFailed] = useState(false);\n  const [leavingLanding, setLeavingLanding] = useState(false);
   useEffect(() => {
     if (!showLanding) return;
     const previous = document.body.style.overflow;
@@ -230,13 +230,13 @@ export const PublicShowroomPage: React.FC<{ slug?: string; previewDealership?: D
   return (
     <main className="dl-public-showroom">
       {showLanding && (
-        <section className={'dl-ps-landing ' + (!dealer.coverUrl || bannerFailed ? 'has-no-banner' : '')} aria-label="Showroom welcome">
+        <section className={'dl-ps-landing ' + (!dealer.coverUrl || bannerFailed ? 'has-no-banner' : '') + (leavingLanding ? ' is-leaving' : '')} aria-label="Showroom welcome">
           {dealer.coverUrl && !bannerFailed ? (
             <>
               <div className="dl-ps-landing-placeholder" />
               <img className="dl-ps-landing-image" src={dealer.coverUrl} alt="" fetchPriority="high" loading="eager" decoding="async" onError={() => { console.error('[DriveLink showroom] Banner failed to load:', dealer.coverUrl); setBannerFailed(true); }} />
             </>
-           ) : vehicles.find(vehicle => vehicle.photos?.[0]) ? <img className="dl-ps-landing-image" src={vehicles.find(vehicle => vehicle.photos?.[0])?.photos?.[0]} alt="" fetchPriority="high" loading="eager" decoding="async" /> : <div className="dl-ps-landing-fallback" />}
+            ) : !fallbackImageFailed && vehicles.find(vehicle => vehicle.photos?.[0]) ? <img className="dl-ps-landing-image" src={vehicles.find(vehicle => vehicle.photos?.[0])?.photos?.[0]} alt="" fetchPriority="high" loading="eager" decoding="async" onError={() => { console.error('[DriveLink showroom] First vehicle cover failed to load.'); setFallbackImageFailed(true); }} /> : <div className="dl-ps-landing-fallback" />}
           <div className="dl-ps-landing-top-shade" />
           <div className="dl-ps-landing-bottom-shade" />
           <div className="dl-ps-landing-top">
