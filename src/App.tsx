@@ -313,8 +313,8 @@ function AppContent() {
             ? 'Your free trial ends today'
             : trialRemainingMs! < 86400000
               ? `Free trial ends in ${trialHoursLeft}h ${trialMinutesLeft}m`
-              : `${trialDaysLeft} days left in your free trial`
-          : `Pro renews in ${paidDaysLeft} days`}</span>
+              : `${trialDaysLeft} ${trialDaysLeft === 1 ? 'day' : 'days'} left in your free trial`
+          : `Pro renews in ${paidDaysLeft} days ·`}</span>
         <button onClick={() => navigate('/app/billing')} className="shrink-0 font-extrabold underline underline-offset-2">{subscriptionState === 'trial' ? 'View plans' : 'Renew'}</button>
       </div>}
       {forcePaywall || (blockUntilVerified && subscriptionState === 'unverified') ? <PaywallPage /> : blockUntilVerified ? <div className="flex min-h-[100dvh] items-center justify-center bg-white px-6 text-center text-sm text-gray-500">Verifying your DriveLink subscription…</div> : renderRoute()}
