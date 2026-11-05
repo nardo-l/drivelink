@@ -101,3 +101,27 @@
 /* The landing is a fixed, non-scrollable screen; listings use normal document flow. */
 .dl-public-showroom:has(.dl-ps-landing){position:fixed;inset:0;width:100%;height:100dvh;min-height:0;overflow:hidden;overscroll-behavior:none}
 .dl-ps-landing-copy{padding-bottom:env(safe-area-inset-bottom)}
+
+
+/* Public showroom refinement: portrait-first landing and lighter catalogue cards. */
+.dl-ps-landing-image{filter:none!important;backdrop-filter:none!important;object-fit:cover;object-position:center;z-index:0}
+.dl-ps-landing-placeholder{z-index:-1}
+.dl-ps-landing-top-shade{background:linear-gradient(to bottom,rgba(0,0,0,.56) 0%,rgba(0,0,0,.24) 14%,transparent 27%)}
+.dl-ps-landing-bottom-shade{background:linear-gradient(to top,rgba(0,0,0,.78) 0%,rgba(0,0,0,.55) 23%,rgba(0,0,0,.17) 39%,transparent 48%)}
+.dl-ps-landing-copy h1{max-width:620px;line-height:.96;letter-spacing:-.06em}
+.dl-ps-listings{padding-top:calc(16px + env(safe-area-inset-top));padding-bottom:calc(52px + env(safe-area-inset-bottom))}
+.dl-ps-car{border:0;border-radius:0;border-bottom:1px solid #e9edf1;padding-bottom:18px;transition:opacity .18s ease,transform .18s ease}
+.dl-ps-photo{border-radius:20px}
+.dl-ps-photo-count{position:absolute;left:12px;bottom:12px;padding:6px 9px;border-radius:999px;background:rgba(10,15,30,.72);color:#fff;font-size:10px;font-weight:750}
+.dl-ps-car-info{padding:13px 2px 0}
+.dl-ps-specs{gap:0;border:0;padding-top:9px}
+.dl-ps-specs span{padding:0 9px;border-right:1px solid #dfe3e8}
+.dl-ps-specs span:first-child{padding-left:0}
+.dl-ps-specs span:last-child{border-right:0}
+.dl-ps-floating-wa{bottom:calc(22px + env(safe-area-inset-bottom))}
+.dl-ps-landing-wa{background:#111722;color:#fff;border:0}
+.dl-ps-landing-actions{gap:12px}
+.dl-ps-empty{padding-bottom:76px}
+@media(max-width:380px){.dl-ps-car-heading h2,.dl-ps-car-heading>strong{font-size:14px}.dl-ps-specs span{padding:0 6px;font-size:9px}}
+@media(prefers-reduced-motion:no-preference){.dl-ps-listings{animation:dl-ps-enter .18s ease-out both}}
+@keyframes dl-ps-enter{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
