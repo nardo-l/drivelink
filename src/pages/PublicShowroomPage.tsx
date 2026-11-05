@@ -16,16 +16,22 @@ const WhatsAppMark: React.FC<{ size?: number }> = ({ size = 20 }) => (
 );
 
 export const PublicShowroomPage: React.FC<{ slug?: string; previewDealership?: Dealership; previewVehicles?: Vehicle[] }> = ({ slug, previewDealership, previewVehicles }) => {
-  const { navigate, showToast } = useNavigation();
+  const { navigate, showToast, currentPath } = useNavigation();
   const [dealer, setDealer] = useState<Dealership | null>(previewDealership || null);
   const [vehicles, setVehicles] = useState<Vehicle[]>(previewVehicles || []);
   const [loading, setLoading] = useState(!previewDealership);
   const sessionKey = 'drivelink:showroom-seen:' + (slug || previewDealership?.slug || 'preview');
-  const [showLanding] = useState(() => {
+  const [showLanding, setShowLanding] = useState(() => {
     if (typeof window === 'undefined') return true;
     if (window.location.pathname.replace(/\/$/, '').endsWith('/browse')) return false;
     try { return window.sessionStorage.getItem(sessionKey) !== '1'; } catch { return true; }
   });
+  useEffect(() => {
+    const isBrowseRoute = currentPath.replace(/\/$/, '').endsWith('/browse');
+    try { setShowLanding(!isBrowseRoute && window.sessionStorage.getItem(sessionKey) !== '1'); }
+    catch { setShowLanding(!isBrowseRoute); }
+  }, [sessionKey, currentPath]);
+
   const [query, setQuery] = useState('');
   const [make, setMake] = useState('All');
   const [savedOnly, setSavedOnly] = useState(false);
