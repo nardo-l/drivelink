@@ -13,7 +13,7 @@ import {
   Phone, Plus, RefreshCw, Search, Settings2, Share2, ShieldCheck, Sparkles,
   Star, Tag, Trash2, Upload, User, X, XCircle, type LucideIcon,
 } from 'lucide-react';
-import type { ComponentProps, CSSProperties } from 'react';
+import type { CSSProperties } from 'react';
 
 export const ICONS = {
   activity: Activity, alert: AlertTriangle, arrowDown: ArrowDown, arrowLeft: ArrowLeft,
