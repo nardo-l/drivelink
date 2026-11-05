@@ -51,7 +51,9 @@ export const PublicShowroomPage: React.FC<{ slug?: string; previewDealership?: D
     setShowLanding(!isBrowseRoute);
   }, [sessionKey, currentPath, slug, navigate]);
 
-  const [bannerFailed, setBannerFailed] = useState(false);\n  const [fallbackImageFailed, setFallbackImageFailed] = useState(false);\n  const [leavingLanding, setLeavingLanding] = useState(false);
+  const [bannerFailed, setBannerFailed] = useState(false);
+  const [fallbackImageFailed, setFallbackImageFailed] = useState(false);
+  const [leavingLanding, setLeavingLanding] = useState(false);
   useEffect(() => {
     if (!showLanding) return;
     const previous = document.body.style.overflow;
