@@ -14,7 +14,6 @@ export const DriveLinkLogo: React.FC<DriveLinkLogoProps> = ({
   className = '',
 }) => {
   const color = variant === 'light' ? '#FFFFFF' : '#0A0F1E';
-  const compact = size === 'sm';
   return (
     <span
       className={`dl-logo dl-logo-${size} ${className}`.trim()}
