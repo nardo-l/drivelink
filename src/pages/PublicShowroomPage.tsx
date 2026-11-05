@@ -23,7 +23,7 @@ export const PublicShowroomPage: React.FC<{ slug?: string; previewDealership?: D
   const sessionKey = 'drivelink:showroom-seen:' + (slug || previewDealership?.slug || 'preview');
   const [showLanding, setShowLanding] = useState(() => {
     if (typeof window === 'undefined') return true;
-    if (window.location.pathname.replace(/\/$/, '').endsWith('/browse')) return false;
+    if (window.location.pathname.replace(/\/$/, '').endsWith('/cars')) return false;
     try { return window.sessionStorage.getItem(sessionKey) !== '1'; } catch { return true; }
   });
   useEffect(() => {
@@ -35,7 +35,7 @@ export const PublicShowroomPage: React.FC<{ slug?: string; previewDealership?: D
   }, [sessionKey]);
 
   useEffect(() => {
-    const isBrowseRoute = currentPath.replace(/\/$/, '').endsWith('/browse');
+    const isBrowseRoute = currentPath.replace(/\/$/, '').endsWith('/cars');
     let seen = false;
     let returningByBack = false;
     try {
@@ -44,7 +44,7 @@ export const PublicShowroomPage: React.FC<{ slug?: string; previewDealership?: D
       if (returningByBack) window.sessionStorage.removeItem(sessionKey + ':back');
     } catch { /* session storage may be unavailable */ }
     if (!isBrowseRoute && seen && !returningByBack && slug) {
-      navigate('/showroom/' + encodeURIComponent(slug) + '/browse');
+      navigate('/showroom/' + encodeURIComponent(slug) + '/cars');
       setShowLanding(false);
       return;
     }
@@ -222,7 +222,7 @@ export const PublicShowroomPage: React.FC<{ slug?: string; previewDealership?: D
   };
   const scrollCars = () => {
     try { window.sessionStorage.setItem(sessionKey, '1'); } catch { /* session storage may be unavailable */ }
-    navigate('/showroom/' + encodeURIComponent(dealer.slug) + '/browse');
+    navigate('/showroom/' + encodeURIComponent(dealer.slug) + '/cars');
   };
   const goVehicle = (vehicle: Vehicle) => navigate('/showroom/' + dealer.slug + '/vehicle/' + vehicle.id);
   const countLabel = (count: number) => count + (count === 1 ? ' car' : ' cars');
@@ -236,7 +236,7 @@ export const PublicShowroomPage: React.FC<{ slug?: string; previewDealership?: D
               <div className="dl-ps-landing-placeholder" />
               <img className="dl-ps-landing-image" src={dealer.coverUrl} alt="" fetchPriority="high" loading="eager" decoding="async" onError={() => { console.error('[DriveLink showroom] Banner failed to load:', dealer.coverUrl); setBannerFailed(true); }} />
             </>
-          ) : <div className="dl-ps-landing-fallback" />}
+           ) : vehicles.find(vehicle => vehicle.photos?.[0]) ? <img className="dl-ps-landing-image" src={vehicles.find(vehicle => vehicle.photos?.[0])?.photos?.[0]} alt="" fetchPriority="high" loading="eager" decoding="async" /> : <div className="dl-ps-landing-fallback" />}
           <div className="dl-ps-landing-top-shade" />
           <div className="dl-ps-landing-bottom-shade" />
           <div className="dl-ps-landing-top">
@@ -250,7 +250,7 @@ export const PublicShowroomPage: React.FC<{ slug?: string; previewDealership?: D
             <div className="dl-ps-fallback-logo">{dealer.logoUrl ? <img src={dealer.logoUrl} alt={dealer.name} /> : <span>{initials}</span>}</div>
           )}
           <div className="dl-ps-landing-copy">
-            <h1>{dealer.tagline?.trim() || 'Find your next car.'}</h1>
+            <h1>{dealer.tagline?.trim() && dealer.tagline.trim() !== 'Quality vehicles. Fair prices.' && dealer.tagline.trim() !== dealer.name ? dealer.tagline.trim() : 'Find your next car.'}</h1>
             <p>{countLabel(available.length)} available{dealer.city ? ' · ' + dealer.city : ''}</p>
             <div className="dl-ps-landing-actions">
               <button className="dl-ps-explore" onClick={scrollCars}>Explore cars <i><ArrowRight size={16} /></i></button>
@@ -290,7 +290,7 @@ export const PublicShowroomPage: React.FC<{ slug?: string; previewDealership?: D
               <article className="dl-ps-car" key={vehicle.id} role="link" tabIndex={0} onClick={() => goVehicle(vehicle)} onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); goVehicle(vehicle); } }}>
                 <div className="dl-ps-photo">
                   {vehicle.photos?.[0] ? <img loading="lazy" decoding="async" src={vehicle.photos[0]} alt={vehicle.make + ' ' + vehicle.model} /> : <span className="dl-ps-no-photo"><CarFront size={36} /></span>}
-                  {vehicle.status !== 'available' && <span className={'dl-ps-status ' + vehicle.status}>{vehicle.status === 'reserved' ? 'Reserved' : 'Sold'}</span>}
+                  {vehicle.status !== 'available' && <span className={'dl-ps-status ' + vehicle.status}>{vehicle.status === 'reserved' ? 'Reserved' : 'Sold'}</span>}\n                  <span className="dl-ps-photo-count">{(vehicle.photos || []).length} {(vehicle.photos || []).length === 1 ? 'photo' : 'photos'}</span>
                   <button className={'dl-ps-heart ' + (saved.includes(vehicle.id) ? 'saved' : '')} onClick={e => { e.stopPropagation(); toggleSave(vehicle.id); }} onKeyDown={e => e.stopPropagation()} aria-label={saved.includes(vehicle.id) ? 'Remove saved car' : 'Save car'}><Heart fill={saved.includes(vehicle.id) ? 'currentColor' : 'none'} size={18} /></button>
                 </div>
                 <div className="dl-ps-car-info">
@@ -298,7 +298,7 @@ export const PublicShowroomPage: React.FC<{ slug?: string; previewDealership?: D
                   <div className="dl-ps-specs">
                     <span><CalendarDays size={14} />{vehicle.year}</span>
                     <span><Gauge size={14} />{Number(vehicle.mileageKm || 0).toLocaleString()} km</span>
-                    <span><Fuel size={14} />{vehicle.fuel}</span>
+                    <span><Fuel size={14} />{vehicle.fuel}</span>\n                    <span><CarFront size={14} />{vehicle.transmission}</span>
                   </div>
                 </div>
               </article>
