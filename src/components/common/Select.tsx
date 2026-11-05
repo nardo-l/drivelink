@@ -45,7 +45,7 @@ export const Select: React.FC<SelectProps> = ({
   const [query, setQuery] = useState('');
   const [customMode, setCustomMode] = useState(false);
   const [customValue, setCustomValue] = useState('');
-  const [above, setAbove] = useState(false);
+  const [above, setAbove] = useState(false);\n  const [anchor, setAnchor] = useState({ top: 0, left: 0, width: 240 });
   const [mobile, setMobile] = useState(() => typeof window !== 'undefined' && window.matchMedia('(max-width: 767px)').matches);
   const listId = React.useId();
   const selected = options.find(option => option.value === value);
@@ -67,7 +67,7 @@ export const Select: React.FC<SelectProps> = ({
   const updatePosition = useCallback(() => {
     if (!rootRef.current) return;
     const rect = rootRef.current.getBoundingClientRect();
-    setAbove(window.innerHeight - rect.bottom < 340 && rect.top > 340);
+    const flip = window.innerHeight - rect.bottom < 340 && rect.top > 340;\n    setAbove(flip);\n    setAnchor({ top: flip ? Math.max(8, rect.top - 328) : rect.bottom + 6, left: Math.max(8, Math.min(rect.left, window.innerWidth - rect.width - 8)), width: rect.width });
   }, []);
 
   const openMenu = () => {
