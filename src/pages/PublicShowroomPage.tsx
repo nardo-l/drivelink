@@ -134,7 +134,13 @@ export const PublicShowroomPage: React.FC<{ slug?: string; previewDealership?: D
     setMeta('og:description', count + (count === 1 ? ' car available in ' : ' cars available in ') + city, true);
     if (dealer.coverUrl) {
       const ogImage = dealer.coverUrl.replace(/\/banner\.webp(?:\?.*)?$/, '/banner-og.webp');
-      setMeta('og:image', ogImage, true);
+      const transformedFallback = dealer.coverUrl.includes('/storage/v1/object/public/')
+        ? dealer.coverUrl.replace('/storage/v1/object/public/', '/storage/v1/render/image/public/') + '?width=1200&height=630&resize=cover&quality=80'
+        : dealer.coverUrl;
+      setMeta('og:image', transformedFallback, true);
+      void fetch(ogImage, { method: 'HEAD' }).then(response => {
+        if (response.ok) setMeta('og:image', ogImage, true);
+      }).catch(() => undefined);
       setMeta('og:image:width', '1200', true);
       setMeta('og:image:height', '630', true);
     }
@@ -187,7 +193,6 @@ export const PublicShowroomPage: React.FC<{ slug?: string; previewDealership?: D
     setTransmission('All'); setFuel('All'); setMake('All'); setSavedOnly(false); setQuery('');
   };
   const scrollCars = () => {
-    setShowLanding(false);
     try { window.sessionStorage.setItem(sessionKey, '1'); } catch { /* session storage may be unavailable */ }
     window.setTimeout(() => listingRef.current?.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' }), 30);
   };
