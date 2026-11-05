@@ -19,6 +19,7 @@ const CACHE_TTL = 60_000;
 const performanceCache = new Map<string, { data: PerformanceData; updatedAt: number }>();
 
 const PerformanceBars = memo(function PerformanceBars({ data }: { data: PerformanceData }) {
+  const maxBar = Math.max(1, data.visits, data.enquiries);
   return (
     <div className="dl-bars">
       <div className="dl-bar-row">
@@ -121,7 +122,6 @@ export const PerformanceSection = memo(function PerformanceSection({
     return () => { active = false; };
   }, [dealershipId, period, isLive, enquiries, retry, key, onData, onInitialLoadComplete]);
 
-  const maxBar = Math.max(1, data.visits, data.enquiries);
   const shareLink = async () => {
     try {
       await navigator.clipboard.writeText(showroomUrl);
