@@ -38,14 +38,16 @@ export const Select: React.FC<SelectProps> = ({
   const triggerRef = useRef<HTMLButtonElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
   const customRef = useRef<HTMLInputElement>(null);
-  const touchStartY = useRef<number | null>(null);\n  const historyEntry = useRef(false);
+  const touchStartY = useRef<number | null>(null);
+  const historyEntry = useRef(false);
   const typeahead = useRef('');
   const typeaheadTimer = useRef<number | undefined>(undefined);
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [customMode, setCustomMode] = useState(false);
   const [customValue, setCustomValue] = useState('');
-  const [above, setAbove] = useState(false);\n  const [anchor, setAnchor] = useState({ top: 0, left: 0, width: 240 });
+  const [above, setAbove] = useState(false);
+  const [anchor, setAnchor] = useState({ top: 0, left: 0, width: 240 });
   const [mobile, setMobile] = useState(() => typeof window !== 'undefined' && window.matchMedia('(max-width: 767px)').matches);
   const listId = React.useId();
   const selected = options.find(option => option.value === value);
@@ -67,7 +69,9 @@ export const Select: React.FC<SelectProps> = ({
   const updatePosition = useCallback(() => {
     if (!rootRef.current) return;
     const rect = rootRef.current.getBoundingClientRect();
-    const flip = window.innerHeight - rect.bottom < 340 && rect.top > 340;\n    setAbove(flip);\n    setAnchor({ top: flip ? Math.max(8, rect.top - 328) : rect.bottom + 6, left: Math.max(8, Math.min(rect.left, window.innerWidth - rect.width - 8)), width: rect.width });
+    const flip = window.innerHeight - rect.bottom < 340 && rect.top > 340;
+    setAbove(flip);
+    setAnchor({ top: flip ? Math.max(8, rect.top - 328) : rect.bottom + 6, left: Math.max(8, Math.min(rect.left, window.innerWidth - rect.width - 8)), width: rect.width });
   }, []);
 
   const openMenu = () => {
@@ -131,7 +135,8 @@ export const Select: React.FC<SelectProps> = ({
     if (searchable) window.setTimeout(() => searchRef.current?.focus(), 80);
     else if (!mobile) window.setTimeout(() => rootRef.current?.querySelector<HTMLElement>('[role="option"]')?.focus(), 0);
     return () => {
-      document.body.style.overflow = previousOverflow;\n      if (historyEntry.current) { historyEntry.current = false; window.history.back(); }
+      document.body.style.overflow = previousOverflow;
+      if (historyEntry.current) { historyEntry.current = false; window.history.back(); }
       window.removeEventListener('keydown', onKeyDown);
       window.removeEventListener('popstate', onPopState);
       window.clearTimeout(typeaheadTimer.current);
