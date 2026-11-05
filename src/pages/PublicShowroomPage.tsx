@@ -27,10 +27,23 @@ export const PublicShowroomPage: React.FC<{ slug?: string; previewDealership?: D
     try { return window.sessionStorage.getItem(sessionKey) !== '1'; } catch { return true; }
   });
   useEffect(() => {
+    const handleBackToLanding = () => {
+      try { window.sessionStorage.setItem(sessionKey + ':back', '1'); } catch { /* session storage may be unavailable */ }
+    };
+    window.addEventListener('popstate', handleBackToLanding);
+    return () => window.removeEventListener('popstate', handleBackToLanding);
+  }, [sessionKey]);
+
+  useEffect(() => {
     const isBrowseRoute = currentPath.replace(/\/$/, '').endsWith('/browse');
     let seen = false;
-    try { seen = window.sessionStorage.getItem(sessionKey) === '1'; } catch { /* session storage may be unavailable */ }
-    if (!isBrowseRoute && seen && slug) {
+    let returningByBack = false;
+    try {
+      seen = window.sessionStorage.getItem(sessionKey) === '1';
+      returningByBack = window.sessionStorage.getItem(sessionKey + ':back') === '1';
+      if (returningByBack) window.sessionStorage.removeItem(sessionKey + ':back');
+    } catch { /* session storage may be unavailable */ }
+    if (!isBrowseRoute && seen && !returningByBack && slug) {
       navigate('/showroom/' + encodeURIComponent(slug) + '/browse');
       setShowLanding(false);
       return;
