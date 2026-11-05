@@ -240,7 +240,7 @@ export const ShowroomBrandingEditor: React.FC<ShowroomBrandingEditorProps> = ({
     </div>
     <div className="sb-upload-list">
       {renderUpload('logo', 'Logo', 'Square, at least 400x400px. PNG or JPG.')}
-      {renderUpload('banner', 'Banner', 'Wide image, 1500x500px works best.')}
+      {renderUpload('banner', 'Banner', 'Tall portrait photo, 9:16. Saved as 1080 × 1920 WebP.')}
     </div>
     {cropKind && cropImage && <div className="sb-crop-backdrop" role="dialog" aria-modal="true" aria-label={"Crop " + cropKind}>
       <div className="sb-crop-sheet">
