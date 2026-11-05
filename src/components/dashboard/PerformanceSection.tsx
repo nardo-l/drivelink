@@ -8,7 +8,7 @@ type Props = {
   dealershipId: string;
   period: 7 | 30 | 90;
   isLive: boolean;
-  enquiries: EnquiryDate[];
+  enquiries?: EnquiryDate[];
   showroomUrl: string;
   onPeriodChange: (period: 7 | 30 | 90) => void;
   onData: (data: PerformanceData) => void;
@@ -36,6 +36,15 @@ export const PerformanceSection = memo(function PerformanceSection({
   const [retry, setRetry] = useState(0);
   const key = `${dealershipId}:${period}`;
 
+  if (import.meta.env.DEV) console.debug('[Home Performance] render', { dealershipId, period });
+
+  useEffect(() => {
+    if (import.meta.env.DEV) console.debug('[Home Performance] mount', { dealershipId, period });
+    return () => {
+      if (import.meta.env.DEV) console.debug('[Home Performance] unmount', { dealershipId, period });
+    };
+  }, []);
+
   useEffect(() => {
     if (!dealershipId) return;
     let active = true;
@@ -44,7 +53,7 @@ export const PerformanceSection = memo(function PerformanceSection({
       const since = Date.now() - period * 24 * 60 * 60 * 1000;
       const next = {
         visits: 0,
-        enquiries: enquiries.filter(item => new Date(item.createdAt).getTime() >= since).length,
+        enquiries: (enquiries || []).filter(item => new Date(item.createdAt).getTime() >= since).length,
       };
       setData(next);
       setHasData(true);
@@ -74,6 +83,7 @@ export const PerformanceSection = memo(function PerformanceSection({
     setError('');
 
     const load = async () => {
+      if (import.meta.env.DEV) console.debug('[Home Performance] data fetch start', { dealershipId, period });
       try {
         const result = await supabaseService.getDealershipPerformance(dealershipId, period);
         if (!active) return;
