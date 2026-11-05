@@ -161,9 +161,7 @@ export const DashboardPage: React.FC = () => {
     { label: 'Cars sold', value: soldCount, icon: CarFront },
   ];
   const maxBar = Math.max(1, performance.visits, performance.enquiries);
-  const isTrial = subscription?.status === 'trial' && Boolean(subscription.trial_ends_at);
   const isSubscribed = subscription?.status === 'active' || subscription?.status === 'grace_period';
-  const remaining = Math.max(0, trialEnd - subscriptionNow);
   const activeEnd = periodEnd || graceEnd;
   const activeDays = Math.max(0, Math.ceil((activeEnd - subscriptionNow) / 86400000));
 
