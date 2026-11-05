@@ -1613,3 +1613,7 @@ body, .dl-frame, .dl-workspace { color: #171717; background: #FAF9F6 !important;
 .dl-ps-powered .dl-logo-mark{display:none}
 .dl-marketing-page .dl-brand>.dl-logo{width:150px}
 .dl-marketing-page .dl-footer .dl-brand>.dl-logo{width:112px}
+
+
+html, body, #root { min-height: 100%; background: #FAF9F6; }
+body { min-height: 100vh; min-height: 100dvh; }
