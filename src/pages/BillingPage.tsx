@@ -1,4 +1,5 @@
 import React from 'react';
+import { DriveLinkLogo } from '../components/common/DriveLinkLogo';
 import {
   ArrowLeft, Check, CreditCard, ExternalLink, Loader2, ShieldCheck,
 } from 'lucide-react';
@@ -210,6 +211,7 @@ export const BillingPage: React.FC = () => {
   return (
     <div className="min-h-full flex flex-col bg-[#F7F8FA] text-[#0A0F1E]">
       <header className="sticky top-0 z-20 flex items-center gap-3 bg-[#F7F8FA]/95 px-5 py-4 backdrop-blur-md">
+        <div className="mx-auto"><DriveLinkLogo variant="dark" size="sm" /></div>
         <button
           type="button"
           onClick={() => navigate('/app/settings')}
