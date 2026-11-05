@@ -90,19 +90,38 @@ export const Select: React.FC<SelectProps> = ({
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') { event.preventDefault(); close(); }
       if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
-        const enabled = filtered.filter(option => !option.disabled);
+        const enabled = Array.from(document.getElementById(listId)?.querySelectorAll<HTMLElement>('[role="option"]:not([aria-disabled="true"])') || []);
         if (!enabled.length) return;
         event.preventDefault();
-        const current = enabled.findIndex(option => option.value === value);
-        const next = event.key === 'ArrowDown'
-          ? enabled[(current + 1 + enabled.length) % enabled.length]
-          : enabled[(current - 1 + enabled.length) % enabled.length];
-        onChange(next.value);
+        const current = enabled.indexOf(document.activeElement as HTMLElement);
+        const selectedIndex = enabled.findIndex(option => option.getAttribute('aria-selected') === 'true');
+        const start = current >= 0 ? current : selectedIndex;
+        const nextIndex = event.key === 'ArrowDown'
+          ? (start + 1 + enabled.length) % enabled.length
+          : (start - 1 + enabled.length) % enabled.length;
+        enabled[nextIndex].focus();
       }
-      if (!mobile && event.key.length === 1 && !event.ctrlKey && !event.metaKey && !event.altKey) {
+      if (event.key === 'Enter') {
+        const target = event.target as HTMLElement;
+        if (customMode && target instanceof HTMLInputElement) {
+          const nextValue = customValue.trim();
+          if (nextValue) { onChange(nextValue); close(); }
+          event.preventDefault();
+        } else if (target.getAttribute('role') === 'option') {
+          event.preventDefault();
+          (target as HTMLButtonElement).click();
+        } else if (searchable && filtered.length === 1) {
+          event.preventDefault();
+          choose(filtered[0]);
+        }
+      }
+      if (!mobile && event.key.length === 1 && !event.ctrlKey && !event.metaKey && !event.altKey && !(event.target instanceof HTMLInputElement) && !(event.target instanceof HTMLTextAreaElement)) {
         typeahead.current += event.key.toLowerCase();
         const match = options.find(option => !option.disabled && option.label.toLowerCase().startsWith(typeahead.current));
-        if (match) onChange(match.value);
+        if (match) {
+          const option = Array.from(document.getElementById(listId)?.querySelectorAll<HTMLElement>('[role="option"]') || []).find(node => node.textContent?.includes(match.label));
+          option?.focus();
+        }
         window.clearTimeout(typeaheadTimer.current);
         typeaheadTimer.current = window.setTimeout(() => { typeahead.current = ''; }, 650);
       }
@@ -121,7 +140,7 @@ export const Select: React.FC<SelectProps> = ({
       window.removeEventListener('popstate', onPopState);
       window.clearTimeout(typeaheadTimer.current);
     };
-  }, [open, mobile, searchable, filtered, options, value, onChange, close]);
+  }, [open, mobile, searchable, filtered, options, value, onChange, close, customMode, customValue, listId]);
 
   useEffect(() => {
     const media = window.matchMedia('(max-width: 767px)');
