@@ -23,7 +23,7 @@ export const PublicShowroomPage: React.FC<{ slug?: string; previewDealership?: D
   const sessionKey = 'drivelink:showroom-seen:' + (slug || previewDealership?.slug || 'preview');
   const [showLanding, setShowLanding] = useState(() => {
     if (typeof window === 'undefined') return true;
-    if (window.location.pathname.replace(/\/$/, '').endsWith('/cars')) return false;
+    if (window.location.pathname.replace(/\/$/, '')./(?:\/cars|\/browse)$/.test(window.location.pathname.replace(/\/$/, ''))) return false;
     try { return window.sessionStorage.getItem(sessionKey) !== '1'; } catch { return true; }
   });
   useEffect(() => {
@@ -35,7 +35,7 @@ export const PublicShowroomPage: React.FC<{ slug?: string; previewDealership?: D
   }, [sessionKey]);
 
   useEffect(() => {
-    const isBrowseRoute = currentPath.replace(/\/$/, '').endsWith('/cars');
+    const isBrowseRoute = /(?:\/cars|\/browse)$/.test(currentPath.replace(/\/$/, ''));
     let seen = false;
     let returningByBack = false;
     try {
