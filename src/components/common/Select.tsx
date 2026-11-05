@@ -38,7 +38,7 @@ export const Select: React.FC<SelectProps> = ({
   const triggerRef = useRef<HTMLButtonElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
   const customRef = useRef<HTMLInputElement>(null);
-  const touchStartY = useRef<number | null>(null);
+  const touchStartY = useRef<number | null>(null);\n  const historyEntry = useRef(false);
   const typeahead = useRef('');
   const typeaheadTimer = useRef<number | undefined>(undefined);
   const [open, setOpen] = useState(false);
@@ -107,7 +107,7 @@ export const Select: React.FC<SelectProps> = ({
         typeaheadTimer.current = window.setTimeout(() => { typeahead.current = ''; }, 650);
       }
     };
-    const onPopState = () => close(false);
+    const onPopState = () => { historyEntry.current = false; close(false); };
     if (mobile) {
       window.history.pushState({ drivelinkSelect: true }, '');
       window.addEventListener('popstate', onPopState);
@@ -116,7 +116,7 @@ export const Select: React.FC<SelectProps> = ({
     if (searchable) window.setTimeout(() => searchRef.current?.focus(), 80);
     else if (!mobile) window.setTimeout(() => rootRef.current?.querySelector<HTMLElement>('[role="option"]')?.focus(), 0);
     return () => {
-      document.body.style.overflow = previousOverflow;
+      document.body.style.overflow = previousOverflow;\n      if (historyEntry.current) { historyEntry.current = false; window.history.back(); }
       window.removeEventListener('keydown', onKeyDown);
       window.removeEventListener('popstate', onPopState);
       window.clearTimeout(typeaheadTimer.current);
@@ -194,7 +194,7 @@ export const Select: React.FC<SelectProps> = ({
             </button>
           ))}
           {customAllowed && !customMode && (!query || otherOption?.label.toLowerCase().includes(query.toLowerCase()) || 'other'.includes(query.toLowerCase())) && (
-            <button type="button" className="dls-option dls-other" role="option" aria-selected={false} onClick={() => { setCustomMode(true); setCustomValue(''); window.setTimeout(() => customRef.current?.focus(), 50); }}>
+            <button type="button" className="dls-option dls-other" role="option" aria-selected={false} onClick={() => { setCustomMode(true); setCustomValue(''); window.setTimeout(() => searchRef.current?.focus(), 50); }}>
               <span className="dls-option-copy"><span>Other</span><small>Enter a custom value</small></span>
             </button>
           )}
@@ -222,7 +222,7 @@ export const Select: React.FC<SelectProps> = ({
         className={`dls-trigger ${open ? 'is-open' : ''} ${error ? 'has-error' : ''}`}
         onClick={() => open ? close(false) : openMenu()}
       >
-        <span className={selected ? 'dls-value' : 'dls-placeholder'}>{selected?.label || value || placeholder}</span>
+        <span className={selected || value ? 'dls-value' : 'dls-placeholder'}>{selected?.label || value || placeholder}</span>
         <ChevronDown size={18} className={`dls-chevron ${open ? 'is-rotated' : ''}`} aria-hidden="true"/>
       </button>
       {error && <span className="dls-error" role="alert">{error}</span>}
