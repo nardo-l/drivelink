@@ -11,6 +11,8 @@ type Props = {
   enquiries: EnquiryDate[];
   showroomUrl: string;
   onPeriodChange: (period: 7 | 30 | 90) => void;
+  onData: (data: PerformanceData) => void;
+  onInitialLoadComplete: () => void;
 };
 
 const CACHE_TTL = 60_000;
@@ -23,6 +25,8 @@ export const PerformanceSection = memo(function PerformanceSection({
   enquiries,
   showroomUrl,
   onPeriodChange,
+  onData,
+  onInitialLoadComplete,
 }: Props) {
   const { showToast } = useNavigation();
   const [data, setData] = useState<PerformanceData>({ visits: 0, enquiries: 0 });
@@ -44,6 +48,8 @@ export const PerformanceSection = memo(function PerformanceSection({
       };
       setData(next);
       setHasData(true);
+      onData(next);
+      onInitialLoadComplete();
       setLoading(false);
       setError('');
       return;
@@ -53,6 +59,8 @@ export const PerformanceSection = memo(function PerformanceSection({
     if (cached) {
       setData(cached.data);
       setHasData(true);
+      onData(cached.data);
+      onInitialLoadComplete();
     }
     const isFresh = !!cached && Date.now() - cached.updatedAt < CACHE_TTL;
     if (isFresh) {
@@ -72,6 +80,8 @@ export const PerformanceSection = memo(function PerformanceSection({
         performanceCache.set(key, { data: result, updatedAt: Date.now() });
         setData(result);
         setHasData(true);
+        onData(result);
+        onInitialLoadComplete();
         setError('');
       } catch (err: any) {
         if (active && !hasData && !cached) setError(err?.message || "Couldn't load performance");
@@ -82,7 +92,7 @@ export const PerformanceSection = memo(function PerformanceSection({
 
     void load();
     return () => { active = false; };
-  }, [dealershipId, period, isLive, enquiries, retry, key]);
+  }, [dealershipId, period, isLive, enquiries, retry, key, onData, onInitialLoadComplete]);
 
   const maxBar = Math.max(1, data.visits, data.enquiries);
   const shareLink = async () => {
