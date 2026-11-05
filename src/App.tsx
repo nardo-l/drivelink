@@ -330,11 +330,6 @@ function AppContent() {
 
   const currentSession = storageService.getUserSession();
   const dealerAppRoute = currentSession.isLoggedIn && !!currentSession.dealershipId && (currentPath.startsWith('/app') || ['/', '/login', '/signup', '/onboarding'].includes(currentPath));
-  const trialRemainingMs = trialEndsAt ? new Date(trialEndsAt).getTime() - subscriptionServerNow : null;
-  const trialDaysLeft = trialRemainingMs !== null ? Math.ceil(trialRemainingMs / 86400000) : null;
-  const trialHoursLeft = trialRemainingMs !== null ? Math.max(0, Math.floor(trialRemainingMs / 3600000)) : 0;
-  const trialMinutesLeft = trialRemainingMs !== null ? Math.max(0, Math.floor((trialRemainingMs % 3600000) / 60000)) : 0;
-  const paidDaysLeft = accessEndsAt ? Math.ceil((new Date(accessEndsAt).getTime() - subscriptionServerNow) / 86400000) : null;
   const forcePaywall = !forceNotificationsPreview && isConfigured && !isDemo && dealerAppRoute && currentSession.isLoggedIn && !!currentSession.dealershipId && subscriptionState === 'expired';
   const blockUntilVerified = !forceNotificationsPreview && isConfigured && !isDemo && dealerAppRoute && currentSession.isLoggedIn && !!currentSession.dealershipId && ['checking', 'unverified'].includes(subscriptionState);
 
