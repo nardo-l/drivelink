@@ -23,7 +23,7 @@ export const PublicShowroomPage: React.FC<{ slug?: string; previewDealership?: D
   const sessionKey = 'drivelink:showroom-seen:' + (slug || previewDealership?.slug || 'preview');
   const [showLanding, setShowLanding] = useState(() => {
     if (typeof window === 'undefined') return true;
-    if (window.location.pathname.replace(/\/$/, '')./(?:\/cars|\/browse)$/.test(window.location.pathname.replace(/\/$/, ''))) return false;
+    if (/(?:\/cars|\/browse)$/.test(window.location.pathname.replace(/\/$/, ''))) return false;
     try { return window.sessionStorage.getItem(sessionKey) !== '1'; } catch { return true; }
   });
   useEffect(() => {
@@ -290,7 +290,8 @@ export const PublicShowroomPage: React.FC<{ slug?: string; previewDealership?: D
               <article className="dl-ps-car" key={vehicle.id} role="link" tabIndex={0} onClick={() => goVehicle(vehicle)} onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); goVehicle(vehicle); } }}>
                 <div className="dl-ps-photo">
                   {vehicle.photos?.[0] ? <img loading="lazy" decoding="async" src={vehicle.photos[0]} alt={vehicle.make + ' ' + vehicle.model} /> : <span className="dl-ps-no-photo"><CarFront size={36} /></span>}
-                  {vehicle.status !== 'available' && <span className={'dl-ps-status ' + vehicle.status}>{vehicle.status === 'reserved' ? 'Reserved' : 'Sold'}</span>}\n                  <span className="dl-ps-photo-count">{(vehicle.photos || []).length} {(vehicle.photos || []).length === 1 ? 'photo' : 'photos'}</span>
+                  {vehicle.status !== 'available' && <span className={'dl-ps-status ' + vehicle.status}>{vehicle.status === 'reserved' ? 'Reserved' : 'Sold'}</span>}
+                  <span className="dl-ps-photo-count">{(vehicle.photos || []).length} {(vehicle.photos || []).length === 1 ? 'photo' : 'photos'}</span>
                   <button className={'dl-ps-heart ' + (saved.includes(vehicle.id) ? 'saved' : '')} onClick={e => { e.stopPropagation(); toggleSave(vehicle.id); }} onKeyDown={e => e.stopPropagation()} aria-label={saved.includes(vehicle.id) ? 'Remove saved car' : 'Save car'}><Heart fill={saved.includes(vehicle.id) ? 'currentColor' : 'none'} size={18} /></button>
                 </div>
                 <div className="dl-ps-car-info">
@@ -298,7 +299,8 @@ export const PublicShowroomPage: React.FC<{ slug?: string; previewDealership?: D
                   <div className="dl-ps-specs">
                     <span><CalendarDays size={14} />{vehicle.year}</span>
                     <span><Gauge size={14} />{Number(vehicle.mileageKm || 0).toLocaleString()} km</span>
-                    <span><Fuel size={14} />{vehicle.fuel}</span>\n                    <span><CarFront size={14} />{vehicle.transmission}</span>
+                    <span><Fuel size={14} />{vehicle.fuel}</span>
+                    <span><CarFront size={14} />{vehicle.transmission}</span>
                   </div>
                 </div>
               </article>
