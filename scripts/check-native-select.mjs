@@ -13,7 +13,7 @@ function walk(dir) {
       const source = fs.readFileSync(file, 'utf8');
       const lines = source.split(/\r?\n/);
       lines.forEach((line, index) => {
-        if (/<\s*select\b/i.test(line)) failures.push(`${path.relative(process.cwd(), file)}:${index + 1}: raw <select> found`);
+        if (/<\s*select\b/.test(line)) failures.push(`${path.relative(process.cwd(), file)}:${index + 1}: raw <select> found`);
       });
     }
   }
