@@ -51,6 +51,10 @@ function AppContent() {
       setSubscriptionState('unverified');
     }
   }, []);
+  React.useEffect(() => {
+    const timer = window.setInterval(() => setSubscriptionServerNow(value => value + 60000), 60000);
+    return () => window.clearInterval(timer);
+  }, []);
   const isDemo = storageService.isDemoModeActive();
   const isConfigured = isSupabaseConfigured();
   const previewQuery = typeof window !== 'undefined' ? `${window.location.search}&${window.location.hash.split('?')[1] || ''}` : '';
