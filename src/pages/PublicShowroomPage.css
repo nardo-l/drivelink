@@ -1,9 +1,9 @@
 .dl-public-showroom{position:relative;width:100%;max-width:none;min-height:100dvh;margin:0;padding:0;background:#fff;color:#0a0f1e;font-family:Inter,ui-sans-serif,system-ui,sans-serif;overflow:visible}
 .dl-ps-loading{min-height:100dvh;display:grid;place-items:center;color:#858d99;font-size:13px}
-.dl-ps-landing{position:relative;isolation:isolate;width:100%;height:100dvh;min-height:100dvh;overflow:hidden;background:#151922;color:#fff}
+.dl-ps-landing{position:fixed;z-index:80;isolation:isolate;inset:0;width:100%;height:100dvh;min-height:100dvh;overflow:hidden;overscroll-behavior:none;background:#151922;color:#fff}
 .dl-ps-landing-placeholder{position:absolute;inset:0;background:#20252e}.dl-ps-landing-fallback{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 42%,#343b47 0%,#1b212b 48%,#0b0f15 100%)}
-.dl-ps-landing-image{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;z-index:-1}
-.dl-ps-landing-top-shade,.dl-ps-landing-bottom-shade{position:absolute;inset:0;pointer-events:none}
+.dl-ps-landing-image{position:absolute;inset:0;display:block;width:100%;height:100%;object-fit:cover;object-position:center;z-index:0}
+.dl-ps-landing-top-shade,.dl-ps-landing-bottom-shade{position:absolute;z-index:1;inset:0;pointer-events:none}
 .dl-ps-landing-top-shade{background:linear-gradient(to bottom,rgba(0,0,0,.48) 0%,rgba(0,0,0,.22) 15%,transparent 27%)}
 .dl-ps-landing-bottom-shade{background:linear-gradient(to top,rgba(0,0,0,.74) 0%,rgba(0,0,0,.52) 22%,rgba(0,0,0,.18) 39%,transparent 48%)}
 .dl-ps-landing-top{position:absolute;z-index:2;top:calc(18px + env(safe-area-inset-top));left:clamp(18px,5vw,42px);right:clamp(18px,5vw,42px);display:flex;align-items:center;justify-content:space-between;gap:14px}
@@ -97,3 +97,7 @@
 @media(prefers-reduced-motion:reduce){.dl-pd-gallery img{transition:none}}
 
 .dl-frame:has(.dl-public-showroom)>.dl-frame-inner{width:100%;max-width:none!important;border:0;box-shadow:none;overflow:visible}.dl-frame:has(.dl-public-showroom){background:#fff}
+
+/* The landing is a fixed, non-scrollable screen; listings use normal document flow. */
+.dl-public-showroom:has(.dl-ps-landing){position:fixed;inset:0;width:100%;height:100dvh;min-height:0;overflow:hidden;overscroll-behavior:none}
+.dl-ps-landing-copy{padding-bottom:env(safe-area-inset-bottom)}
