@@ -8,6 +8,7 @@ import { isSupabaseConfigured } from '../lib/supabase';
 import { OnboardingState, SellerType } from '../types';
 import { toE164 } from '../utils/phoneUtils';
 import { MARKETING_CAR_IMAGES } from '../utils/marketingCarImages';
+import { DriveLinkLogo } from '../components/common/DriveLinkLogo';
 import { notificationService } from '../services/notificationService';
 import { ShowroomBrandingEditor } from '../components/ShowroomBrandingEditor';
 import { Bell, MessageSquare, Eye as EyeIcon, CreditCard as CreditCardIcon } from 'lucide-react';
@@ -267,7 +268,7 @@ export const OnboardingFlow: React.FC = () => {
 
 
   const renderIntroVisual = () => {
-    if (introStep === 0) return <div className="di-hero-visual"><img src={MARKETING_CAR_IMAGES.hero} alt="Premium vehicle in a dealership setting" /><div className="di-brand-mark"><span className="di-brand-symbol" aria-hidden="true"><svg viewBox="0 0 40 40" role="img"><path fill="currentColor" fillRule="evenodd" d="M5 4h15c10 0 16 6 16 16S30 36 20 36H5V4zm9 8v16h6c5 0 8-3 8-8s-3-8-8-8h-6z"/></svg></span><span>DRIVE LINK</span><small>CARS. CONNECTIONS. SALES.</small></div></div>;
+    if (introStep === 0) return <div className="di-hero-visual"><img src={MARKETING_CAR_IMAGES.hero} alt="Premium vehicle in a dealership setting" /><div className="di-brand-mark"><DriveLinkLogo variant="light" size="md"/></div></div>;
     if (introStep === 1) return <div className="di-stack-visual">
       {[{name:'Toyota Fortuner',meta:'2022 | 2.8 GD-6 | SUV',price:'US$48,900',img:MARKETING_CAR_IMAGES.hero},{name:'VW Polo',meta:'2023 | 1.0 TSI | Hatchback',price:'US$21,500',img:MARKETING_CAR_IMAGES.hondaFit},{name:'BMW 320i',meta:'2021 | 2.0 | Sedan',price:'US$32,900',img:MARKETING_CAR_IMAGES.showroom}].map((v,i)=><div className={'di-listing di-listing-'+i} key={v.name}><img src={v.img} alt="" /><span><b>{v.name}</b><small>{v.meta}</small><strong>{v.price}</strong></span><ArrowRight size={16}/></div>)}
     </div>;
@@ -338,7 +339,7 @@ export const OnboardingFlow: React.FC = () => {
       </div>}
 
       {step === 1 && <form onSubmit={finish} className="di-setup-screen flex flex-1 flex-col">
-        <div className="mb-9 text-center"><div className="mx-auto mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-black text-white"><Link2 size={24}/></div><h1 className="text-[30px] font-bold leading-tight tracking-tight">Create your account.</h1><p className="mt-2 text-sm leading-6 text-gray-500">Set up your Drive Link account to build your dealership showroom.</p></div>
+        <div className="mb-7 flex justify-center"><DriveLinkLogo variant="dark" size="sm" showTagline /></div><div className="mb-9 text-center"><div className="mx-auto mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-black text-white"><Link2 size={24}/></div><h1 className="text-[30px] font-bold leading-tight tracking-tight">Create your account.</h1><p className="mt-2 text-sm leading-6 text-gray-500">Set up your Drive Link account to build your dealership showroom.</p></div>
         <div className="space-y-4">
           <label className="block"><span className="mb-2 block text-xs font-semibold text-gray-700">Email address</span><input type="email" autoComplete="email" required className="h-12 w-full rounded-[15px] border border-[#E5E7EB] bg-white px-4 text-sm outline-none focus:border-black focus:ring-2 focus:ring-gray-100" value={data.account.email} onChange={e=>update({account:{...data.account,email:e.target.value}})} placeholder="you@example.com"/></label>
           <label className="block"><span className="mb-2 block text-xs font-semibold text-gray-700">Password</span><div className="relative"><input type={showPassword?'text':'password'} autoComplete="new-password" minLength={6} required className="h-12 w-full rounded-[15px] border border-[#E5E7EB] bg-white px-4 pr-12 text-sm outline-none focus:border-black focus:ring-2 focus:ring-gray-100" value={data.account.password} onChange={e=>update({account:{...data.account,password:e.target.value}})} placeholder="At least 6 characters"/><button type="button" onClick={()=>setShowPassword(v=>!v)} aria-label={showPassword?'Hide password':'Show password'} className="absolute right-4 top-3.5 text-gray-500">{showPassword?<EyeOff size={18}/>:<Eye size={18}/>}</button></div></label>
@@ -399,7 +400,7 @@ export const OnboardingFlow: React.FC = () => {
 
       {step === 8 && <section className="dl-pro-paywall">
         <header className="dl-pro-header">
-          <div className="dl-pro-brand"><svg viewBox="0 0 64 34" aria-hidden="true"><path d="M3 25c8-1 10-10 19-12 7-2 15 0 22 1 6 1 9 4 15 4M8 25h47M20 12l5-7c2-3 5-4 9-3l14 3 8 7" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/><circle cx="18" cy="26" r="4" fill="none" stroke="currentColor" strokeWidth="2"/><circle cx="49" cy="26" r="4" fill="none" stroke="currentColor" strokeWidth="2"/></svg><span>DriveLink</span></div>
+          <div className="dl-pro-brand"><DriveLinkLogo variant="light" size="md"/></div>
           <button type="button" className="dl-pro-close" aria-label="Back to notifications" onClick={()=>setStep(7)}><span aria-hidden="true">×</span></button>
         </header>
         <div className="dl-pro-hero"><img src={MARKETING_CAR_IMAGES.hero} alt="Premium vehicle outside a modern dealership"/><div className="dl-pro-hero-shade"/></div>
