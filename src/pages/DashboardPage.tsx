@@ -162,8 +162,6 @@ export const DashboardPage: React.FC = () => {
   ];
   const maxBar = Math.max(1, performance.visits, performance.enquiries);
   const isSubscribed = subscription?.status === 'active' || subscription?.status === 'grace_period';
-  const activeEnd = periodEnd || graceEnd;
-  const activeDays = Math.max(0, Math.ceil((activeEnd - subscriptionNow) / 86400000));
 
   return (
     <div className="dl-workspace dl-dashboard relative min-h-full flex flex-col text-[#0A0F1E]">
