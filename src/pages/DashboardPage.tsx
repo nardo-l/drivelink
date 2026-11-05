@@ -72,11 +72,10 @@ export const DashboardPage: React.FC = () => {
 
   useEffect(() => {
     if (!isLive || !subscription?.trial_ends_at || subscription.status !== 'trial') return;
-    const trialEnd = new Date(subscription.trial_ends_at).getTime();
-    const serverNow = serverClock.current.serverMs + (window.performance.now() - serverClock.current.monotonicMs);
-    const delay = Math.max(0, trialEnd - serverNow + 1000);
-    const timer = window.setTimeout(() => {
-      if (expiryCheck.current) return;
+    const checkExpiry = () => {
+      const trialEnd = new Date(subscription.trial_ends_at!).getTime();
+      const serverNow = serverClock.current.serverMs + (window.performance.now() - serverClock.current.monotonicMs);
+      if (serverNow < trialEnd || expiryCheck.current) return;
       expiryCheck.current = true;
       setSubscriptionLoading(true);
       refreshSubscription().then(latest => {
@@ -86,8 +85,11 @@ export const DashboardPage: React.FC = () => {
           expiryCheck.current = false;
         }
       }).catch(() => { expiryCheck.current = false; }).finally(() => setSubscriptionLoading(false));
-    }, delay);
-    return () => window.clearTimeout(timer);
+    };
+    // Check the same expiry boundary without updating page-level state every second.
+    checkExpiry();
+    const timer = window.setInterval(checkExpiry, 1000);
+    return () => window.clearInterval(timer);
   }, [isLive, subscription]);
 
   const newLeads = enquiries.filter(e => e.stage === 'new').length;
