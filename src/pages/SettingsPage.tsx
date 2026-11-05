@@ -155,6 +155,8 @@ export const SettingsPage: React.FC = () => {
           <div className="mb-4"><h2 className="text-sm font-bold text-[#292929]">Brand your showroom</h2><p className="mt-1 text-[11px] text-[#888]">Your logo and banner help buyers recognise your dealership.</p></div>
           <ShowroomBrandingEditor
             dealershipName={name}
+            city={city}
+            tagline={current.tagline || ''}
             logoUrl={logoUrl || null}
             bannerUrl={coverUrl || null}
             onChange={value => { setLogoUrl(value.logoUrl || ''); setCoverUrl(value.bannerUrl || ''); storageService.updateDealership({ logoUrl: value.logoUrl || '', coverUrl: value.bannerUrl || '' }); }}
