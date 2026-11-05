@@ -23,7 +23,7 @@ export const PublicShowroomPage: React.FC<{ slug?: string; previewDealership?: D
   const sessionKey = 'drivelink:showroom-seen:' + (slug || previewDealership?.slug || 'preview');
   const [showLanding] = useState(() => {
     if (typeof window === 'undefined') return true;
-    if (window.location.pathname.endsWith('/browse')) return false;
+    if (window.location.pathname.replace(/\/$/, '').endsWith('/browse')) return false;
     try { return window.sessionStorage.getItem(sessionKey) !== '1'; } catch { return true; }
   });
   const [query, setQuery] = useState('');
@@ -90,7 +90,8 @@ export const PublicShowroomPage: React.FC<{ slug?: string; previewDealership?: D
   useEffect(() => {
     const handler = () => {
       const y = window.scrollY;
-      setFabVisible(y < 40 || y < lastScroll.current);
+      const footerVisible = (footerRef.current?.getBoundingClientRect().top ?? Number.POSITIVE_INFINITY) < window.innerHeight;
+      setFabVisible(!footerVisible && (y < 40 || y < lastScroll.current));
       lastScroll.current = y;
     };
     window.addEventListener('scroll', handler, { passive: true });
