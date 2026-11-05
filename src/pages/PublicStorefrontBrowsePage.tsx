@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { Select } from '../components/common/Select';
 import { ArrowRight, CarFront, Contact, Grid2x2, Heart, MapPin, Search, Share2, SlidersHorizontal, X } from 'lucide-react';
 import { useNavigation } from '../context/NavigationContext';
 import { storageService } from '../services/storage';
@@ -87,7 +88,7 @@ export const PublicStorefrontBrowsePage: React.FC<{ slug: string }> = ({ slug })
     </section>
     <div className="dl-store-brands">{brands.map(item => <button key={item} className={brand === item ? 'active' : ''} onClick={() => setBrand(item)}>{item}</button>)}</div>
     <section className="dl-store-section-heading"><div><h1>Featured Cars</h1><p>{filtered.length} vehicles available</p></div><button onClick={() => {setBrand('All');setQuery('');}}>View all <ArrowRight size={16}/></button></section>
-    <div className="dl-store-sort"><span>Available inventory</span><select value={sort} onChange={e => setSort(e.target.value)} aria-label="Sort vehicles"><option value="newest">Recently added</option><option value="price-low">Price: low to high</option><option value="price-high">Price: high to low</option><option value="year">Newest year</option></select></div>
+    <div className="dl-store-sort"><span>Available inventory</span><Select compact value={sort} aria-label="Sort vehicles" title="Sort vehicles" options={[{value:'newest',label:'Recently added'},{value:'price-low',label:'Price: low to high'},{value:'price-high',label:'Price: high to low'},{value:'year',label:'Newest year'}]} onChange={setSort}/></div>
     {filtered.length ? <section className="dl-store-list">{filtered.map(vehicle => <article key={vehicle.id} className="dl-store-car-card">
       <div className="dl-store-car-photo">
         {vehicle.photos?.[0] ? <img src={vehicle.photos[0]} alt={vehicle.year + ' ' + vehicle.make + ' ' + vehicle.model}/> : <div className="dl-store-car-no-photo"><CarFront/></div>}
@@ -103,12 +104,12 @@ export const PublicStorefrontBrowsePage: React.FC<{ slug: string }> = ({ slug })
     <footer className="dl-store-footer">{dealer.name} · Powered by DriveLink</footer>
     <nav className="dl-store-bottom-nav"><button onClick={goHome}><Grid2x2/><span>Home</span></button><button className="active"><CarFront/><span>Inventory</span></button><button onClick={goContact}><Contact/><span>Enquiries</span></button><button onClick={shareShowroom}><Share2/><span>More</span></button></nav>
     {filtersOpen && <div className="dl-store-filter-backdrop" onClick={() => setFiltersOpen(false)}><section className="dl-store-filter-panel" onClick={e => e.stopPropagation()}><header><div><h2>Filters</h2><p>Find the right vehicle</p></div><button onClick={() => setFiltersOpen(false)} aria-label="Close filters"><X/></button></header>
-      <label>Make<select value={brand} onChange={e => setBrand(e.target.value)}>{brands.map(b => <option key={b}>{b}</option>)}</select></label>
+      <div className="dl-store-custom-select"><span>Make</span><Select searchable title="Choose make" value={brand} options={brands.map(b=>({value:b,label:b}))} onChange={setBrand}/></div>
       <div className="dl-store-filter-two"><label>Minimum price<input type="number" min="0" value={minPrice} onChange={e => setMinPrice(e.target.value)} placeholder="No minimum"/></label><label>Maximum price<input type="number" min="0" value={maxPrice} onChange={e => setMaxPrice(e.target.value)} placeholder="No maximum"/></label></div>
       <div className="dl-store-filter-two"><label>Year from<input type="number" min="1950" max={new Date().getFullYear()+1} value={yearFrom} onChange={e => setYearFrom(e.target.value)} placeholder="Any year"/></label><label>Year to<input type="number" min="1950" max={new Date().getFullYear()+1} value={yearTo} onChange={e => setYearTo(e.target.value)} placeholder="Any year"/></label></div>
       <div className="dl-store-filter-two"><label>Min mileage (km)<input type="number" min="0" value={minMileage} onChange={e => setMinMileage(e.target.value)} placeholder="Any"/></label><label>Max mileage (km)<input type="number" min="0" value={maxMileage} onChange={e => setMaxMileage(e.target.value)} placeholder="Any"/></label></div>
-      <label>Transmission<select value={transmission} onChange={e => setTransmission(e.target.value)}><option>All</option><option>Automatic</option><option>Manual</option></select></label>
-      <label>Fuel type<select value={fuel} onChange={e => setFuel(e.target.value)}><option>All</option>{Array.from(new Set(vehicles.map(v => v.fuel))).map(f => <option key={f}>{f}</option>)}</select></label>
+      <div className="dl-store-custom-select"><span>Transmission</span><Select title="Transmission" value={transmission} options={[{value:'All',label:'All'},{value:'Automatic',label:'Automatic'},{value:'Manual',label:'Manual'}]} onChange={setTransmission}/></div>
+      <div className="dl-store-custom-select"><span>Fuel type</span><Select title="Fuel type" value={fuel} options={[{value:'All',label:'All'},...Array.from(new Set(vehicles.map(v=>v.fuel))).map(f=>({value:f,label:f}))]} onChange={setFuel}/></div>
       <div className="dl-store-filter-actions"><button onClick={clearFilters}>Clear all</button><button onClick={() => setFiltersOpen(false)}>Show {filtered.length} cars</button></div>
     </section></div>}
   </main>;
