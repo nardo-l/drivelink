@@ -25,8 +25,10 @@ import { supabaseService } from './services/supabaseService';
 import { storageService } from './services/storage';
 import { Check } from 'lucide-react';
 import { BottomNav } from './components/layout/BottomNav';
+import { ErrorBoundary } from './components/common/ErrorBoundary';
 
 function AppContent() {
+  const safeDashboard = () => <ErrorBoundary label="dashboard"><DashboardPage /></ErrorBoundary>;
   const { currentPath, navigate, toast, showToast } = useNavigation();
   const [sessionChecked, setSessionChecked] = React.useState(false);
   const [subscriptionState, setSubscriptionState] = React.useState<'checking' | 'trial' | 'active' | 'expired' | 'unverified' | 'setup'>('checking');
@@ -164,19 +166,19 @@ function AppContent() {
     // Public landing page stays separate from the current onboarding flow.
     // Returning dealers with a completed setup go straight to their dashboard.
     if (currentPath === '/' || currentPath === '') {
-      if (isLive && session.isLoggedIn && session.dealershipId) { console.info('[DriveLink onboarding] Get notified skipped: redirected (existing dealership session).'); return <DashboardPage />; }
+      if (isLive && session.isLoggedIn && session.dealershipId) { console.info('[DriveLink onboarding] Get notified skipped: redirected (existing dealership session).'); return safeDashboard(); }
       if (isLive && session.isLoggedIn && !session.dealershipId) return <OnboardingFlow />;
       return <WelcomePage />;
     }
 
     // Sign-up and onboarding continue to use the current six-slide flow.
     if (currentPath === '/signup' || currentPath === '/onboarding') {
-      if (isLive && session.isLoggedIn && session.dealershipId) { console.info('[DriveLink onboarding] Get notified skipped: redirected (existing dealership session).'); return <DashboardPage />; }
+      if (isLive && session.isLoggedIn && session.dealershipId) { console.info('[DriveLink onboarding] Get notified skipped: redirected (existing dealership session).'); return safeDashboard(); }
       return <OnboardingFlow />;
     }
 
     if (currentPath === '/login') {
-      if (isLive && session.isLoggedIn) { if (session.dealershipId) { console.info('[DriveLink onboarding] Get notified skipped: redirected (existing dealership session).'); return <DashboardPage />; } return <OnboardingFlow />; }
+      if (isLive && session.isLoggedIn) { if (session.dealershipId) { console.info('[DriveLink onboarding] Get notified skipped: redirected (existing dealership session).'); return safeDashboard(); } return <OnboardingFlow />; }
       return <LoginPage />;
     }
 
@@ -185,7 +187,7 @@ function AppContent() {
 
     // 5. Dealer Dashboard / Screen 03
     if (currentPath === '/app') {
-      return <DashboardPage />;
+      return safeDashboard();
     }
 
     // Analytics: live dealership metrics
@@ -306,7 +308,7 @@ function AppContent() {
       {!forcePaywall && !blockUntilVerified && dealerAppRoute && (
         (subscriptionState === 'trial' && trialRemainingMs !== null && trialRemainingMs > 0 && trialRemainingMs <= 2 * 86400000) ||
         (subscriptionState === 'active' && paidDaysLeft !== null && paidDaysLeft > 0 && paidDaysLeft <= 5)
-      ) && <div className={`sticky top-0 z-30 flex min-h-[40px] items-center justify-center gap-2 border-b border-[#e5e7eb] px-3 py-2 text-center text-[11px] font-medium text-[#0A0F1E] ${subscriptionState === 'trial' && trialRemainingMs !== null && trialRemainingMs <= 6 * 3600000 ? 'bg-[#fff8eb]' : 'bg-[#f3f4f6]'}`} style={{paddingTop:'max(8px, env(safe-area-inset-top))'}}>
+      ) && <ErrorBoundary label="trial banner"><div className={`sticky top-0 z-30 flex min-h-[40px] items-center justify-center gap-2 border-b border-[#e5e7eb] px-3 py-2 text-center text-[11px] font-medium text-[#0A0F1E] ${subscriptionState === 'trial' && trialRemainingMs !== null && trialRemainingMs <= 6 * 3600000 ? 'bg-[#fff8eb]' : 'bg-[#f3f4f6]'}`} style={{paddingTop:'max(8px, env(safe-area-inset-top))'}}>
         <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${subscriptionState === 'trial' && trialRemainingMs !== null && trialRemainingMs <= 6 * 3600000 ? 'bg-amber-500' : 'bg-[#0A0F1E]'}`} />
         <span>{subscriptionState === 'trial'
           ? trialRemainingMs! <= 6 * 3600000
@@ -316,7 +318,7 @@ function AppContent() {
               : `${trialDaysLeft} ${trialDaysLeft === 1 ? 'day' : 'days'} left in your free trial`
           : `Pro renews in ${paidDaysLeft} days ·`}</span>
         <button onClick={() => navigate('/app/billing')} className="shrink-0 font-extrabold underline underline-offset-2">{subscriptionState === 'trial' ? 'View plans' : 'Renew'}</button>
-      </div>}
+      </div></ErrorBoundary>}
       {forcePaywall || (blockUntilVerified && subscriptionState === 'unverified') ? <PaywallPage /> : blockUntilVerified ? <div className="flex min-h-[100dvh] items-center justify-center bg-white px-6 text-center text-sm text-gray-500">Verifying your DriveLink subscription…</div> : renderRoute()}
       {!forcePaywall && !blockUntilVerified && (['/app', '/app/vehicles', '/app/enquiries', '/app/more'].includes(currentPath) || (currentPath === '/' && storageService.getUserSession().isLoggedIn && !!storageService.getUserSession().dealershipId)) && <BottomNav />}
 
