@@ -5,10 +5,10 @@
   "type": "module",
   "scripts": {
     "dev": "vite --port=3000 --host=0.0.0.0",
-    "build": "node scripts/check-no-emoji.mjs && vite build",
+    "build": "node scripts/check-no-emoji.mjs && node scripts/check-native-select.mjs && vite build",
     "preview": "vite preview",
     "clean": "rm -rf dist server.js",
-    "lint": "node scripts/check-no-emoji.mjs && tsc --noEmit"
+    "lint": "node scripts/check-no-emoji.mjs && node scripts/check-native-select.mjs && tsc --noEmit"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",
