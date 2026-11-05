@@ -16,7 +16,7 @@ export const PublicVehicleDetailPage:React.FC<PublicVehicleDetailPageProps>=({ve
  if(!dealer||!vehicle)return <div className="dl-store-loading"><h1>Vehicle unavailable</h1><p>This vehicle may have been sold or removed.</p><button onClick={()=>navigate('/showroom/'+(slug||''))}>Return to showroom</button></div>;
  const photos=vehicle.photos||[],money=new Intl.NumberFormat('en-US',{style:'currency',currency:vehicle.currency||dealer.currency,maximumFractionDigits:0}).format(vehicle.price);
  const message='Hi, I\'m interested in the '+vehicle.year+' '+vehicle.make+' '+vehicle.model+' listed at '+money+'. Is it still available?';
- const wa=dealer.whatsapp?'https://wa.me/'+dealer.whatsapp.replace(/\D/g,'')+'?text='+encodeURIComponent(message):'';
+ const waNumber=(dealer.whatsapp||dealer.phone||'').replace(/\D/g,'');const wa=waNumber?'https://wa.me/'+waNumber+'?text='+encodeURIComponent(message):'';
  const prev=()=>setPhotoIndex(i=>(i-1+photos.length)%photos.length),next=()=>setPhotoIndex(i=>(i+1)%photos.length);
  const share=async()=>{const url=window.location.href;if(navigator.share){try{await navigator.share({title:vehicle.year+' '+vehicle.make+' '+vehicle.model,text:money,url});}catch{}}else{await navigator.clipboard?.writeText(url);showToast('Vehicle link copied');}};
  const specs=[['Year',String(vehicle.year)],['Mileage',vehicle.mileageKm.toLocaleString()+' km'],['Transmission',vehicle.transmission],['Fuel',vehicle.fuel],['Colour',vehicle.colour],['Condition',vehicle.condition]].filter((x):x is [string,string]=>Boolean(x[1]));
