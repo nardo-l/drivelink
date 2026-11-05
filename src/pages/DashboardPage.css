@@ -18,14 +18,14 @@
 .dl-stat-card svg{color:#596372;margin-bottom:8px}
 .dl-stat-card strong{font-size:20px;line-height:1.1;font-weight:850;font-variant-numeric:tabular-nums;max-width:100%;overflow:hidden;text-overflow:ellipsis}
 .dl-stat-card span{font-size:9px;color:#858d99;margin-top:4px;white-space:nowrap}
-.dl-performance-card{background:#fff;border:1px solid #e9edf1;border-radius:20px;padding:16px;box-shadow:0 5px 18px rgba(15,23,42,.035);animation:dl-card-in .5s ease both}
+.dl-performance-card{background:#fff;border:1px solid #e9edf1;border-radius:20px;padding:16px;box-shadow:0 5px 18px rgba(15,23,42,.035);animation:none}
 .dl-performance-card h2{font-size:15px;font-weight:850;letter-spacing:-.2px}.dl-performance-card>div:first-child p{font-size:10px;color:#8a929e;margin-top:3px}
 .dl-performance-card select{appearance:none;border:1px solid #e5e8ed;border-radius:999px;background:#f9fafb;padding:8px 10px;color:#424b58;font-size:10px;font-weight:750;outline:none}
-.dl-bars{display:flex;flex-direction:column;gap:17px}
+.dl-performance-chart{height:120px;min-height:120px;display:flex;align-items:center;width:100%}.dl-bars{display:flex;flex-direction:column;gap:17px;width:100%}
 .dl-bar-row{display:grid;grid-template-columns:62px minmax(0,1fr) 35px;align-items:center;gap:9px}
 .dl-bar-row>span{font-size:10px;color:#596372;font-weight:700}.dl-bar-row>div{height:9px;border-radius:20px;background:#f0f2f5;overflow:hidden}.dl-bar-row i{height:100%;display:block;border-radius:20px;background:#0A0F1E;min-width:3px}.dl-bar-row strong{font-size:10px;text-align:right;font-variant-numeric:tabular-nums}
 .dl-bar-row.is-light i{background:#aeb6c1}
-.dl-performance-empty{min-height:104px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:10px;padding:15px 6px}
+.dl-performance-empty{min-height:120px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:10px;padding:15px 6px}
 .dl-performance-empty p{font-size:11px;line-height:1.5;color:#858d99;max-width:240px}.dl-performance-empty button{border:0;border-radius:999px;background:#0A0F1E;color:white;padding:9px 17px;font-size:10px;font-weight:800}
 .dl-recent-card{overflow:hidden;border:1px solid #e9edf1;border-radius:18px;background:#fff}
 .dl-recent-row{width:100%;display:flex;align-items:center;gap:10px;padding:11px;text-align:left}.dl-recent-row+.dl-recent-row{border-top:1px solid #f0f2f4}
