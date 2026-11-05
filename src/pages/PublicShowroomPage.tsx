@@ -44,7 +44,7 @@ export const PublicShowroomPage: React.FC<{ slug?: string; previewDealership?: D
       if (returningByBack) window.sessionStorage.removeItem(sessionKey + ':back');
     } catch { /* session storage may be unavailable */ }
     if (!isBrowseRoute && seen && !returningByBack && slug) {
-      navigate('/showroom/' + encodeURIComponent(slug) + '/cars');
+      navigate('/' + encodeURIComponent(slug) + '/cars');
       setShowLanding(false);
       return;
     }
@@ -210,7 +210,7 @@ export const PublicShowroomPage: React.FC<{ slug?: string; previewDealership?: D
     return next;
   });
   const share = async () => {
-    const url = window.location.origin + '/showroom/' + encodeURIComponent(dealer.slug);
+    const url = window.location.origin + '/' + encodeURIComponent(dealer.slug);
     if (navigator.share) {
       try { await navigator.share({ title: dealer.name, text: available.length + ' cars available in ' + (dealer.city || dealer.country), url }); } catch { /* share dismissed */ }
     } else {
@@ -224,9 +224,9 @@ export const PublicShowroomPage: React.FC<{ slug?: string; previewDealership?: D
   };
   const scrollCars = () => {
     try { window.sessionStorage.setItem(sessionKey, '1'); } catch { /* session storage may be unavailable */ }
-    navigate('/showroom/' + encodeURIComponent(dealer.slug) + '/cars');
+    navigate('/' + encodeURIComponent(dealer.slug) + '/cars');
   };
-  const goVehicle = (vehicle: Vehicle) => navigate('/showroom/' + dealer.slug + '/vehicle/' + vehicle.id);
+  const goVehicle = (vehicle: Vehicle) => navigate('/' + dealer.slug + '/vehicle/' + vehicle.id);
   const countLabel = (count: number) => count + (count === 1 ? ' car' : ' cars');
 
   return (
