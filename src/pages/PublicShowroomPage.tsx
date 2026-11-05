@@ -28,9 +28,28 @@ export const PublicShowroomPage: React.FC<{ slug?: string; previewDealership?: D
   });
   useEffect(() => {
     const isBrowseRoute = currentPath.replace(/\/$/, '').endsWith('/browse');
-    try { setShowLanding(!isBrowseRoute && window.sessionStorage.getItem(sessionKey) !== '1'); }
-    catch { setShowLanding(!isBrowseRoute); }
-  }, [sessionKey, currentPath]);
+    let seen = false;
+    try { seen = window.sessionStorage.getItem(sessionKey) === '1'; } catch { /* session storage may be unavailable */ }
+    if (!isBrowseRoute && seen && slug) {
+      navigate('/showroom/' + encodeURIComponent(slug) + '/browse');
+      setShowLanding(false);
+      return;
+    }
+    setShowLanding(!isBrowseRoute);
+  }, [sessionKey, currentPath, slug, navigate]);
+
+  const [bannerFailed, setBannerFailed] = useState(false);
+  useEffect(() => {
+    if (!showLanding) return;
+    const previous = document.body.style.overflow;
+    const previousOverscroll = document.body.style.overscrollBehavior;
+    document.body.style.overflow = 'hidden';
+    document.body.style.overscrollBehavior = 'none';
+    return () => {
+      document.body.style.overflow = previous;
+      document.body.style.overscrollBehavior = previousOverscroll;
+    };
+  }, [showLanding, currentPath]);
 
   const [query, setQuery] = useState('');
   const [make, setMake] = useState('All');
@@ -114,17 +133,7 @@ export const PublicShowroomPage: React.FC<{ slug?: string; previewDealership?: D
     return () => observer.disconnect();
   }, [loading, dealer]);
 
-  useEffect(() => {
-    const section = listingRef.current;
-    if (!section || typeof IntersectionObserver === 'undefined') return;
-    const observer = new IntersectionObserver(entries => {
-      if (entries[0]?.isIntersecting && entries[0].intersectionRatio > 0.12) {
-        try { window.sessionStorage.setItem(sessionKey, '1'); } catch { /* session storage may be unavailable */ }
-      }
-    }, { threshold: [0.12] });
-    observer.observe(section);
-    return () => observer.disconnect();
-  }, [loading, dealer, sessionKey]);
+
 
   useEffect(() => {
     if (!dealer) return;
@@ -200,7 +209,7 @@ export const PublicShowroomPage: React.FC<{ slug?: string; previewDealership?: D
   };
   const scrollCars = () => {
     try { window.sessionStorage.setItem(sessionKey, '1'); } catch { /* session storage may be unavailable */ }
-    window.setTimeout(() => listingRef.current?.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' }), 30);
+    navigate('/showroom/' + encodeURIComponent(dealer.slug) + '/browse');
   };
   const goVehicle = (vehicle: Vehicle) => navigate('/showroom/' + dealer.slug + '/vehicle/' + vehicle.id);
   const countLabel = (count: number) => count + (count === 1 ? ' car' : ' cars');
@@ -208,11 +217,11 @@ export const PublicShowroomPage: React.FC<{ slug?: string; previewDealership?: D
   return (
     <main className="dl-public-showroom">
       {showLanding && (
-        <section className={'dl-ps-landing ' + (!dealer.coverUrl ? 'has-no-banner' : '')} aria-label="Showroom welcome">
-          {dealer.coverUrl ? (
+        <section className={'dl-ps-landing ' + (!dealer.coverUrl || bannerFailed ? 'has-no-banner' : '')} aria-label="Showroom welcome">
+          {dealer.coverUrl && !bannerFailed ? (
             <>
               <div className="dl-ps-landing-placeholder" />
-              <img className="dl-ps-landing-image" src={dealer.coverUrl} alt="" fetchPriority="high" loading="eager" decoding="async" />
+              <img className="dl-ps-landing-image" src={dealer.coverUrl} alt="" fetchPriority="high" loading="eager" decoding="async" onError={() => { console.error('[DriveLink showroom] Banner failed to load:', dealer.coverUrl); setBannerFailed(true); }} />
             </>
           ) : <div className="dl-ps-landing-fallback" />}
           <div className="dl-ps-landing-top-shade" />
@@ -224,7 +233,7 @@ export const PublicShowroomPage: React.FC<{ slug?: string; previewDealership?: D
             </div>
             <button className="dl-ps-round-share" onClick={() => void share()} aria-label="Share showroom"><Share2 size={19} /></button>
           </div>
-          {!dealer.coverUrl && (
+          {(!dealer.coverUrl || bannerFailed) && (
             <div className="dl-ps-fallback-logo">{dealer.logoUrl ? <img src={dealer.logoUrl} alt={dealer.name} /> : <span>{initials}</span>}</div>
           )}
           <div className="dl-ps-landing-copy">
@@ -238,6 +247,7 @@ export const PublicShowroomPage: React.FC<{ slug?: string; previewDealership?: D
         </section>
       )}
 
+      {!showLanding && <>
       <section className="dl-ps-listings" ref={listingRef} id="available-cars">
         <header className="dl-ps-list-header">
           <div className="dl-ps-list-brand">
@@ -315,6 +325,7 @@ export const PublicShowroomPage: React.FC<{ slug?: string; previewDealership?: D
           </section>
         </div>
       )}
+      </>}
     </main>
   );
 };
