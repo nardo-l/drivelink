@@ -1,9 +1,10 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigation } from '../context/NavigationContext';
 import { storageService } from '../services/storage';
 import { supabaseService } from '../services/supabaseService';
 import { isSupabaseConfigured, supabase } from '../lib/supabase';
 import { StatusBadge } from '../components/common/Badge';
+import { PerformanceSection } from '../components/dashboard/PerformanceSection';
 import { Bell, CarFront, ChevronRight, Eye, MessageCircle, Plus, RefreshCw, Share2, ArrowUpRight } from 'lucide-react';
 import './DashboardPage.css';
 
@@ -27,11 +28,9 @@ export const DashboardPage: React.FC = () => {
   const [performancePeriod, setPerformancePeriod] = useState<7 | 30 | 90>(7);
   const [performance, setPerformance] = useState({ visits: 0, enquiries: 0 });
   const [performanceLoading, setPerformanceLoading] = useState(true);
-  const [performanceError, setPerformanceError] = useState('');
-  const [performanceRetry, setPerformanceRetry] = useState(0);
+  const markPerformanceLoaded = useCallback(() => setPerformanceLoading(false), []);
   const [subscription, setSubscription] = useState<SubscriptionStatus | null>(null);
   const serverClock = useRef({ serverMs: Date.now(), monotonicMs: window.performance.now() });
-  const [subscriptionNow, setSubscriptionNow] = useState(Date.now());
   const [subscriptionLoading, setSubscriptionLoading] = useState(false);
   const expiryCheck = useRef(false);
   const pullStart = useRef<number | null>(null);
@@ -69,52 +68,40 @@ export const DashboardPage: React.FC = () => {
     const serverMs = data?.server_now ? new Date(data.server_now).getTime() : serverClock.current.serverMs + (window.performance.now() - serverClock.current.monotonicMs);
     serverClock.current = { serverMs, monotonicMs: window.performance.now() };
     setSubscription(data?.subscription || null);
-    setSubscriptionNow(serverMs);
     return data?.subscription || null;
   };
 
   useEffect(() => {
     if (!isLive) return;
-    let timer: number | undefined;
-    const tick = () => setSubscriptionNow(serverClock.current.serverMs + (window.performance.now() - serverClock.current.monotonicMs));
-    const sync = async () => { try { await refreshSubscription(); } catch { tick(); } };
-    const restart = () => {
-      if (timer !== undefined) window.clearInterval(timer);
-      tick();
-      if (document.visibilityState === 'visible') {
-        timer = window.setInterval(tick, 1000);
-        void sync();
-      }
-    };
-    void sync();
-    if (document.visibilityState === 'visible') timer = window.setInterval(tick, 1000);
-    const onVisibility = () => {
-      if (document.visibilityState === 'visible') restart();
-      else if (timer !== undefined) window.clearInterval(timer);
-    };
-    document.addEventListener('visibilitychange', onVisibility);
-    window.addEventListener('focus', restart);
+    const sync = () => { if (document.visibilityState === 'visible') void refreshSubscription().catch(() => undefined); };
+    void refreshSubscription().catch(() => undefined);
+    document.addEventListener('visibilitychange', sync);
+    window.addEventListener('focus', sync);
     return () => {
-      if (timer !== undefined) window.clearInterval(timer);
-      document.removeEventListener('visibilitychange', onVisibility);
-      window.removeEventListener('focus', restart);
+      document.removeEventListener('visibilitychange', sync);
+      window.removeEventListener('focus', sync);
     };
   }, [isLive]);
 
   useEffect(() => {
     if (!isLive || !subscription?.trial_ends_at || subscription.status !== 'trial') return;
     const trialEnd = new Date(subscription.trial_ends_at).getTime();
-    if (subscriptionNow < trialEnd || expiryCheck.current) return;
-    expiryCheck.current = true;
-    setSubscriptionLoading(true);
-    refreshSubscription().then(latest => {
-      if (latest && (latest.status === 'expired' || (latest.status !== 'trial' && latest.status !== 'active' && latest.status !== 'grace_period'))) {
-        navigate('/app/billing');
-      } else {
-        expiryCheck.current = false;
-      }
-    }).catch(() => { expiryCheck.current = false; }).finally(() => setSubscriptionLoading(false));
-  }, [isLive, subscription, subscriptionNow]);
+    const serverNow = serverClock.current.serverMs + (window.performance.now() - serverClock.current.monotonicMs);
+    const delay = Math.max(0, trialEnd - serverNow + 1000);
+    const timer = window.setTimeout(() => {
+      if (expiryCheck.current) return;
+      expiryCheck.current = true;
+      setSubscriptionLoading(true);
+      refreshSubscription().then(latest => {
+        if (latest && (latest.status === 'expired' || (latest.status !== 'trial' && latest.status !== 'active' && latest.status !== 'grace_period'))) {
+          navigate('/app/billing');
+        } else {
+          expiryCheck.current = false;
+        }
+      }).catch(() => { expiryCheck.current = false; }).finally(() => setSubscriptionLoading(false));
+    }, delay);
+    return () => window.clearTimeout(timer);
+  }, [isLive, subscription]);
 
   const refreshDashboard = async () => {
     if (refreshing) return;
@@ -122,28 +109,6 @@ export const DashboardPage: React.FC = () => {
     await Promise.all([load(), refreshSubscription().catch(() => null)]);
     setRefreshing(false);
   };
-
-  useEffect(() => {
-    if (!dealership.id) return;
-    let active = true;
-    setPerformanceLoading(true);
-    setPerformanceError('');
-    const loadPerformance = async () => {
-      try {
-        let result = { visits: 0, enquiries: 0 };
-        if (isLive) result = await supabaseService.getDealershipPerformance(dealership.id, performancePeriod);
-        else {
-          const since = Date.now() - performancePeriod * 24 * 60 * 60 * 1000;
-          result = { visits: 0, enquiries: enquiries.filter(item => new Date(item.createdAt).getTime() >= since).length };
-        }
-        if (active) setPerformance(result);
-      } catch (error: any) {
-        if (active) setPerformanceError(error?.message || "Couldn't load performance");
-      } finally { if (active) setPerformanceLoading(false); }
-    };
-    void loadPerformance();
-    return () => { active = false; };
-  }, [dealership.id, performancePeriod, performanceRetry, isLive, enquiries]);
 
   const newLeads = enquiries.filter(e => e.stage === 'new').length;
   const soldCount = vehicles.filter(v => v.status === 'sold').length;
@@ -154,13 +119,11 @@ export const DashboardPage: React.FC = () => {
   const fullPublicUrl = `${window.location.origin}/showroom/${encodeURIComponent(dealership.slug)}`;
   const hour = new Date().getHours();
   const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
-  const periodLabel = `Last ${performancePeriod} days`;
   const periodStats = [
     { label: 'Store visits', value: performance.visits, icon: Eye },
     { label: 'Enquiries', value: performance.enquiries, icon: MessageCircle, action: () => navigate('/app/enquiries') },
     { label: 'Cars sold', value: soldCount, icon: CarFront },
   ];
-  const maxBar = Math.max(1, performance.visits, performance.enquiries);
   const isSubscribed = subscription?.status === 'active' || subscription?.status === 'grace_period';
 
   return (
@@ -206,16 +169,22 @@ export const DashboardPage: React.FC = () => {
         )}
 
         <section className="mb-4">
-          <div className="mb-2 flex items-center justify-between"><h2 className="text-[12px] font-extrabold">At a glance</h2><span className="text-[10px] text-[#929aa5]">{periodLabel}</span></div>
+          <div className="mb-2 flex items-center justify-between"><h2 className="text-[12px] font-extrabold">At a glance</h2><span className="text-[10px] text-[#929aa5]">Last {performancePeriod} days</span></div>
           <div className="grid grid-cols-3 gap-2">
             {periodStats.map(item=>{const Icon=item.icon;return <button key={item.label} onClick={item.action} className="dl-stat-card text-left"><Icon size={16}/><strong>{loading||performanceLoading?'—':item.value.toLocaleString()}</strong><span>{item.label}</span></button>;})}
           </div>
         </section>
 
-        <section className="dl-performance-card mb-4">
-          <div className="flex items-start justify-between gap-3"><div><h2>Performance</h2><p>Showroom activity over time</p></div><select aria-label="Performance period" value={performancePeriod} onChange={e=>setPerformancePeriod(Number(e.target.value) as 7|30|90)}><option value={7}>7 days</option><option value={30}>30 days</option><option value={90}>90 days</option></select></div>
-          {performanceLoading ? <div className="mt-6 space-y-4 animate-pulse"><div className="h-3 rounded bg-[#eef0f3]"/><div className="h-3 w-3/4 rounded bg-[#eef0f3]"/></div> : performanceError ? <div className="dl-performance-empty"><p>Couldn't load activity.</p><button onClick={()=>setPerformanceRetry(x=>x+1)}>Retry</button></div> : performance.visits===0&&performance.enquiries===0 ? <div className="dl-performance-empty"><p>No activity yet. Share your showroom link to start getting visitors</p><button onClick={async()=>{try{await navigator.clipboard.writeText(fullPublicUrl);showToast('Showroom link copied');}catch{showToast('Unable to copy showroom link');}}}>Share link</button></div> : <div className="dl-bars mt-5"><div className="dl-bar-row"><span>Visits</span><div><i style={{width:(performance.visits/maxBar*100)+'%'}}/></div><strong>{performance.visits.toLocaleString()}</strong></div><div className="dl-bar-row is-light"><span>Enquiries</span><div><i style={{width:(performance.enquiries/maxBar*100)+'%'}}/></div><strong>{performance.enquiries.toLocaleString()}</strong></div></div>}
-        </section>
+        <PerformanceSection
+          dealershipId={dealership.id || ''}
+          period={performancePeriod}
+          isLive={isLive}
+          enquiries={enquiries}
+          showroomUrl={fullPublicUrl}
+          onPeriodChange={setPerformancePeriod}
+          onData={setPerformance}
+          onInitialLoadComplete={markPerformanceLoaded}
+        />
 
         <section className="mb-4">
           <div className="mb-2 flex items-center justify-between"><h2 className="text-[12px] font-extrabold">Recent enquiries</h2><button onClick={()=>navigate('/app/enquiries')} className="text-[10px] font-bold text-[#4c5562]">See all <ChevronRight size={13} className="inline"/></button></div>
