@@ -1592,3 +1592,24 @@ body, .dl-frame, .dl-workspace { color: #171717; background: #FAF9F6 !important;
 /* All public showroom identity marks use a true cover crop in a fixed square frame. */
 .dl-store-dealer img,.dl-contact-profile>img{display:block;width:48px!important;height:48px!important;min-width:48px;min-height:48px;aspect-ratio:1/1;flex:none;object-fit:cover!important;object-position:center!important;border-radius:50%;padding:0!important;max-width:none!important;max-height:none!important;overflow:hidden}
 .dl-contact-profile>img{width:88px!important;height:88px!important;min-width:88px;min-height:88px}
+
+
+/* Shared vector DriveLink logo */
+.dl-logo{display:inline-flex;width:max-content;max-width:100%;flex-direction:column;align-items:flex-start;justify-content:center;color:inherit;line-height:1;text-decoration:none;white-space:nowrap}
+.dl-logo-mark{display:block;width:100%;height:auto;overflow:visible;flex:none}
+.dl-logo-wordmark{display:block;font-family:Manrope,Inter,ui-sans-serif,system-ui,sans-serif;font-size:28px;font-weight:600;line-height:.98;letter-spacing:-.065em}
+.dl-logo-md{width:156px;gap:2px}
+.dl-logo-sm{width:112px;gap:1px}
+.dl-logo-sm .dl-logo-wordmark{font-size:20px}
+.dl-logo-tagline{display:block;margin-top:7px;font-family:Manrope,Inter,ui-sans-serif,system-ui,sans-serif;font-size:9px;font-weight:750;letter-spacing:.29em;line-height:1.2}
+.dl-login-brand>.dl-logo{width:156px}
+.dl-login-brand .dl-logo-wordmark{font-size:clamp(38px,10vw,48px);font-weight:500}
+.dl-login-brand .dl-logo-tagline{font-size:10px}
+.dl-pro-brand>.dl-logo{width:132px}
+.di-brand-mark>.dl-logo{width:142px}
+.dl-ps-powered{display:inline-flex!important;align-items:center;justify-content:center;gap:7px}
+.dl-ps-powered .dl-logo{width:76px}
+.dl-ps-powered .dl-logo-wordmark{font-size:14px}
+.dl-ps-powered .dl-logo-mark{display:none}
+.dl-marketing-page .dl-brand>.dl-logo{width:150px}
+.dl-marketing-page .dl-footer .dl-brand>.dl-logo{width:112px}
