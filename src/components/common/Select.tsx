@@ -103,11 +103,7 @@ export const Select: React.FC<SelectProps> = ({
       }
       if (event.key === 'Enter') {
         const target = event.target as HTMLElement;
-        if (customMode && target instanceof HTMLInputElement) {
-          const nextValue = customValue.trim();
-          if (nextValue) { onChange(nextValue); close(); }
-          event.preventDefault();
-        } else if (target.getAttribute('role') === 'option') {
+        if (target.getAttribute('role') === 'option') {
           event.preventDefault();
           (target as HTMLButtonElement).click();
         } else if (searchable && filtered.length === 1) {
@@ -140,7 +136,7 @@ export const Select: React.FC<SelectProps> = ({
       window.removeEventListener('popstate', onPopState);
       window.clearTimeout(typeaheadTimer.current);
     };
-  }, [open, mobile, searchable, filtered, options, value, onChange, close, customMode, customValue, listId]);
+  }, [open, mobile, searchable, filtered, options, value, onChange, close, listId]);
 
   useEffect(() => {
     const media = window.matchMedia('(max-width: 767px)');
