@@ -262,7 +262,7 @@ export const PublicShowroomPage: React.FC<{ slug?: string; previewDealership?: D
                 <div className="dl-ps-photo">
                   {vehicle.photos?.[0] ? <img loading="lazy" decoding="async" src={vehicle.photos[0]} alt={vehicle.make + ' ' + vehicle.model} /> : <span className="dl-ps-no-photo"><CarFront size={36} /></span>}
                   {vehicle.status !== 'available' && <span className={'dl-ps-status ' + vehicle.status}>{vehicle.status === 'reserved' ? 'Reserved' : 'Sold'}</span>}
-                  <button className={'dl-ps-heart ' + (saved.includes(vehicle.id) ? 'saved' : '')} onClick={e => { e.stopPropagation(); toggleSave(vehicle.id); }} aria-label={saved.includes(vehicle.id) ? 'Remove saved car' : 'Save car'}><Heart fill={saved.includes(vehicle.id) ? 'currentColor' : 'none'} size={18} /></button>
+                  <button className={'dl-ps-heart ' + (saved.includes(vehicle.id) ? 'saved' : '')} onClick={e => { e.stopPropagation(); toggleSave(vehicle.id); }} onKeyDown={e => e.stopPropagation()} aria-label={saved.includes(vehicle.id) ? 'Remove saved car' : 'Save car'}><Heart fill={saved.includes(vehicle.id) ? 'currentColor' : 'none'} size={18} /></button>
                 </div>
                 <div className="dl-ps-car-info">
                   <div className="dl-ps-car-heading"><h2>{vehicle.make} {vehicle.model}</h2><strong>{money(vehicle)}</strong></div>
