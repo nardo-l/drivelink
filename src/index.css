@@ -56,8 +56,8 @@ img { max-width: 100%; }
 .dl-welcome-hero img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: .8; z-index: -2; }
 .dl-welcome-content { width: min(100% - 40px, 760px); margin-inline: auto; }
 @media (min-width: 768px) {
-  .dl-frame { min-height: 100vh; }
-  .dl-frame > div { max-width: 1180px !important; min-height: 100vh; }
+  .dl-frame { min-height: 100dvh; }
+  .dl-frame > div { max-width: 1180px !important; min-height: 100dvh; }
   .dl-welcome-hero { min-height: 680px; border-radius: 28px; }
 }
 @media (prefers-reduced-motion: reduce) {
