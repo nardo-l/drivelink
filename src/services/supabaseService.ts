@@ -708,7 +708,7 @@ export const supabaseService = {
     return publicUrl;
   },
 
-  async uploadShowroomBrandingAsset(file: File, type: 'logo' | 'banner', onProgress?: (percent: number) => void): Promise<string> {
+  async uploadShowroomBrandingAsset(file: File, type: 'logo' | 'banner' | 'banner-og', onProgress?: (percent: number) => void): Promise<string> {
     if (!isSupabaseConfigured()) throw new Error('Supabase Storage is not configured.');
     const user = await this.getCurrentUser();
     if (!user) throw new Error('Please sign in before uploading showroom branding.');
