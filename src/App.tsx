@@ -290,7 +290,7 @@ function AppContent() {
     }
 
     // Public dealership inventory browsing and contact routes
-    const showroomBrowseMatch = currentPath.match(/^\/showroom\/([^/]+)\/browse\/?$/);
+    const showroomBrowseMatch = currentPath.match(/^\/showroom\/([^/]+)\/(?:cars|browse)\/?$/);
     if (showroomBrowseMatch) {
       return <PublicShowroomPage slug={decodeURIComponent(showroomBrowseMatch[1])} />;
     }
@@ -317,7 +317,7 @@ function AppContent() {
     if (vanityVehicleMatch) {
       return <PublicVehicleDetailPage slug={decodeURIComponent(vanityVehicleMatch[1])} vehicleId={vanityVehicleMatch[2]} />;
     }
-    const vanityBrowseMatch = currentPath.match(/^\/([^/]+)\/browse\/?$/);
+    const vanityBrowseMatch = currentPath.match(/^\/([^/]+)\/(?:cars|browse)\/?$/);
     if (vanityBrowseMatch) {
       return <PublicShowroomPage slug={decodeURIComponent(vanityBrowseMatch[1])} />;
     }
