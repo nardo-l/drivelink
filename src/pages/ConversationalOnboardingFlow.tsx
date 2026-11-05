@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { Select } from '../components/common/Select';
 import './ConversationalOnboardingFlow.css';
 import { ArrowLeft, ArrowRight, Check, Copy, Car, Truck, Bus, Crown, Eye, EyeOff, Link2, Loader2, MessageCircle, CreditCard, BarChart3, Users } from 'lucide-react';
 import { useNavigation } from '../context/NavigationContext';
@@ -361,7 +362,7 @@ export const OnboardingFlow: React.FC = () => {
       {step === 3 && <section className="flex flex-1 flex-col">
         <h1 className="text-[30px] font-bold leading-tight tracking-tight">Where is your dealership?</h1><p className="mt-2 text-sm leading-6 text-gray-500">Set the location buyers will see on your showroom.</p>
         <div className="mt-8 space-y-5">
-          <label className="block"><span className="mb-2 block text-xs font-semibold text-gray-700">Country</span><select className="h-12 w-full rounded-[15px] border border-[#E5E7EB] bg-white px-4 text-sm outline-none focus:border-black" value={data.contact.country} onChange={e=>{const country=e.target.value as 'Zimbabwe'|'South Africa';updateContact({country,phoneCountryCode:country==='Zimbabwe'?'+263':'+27',whatsappCountryCode:country==='Zimbabwe'?'+263':'+27'});}}><option>Zimbabwe</option><option>South Africa</option></select></label>
+          <div className="block"><span className="mb-2 block text-xs font-semibold text-gray-700">Country</span><Select value={data.contact.country} title="Choose country" options={[{value:'Zimbabwe',label:'Zimbabwe'},{value:'South Africa',label:'South Africa'}]} onChange={value=>{const country=value as 'Zimbabwe'|'South Africa';updateContact({country,phoneCountryCode:country==='Zimbabwe'?'+263':'+27',whatsappCountryCode:country==='Zimbabwe'?'+263':'+27'});}}/></div>
           <label className="block"><span className="mb-2 block text-xs font-semibold text-gray-700">City / town</span><input aria-invalid={!data.contact.city.trim()} className="h-12 w-full rounded-[15px] border border-[#E5E7EB] bg-white px-4 text-sm outline-none focus:border-black" value={data.contact.city} onChange={e=>updateContact({city:e.target.value})} placeholder="e.g. Harare"/>{!data.contact.city.trim()&&<span className="mt-1 block text-xs text-gray-500">Enter the city where buyers can find you.</span>}</label>
           <label className="block"><span className="mb-2 block text-xs font-semibold text-gray-700">Area or street <span className="font-normal text-gray-400">· optional</span></span><input className="h-12 w-full rounded-[15px] border border-[#E5E7EB] bg-white px-4 text-sm outline-none focus:border-black" value={data.contact.address} onChange={e=>updateContact({address:e.target.value})} placeholder="e.g. Avondale"/></label>
         </div>
