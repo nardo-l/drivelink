@@ -114,7 +114,10 @@ export const PerformanceSection = memo(function PerformanceSection({
       } catch (err: any) {
         if (active && !hasData && !cached) setError(err?.message || "Couldn't load performance");
       } finally {
-        if (active) setLoading(false);
+        if (active) {
+          setLoading(false);
+          onInitialLoadComplete();
+        }
       }
     };
 
