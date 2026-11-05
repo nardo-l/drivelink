@@ -163,20 +163,7 @@ export const DashboardPage: React.FC = () => {
   const maxBar = Math.max(1, performance.visits, performance.enquiries);
   const isTrial = subscription?.status === 'trial' && Boolean(subscription.trial_ends_at);
   const isSubscribed = subscription?.status === 'active' || subscription?.status === 'grace_period';
-  const trialStart = subscription?.trial_started_at ? new Date(subscription.trial_started_at).getTime() : 0;
-  const trialEnd = subscription?.trial_ends_at ? new Date(subscription.trial_ends_at).getTime() : 0;
-  const periodEnd = subscription?.current_period_end ? new Date(subscription.current_period_end).getTime() : 0;
-  const graceEnd = subscription?.grace_until ? new Date(subscription.grace_until).getTime() : 0;
   const remaining = Math.max(0, trialEnd - subscriptionNow);
-  const totalTrial = Math.max(1, trialEnd - trialStart);
-  const usedPercent = Math.min(100, Math.max(0, ((totalTrial - remaining) / totalTrial) * 100));
-  const urgent = remaining <= 6 * 3600000;
-  const endingSoon = remaining <= 24 * 3600000;
-  const pad = (n: number) => String(n).padStart(2, '0');
-  const days = Math.floor(remaining / 86400000);
-  const hours = Math.floor(remaining / 3600000);
-  const minutes = Math.floor((remaining % 3600000) / 60000);
-  const seconds = Math.floor((remaining % 60000) / 1000);
   const activeEnd = periodEnd || graceEnd;
   const activeDays = Math.max(0, Math.ceil((activeEnd - subscriptionNow) / 86400000));
 
@@ -209,28 +196,6 @@ export const DashboardPage: React.FC = () => {
         </header>
 
         {loading ? <div className="dl-skeleton-card h-[138px] mb-4"/> : null}
-        {!loading && isLive && isTrial && remaining > 0 && (
-          <section className={`dl-trial-card mb-4 ${urgent ? 'is-urgent' : endingSoon ? 'is-ending' : ''}`}>
-            <div className="flex items-center justify-between"><span className="text-[11px] font-extrabold tracking-wide">Free trial</span><span className="dl-trial-pill">{urgent ? 'Ends today' : endingSoon ? 'Ending soon' : 'Active'}</span></div>
-            <div className="dl-countdown" aria-label="Time remaining in free trial">
-              {(remaining < 86400000 ? [{value:hours,label:'HRS'},{value:minutes,label:'MIN'},{value:seconds,label:'SEC'}] : [{value:days,label:'DAYS'},{value:hours%24,label:'HRS'},{value:minutes,label:'MIN'}]).map((part,i)=><React.Fragment key={part.label}><div className="dl-time-part"><strong>{pad(part.value)}</strong><span>{part.label}</span></div>{i<2&&<span className="dl-time-colon">:</span>}</React.Fragment>)}
-            </div>
-            <div className="dl-trial-progress" role="progressbar" aria-label="Trial time used" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(usedPercent)}><span style={{width:usedPercent+'%'}}/></div>
-            <p className="dl-trial-context">Your showroom locks when the trial ends. Your data stays safe.</p>
-            <button onClick={() => navigate('/app/billing')} className="dl-trial-cta">Upgrade to Pro <ChevronRight size={17}/></button>
-          </section>
-        )}
-        {!loading && isLive && isTrial && remaining <= 0 && (
-          <section className="dl-trial-card mb-4"><div className="flex items-center justify-between"><strong>Trial ended</strong><span className="dl-trial-pill">Ended</span></div><p className="dl-trial-context mt-3">{subscriptionLoading ? 'Checking your subscription…' : 'Your showroom access is being checked.'}</p></section>
-        )}
-        {!loading && isLive && isSubscribed && (
-          <section className={`dl-pro-card mb-4 ${activeDays <= 5 ? 'is-ending' : ''}`}>
-            <div className="flex items-center justify-between gap-3"><div><p className="text-[10px] font-extrabold uppercase tracking-wider text-[#7d8591]">Subscription</p><h2 className="text-[17px] font-extrabold">DriveLink Pro</h2></div><span className="dl-trial-pill">{activeDays <= 5 ? 'Renew soon' : 'Active'}</span></div>
-            <p className="mt-2 text-[11px] text-[#737c89]">Active · renews manually on {new Date(activeEnd).toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric'})} · {activeDays} days left</p>
-            {activeDays <= 5 && <button onClick={() => navigate('/app/billing')} className="dl-pro-renew">Renew <ChevronRight size={15}/></button>}
-          </section>
-        )}
-
         {loading ? <div className="dl-skeleton-card h-[104px] mb-4"/> : vehicles.length === 0 ? (
           <section className="dl-empty-inventory mb-4">
             <div className="dl-empty-icon"><CarFront size={22}/></div><div className="min-w-0 flex-1"><h2>Add your first vehicle</h2><p>It goes live on your showroom link right away</p></div>
