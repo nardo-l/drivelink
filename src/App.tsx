@@ -32,13 +32,15 @@ function AppContent() {
   const [subscriptionState, setSubscriptionState] = React.useState<'checking' | 'trial' | 'active' | 'expired' | 'unverified' | 'setup'>('checking');
   const [trialEndsAt, setTrialEndsAt] = React.useState<string | null>(null);
   const [accessEndsAt, setAccessEndsAt] = React.useState<string | null>(null);
+  const [subscriptionServerNow, setSubscriptionServerNow] = React.useState(Date.now());
   const verifySubscription = React.useCallback(async () => {
     setSubscriptionState('checking');
     try {
       const { data, error } = await supabase.functions.invoke('drivelink-payments', { body: { action: 'status' } });
       if (error) throw error;
       const subscription = data?.subscription;
-      const now = Date.now();
+      const now = data?.server_now ? new Date(data.server_now).getTime() : Date.now();
+      setSubscriptionServerNow(now);
       const trialValid = subscription?.status === 'trial' && subscription?.trial_ends_at && new Date(subscription.trial_ends_at).getTime() > now;
       const paidValid = subscription?.status === 'active' && subscription?.current_period_end && new Date(subscription.current_period_end).getTime() > now;
       setTrialEndsAt(subscription?.trial_ends_at || null);
@@ -286,14 +288,31 @@ function AppContent() {
 
   const currentSession = storageService.getUserSession();
   const dealerAppRoute = currentSession.isLoggedIn && !!currentSession.dealershipId && (currentPath.startsWith('/app') || ['/', '/login', '/signup', '/onboarding'].includes(currentPath));
-  const trialDaysLeft = trialEndsAt ? Math.ceil((new Date(trialEndsAt).getTime() - Date.now()) / 86400000) : null;
+  const trialRemainingMs = trialEndsAt ? new Date(trialEndsAt).getTime() - subscriptionServerNow : null;
+  const trialDaysLeft = trialRemainingMs !== null ? Math.ceil(trialRemainingMs / 86400000) : null;
+  const trialHoursLeft = trialRemainingMs !== null ? Math.max(0, Math.floor(trialRemainingMs / 3600000)) : 0;
+  const trialMinutesLeft = trialRemainingMs !== null ? Math.max(0, Math.floor((trialRemainingMs % 3600000) / 60000)) : 0;
+  const paidDaysLeft = accessEndsAt ? Math.ceil((new Date(accessEndsAt).getTime() - subscriptionServerNow) / 86400000) : null;
   const forcePaywall = !forceNotificationsPreview && isConfigured && !isDemo && dealerAppRoute && currentSession.isLoggedIn && !!currentSession.dealershipId && subscriptionState === 'expired';
   const blockUntilVerified = !forceNotificationsPreview && isConfigured && !isDemo && dealerAppRoute && currentSession.isLoggedIn && !!currentSession.dealershipId && ['checking', 'unverified'].includes(subscriptionState);
 
   return (
     <DeviceFrame>
 
-      {!forcePaywall && !blockUntilVerified && subscriptionState === 'trial' && trialDaysLeft !== null && trialDaysLeft > 0 && trialDaysLeft <= 2 && dealerAppRoute && <div className="sticky top-0 z-30 flex items-center justify-center gap-2 border-b border-amber-200 bg-amber-50 px-4 py-2.5 text-xs font-bold text-amber-900"><span className="h-1.5 w-1.5 rounded-full bg-amber-500" />{trialDaysLeft} {trialDaysLeft === 1 ? 'day' : 'days'} left in your free trial <button onClick={() => navigate('/app/billing')} className="underline underline-offset-2">View plans</button></div>}
+      {!forcePaywall && !blockUntilVerified && dealerAppRoute && (
+        (subscriptionState === 'trial' && trialRemainingMs !== null && trialRemainingMs > 0 && trialRemainingMs <= 2 * 86400000) ||
+        (subscriptionState === 'active' && paidDaysLeft !== null && paidDaysLeft > 0 && paidDaysLeft <= 5)
+      ) && <div className={`sticky top-0 z-30 flex min-h-[40px] items-center justify-center gap-2 border-b border-[#e5e7eb] px-3 py-2 text-center text-[11px] font-medium text-[#0A0F1E] ${subscriptionState === 'trial' && trialRemainingMs !== null && trialRemainingMs <= 6 * 3600000 ? 'bg-[#fff8eb]' : 'bg-[#f3f4f6]'}`} style={{paddingTop:'max(8px, env(safe-area-inset-top))'}}>
+        <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${subscriptionState === 'trial' && trialRemainingMs !== null && trialRemainingMs <= 6 * 3600000 ? 'bg-amber-500' : 'bg-[#0A0F1E]'}`} />
+        <span>{subscriptionState === 'trial'
+          ? trialRemainingMs! <= 6 * 3600000
+            ? 'Your free trial ends today'
+            : trialRemainingMs! < 86400000
+              ? `Free trial ends in ${trialHoursLeft}h ${trialMinutesLeft}m`
+              : `${trialDaysLeft} days left in your free trial`
+          : `Pro renews in ${paidDaysLeft} days`}</span>
+        <button onClick={() => navigate('/app/billing')} className="shrink-0 font-extrabold underline underline-offset-2">{subscriptionState === 'trial' ? 'View plans' : 'Renew'}</button>
+      </div>}
       {forcePaywall || (blockUntilVerified && subscriptionState === 'unverified') ? <PaywallPage /> : blockUntilVerified ? <div className="flex min-h-[100dvh] items-center justify-center bg-white px-6 text-center text-sm text-gray-500">Verifying your DriveLink subscription…</div> : renderRoute()}
       {!forcePaywall && !blockUntilVerified && (['/app', '/app/vehicles', '/app/enquiries', '/app/more'].includes(currentPath) || (currentPath === '/' && storageService.getUserSession().isLoggedIn && !!storageService.getUserSession().dealershipId)) && <BottomNav />}
 
