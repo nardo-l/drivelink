@@ -1616,4 +1616,8 @@ body, .dl-frame, .dl-workspace { color: #171717; background: #FAF9F6 !important;
 
 
 html, body, #root { min-height: 100%; background: #FAF9F6; }
-body { min-height: 100vh; min-height: 100dvh; }
+body { min-height: 100dvh; }
+
+
+/* Keep the app shell from becoming a nested vertical scroll container. */
+.dl-frame-inner { overflow-x: clip; overflow-y: visible; }
