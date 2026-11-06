@@ -44,7 +44,7 @@ export const SettingsPage:React.FC=()=>{
   catch(error){showToast(error instanceof Error?error.message:'Could not save changes. Your edits are still here.');}
   finally{setSaving(false);}
  };
- const saveSheet=async()=>{if(sheet==='profile'||sheet==='name')return saveProfile({name:draft.name});if(sheet==='contact')return saveProfile({phone:draft.phone,whatsapp:draft.whatsapp});if(sheet==='location')return saveProfile({city:draft.city,address:draft.address});};
+ const saveSheet=async()=>{if(sheet==='profile')return saveProfile(draft);if(sheet==='name')return saveProfile({name:draft.name});if(sheet==='contact')return saveProfile({phone:draft.phone,whatsapp:draft.whatsapp});if(sheet==='location')return saveProfile({city:draft.city,address:draft.address});};
  const copyLink=async()=>{try{await navigator.clipboard.writeText(showroomUrl);setCopied(true);showToast('Showroom link copied');window.setTimeout(()=>setCopied(false),1800);}catch{showToast('Could not copy the showroom link');}};
  const togglePush=async()=>{if(pushBusy)return;setPushBusy(true);try{if(pushEnabled){await notificationService.disablePush(dealer.id);setPushEnabled(false);showToast('Saved');}else{await notificationService.enablePush(dealer.id,true);setPushEnabled(true);setPermission(typeof Notification==='undefined'?'default':Notification.permission);showToast('Saved');}}catch(error){setPermission(typeof Notification==='undefined'?'default':Notification.permission);showToast(error instanceof Error?error.message:'Could not update notifications.');}finally{setPushBusy(false);}};
  const uploadAsset=async(kind:'logo'|'banner',file?:File)=>{
