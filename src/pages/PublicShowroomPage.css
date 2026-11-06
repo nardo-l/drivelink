@@ -455,3 +455,43 @@ html:has(.dl-ps-landing),body:has(.dl-ps-landing){
   .dl-ps-landing-copy{left:18px!important;right:18px!important}
   .dl-ps-landing-copy h1{font-size:clamp(27px,8vw,34px)!important}
 }
+
+
+/* Public showroom card style switch: change CARD_STYLE in PublicShowroomPage.tsx. */
+.dl-ps-car.is-overlay{position:relative;min-width:0;border-radius:24px;overflow:hidden;background:#e8ebef;cursor:pointer;isolation:isolate}
+.dl-ps-car.is-overlay .dl-ps-photo{height:auto;aspect-ratio:4/5;border-radius:24px;background:#e8ebef;overflow:hidden}
+.dl-ps-car.is-overlay .dl-ps-photo-image{z-index:0;opacity:0;transition:opacity .22s ease,transform .25s ease}
+.dl-ps-car.is-overlay .dl-ps-photo-image.is-loaded{opacity:1}
+.dl-ps-car.is-overlay .dl-ps-photo:has(.dl-ps-photo-image:not(.is-loaded)){background:linear-gradient(110deg,#e7e9ed 8%,#f2f3f5 18%,#e7e9ed 33%);background-size:220% 100%;animation:dl-ps-card-skeleton 1.25s linear infinite}
+@keyframes dl-ps-card-skeleton{to{background-position-x:-220%}}
+.dl-ps-car.is-overlay .dl-ps-no-photo{z-index:0;background:#e9edf1;color:#667180}
+.dl-ps-car.is-overlay .dl-ps-photo-shade{position:absolute;z-index:1;inset:55% 0 0;background:linear-gradient(to bottom,rgba(10,15,30,0),rgba(10,15,30,.85));pointer-events:none}
+.dl-ps-car.is-overlay .dl-ps-photo-count{display:none}
+.dl-ps-car.is-overlay .dl-ps-status{z-index:3;top:13px;left:13px}
+.dl-ps-car.is-overlay .dl-ps-heart{z-index:4;top:12px;right:12px;width:42px;height:42px;background:#fff;color:#111827;box-shadow:0 2px 10px rgba(0,0,0,.12)}
+.dl-ps-car.is-overlay .dl-ps-heart.saved{color:#c13b50}
+.dl-ps-car.is-overlay .dl-ps-overlay-copy{position:absolute;z-index:2;left:15px;right:15px;bottom:15px;display:flex;align-items:flex-end;justify-content:space-between;gap:8px;color:#fff;pointer-events:none}
+.dl-ps-car.is-overlay .dl-ps-overlay-details{min-width:0;flex:1}
+.dl-ps-car.is-overlay .dl-ps-overlay-copy h2{margin:0;color:#fff;font-size:clamp(14px,3.8vw,19px);font-weight:850;line-height:1.16;letter-spacing:-.35px;text-shadow:0 1px 5px rgba(0,0,0,.3);overflow-wrap:anywhere}
+.dl-ps-car.is-overlay .dl-ps-specs{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;padding:0;border:0;color:rgba(255,255,255,.92)}
+.dl-ps-car.is-overlay .dl-ps-specs span{display:flex;align-items:center;gap:4px;padding:0;border:0;color:inherit;font-size:9px;font-weight:650;text-shadow:0 1px 4px rgba(0,0,0,.45)}
+.dl-ps-car.is-overlay .dl-ps-overlay-price{flex:0 0 auto;max-width:48%;color:#fff;font-size:clamp(16px,4.3vw,21px);font-weight:900;line-height:1.05;letter-spacing:-.6px;text-align:right;white-space:normal;text-shadow:0 1px 6px rgba(0,0,0,.4);overflow-wrap:anywhere}
+.dl-ps-car.is-overlay.is-sold .dl-ps-photo-image{filter:brightness(.58)}
+.dl-ps-car.is-overlay.is-sold .dl-ps-photo-shade{background:linear-gradient(to bottom,rgba(10,15,30,.06) 55%,rgba(10,15,30,.9))}
+.dl-ps-car.is-overlay:active .dl-ps-photo-image{transform:scale(1.015)}
+.dl-ps-car.is-overlay .dl-ps-photo:has(.dl-ps-no-photo) .dl-ps-photo-shade{display:none}
+.dl-ps-car.is-overlay .dl-ps-photo:has(.dl-ps-no-photo) .dl-ps-overlay-copy{color:#172033}
+.dl-ps-car.is-overlay .dl-ps-photo:has(.dl-ps-no-photo) .dl-ps-overlay-copy h2,
+.dl-ps-car.is-overlay .dl-ps-photo:has(.dl-ps-no-photo) .dl-ps-overlay-price{color:#172033;text-shadow:none}
+.dl-ps-car.is-overlay .dl-ps-photo:has(.dl-ps-no-photo) .dl-ps-specs,
+.dl-ps-car.is-overlay .dl-ps-photo:has(.dl-ps-no-photo) .dl-ps-specs span{color:#5e6877;text-shadow:none}
+.dl-ps-car.is-overlay .dl-ps-photo:has(.dl-ps-no-photo) .dl-ps-status{display:none}
+.dl-ps-car.is-overlay .dl-ps-photo:has(.dl-ps-no-photo) .dl-ps-heart{background:#fff}
+.dl-ps-car.is-overlay.is-sold{opacity:1}
+@media(max-width:380px){
+ .dl-ps-car.is-overlay .dl-ps-overlay-copy{left:12px;right:12px;bottom:13px;gap:6px}
+ .dl-ps-car.is-overlay .dl-ps-overlay-copy h2{font-size:14px}
+ .dl-ps-car.is-overlay .dl-ps-specs{gap:6px;margin-top:7px}
+ .dl-ps-car.is-overlay .dl-ps-specs span{font-size:8px;gap:3px}
+ .dl-ps-car.is-overlay .dl-ps-overlay-price{font-size:15px}
+}
