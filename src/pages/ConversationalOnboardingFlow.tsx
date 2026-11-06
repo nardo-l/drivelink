@@ -333,10 +333,12 @@ export const OnboardingFlow: React.FC<{ forceNewAccount?: boolean }> = ({ forceN
         const activationTrialValid = (activationResult.status === 'trial' || activationResult.status === 'trialing') &&
           !!activationResult.trial_ends_at && new Date(activationResult.trial_ends_at).getTime() > activationNow;
         const activationPaidValid = activationResult.status === 'active' && activationResult.is_active === true;
-        const activationExpiredTrial = activationResult.status === 'expired' &&
-          !!activationResult.trial_started_at && !!activationResult.trial_ends_at;
-        if (!activationTrialValid && !activationPaidValid && !activationExpiredTrial) {
-          throw new Error('Trial activation did not return a valid subscription state.');
+        if (activationResult.status === 'expired' &&
+          !!activationResult.trial_started_at && !!activationResult.trial_ends_at) {
+          throw new Error('TRIAL_ALREADY_USED');
+        }
+        if (!activationTrialValid && !activationPaidValid) {
+          throw new Error('TRIAL_STATE_INVALID');
         }
 
         if ((activationTrialValid || activationPaidValid) && (data.branding.logoPreview || data.branding.coverPreview)) {
@@ -346,23 +348,8 @@ export const OnboardingFlow: React.FC<{ forceNewAccount?: boolean }> = ({ forceN
           });
         }
 
-        // Re-read authoritative subscription status before leaving onboarding.
-        const { data: statusData, error: statusError } = await supabase.functions.invoke('drivelink-payments', {
-          body: { action: 'status' },
-        });
-        if (statusError) throw statusError;
-        const subscription = statusData?.subscription;
-        const serverNow = statusData?.server_now ? new Date(statusData.server_now).getTime() : Date.now();
-        const trialValid = (subscription?.status === 'trial' || subscription?.status === 'trialing') &&
-          subscription?.trial_ends_at && new Date(subscription.trial_ends_at).getTime() > serverNow;
-        const paidValid = subscription?.status === 'active' &&
-          subscription?.current_period_end && new Date(subscription.current_period_end).getTime() > serverNow;
-        const expiredTrial = subscription?.status === 'expired' &&
-          !!subscription?.trial_started_at && !!subscription?.trial_ends_at;
-        if (!trialValid && !paidValid && !expiredTrial) {
-          throw new Error('The server has not confirmed the trial or subscription state yet.');
-        }
-
+        // The activation RPC is the authoritative, transactional result. Do not
+        // make trial activation depend on the separate NardoPay status endpoint.
         const refreshedDealer = await supabaseService.getCurrentDealership();
         if (!refreshedDealer || refreshedDealer.id !== dealer.id) {
           throw new Error('Could not refresh the dealership session after trial activation.');
@@ -408,8 +395,39 @@ export const OnboardingFlow: React.FC<{ forceNewAccount?: boolean }> = ({ forceN
       // Force a fresh app boot so the access gate cannot reuse pre-activation state.
       window.location.assign('/app');
     } catch (e: any) {
-      console.error(`[${name} onboarding] Trial activation failed:`, e);
-      setError("Couldn't start your trial. Check your connection and try again.");
+      const diagnostic = {
+        name: e?.name ?? null,
+        message: e?.message ?? String(e),
+        code: e?.code ?? null,
+        details: e?.details ?? null,
+        hint: e?.hint ?? null,
+        status: e?.status ?? e?.context?.status ?? null,
+        statusText: e?.statusText ?? e?.context?.statusText ?? null,
+        context: e?.context?.body ?? e?.context?.message ?? null,
+      };
+      console.error(`[${name} onboarding] Trial activation failed (full diagnostic):`, diagnostic, e);
+
+      if (diagnostic.message === 'TRIAL_ALREADY_USED') {
+        setError('This account has already used its 3-day free trial. Choose a subscription plan to continue.');
+      } else if (diagnostic.message === 'TRIAL_STATE_INVALID') {
+        setError('The activation service returned an invalid trial status. Please retry; if it continues, contact support.');
+      } else if (diagnostic.code === '42501' || /authentication required|invalid jwt|session.*expired/i.test(diagnostic.message)) {
+        setError('Your sign-in session has expired. Sign in again, then retry activating your trial.');
+      } else if (diagnostic.code === 'P0002' || /no dealership profile/i.test(diagnostic.message)) {
+        setError('Your dealership profile is missing. Go back and complete your business details, then retry.');
+      } else if (diagnostic.code === '23505' || /duplicate key/i.test(diagnostic.message)) {
+        setError('Your setup is already being processed. Wait a moment, then retry.');
+      } else if (diagnostic.status === 401 || diagnostic.status === 403) {
+        setError('Your session could not be authorised. Sign in again, then retry.');
+      } else if (diagnostic.status === 406) {
+        setError('Your dealership profile could not be saved because access is not active yet. Retry activation; if it continues, contact support.');
+      } else if (/TRIAL_ACTIVATION_TIMEOUT|timeout/i.test(diagnostic.message)) {
+        setError('The activation service took too long to respond. Check your connection and retry.');
+      } else if (/fetch|network/i.test(diagnostic.message)) {
+        setError('Could not reach the activation service. Check your connection and retry.');
+      } else {
+        setError('Trial activation failed. Please retry. The technical error has been recorded for support.');
+      }
     } finally {
       activationInFlight.current = false;
       setBusy(false);
