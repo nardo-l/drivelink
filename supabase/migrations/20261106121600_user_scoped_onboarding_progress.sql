@@ -1,7 +1,7 @@
 -- Store onboarding progress and draft data per authenticated account.
 create table if not exists public.user_onboarding_progress (
   user_id uuid primary key references auth.users(id) on delete cascade,
-  onboarding_step integer not null default 1 check (onboarding_step between 1 and 9),
+  onboarding_step integer not null default 0 check (onboarding_step between 0 and 7),
   draft jsonb not null default '{}'::jsonb,
   intro_completed boolean not null default false,
   notifications_prompt_dismissed_at timestamptz,
@@ -23,7 +23,7 @@ revoke all on public.user_onboarding_progress from anon;
 -- Keep existing completed accounts completed during migration.
 insert into public.user_onboarding_progress
   (user_id, onboarding_step, onboarding_completed_at, intro_completed, updated_at)
-select d.user_id, 9, d.onboarding_completed_at, true, now()
+select d.user_id, 7, d.onboarding_completed_at, true, now()
 from public.dealerships d
 where d.onboarding_completed_at is not null
 on conflict (user_id) do update
