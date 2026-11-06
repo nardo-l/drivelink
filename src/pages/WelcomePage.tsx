@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigation } from '../context/NavigationContext';
 import { MARKETING_CAR_IMAGES } from '../utils/marketingCarImages';
-import { DriveLinkLogo } from '../components/common/DriveLinkLogo';
+import { Logo } from '../components/common/Logo';
 import { ArrowRight, ArrowUpRight, CarFront, Check, ChevronDown, Link2, Menu, MessageCircle, Play, Share2, Users, X, BarChart3, ClipboardList, HelpCircle } from 'lucide-react';
 
 const ORANGE = '#FF784F';
@@ -41,7 +41,7 @@ export const WelcomePage: React.FC = () => {
     <main className="dl-marketing-page">
       <div className="dl-marketing-glow dl-glow-one"/><div className="dl-marketing-glow dl-glow-two"/>
       <header className="dl-marketing-nav">
-        <a href="#top" className="dl-brand" aria-label="DriveLink home"><DriveLinkLogo variant="dark" size="md"/></a>
+        <a href="#top" className="dl-brand" aria-label="DriveLink home"><Logo variant="dark" size="md"/></a>
         <nav className="hidden md:flex items-center gap-8">
           <button onClick={()=>scrollTo('features')}>Features</button><button onClick={()=>scrollTo('how-it-works')}>How it works</button><button onClick={()=>scrollTo('pricing')}>Pricing</button><button onClick={()=>scrollTo('faq')}>FAQ</button>
         </nav>
@@ -85,7 +85,7 @@ export const WelcomePage: React.FC = () => {
       <section id="faq" className="dl-faq dl-section-wrap"><div className="dl-faq-intro"><span className="dl-kicker">Questions, answered</span><h2>Got questions?</h2><p>Find straightforward answers about DriveLink.</p><div className="dl-faq-help"><HelpCircle/> Still need help? <a href="mailto:support@drivelink.co.zw">Contact us</a></div></div><div className="dl-faq-list">{faqs.map(([q,a],i)=><div className="dl-faq-item" key={q}><button aria-expanded={openFaq===i} onClick={()=>setOpenFaq(openFaq===i?null:i)}><span>{q}</span><ChevronDown className={openFaq===i?'rotate-180':''}/></button>{openFaq===i&&<p>{a}</p>}</div>)}</div></section>
 
       <section className="dl-final-cta dl-section-wrap"><div><span className="dl-kicker">Manage. Sell. Grow.</span><h2>Ready to grow<br/>your dealership?</h2><p>Start your 3-day free trial and give your dealership one professional link.</p></div><button className="dl-button" onClick={goStart}>Get Started <ArrowRight size={17}/></button></section>
-      <footer className="dl-footer dl-section-wrap"><div className="dl-footer-main"><div><a href="#top" className="dl-brand"><DriveLinkLogo variant="dark" size="sm"/></a><p>Manage. Sell. Grow.</p><small>Online showrooms and dealership tools.</small></div><div className="dl-footer-links"><button onClick={()=>scrollTo('features')}>Features</button><button onClick={()=>scrollTo('pricing')}>Pricing</button><button onClick={()=>scrollTo('faq')}>FAQ</button><button onClick={()=>navigate('/login')}>Log in</button><a href="mailto:support@drivelink.co.zw">Contact</a></div><div className="dl-footer-social"><a href="https://wa.me/" aria-label="WhatsApp"><MessageCircle/></a><a href="https://instagram.com/" aria-label="Instagram"><Share2 size={15}/></a></div></div><div className="dl-footer-bottom"><span>© {new Date().getFullYear()} DriveLink. All rights reserved.</span><div><a href="/privacy">Privacy Policy</a><a href="/terms">Terms of Service</a></div><span>Zimbabwe · South Africa</span></div></footer>
+      <footer className="dl-footer dl-section-wrap"><div className="dl-footer-main"><div><a href="#top" className="dl-brand"><Logo variant="dark" size="sm"/></a><p>Manage. Sell. Grow.</p><small>Online showrooms and dealership tools.</small></div><div className="dl-footer-links"><button onClick={()=>scrollTo('features')}>Features</button><button onClick={()=>scrollTo('pricing')}>Pricing</button><button onClick={()=>scrollTo('faq')}>FAQ</button><button onClick={()=>navigate('/login')}>Log in</button><a href="mailto:support@drivelink.co.zw">Contact</a></div><div className="dl-footer-social"><a href="https://wa.me/" aria-label="WhatsApp"><MessageCircle/></a><a href="https://instagram.com/" aria-label="Instagram"><Share2 size={15}/></a></div></div><div className="dl-footer-bottom"><span>© {new Date().getFullYear()} DriveLink. All rights reserved.</span><div><a href="/privacy">Privacy Policy</a><a href="/terms">Terms of Service</a></div><span>Zimbabwe · South Africa</span></div></footer>
     </main>
   );
 };
