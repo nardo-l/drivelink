@@ -1,3 +1,4 @@
+import { name, legacyName, description, siteUrl, homeTitle } from './src/config/brand';
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
@@ -6,16 +7,20 @@ import {defineConfig} from 'vite';
 const lotleSeoPlugin = {
   name: 'lotle-seo',
   transformIndexHtml(html: string) {
-    const siteUrl = (process.env.SITE_URL || 'https://drivelink-gilt.vercel.app').replace(/\\/+$/, '');
-    const description = 'Create a professional online car showroom, manage vehicle inventory and receive buyer enquiries with Lotlé. Built for car dealers in Zimbabwe and South Africa.';
     const structuredData = [
-      { '@context': 'https://schema.org', '@type': 'Organization', name: 'Lotlé', alternateName: ['Lotle', 'DriveLink'], url: siteUrl, description },
-      { '@context': 'https://schema.org', '@type': 'WebSite', name: 'Lotlé', alternateName: ['Lotle', 'DriveLink'], url: siteUrl, description },
+      { '@context': 'https://schema.org', '@type': 'Organization', name, alternateName: ['Lotle', legacyName], url: siteUrl, description },
+      { '@context': 'https://schema.org', '@type': 'WebSite', name, alternateName: ['Lotle', legacyName], url: siteUrl, description },
     ];
-    const tags = `<link rel="canonical" href="${siteUrl}/" />
+    return html
+      .replace('__LOTLE_HOME_TITLE__', homeTitle)
+      .replace('__LOTLE_DESCRIPTION__', description)
+      .replace('__LOTLE_NAME__', name)
+      .replace('__LOTLE_SITE_URL__', siteUrl)
+      .replace('</head>', `<link rel="canonical" href="${siteUrl}/" />
     <meta property="og:url" content="${siteUrl}/" />
-    <script id="lotle-structured-data" type="application/ld+json">${JSON.stringify(structuredData)}</script>`;
-    return html.replace('</head>', `${tags}\\n  </head>`);
+    <meta property="og:site_name" content="${name}" />
+    <script id="lotle-structured-data" type="application/ld+json">${JSON.stringify(structuredData)}</script>
+    </head>`);
   },
 };
 
