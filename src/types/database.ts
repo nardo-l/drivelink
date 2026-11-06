@@ -24,6 +24,7 @@ export interface Database {
           intro_completed: boolean;
           notifications_prompt_dismissed_at: string | null;
           notifications_enabled: boolean;
+          brand_notice_dismissed_at: string | null;
           onboarding_completed_at: string | null;
           updated_at: string;
         };
@@ -34,6 +35,7 @@ export interface Database {
           intro_completed?: boolean;
           notifications_prompt_dismissed_at?: string | null;
           notifications_enabled?: boolean;
+          brand_notice_dismissed_at?: string | null;
           onboarding_completed_at?: string | null;
           updated_at?: string;
         };
