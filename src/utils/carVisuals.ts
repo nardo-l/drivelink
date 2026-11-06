@@ -129,7 +129,7 @@ export const DEFAULT_STOREFRONT_COVER = svgToDataUri(`
   <!-- Architectural Canopy -->
   <polygon points="90,100 710,70 710,95 90,125" fill="#0F172A" />
   <!-- Signage on Building: "PRIME MOTORS" -->
-  <text x="400" y="86" fill="#F8FAFC" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="24" letter-spacing="4" text-anchor="middle">PRIME MOTORS</text>
+  <text x="400" y="86" fill="#F8FAFC" font-family="'Inter', sans-serif" font-weight="800" font-size="24" letter-spacing="4" text-anchor="middle">PRIME MOTORS</text>
   
   <!-- Tarmac Forecourt -->
   <polygon points="0,240 800,220 800,400 0,400" fill="#334155" />
