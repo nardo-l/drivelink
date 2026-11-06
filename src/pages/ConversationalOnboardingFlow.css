@@ -1,5 +1,5 @@
 
-/* Drive Link onboarding — isolated light-theme component styles */
+/* Lotlé onboarding — isolated light-theme component styles */
 .di-onboarding{min-height:100svh;width:100%;display:flex;justify-content:center;align-items:stretch;padding:0;background:#fff;color:#0a0a0a;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 .di-onboarding-phone{box-sizing:border-box;position:relative;display:flex;flex-direction:column;width:100%;max-width:430px;min-height:100svh;margin:0 auto;padding:calc(env(safe-area-inset-top,0px) + 16px) 22px calc(env(safe-area-inset-bottom,0px) + 18px);overflow:hidden;background:#fff}
 .di-skip{align-self:flex-end;display:inline-flex;align-items:center;justify-content:center;gap:5px;margin:0 0 8px;padding:9px 2px 9px 12px;border:0;background:transparent;color:#555b64;font-size:13px;font-weight:600;line-height:1;white-space:nowrap}
@@ -52,7 +52,7 @@
 @media(prefers-reduced-motion:reduce){.di-setup-screen{animation:none}}
 
 
-/* DriveLink Pro subscription paywall — isolated cinematic dark surface. */
+/* Lotlé Pro subscription paywall — isolated cinematic dark surface. */
 .dl-pro-paywall{position:relative;display:flex;flex:1;flex-direction:column;gap:0;box-sizing:border-box;width:calc(100% + 8px);min-height:calc(100svh - 40px);margin:-12px -4px;padding:22px 20px 18px;overflow-x:hidden;overflow-y:auto;border-radius:28px;background:#050505;color:#fff;font-family:Manrope,Inter,ui-sans-serif,system-ui,sans-serif;scrollbar-width:none}
 .dl-pro-paywall::-webkit-scrollbar{display:none}
 .dl-pro-header{position:absolute;z-index:3;top:22px;left:20px;right:20px;display:flex;align-items:center;justify-content:space-between}
@@ -126,7 +126,7 @@
 @media(prefers-reduced-motion:reduce){.dl-notify-card{animation:none}}
 
 
-/* Full-bleed DriveLink Pro paywall: the page itself is the surface. */
+/* Full-bleed Lotlé Pro paywall: the page itself is the surface. */
 .dl-pro-page{position:fixed;z-index:100;inset:0;width:100vw;height:100dvh;min-height:100dvh;margin:0;padding:0;overflow:hidden;background:#050505;color:#fff}
 .dl-pro-page-inner{position:relative;display:flex;flex-direction:column;width:100%;max-width:none;height:100dvh;min-height:100dvh;margin:0;padding:0;overflow:hidden;border:0;border-radius:0;background:#050505}
 .dl-pro-paywall{position:relative;display:flex;flex:1;flex-direction:column;gap:0;width:100%;height:100dvh;min-height:100dvh;max-height:100dvh;margin:0;padding:0 20px calc(env(safe-area-inset-bottom,0px) + 0px);overflow-x:hidden;overflow-y:auto;border:0;border-radius:0;background:#050505;color:#fff;scrollbar-width:none;overscroll-behavior:contain}
