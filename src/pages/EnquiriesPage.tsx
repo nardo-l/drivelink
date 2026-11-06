@@ -287,13 +287,13 @@ export const EnquiriesPage: React.FC = () => {
                     <div className="enquiry-card-main">
                       <div className="enquiry-avatar">{initials(enquiry.buyerName)}</div>
                       <div className="enquiry-buyer">
-                        <div className="enquiry-name-line"><strong>{enquiry.buyerName}</strong></div>
+                        <div className="enquiry-name-line"><strong title={enquiry.buyerName}>{enquiry.buyerName}</strong></div>
                       </div>
                       <div className="enquiry-time-line"><span className="enquiry-time">{timeAgo(enquiry.createdAt)}</span>{enquiry.stage === 'new' && <i className="enquiry-unread-dot"/>}</div>
                     </div>
                     <div className="enquiry-vehicle-row">
-                      {vehicle?.photos?.[0] ? <img className="enquiry-car-thumb" src={vehicle.photos[0]} alt="" loading="lazy"/> : <div className="enquiry-car-thumb enquiry-car-thumb-empty"><CarFront size={19}/></div>}
                       <span>Asked about {carName}</span>
+                      {vehicle?.photos?.[0] ? <img className="enquiry-car-thumb" src={vehicle.photos[0]} alt="" loading="lazy"/> : <div className="enquiry-car-thumb enquiry-car-thumb-empty"><CarFront size={19}/></div>}
                     </div>
                     <div className="enquiry-card-status"><span className={`enquiry-status ${statusClass(enquiry)}`}>{displayStage(enquiry)}</span></div>
                     <p className="enquiry-message-preview">{enquiry.message || 'No message provided.'}</p>
