@@ -1,3 +1,4 @@
+import { name, siteUrl } from '../config/brand';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Select } from '../components/common/Select';
 import { ArrowRight, CarFront, Contact, Grid2x2, Heart, MapPin, Search, Share2, SlidersHorizontal, X } from 'lucide-react';
@@ -67,7 +68,7 @@ export const PublicStorefrontBrowsePage: React.FC<{ slug: string }> = ({ slug })
   }, [vehicles, query, brand, minPrice, maxPrice, yearFrom, yearTo, minMileage, maxMileage, transmission, fuel, sort]);
 
   if (loading) return <div className="dl-store-loading">Loading vehicles…</div>;
-  if (!dealer) return <div className="dl-store-loading"><h1>Showroom unavailable</h1><button onClick={() => navigate('/')}>Back to DriveLink</button></div>;
+  if (!dealer) return <div className="dl-store-loading"><h1>Showroom unavailable</h1><button onClick={() => navigate('/')}>Back to {name}</button></div>;
   const money = (v: Vehicle) => new Intl.NumberFormat('en-US', { style:'currency', currency:v.currency || dealer.currency, maximumFractionDigits:0 }).format(v.price);
   const clearFilters = () => { setMinPrice(''); setMaxPrice(''); setYearFrom(''); setYearTo(''); setMinMileage(''); setMaxMileage(''); setTransmission('All'); setFuel('All'); setBrand('All'); };
   const goHome = () => navigate('/' + dealer.slug);
@@ -101,7 +102,7 @@ export const PublicStorefrontBrowsePage: React.FC<{ slug: string }> = ({ slug })
         </div>
       </div>
     </article>)}</section> : <div className="dl-store-empty"><CarFront/><h2>No matching vehicles</h2><p>Try a different search or clear your filters.</p><button onClick={() => {clearFilters();setQuery('');}}>Clear filters</button></div>}
-    <footer className="dl-store-footer">{dealer.name} · Powered by DriveLink</footer>
+    <footer className="dl-store-footer">{dealer.name} · Powered by {name}</footer>
     <nav className="dl-store-bottom-nav"><button onClick={goHome}><Grid2x2/><span>Home</span></button><button className="active"><CarFront/><span>Inventory</span></button><button onClick={goContact}><Contact/><span>Enquiries</span></button><button onClick={shareShowroom}><Share2/><span>More</span></button></nav>
     {filtersOpen && <div className="dl-store-filter-backdrop" onClick={() => setFiltersOpen(false)}><section className="dl-store-filter-panel" onClick={e => e.stopPropagation()}><header><div><h2>Filters</h2><p>Find the right vehicle</p></div><button onClick={() => setFiltersOpen(false)} aria-label="Close filters"><X/></button></header>
       <div className="dl-store-custom-select"><span>Make</span><Select searchable title="Choose make" value={brand} options={brands.map(b=>({value:b,label:b}))} onChange={setBrand}/></div>
