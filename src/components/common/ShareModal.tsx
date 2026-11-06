@@ -96,7 +96,7 @@ export const ShareModal: React.FC<ShareModalProps> = ({
               onClose();
               if (dealershipId) void notificationService.trackShareStarted(dealershipId, 'open').catch((error) => console.warn('Share activity could not be recorded:', error));
               try {
-                const target = new URL(url, window.location.origin);
+                const target = new URL(url, siteUrl);
                 // Accept both clean /showroom/... links and legacy #/showroom/... links.
                 const route = target.hash.startsWith('#/')
                   ? target.hash.slice(1)
