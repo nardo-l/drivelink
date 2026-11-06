@@ -7,7 +7,7 @@ import { PerformanceSection } from '../components/dashboard/PerformanceSection';
 import { TrialUpgradeCard } from '../components/dashboard/TrialUpgradeCard';
 import { CAR_MERC_BLACK } from '../utils/carVisuals';
 import { Bell, CarFront, ChevronRight, Eye, MessageCircle, Plus, Share2, ArrowUpRight } from 'lucide-react';
-import { absoluteUrl } from '../config/brand';
+import { absoluteUrl, legacyName, name } from '../config/brand';
 import './DashboardPage.css';
 
 type SubscriptionStatus = {
@@ -166,7 +166,7 @@ export const DashboardPage: React.FC = () => {
           </div>
         </header>
 
-        {brandNoticeVisible && <aside className="mb-4 flex items-start justify-between gap-3 rounded-2xl border border-[#e5e7eb] bg-white px-4 py-3 text-xs text-[#303846]" role="status"><p className="min-w-0 flex-1"><strong>DriveLink is now Lotlé.</strong> Same app, same showroom link.</p><button type="button" onClick={() => void dismissBrandNotice()} aria-label="Dismiss brand update notice" className="shrink-0 rounded-full px-2 py-1 font-bold text-[#667085]">Dismiss</button></aside>}
+        {brandNoticeVisible && <aside className="mb-4 flex items-start justify-between gap-3 rounded-2xl border border-[#e5e7eb] bg-white px-4 py-3 text-xs text-[#303846]" role="status"><p className="min-w-0 flex-1"><strong>{legacyName} is now {name}.</strong> Same app, same showroom link.</p><button type="button" onClick={() => void dismissBrandNotice()} aria-label="Dismiss brand update notice" className="shrink-0 rounded-full px-2 py-1 font-bold text-[#667085]">Dismiss</button></aside>}
 
         <TrialUpgradeCard subscription={subscription} serverNow={serverClock.current.serverMs + (window.performance.now() - serverClock.current.monotonicMs)} vehiclePhoto={latestVehicle?.photos?.[0]} defaultPhoto={CAR_MERC_BLACK} onUpgrade={() => navigate('/app/billing')}/>
         {loading ? <div className="dl-skeleton-card h-[104px] mb-4"/> : vehicles.length === 0 ? (
