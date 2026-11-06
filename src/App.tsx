@@ -227,7 +227,8 @@ function AppContent() {
     }
 
     if (currentPath === '/login') {
-      if (isLive && session.isLoggedIn) { if (session.dealershipId) { console.info('[DriveLink onboarding] Get notified skipped: redirected (existing dealership session).'); return safeDashboard(); } return <OnboardingFlow />; }
+      // Keep the sign-in form available so a different account can replace the
+      // currently active session and restore its own server-side onboarding.
       return <LoginPage />;
     }
 
