@@ -1,3 +1,4 @@
+import { name } from '../config/brand';
 import React from 'react';
 import { Logo } from '../components/common/Logo';
 import { Check, Loader2, LockKeyhole, ShieldCheck, Store, CarFront, MessageCircle, CalendarDays, Sparkles } from 'lucide-react';
@@ -59,7 +60,7 @@ export const PaywallPage: React.FC = () => {
       });
       if (error) throw error;
       if (data?.paid || data?.status === 'completed') {
-        setMessage('Payment confirmed. Restoring your DriveLink access…');
+        setMessage('Payment confirmed. Restoring your {name} access…');
         await refreshAccess();
       } else if (data?.status === 'failed' || data?.status === 'cancelled') {
         setMessage('That payment was not completed. You can try again when ready.');
