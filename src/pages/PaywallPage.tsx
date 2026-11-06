@@ -1,5 +1,5 @@
 import React from 'react';
-import { DriveLinkLogo } from '../components/common/DriveLinkLogo';
+import { Logo } from '../components/common/Logo';
 import { Check, Loader2, LockKeyhole, ShieldCheck, Store, CarFront, MessageCircle, CalendarDays, Sparkles } from 'lucide-react';
 import { useNavigation } from '../context/NavigationContext';
 import { supabase } from '../lib/supabase';
@@ -125,7 +125,7 @@ export const PaywallPage: React.FC = () => {
     <main className="relative flex min-h-[100dvh] w-full justify-center overflow-y-auto bg-[linear-gradient(180deg,#DCEEFF_0%,#EFF7FF_19%,#F8FAFC_36%,#FFFFFF_58%)] px-5 pb-[max(20px,env(safe-area-inset-bottom))] pt-[max(28px,env(safe-area-inset-top))] text-[#0A0F1E]">
       <section className="flex min-h-[calc(100dvh-max(28px,env(safe-area-inset-top))-max(20px,env(safe-area-inset-bottom)))] w-full max-w-[430px] flex-col">
         <header className="flex flex-col items-center text-center">
-          <div className="mb-5"><DriveLinkLogo variant="dark" size="sm" /></div>
+          <div className="mb-5"><Logo variant="dark" size="sm" /></div>
           <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-full bg-white/75 text-slate-500 shadow-sm ring-1 ring-white/90">
             <LockKeyhole size={17} strokeWidth={1.8} />
           </div>
