@@ -109,7 +109,7 @@ export const OnboardingFlow: React.FC<{ forceNewAccount?: boolean }> = ({ forceN
           setData({
             ...initialState(),
             ...savedDraft,
-            currentStep: progress.onboarding_completed_at ? 9 : Math.max(1, Math.min(TOTAL, progress.onboarding_step || 1)),
+            currentStep: progress.onboarding_completed_at ? 9 : Math.max(2, Math.min(TOTAL, (progress.onboarding_step ?? 0) + 2)),
             account: { ...initialState().account, email: user.email || '' },
             branding: { ...initialState().branding, ...(savedDraft.branding || {}) },
             isCompleted: Boolean(progress.onboarding_completed_at),
@@ -117,7 +117,7 @@ export const OnboardingFlow: React.FC<{ forceNewAccount?: boolean }> = ({ forceN
           setIntroDone(Boolean(progress.intro_completed));
           setNotificationsDismissedAt(progress.notifications_prompt_dismissed_at || null);
         } else {
-          setData({ ...initialState(), account: { ...initialState().account, email: user.email || '' } });
+          setData({ ...initialState(), currentStep: 2, account: { ...initialState().account, email: user.email || '' } });
           setIntroDone(false);
           setNotificationsDismissedAt(null);
         }
@@ -190,7 +190,7 @@ export const OnboardingFlow: React.FC<{ forceNewAccount?: boolean }> = ({ forceN
           .from('user_onboarding_progress')
           .upsert({
             user_id: user.id,
-            onboarding_step: step,
+            onboarding_step: Math.max(0, step - 2),
             draft,
             intro_completed: introDone,
             notifications_prompt_dismissed_at: notificationsDismissedAt,
@@ -259,7 +259,7 @@ export const OnboardingFlow: React.FC<{ forceNewAccount?: boolean }> = ({ forceN
       };
       const { error: progressError } = await supabase.from('user_onboarding_progress').upsert({
         user_id: user.id,
-        onboarding_step: 2,
+        onboarding_step: 0,
         draft: initialDraft,
         intro_completed: introDone,
         notifications_prompt_dismissed_at: null,
@@ -381,7 +381,7 @@ export const OnboardingFlow: React.FC<{ forceNewAccount?: boolean }> = ({ forceN
       }
       await supabase.from('user_onboarding_progress').upsert({
         user_id: result.user.id,
-        onboarding_step: 9,
+        onboarding_step: 7,
         draft: {
           sellerType: data.sellerType,
           showroom: data.showroom,
