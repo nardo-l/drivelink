@@ -185,7 +185,7 @@ export const supabaseService = {
 
   async signOut() {
     if (!isSupabaseConfigured()) return;
-    const { error } = await supabase.auth.signOut();
+    const { error } = await supabase.auth.signOut({ scope: 'local' });
     if (error) throw error;
   },
 
