@@ -46,6 +46,7 @@ export const OnboardingFlow: React.FC<{ forceNewAccount?: boolean }> = ({ forceN
   const [progressReady, setProgressReady] = useState(false);
   const [progressLoadError, setProgressLoadError] = useState('');
   const [notificationsDismissedAt, setNotificationsDismissedAt] = useState<string | null>(null);
+  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const [available, setAvailable] = useState<boolean | null>(null);
   const [checking, setChecking] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -101,7 +102,7 @@ export const OnboardingFlow: React.FC<{ forceNewAccount?: boolean }> = ({ forceN
         storageService.setUserSession({ isLoggedIn: true, email: user.email || '', dealershipId: '', userId: user.id });
         const { data: progress, error: progressError } = await supabase
           .from('user_onboarding_progress')
-          .select('onboarding_step,draft,intro_completed,notifications_prompt_dismissed_at,onboarding_completed_at')
+          .select('onboarding_step,draft,intro_completed,notifications_prompt_dismissed_at,notifications_enabled,onboarding_completed_at')
           .eq('user_id', user.id)
           .maybeSingle();
         if (progressError) throw progressError;
@@ -118,10 +119,12 @@ export const OnboardingFlow: React.FC<{ forceNewAccount?: boolean }> = ({ forceN
           });
           setIntroDone(Boolean(progress.intro_completed));
           setNotificationsDismissedAt(progress.notifications_prompt_dismissed_at || null);
+          setNotificationsEnabled(Boolean(progress.notifications_enabled));
         } else {
           setData({ ...initialState(), currentStep: 2, account: { ...initialState().account, email: user.email || '' } });
           setIntroDone(false);
           setNotificationsDismissedAt(null);
+          setNotificationsEnabled(false);
         }
         setProgressReady(true);
       } catch (error) {
@@ -134,13 +137,13 @@ export const OnboardingFlow: React.FC<{ forceNewAccount?: boolean }> = ({ forceN
   }, [forceNewAccount, forceNotificationsPreview]);
   useEffect(() => {
     if (data.currentStep !== 7 || typeof window === 'undefined' || forceNotificationsPreview) return;
-    if (notificationsDismissedAt) {
-      console.info('[DriveLink onboarding] Get notified skipped: dismissed for this account.');
+    if (notificationsDismissedAt || notificationsEnabled) {
+      console.info('[DriveLink onboarding] Get notified skipped: this account already made its notification choice.');
       setData(prev => ({ ...prev, currentStep: 8 }));
     } else {
       console.info('[DriveLink onboarding] Get notified shown: this account has not dismissed the prompt.');
     }
-  }, [data.currentStep, forceNotificationsPreview, notificationsDismissedAt]);
+  }, [data.currentStep, forceNotificationsPreview, notificationsDismissedAt, notificationsEnabled]);
 
   const introTouchStart = useRef<number | null>(null);
   const handleIntroTouchStart = (event: React.TouchEvent<HTMLElement>) => { introTouchStart.current = event.changedTouches[0]?.clientX ?? null; };
@@ -196,6 +199,7 @@ export const OnboardingFlow: React.FC<{ forceNewAccount?: boolean }> = ({ forceN
             draft: draft as unknown as Json,
             intro_completed: introDone,
             notifications_prompt_dismissed_at: notificationsDismissedAt,
+            notifications_enabled: notificationsEnabled,
             onboarding_completed_at: data.isCompleted ? new Date().toISOString() : null,
             updated_at: new Date().toISOString(),
           }, { onConflict: 'user_id' });
@@ -205,7 +209,7 @@ export const OnboardingFlow: React.FC<{ forceNewAccount?: boolean }> = ({ forceN
       }
     }, 350);
     return () => { active = false; window.clearTimeout(timer); };
-  }, [data, introDone, notificationsDismissedAt, progressReady, step, forceNewAccount, forceNotificationsPreview]);
+  }, [data, introDone, notificationsDismissedAt, notificationsEnabled, progressReady, step, forceNewAccount, forceNotificationsPreview]);
   useEffect(() => {
     const slug = data.showroom.handle.trim();
     if (!slug || slug.length < 3) { setAvailable(null); setChecking(false); return; }
@@ -265,6 +269,7 @@ export const OnboardingFlow: React.FC<{ forceNewAccount?: boolean }> = ({ forceN
         draft: initialDraft as unknown as Json,
         intro_completed: introDone,
         notifications_prompt_dismissed_at: null,
+        notifications_enabled: false,
         updated_at: new Date().toISOString(),
       }, { onConflict: 'user_id' });
       if (progressError) throw progressError;
@@ -376,7 +381,7 @@ export const OnboardingFlow: React.FC<{ forceNewAccount?: boolean }> = ({ forceN
         void notificationService.dismissOnboardingPrompt(result.dealer.id).catch(err =>
           console.warn('Could not persist notification prompt dismissal:', err)
         );
-      } else if ('Notification' in window && Notification.permission === 'granted' && notificationService.isPushSupported()) {
+      } else if (notificationsEnabled && 'Notification' in window && Notification.permission === 'granted' && notificationService.isPushSupported()) {
         void notificationService.enablePush(result.dealer.id, false).catch(err =>
           console.warn('Could not register the approved push subscription after dealership setup:', err)
         );
@@ -394,6 +399,7 @@ export const OnboardingFlow: React.FC<{ forceNewAccount?: boolean }> = ({ forceN
         } as unknown as Json,
         intro_completed: true,
         notifications_prompt_dismissed_at: notificationsDismissedAt,
+        notifications_enabled: notificationsEnabled,
         onboarding_completed_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       }, { onConflict: 'user_id' });
@@ -451,6 +457,7 @@ export const OnboardingFlow: React.FC<{ forceNewAccount?: boolean }> = ({ forceN
     window.open(`https://wa.me/?text=${message}`, '_blank', 'noopener,noreferrer');
   };
   const continueWithoutNotifications = async () => {
+    setNotificationsEnabled(false);
     setNotificationsDismissedAt(new Date().toISOString());
     console.info('[DriveLink onboarding] Get notified skipped: dismissed by this account.');
     setStep(8);
@@ -460,12 +467,14 @@ export const OnboardingFlow: React.FC<{ forceNewAccount?: boolean }> = ({ forceN
     try {
       const permission = Notification.permission === 'default' ? await Notification.requestPermission() : Notification.permission;
       if (permission === 'denied') {
+        setNotificationsEnabled(false);
         setNotificationsDismissedAt(new Date().toISOString());
         console.info('[DriveLink onboarding] Get notified skipped: denied for this account.');
         setStep(8);
         return;
       }
       if (permission !== 'granted') throw new Error('Notification permission was not granted.');
+      setNotificationsEnabled(true);
       setNotificationsDismissedAt(null);
       setStep(8);
     } catch (e: any) { setError(e?.message || 'Could not enable notifications. You can try again in Settings.'); }
