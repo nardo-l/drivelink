@@ -23,7 +23,7 @@ const STORAGE_KEYS = {
 };
 
 export const storageService = {
-  // All browser-persisted DriveLink data is cleared when the authenticated
+  // All browser-persisted Lotlé data is cleared when the authenticated
   // account changes. Onboarding progress itself is stored only on the server.
   async clearAppUserData(nextUserId?: string): Promise<void> {
     try {
@@ -42,7 +42,7 @@ export const storageService = {
         await Promise.all(names.filter(name => name.toLowerCase().startsWith('drivelink')).map(name => caches.delete(name)));
       }
     } catch (error) {
-      console.warn('Could not clear DriveLink browser caches:', error);
+      console.warn('Could not clear Lotlé browser caches:', error);
     }
     try {
       if (typeof document !== 'undefined') {
