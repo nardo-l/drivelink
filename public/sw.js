@@ -22,7 +22,7 @@ self.addEventListener('push', (event) => {
   const title = payload.title || 'New update';
   const options = {
     body: payload.body || 'You have an update from your dealership.',
-    icon: '/icon.svg?v=lotle-4',
+    icon: '/icon.svg?v=lotle-5',
     badge: '/icon.svg?v=lotle-5',
     data: payload.data || { url: '/#/app/notifications' },
     tag: payload.tag || 'lotle-notification',
