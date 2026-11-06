@@ -1,4 +1,4 @@
--- DriveLink: one-time 72-hour trial and server-enforced view-only expiry.
+-- Lotlé: one-time 72-hour trial and server-enforced view-only expiry.
 alter table public.dealership_subscriptions
   drop constraint if exists dealership_subscriptions_status_check;
 alter table public.dealership_subscriptions
