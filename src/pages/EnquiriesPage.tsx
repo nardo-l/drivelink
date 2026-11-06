@@ -179,10 +179,6 @@ export const EnquiriesPage: React.FC = () => {
     }
   };
 
-  const previewShowroom = () => {
-    try { navigate(`/${storageService.getDealership().slug}`); }
-    catch { navigate('/app/settings'); }
-  };
 
   const deleteEnquiry = async () => {
     if (!deleteTarget) return;
@@ -266,7 +262,6 @@ export const EnquiriesPage: React.FC = () => {
             <h2>No enquiries yet</h2>
             <p>Share your showroom link and buyer messages will show up here.</p>
             <button type="button" className="enquiries-empty-cta" onClick={() => void shareShowroom()}><Share2 size={17}/> Share my showroom link</button>
-            <button type="button" className="enquiries-preview-link" onClick={previewShowroom}>Preview my showroom <ArrowUpRight size={14}/></button>
           </section>
         ) : visible.length === 0 ? (
           <section className="enquiries-no-results">
@@ -293,7 +288,6 @@ export const EnquiriesPage: React.FC = () => {
                       <div className="enquiry-avatar">{initials(enquiry.buyerName)}</div>
                       <div className="enquiry-buyer">
                         <div className="enquiry-name-line"><strong>{enquiry.buyerName}</strong></div>
-                        <p className="enquiry-car-line">Asked about {carName}</p>
                       </div>
                       <div className="enquiry-time-line"><span className="enquiry-time">{timeAgo(enquiry.createdAt)}</span>{enquiry.stage === 'new' && <i className="enquiry-unread-dot"/>}</div>
                     </div>
