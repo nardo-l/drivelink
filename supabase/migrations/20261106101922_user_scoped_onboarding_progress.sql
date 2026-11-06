@@ -5,6 +5,7 @@ create table if not exists public.user_onboarding_progress (
   draft jsonb not null default '{}'::jsonb,
   intro_completed boolean not null default false,
   notifications_prompt_dismissed_at timestamptz,
+  notifications_enabled boolean not null default false,
   onboarding_completed_at timestamptz,
   updated_at timestamptz not null default now()
 );
