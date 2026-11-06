@@ -1,8 +1,8 @@
 {
   "id": "/",
-  "name": "DriveLink",
-  "short_name": "DriveLink",
-  "description": "Your dealership showroom and buyer enquiries in one place.",
+  "name": "Lotlé",
+  "short_name": "Lotlé",
+  "description": "Your car showroom, online. Manage inventory and buyer enquiries with Lotlé.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
