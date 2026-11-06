@@ -1,4 +1,4 @@
-import { name, siteUrl, pageTitle, absoluteUrl } from '../config/brand';
+import { name, pageTitle, homeTitle, absoluteUrl } from '../config/brand';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Logo } from '../components/common/Logo';
 import { Select } from '../components/common/Select';
@@ -157,7 +157,7 @@ export const PublicShowroomPage: React.FC<{ slug?: string; previewDealership?: D
     if (!dealer) return;
     const city = dealer.city || dealer.country;
     const count = vehicles.filter(v => v.status === 'available').length;
-    document.title = dealer.name + ' | Cars available';
+    document.title = pageTitle(`${dealer.name} cars`);
     const setMeta = (key: string, value: string, property = false) => {
       let el = document.querySelector('meta[' + (property ? 'property' : 'name') + '="' + key + '"]') as HTMLMetaElement | null;
       if (!el) { el = document.createElement('meta'); el.setAttribute(property ? 'property' : 'name', key); document.head.appendChild(el); }
@@ -175,7 +175,7 @@ export const PublicShowroomPage: React.FC<{ slug?: string; previewDealership?: D
       setMeta('og:image:height', '630', true);
     }
     setMeta('description', count + (count === 1 ? ' car available in ' : ' cars available in ') + city + '. Browse the showroom at ' + dealer.name + '.');
-    return () => { document.title = pageTitle(name); };
+    return () => { document.title = homeTitle; };
   }, [dealer, vehicles]);
 
   const available = useMemo(() => vehicles.filter(v => v.status === 'available'), [vehicles]);
