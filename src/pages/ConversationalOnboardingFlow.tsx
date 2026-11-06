@@ -10,7 +10,7 @@ import { OnboardingState, SellerType } from '../types';
 import type { Json } from '../types/database';
 import { toE164 } from '../utils/phoneUtils';
 import { MARKETING_CAR_IMAGES } from '../utils/marketingCarImages';
-import { DriveLinkLogo } from '../components/common/DriveLinkLogo';
+import { Logo } from '../components/common/Logo';
 import { notificationService } from '../services/notificationService';
 import { ShowroomBrandingEditor } from '../components/ShowroomBrandingEditor';
 import { Bell, MessageSquare, Eye as EyeIcon, CreditCard as CreditCardIcon } from 'lucide-react';
@@ -417,7 +417,7 @@ export const OnboardingFlow: React.FC<{ forceNewAccount?: boolean }> = ({ forceN
 
 
   const renderIntroVisual = () => {
-    if (introStep === 0) return <div className="di-hero-visual"><img src={MARKETING_CAR_IMAGES.hero} alt="Premium vehicle in a dealership setting" /><div className="di-brand-mark"><DriveLinkLogo variant="light" size="md"/></div></div>;
+    if (introStep === 0) return <div className="di-hero-visual"><img src={MARKETING_CAR_IMAGES.hero} alt="Premium vehicle in a dealership setting" /><div className="di-brand-mark"><Logo variant="light" size="md"/></div></div>;
     if (introStep === 1) return <div className="di-stack-visual">
       {[{name:'Toyota Fortuner',meta:'2022 | 2.8 GD-6 | SUV',price:'US$48,900',img:MARKETING_CAR_IMAGES.hero},{name:'VW Polo',meta:'2023 | 1.0 TSI | Hatchback',price:'US$21,500',img:MARKETING_CAR_IMAGES.hondaFit},{name:'BMW 320i',meta:'2021 | 2.0 | Sedan',price:'US$32,900',img:MARKETING_CAR_IMAGES.showroom}].map((v,i)=><div className={'di-listing di-listing-'+i} key={v.name}><img src={v.img} alt="" /><span><b>{v.name}</b><small>{v.meta}</small><strong>{v.price}</strong></span><ArrowRight size={16}/></div>)}
     </div>;
@@ -499,7 +499,7 @@ export const OnboardingFlow: React.FC<{ forceNewAccount?: boolean }> = ({ forceN
       </div>}
 
       {step === 1 && <form onSubmit={finish} className="di-setup-screen flex flex-1 flex-col">
-        <div className="mb-7 flex justify-center"><DriveLinkLogo variant="dark" size="sm" showTagline /></div><div className="mb-9 text-center"><div className="mx-auto mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-black text-white"><Link2 size={24}/></div><h1 className="text-[30px] font-bold leading-tight tracking-tight">Create your account.</h1><p className="mt-2 text-sm leading-6 text-gray-500">Set up your Drive Link account to build your dealership showroom.</p></div>
+        <div className="mb-7 flex justify-center"><Logo variant="dark" size="sm" showTagline /></div><div className="mb-9 text-center"><div className="mx-auto mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-black text-white"><Link2 size={24}/></div><h1 className="text-[30px] font-bold leading-tight tracking-tight">Create your account.</h1><p className="mt-2 text-sm leading-6 text-gray-500">Set up your Drive Link account to build your dealership showroom.</p></div>
         <div className="space-y-4">
           <label className="block"><span className="mb-2 block text-xs font-semibold text-gray-700">Email address</span><input type="email" autoComplete="email" required className="h-12 w-full rounded-[15px] border border-[#E5E7EB] bg-white px-4 text-sm outline-none focus:border-black focus:ring-2 focus:ring-gray-100" value={data.account.email} onChange={e=>update({account:{...data.account,email:e.target.value}})} placeholder="you@example.com"/></label>
           <label className="block"><span className="mb-2 block text-xs font-semibold text-gray-700">Password</span><div className="relative"><input type={showPassword?'text':'password'} autoComplete="new-password" minLength={6} required className="h-12 w-full rounded-[15px] border border-[#E5E7EB] bg-white px-4 pr-12 text-sm outline-none focus:border-black focus:ring-2 focus:ring-gray-100" value={data.account.password} onChange={e=>update({account:{...data.account,password:e.target.value}})} placeholder="At least 6 characters"/><button type="button" onClick={()=>setShowPassword(v=>!v)} aria-label={showPassword?'Hide password':'Show password'} className="absolute right-4 top-3.5 text-gray-500">{showPassword?<EyeOff size={18}/>:<Eye size={18}/>}</button></div></label>
@@ -560,7 +560,7 @@ export const OnboardingFlow: React.FC<{ forceNewAccount?: boolean }> = ({ forceN
 
       {step === 8 && <section className="dl-pro-paywall">
         <header className="dl-pro-header">
-          <div className="dl-pro-brand"><DriveLinkLogo variant="light" size="md"/></div>
+          <div className="dl-pro-brand"><Logo variant="light" size="md"/></div>
           <button type="button" className="dl-pro-close" aria-label="Back to notifications" onClick={()=>setStep(7)}><span aria-hidden="true">×</span></button>
         </header>
         <div className="dl-pro-hero"><img src={MARKETING_CAR_IMAGES.hero} alt="Premium vehicle outside a modern dealership"/><div className="dl-pro-hero-shade"/></div>
