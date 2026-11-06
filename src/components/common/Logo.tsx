@@ -8,7 +8,7 @@ export interface LogoProps {
   className?: string;
 }
 
-export const Logo: React.FC<DriveLinkLogoProps> = ({
+export const Logo: React.FC<LogoProps> = ({
   variant = 'dark',
   size = 'md',
   showTagline = false,
