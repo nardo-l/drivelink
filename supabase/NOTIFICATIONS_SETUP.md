@@ -1,4 +1,4 @@
-# DriveLink notifications setup
+# Lotlé notifications setup
 
 The notification inbox and notification worker are deployed. Browser push delivery stays disabled until the VAPID and scheduler secrets below are configured.
 
@@ -37,11 +37,11 @@ In GitHub → nardo-l/drivelink → Settings → Secrets and variables → Actio
 
 - `NOTIFICATION_CRON_SECRET` — exactly the same value configured in Supabase
 
-The workflow `.github/workflows/drivelink-notifications.yml` invokes the worker every 15 minutes. It creates the daily summary during the 19:00 hour in Africa/Harare and processes queued push notifications.
+The workflow `.github/workflows/lotle-notifications.yml` invokes the worker every 15 minutes. It creates the daily summary during the 19:00 hour in Africa/Harare and processes queued push notifications.
 
 ## Enable browser push
 
-After the Vercel redeployment and secrets are configured, sign into DriveLink, open the dashboard bell → Notifications, and choose **Enable**. Accept the browser permission prompt. Each browser/device must subscribe separately.
+After the Vercel redeployment and secrets are configured, sign into Lotlé, open the dashboard bell → Notifications, and choose **Enable**. Accept the browser permission prompt. Each browser/device must subscribe separately.
 
 ## Current behaviour
 
