@@ -1,3 +1,4 @@
+import { name, pageTitle, homeTitle, updateBrandMetadata } from './config/brand';
 import React from 'react';
 import { NavigationProvider, useNavigation } from './context/NavigationContext';
 import { DeviceFrame } from './components/layout/DeviceFrame';
@@ -76,6 +77,10 @@ const TrialBanner: React.FC<TrialBannerProps> = ({ subscriptionState, trialEndsA
 function AppContent() {
   const safeDashboard = () => <ErrorBoundary label="dashboard"><DashboardPage /></ErrorBoundary>;
   const { currentPath, navigate, toast, showToast } = useNavigation();
+  React.useEffect(() => {
+    const page = currentPath === '/' || currentPath === '' ? homeTitle : currentPath.split('/').filter(Boolean).slice(-1)[0]?.replace(/[-_]/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) || name;
+    updateBrandMetadata({ title: currentPath === '/' || currentPath === '' ? homeTitle : pageTitle(page) });
+  }, [currentPath]);
   const [sessionChecked, setSessionChecked] = React.useState(false);
   const [subscriptionState, setSubscriptionState] = React.useState<'checking' | 'trial' | 'active' | 'expired' | 'unverified' | 'setup'>('checking');
   const [trialEndsAt, setTrialEndsAt] = React.useState<string | null>(null);
@@ -202,7 +207,7 @@ function AppContent() {
     const isProtectedRoute = currentPath.startsWith('/app');
     if (forceNotificationsPreview) return <OnboardingFlow />;
     if (isLive && !sessionChecked) {
-      return <div className="flex min-h-[100dvh] items-center justify-center bg-white text-sm text-gray-500">Loading your Drive Link account…</div>;
+      return <div className="flex min-h-[100dvh] items-center justify-center bg-white text-sm text-gray-500">Loading your {name} account…</div>;
     }
 
     if (currentPath === '/welcome') return <WelcomePage />;
@@ -210,7 +215,7 @@ function AppContent() {
     // Public landing page stays separate from the current onboarding flow.
     // Returning dealers with a completed setup go straight to their dashboard.
     if (currentPath === '/' || currentPath === '') {
-      if (isLive && session.isLoggedIn && session.dealershipId) { console.info('[DriveLink onboarding] Get notified skipped: redirected (existing dealership session).'); return safeDashboard(); }
+      if (isLive && session.isLoggedIn && session.dealershipId) { console.info('[${name} onboarding] Get notified skipped: redirected (existing dealership session).'); return safeDashboard(); }
       if (isLive && session.isLoggedIn && !session.dealershipId) return <OnboardingFlow />;
       return <WelcomePage />;
     }
@@ -361,7 +366,7 @@ function AppContent() {
           />
         </ErrorBoundary>
       )}
-      {forcePaywall || (blockUntilVerified && subscriptionState === 'unverified') ? <PaywallPage /> : blockUntilVerified ? <div className="flex min-h-[100dvh] items-center justify-center bg-white px-6 text-center text-sm text-gray-500">Verifying your DriveLink subscription…</div> : renderRoute()}
+      {forcePaywall || (blockUntilVerified && subscriptionState === 'unverified') ? <PaywallPage /> : blockUntilVerified ? <div className="flex min-h-[100dvh] items-center justify-center bg-white px-6 text-center text-sm text-gray-500">Verifying your {name} subscription…</div> : renderRoute()}
       {!forcePaywall && !blockUntilVerified && (['/app', '/app/vehicles', '/app/enquiries', '/app/more'].includes(currentPath) || (currentPath === '/' && storageService.getUserSession().isLoggedIn && !!storageService.getUserSession().dealershipId)) && <BottomNav />}
 
       {/* Global Toast Notification */}
