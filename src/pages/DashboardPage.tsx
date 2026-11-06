@@ -112,7 +112,7 @@ export const DashboardPage: React.FC = () => {
 
   return (
     <div className="dl-workspace dl-dashboard relative min-h-full flex flex-col text-[#0A0F1E]">
-      <main className="dl-dashboard-main flex-1 overflow-y-auto px-4 sm:px-7 pt-5 pb-[calc(120px+env(safe-area-inset-bottom))] w-full max-w-5xl mx-auto">
+      <main className="dl-dashboard-main flex-1 px-4 sm:px-7 pt-5 pb-[calc(120px+env(safe-area-inset-bottom))] w-full max-w-5xl mx-auto">
         <header className="dl-dashboard-header flex items-center justify-between gap-3 mb-5">
           <div className="flex min-w-0 items-center gap-3">
             <div className="dl-dealer-avatar shrink-0">
