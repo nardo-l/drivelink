@@ -1,3 +1,4 @@
+import { name } from '../../config/brand';
 import React, { useState } from 'react';
 import { X, Copy, Check, MessageCircle, QrCode, ExternalLink } from 'lucide-react';
 import { useNavigation } from '../../context/NavigationContext';
@@ -17,7 +18,7 @@ export const ShareModal: React.FC<ShareModalProps> = ({
   onClose,
   title,
   url,
-  description = 'Check out this showroom on DriveLink!',
+  description = `Check out this showroom on ${name}!`,
   dealershipId,
 }) => {
   const { showToast, navigate } = useNavigation();
