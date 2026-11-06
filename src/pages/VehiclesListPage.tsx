@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
-  Search, Plus, CarFront, MoreHorizontal, Pencil, Trash2, X, LayoutGrid,
+  Search, Plus, CarFront, MoreHorizontal, Pencil, Trash2, X,
   Share2, RefreshCw, ArrowUpRight, SlidersHorizontal, CalendarDays, Gauge, Fuel,
 } from 'lucide-react';
 import { useNavigation } from '../context/NavigationContext';
