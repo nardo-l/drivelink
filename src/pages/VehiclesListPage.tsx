@@ -29,7 +29,7 @@ export const VehiclesListPage: React.FC = () => {
   const [menuId, setMenuId] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Vehicle | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>(() => {
-    try { const id = storageService.getUserSession().dealershipId || 'default'; return localStorage.getItem(`drivelink_garage_columns_${id}`) === 'double' ? 'double' : 'single'; } catch { return 'single'; }
+    try { const id = storageService.getUserSession().userId || 'anonymous'; return localStorage.getItem(`drivelink_garage_columns_${id}`) === 'double' ? 'double' : 'single'; } catch { return 'single'; }
   });
   const floatingAddButtonRef = useRef<HTMLButtonElement | null>(null);
   const scrollFrameRef = useRef<number | null>(null);
@@ -126,7 +126,7 @@ export const VehiclesListPage: React.FC = () => {
   const openVehicle = (vehicle: Vehicle) => navigate(`/app/vehicles/${vehicle.id}`);
   const setView = (mode: ViewMode) => {
     setViewMode(mode);
-    try { const id = storageService.getUserSession().dealershipId || 'default'; localStorage.setItem(`drivelink_garage_columns_${id}`, mode); } catch { /* storage unavailable */ }
+    try { const id = storageService.getUserSession().userId || 'anonymous'; localStorage.setItem(`drivelink_garage_columns_${id}`, mode); } catch { /* storage unavailable */ }
   };
   const shareVehicle = async (vehicle: Vehicle) => {
     const dealer = storageService.getDealership();
