@@ -1,3 +1,4 @@
+import { pageTitle, absoluteUrl } from '../config/brand';
 import React,{useEffect,useRef,useState} from 'react';
 import {ArrowLeft,ChevronLeft,ChevronRight,MapPin,Phone,Share2,X,CheckCircle2,CalendarDays,Gauge,Settings2,Fuel,Palette,BadgeCheck} from 'lucide-react';
 import {useNavigation} from '../context/NavigationContext';
@@ -14,7 +15,7 @@ export const PublicVehicleDetailPage:React.FC<PublicVehicleDetailPageProps>=({ve
  const [photoIndex,setPhotoIndex]=useState(0),[fullscreen,setFullscreen]=useState(false),[expanded,setExpanded]=useState(false);
  const touch=useRef<number|null>(null);
  useEffect(()=>{let active=true;const load=async()=>{try{if(isSupabaseConfigured()){const foundDealer=slug?await supabaseService.getDealershipBySlug(slug):null;const foundVehicle=await supabaseService.getVehicleById(vehicleId,true);if(!active)return;if(foundDealer&&foundVehicle&&foundVehicle.dealershipId===foundDealer.id&&foundVehicle.status!=='draft'){setDealer(foundDealer);setVehicle(foundVehicle);}else{setDealer(foundDealer);setVehicle(null);}}else{const localDealer=storageService.getDealership();const localVehicle=storageService.getVehicleById(vehicleId);if(localDealer.slug===slug&&localVehicle?.dealershipId===localDealer.id&&localVehicle.status!=='draft'){setDealer(localDealer);setVehicle(localVehicle);}}}catch{if(active){setDealer(null);setVehicle(null);}}finally{if(active)setLoading(false);}};void load();return()=>{active=false;};},[vehicleId,slug]);
- useEffect(()=>{if(!dealer||!vehicle)return;const title=vehicle.year+' '+vehicle.make+' '+vehicle.model;document.title=title+' | '+dealer.name;const setMeta=(key:string,value:string)=>{let el=document.querySelector('meta[property="'+key+'"]') as HTMLMetaElement|null;if(!el){el=document.createElement('meta');el.setAttribute('property',key);document.head.appendChild(el);}el.content=value;};setMeta('og:title',title+' · '+new Intl.NumberFormat('en-US',{style:'currency',currency:vehicle.currency||dealer.currency,maximumFractionDigits:0}).format(vehicle.price));setMeta('og:description','View this vehicle at '+dealer.name);if(vehicle.photos?.[0])setMeta('og:image',vehicle.photos[0]);return()=>{document.title=dealer.name+' | Cars available';};},[dealer,vehicle]);
+ useEffect(()=>{if(!dealer||!vehicle)return;const title=vehicle.year+' '+vehicle.make+' '+vehicle.model;document.title=pageTitle(title+' | '+dealer.name);const setMeta=(key:string,value:string)=>{let el=document.querySelector('meta[property="'+key+'"]') as HTMLMetaElement|null;if(!el){el=document.createElement('meta');el.setAttribute('property',key);document.head.appendChild(el);}el.content=value;};setMeta('og:title',title+' · '+new Intl.NumberFormat('en-US',{style:'currency',currency:vehicle.currency||dealer.currency,maximumFractionDigits:0}).format(vehicle.price));setMeta('og:description','View this vehicle at '+dealer.name);if(vehicle.photos?.[0])setMeta('og:image',vehicle.photos[0]);return()=>{document.title=pageTitle(dealer.name+' cars');};},[dealer,vehicle]);
  if(loading)return <div className="dl-store-loading">Loading vehicle…</div>;
  if(!dealer||!vehicle)return <div className="dl-store-loading"><h1>Vehicle unavailable</h1><p>This vehicle may have been sold or removed.</p><button onClick={()=>navigate('/'+(slug||''))}>Return to showroom</button></div>;
  const photos=vehicle.photos||[],money=new Intl.NumberFormat('en-US',{style:'currency',currency:vehicle.currency||dealer.currency,maximumFractionDigits:0}).format(vehicle.price);
@@ -23,7 +24,7 @@ export const PublicVehicleDetailPage:React.FC<PublicVehicleDetailPageProps>=({ve
  const waNumber=(dealer.whatsapp||dealer.phone||'').replace(/\\D/g,'');
  const wa=waNumber?'https://wa.me/'+waNumber+'?text='+encodeURIComponent(message):'';
  const prev=()=>setPhotoIndex(i=>(i-1+photos.length)%photos.length),next=()=>setPhotoIndex(i=>(i+1)%photos.length);
- const share=async()=>{const url=window.location.href;if(navigator.share){try{await navigator.share({title,text:money,url});}catch{}}else{await navigator.clipboard?.writeText(url);showToast('Vehicle link copied');}};
+ const share=async()=>{const url=absoluteUrl(window.location.pathname+window.location.search+window.location.hash);if(navigator.share){try{await navigator.share({title,text:money,url});}catch{}}else{await navigator.clipboard?.writeText(url);showToast('Vehicle link copied');}};
  const dealerInitials=dealer.name.split(/\\s+/).slice(0,2).map(x=>x[0]).join('').toUpperCase();
  const specs=[
   {label:'Year',value:vehicle.year?String(vehicle.year):'',Icon:CalendarDays},
