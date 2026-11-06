@@ -328,3 +328,6 @@ html:has(.dl-ps-landing),body:has(.dl-ps-landing){
   place-items:center;
   border-radius:50%;
 }
+
+/* Banner rendering: top-anchored cover crop, no distortion. */
+.dl-ps-landing-image{object-fit:cover!important;object-position:center top!important}
