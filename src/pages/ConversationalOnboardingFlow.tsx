@@ -5,7 +5,7 @@ import { ArrowLeft, ArrowRight, Check, Copy, Car, Truck, Bus, Crown, Eye, EyeOff
 import { useNavigation } from '../context/NavigationContext';
 import { storageService } from '../services/storage';
 import { supabaseService } from '../services/supabaseService';
-import { isSupabaseConfigured } from '../lib/supabase';
+import { isSupabaseConfigured, supabase } from '../lib/supabase';
 import { OnboardingState, SellerType } from '../types';
 import { toE164 } from '../utils/phoneUtils';
 import { MARKETING_CAR_IMAGES } from '../utils/marketingCarImages';
@@ -28,6 +28,14 @@ const initialState = (): OnboardingState => ({
 });
 
 
+const withTimeout = <T,>(promise: Promise<T>, timeoutMs = 15000): Promise<T> => {
+  let timeoutId = 0;
+  const timeout = new Promise<never>((_, reject) => {
+    timeoutId = window.setTimeout(() => reject(new Error('TRIAL_ACTIVATION_TIMEOUT')), timeoutMs);
+  });
+  return Promise.race([promise, timeout]).finally(() => window.clearTimeout(timeoutId));
+};
+
 export const OnboardingFlow: React.FC = () => {
   const { navigate, showToast } = useNavigation();
   const previewQuery = typeof window !== 'undefined' ? `${window.location.search}&${window.location.hash.split('?')[1] || ''}` : '';
@@ -49,6 +57,7 @@ export const OnboardingFlow: React.FC = () => {
   const [checking, setChecking] = useState(false);
   const [busy, setBusy] = useState(false);
   const [brandingBusy, setBrandingBusy] = useState(false);
+  const activationInFlight = useRef(false);
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [introDone, setIntroDone] = useState(() => {
@@ -203,69 +212,115 @@ export const OnboardingFlow: React.FC = () => {
   };
 
   const finishExistingSession = async () => {
+    if (activationInFlight.current || busy) return;
     if (brandingBusy) { setError('Your showroom images are still uploading. Please wait a moment.'); return; }
-    setBusy(true); setError('');
+    activationInFlight.current = true;
+    setBusy(true);
+    setError('');
+
     try {
-      const user = await supabaseService.getCurrentUser();
-      if (!user) throw new Error('Please sign in to finish your setup.');
-      const existing = await supabaseService.getCurrentDealership();
-      if (existing) {
-        let savedExisting = existing;
+      const result = await withTimeout((async () => {
+        const user = await supabaseService.getCurrentUser();
+        if (!user) throw new Error('Please sign in to finish your setup.');
+
+        let dealer = await supabaseService.getCurrentDealership();
+        if (!dealer) {
+          dealer = await supabaseService.createDealership({
+            name: data.showroom.businessName.trim(),
+            slug: data.showroom.handle.trim(),
+            country: data.contact.country,
+            city: data.contact.city.trim(),
+            address: data.contact.address.trim(),
+            phone: toE164(countryCode, data.contact.whatsappNumber) || '',
+            whatsapp: toE164(countryCode, data.contact.whatsappNumber) || '',
+            email: user.email || data.account.email.trim(),
+            currency: data.contact.country === 'South Africa' ? 'ZAR' : 'USD',
+            template: 'signature',
+            dealershipType: data.sellerType,
+            bio: '',
+            tagline: data.showroom.businessName.trim(),
+            isPublished: true,
+          });
+        }
+
+        // This database function is atomic and idempotent. It returns the original
+        // trial dates on retries and marks onboarding complete in the same transaction.
+        const { data: activation, error: activationError } = await supabase.rpc('activate_dealership_trial');
+        if (activationError) throw activationError;
+        if (!activation?.trial_started_at || !activation?.trial_ends_at) {
+          throw new Error('Trial activation returned no trial dates.');
+        }
+        const activationNow = activation?.onboarding_completed_at
+          ? new Date(activation.onboarding_completed_at).getTime()
+          : Date.now();
+        const activationTrialValid = (activation.status === 'trial' || activation.status === 'trialing') &&
+          new Date(activation.trial_ends_at).getTime() > activationNow;
+        const activationPaidValid = activation.status === 'active' && activation.is_active === true;
+        if (!activationTrialValid && !activationPaidValid) {
+          throw new Error('This account has already used its free trial or the trial has expired.');
+        }
+
         if (data.branding.logoPreview || data.branding.coverPreview) {
-          savedExisting = await supabaseService.updateDealership(existing.id, {
+          dealer = await supabaseService.updateDealership(dealer.id, {
             ...(data.branding.logoPreview ? { logoUrl: data.branding.logoPreview } : {}),
             ...(data.branding.coverPreview ? { coverUrl: data.branding.coverPreview } : {}),
           });
         }
-        storageService.saveDealership(savedExisting);
-        storageService.setUserSession({ isLoggedIn: true, email: user.email || '', dealershipId: existing.id, userId: user.id });
-        navigate('/app');
-        return;
-      }
-      const dealer = await supabaseService.createDealership({
-        name: data.showroom.businessName.trim(),
-        slug: data.showroom.handle.trim(),
-        country: data.contact.country,
-        city: data.contact.city.trim(),
-        address: data.contact.address.trim(),
-        phone: toE164(countryCode, data.contact.whatsappNumber) || '',
-        whatsapp: toE164(countryCode, data.contact.whatsappNumber) || '',
-        email: user.email || data.account.email.trim(),
-        currency: data.contact.country === 'South Africa' ? 'ZAR' : 'USD',
-        template: 'signature',
-        dealershipType: data.sellerType,
-        bio: '',
-        tagline: data.showroom.businessName.trim(),
-        isPublished: true,
-      });
-      let savedDealer = dealer;
-      if (data.branding.logoPreview || data.branding.coverPreview) {
-        savedDealer = await supabaseService.updateDealership(dealer.id, {
-          ...(data.branding.logoPreview ? { logoUrl: data.branding.logoPreview } : {}),
-          ...(data.branding.coverPreview ? { coverUrl: data.branding.coverPreview } : {}),
+
+        // Re-read authoritative subscription status before leaving onboarding.
+        const { data: statusData, error: statusError } = await supabase.functions.invoke('drivelink-payments', {
+          body: { action: 'status' },
         });
-      }
-      storageService.saveDealership(savedDealer);
-      storageService.setUserSession({ isLoggedIn: true, email: user.email || data.account.email, dealershipId: dealer.id, userId: user.id });
+        if (statusError) throw statusError;
+        const subscription = statusData?.subscription;
+        const serverNow = statusData?.server_now ? new Date(statusData.server_now).getTime() : Date.now();
+        const trialValid = (subscription?.status === 'trial' || subscription?.status === 'trialing') &&
+          subscription?.trial_ends_at && new Date(subscription.trial_ends_at).getTime() > serverNow;
+        const paidValid = subscription?.status === 'active' &&
+          subscription?.current_period_end && new Date(subscription.current_period_end).getTime() > serverNow;
+        if (!trialValid && !paidValid) {
+          throw new Error('The server has not confirmed active trial access yet.');
+        }
+
+        const refreshedDealer = await supabaseService.getCurrentDealership();
+        if (!refreshedDealer || refreshedDealer.id !== dealer.id) {
+          throw new Error('Could not refresh the dealership session after trial activation.');
+        }
+        return { user, dealer: refreshedDealer };
+      })());
+
+      storageService.saveDealership(result.dealer);
+      storageService.setUserSession({
+        isLoggedIn: true,
+        email: result.user.email || data.account.email,
+        dealershipId: result.dealer.id,
+        userId: result.user.id,
+      });
+
       if (localStorage.getItem('drivelink_notifications_prompt_dismissed_at')) {
-        await notificationService.dismissOnboardingPrompt(dealer.id).catch(err => console.warn('Could not persist notification prompt dismissal:', err));
+        await notificationService.dismissOnboardingPrompt(result.dealer.id).catch(err =>
+          console.warn('Could not persist notification prompt dismissal:', err)
+        );
         localStorage.removeItem('drivelink_notifications_prompt_dismissed_at');
       } else if ('Notification' in window && Notification.permission === 'granted' && notificationService.isPushSupported()) {
-        await notificationService.enablePush(dealer.id, false).catch(err => console.warn('Could not register the approved push subscription after dealership setup:', err));
+        await notificationService.enablePush(result.dealer.id, false).catch(err =>
+          console.warn('Could not register the approved push subscription after dealership setup:', err)
+        );
       }
       localStorage.removeItem('drivelink_notification_permission_granted');
-      update({ currentStep: 9, isCompleted: true });
-      showToast('Your 3-day DriveLink Pro trial is active!');
-    } catch (e: any) {
-      const message = String(e?.message || '');
-      if (String(e?.code || '') === '23505' || message.toLowerCase().includes('duplicate key')) {
-        setError('That showroom link is already in use. Go back and choose another.');
-      } else {
-        setError(message || 'We could not save your dealership. Please try again.');
-      }
-    } finally { setBusy(false); }
-  };
+      storageService.clearOnboardingState();
+      localStorage.removeItem('drivelink_onboarding_v1');
 
+      // Force a fresh app boot so the access gate cannot reuse pre-activation state.
+      window.location.assign('/app');
+    } catch (e: any) {
+      console.error('[DriveLink onboarding] Trial activation failed:', e);
+      setError("Couldn't start your trial. Check your connection and try again.");
+    } finally {
+      activationInFlight.current = false;
+      setBusy(false);
+    }
+  };
 
 
   const renderIntroVisual = () => {
@@ -420,7 +475,7 @@ export const OnboardingFlow: React.FC = () => {
         </div>
         {error&&<p role="alert" className="dl-pro-error">{error}</p>}
         <footer className="dl-pro-sticky-footer">
-          <button type="button" disabled={busy || brandingBusy} onClick={finishExistingSession}>{busy?<><Loader2 size={19} className="animate-spin"/> Activating your trial…</>:<>Start 3-day free trial <ArrowRight size={20}/></>}</button>
+          <button type="button" disabled={busy || brandingBusy} onClick={finishExistingSession}>{busy?<><Loader2 size={19} className="animate-spin"/> Activating your trial…</>:<>{error?'Retry':'Start 3-day free trial'} <ArrowRight size={20}/></>}</button>
           <p>No payment is taken today. Then $3.99/month.</p>
         </footer>
       </section>}
