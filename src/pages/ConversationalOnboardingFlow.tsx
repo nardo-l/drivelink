@@ -96,7 +96,7 @@ export const OnboardingFlow: React.FC<{ forceNewAccount?: boolean }> = ({ forceN
         if (dealer) {
           storageService.saveDealership(dealer);
           storageService.setUserSession({ isLoggedIn: true, email: user.email || '', dealershipId: dealer.id, userId: user.id });
-          console.info(`[${name} onboarding] Existing dealership found during server session restore.');
+          console.info(`[${name} onboarding] Existing dealership found during server session restore.`);
           window.location.assign('/app');
           return;
         }
