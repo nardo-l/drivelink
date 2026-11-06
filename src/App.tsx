@@ -110,6 +110,7 @@ function AppContent() {
       supabaseService.getSession().then(async (session) => {
         if (session?.user) {
           try {
+            await storageService.syncUserScope(session.user.id);
             const liveDealer = await supabaseService.getCurrentDealership();
             if (liveDealer) {
               storageService.saveDealership(liveDealer);
@@ -142,6 +143,7 @@ function AppContent() {
       const sub = supabaseService.onAuthStateChange(async (session) => {
         if (session?.user) {
           try {
+            await storageService.syncUserScope(session.user.id);
             const liveDealer = await supabaseService.getCurrentDealership();
             if (liveDealer) {
               storageService.saveDealership(liveDealer);
@@ -214,7 +216,12 @@ function AppContent() {
     }
 
     // Sign-up and onboarding continue to use the current six-slide flow.
-    if (currentPath === '/signup' || currentPath === '/onboarding') {
+    if (currentPath === '/signup') {
+      // Explicit sign-up always creates a separate account, even if another user is signed in.
+      return <OnboardingFlow forceNewAccount />;
+    }
+
+    if (currentPath === '/onboarding') {
       if (isLive && session.isLoggedIn && session.dealershipId) { console.info('[DriveLink onboarding] Get notified skipped: redirected (existing dealership session).'); return safeDashboard(); }
       return <OnboardingFlow />;
     }
