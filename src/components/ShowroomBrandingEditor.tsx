@@ -64,8 +64,9 @@ export const ShowroomBrandingEditor: React.FC<ShowroomBrandingEditorProps> = ({
       updateAsset('banner', { error: 'This image is too large. The maximum file size is 10 MB.', tip: '' });
       return;
     }
-    updateAsset('banner', { error: '', tip: '' });
+    updateAsset('banner', { error: '', tip: '', pendingFile: file });
     const sourceUrl = URL.createObjectURL(file);
+    updateAsset('banner', { url: sourceUrl });
     try {
       const image = new Image();
       await new Promise<void>((resolve, reject) => {
@@ -118,18 +119,6 @@ export const ShowroomBrandingEditor: React.FC<ShowroomBrandingEditorProps> = ({
     image.onerror = () => { URL.revokeObjectURL(source); updateAsset(kind, { error: 'This image could not be opened. Try another file.' }); };
     image.src = source;
     updateAsset(kind, { error: '' });
-  };
-
-  const openExistingCrop = async (kind: BrandingKind) => {
-    const asset = kind === 'logo' ? logo : banner;
-    if (!asset.url) return;
-    try {
-      const response = await fetch(asset.url, { cache: 'no-store' });
-      if (!response.ok) throw new Error('Could not load the current image for repositioning.');
-      const blob = await response.blob();
-      const file = new File([blob], kind + '-reposition.' + (blob.type.includes('png') ? 'png' : blob.type.includes('webp') ? 'webp' : 'jpg'), { type: blob.type || 'image/jpeg' });
-      openCrop(kind, file);
-    } catch (error: any) { updateAsset(kind, { error: error?.message || 'Could not reopen this image. Please try again.' }); }
   };
 
   const clampCropOffset = (next: { x: number; y: number }, nextZoom = zoom) => {
