@@ -9,6 +9,8 @@ import { isSupabaseConfigured } from '../lib/supabase';
 import type { Dealership, Vehicle } from '../types';
 import './PublicShowroomPage.css';
 
+const CARD_STYLE: 'overlay' | 'below' = 'overlay';
+
 const WhatsAppMark: React.FC<{ size?: number }> = ({ size = 20 }) => (
   <svg width={size} height={size} viewBox="0 0 32 32" fill="currentColor" aria-hidden="true">
     <path d="M16.02 3.2A12.55 12.55 0 0 0 5.24 22.2L3.5 28.55l6.5-1.7a12.7 12.7 0 0 0 6.02 1.52h.01c6.96 0 12.62-5.66 12.62-12.62 0-3.37-1.31-6.54-3.69-8.92a12.53 12.53 0 0 0-8.94-3.63Zm0 22.99h-.01a10.5 10.5 0 0 1-5.35-1.46l-.38-.23-3.86 1.01 1.03-3.76-.25-.39a10.43 10.43 0 1 1 8.82 4.83Zm5.73-7.82c-.31-.16-1.82-.9-2.1-1-.28-.1-.49-.16-.7.16-.2.31-.8 1- .98 1.2-.18.2-.36.23-.67.08-.31-.16-1.3-.48-2.47-1.52-.91-.81-1.53-1.82-1.71-2.13-.18-.31-.02-.48.14-.64.14-.14.31-.36.46-.54.15-.18.2-.31.31-.52.1-.2.05-.39-.03-.54-.08-.15-.7-1.68-.96-2.3-.25-.6-.51-.52-.7-.53h-.6c-.2 0-.54.08-.82.39-.28.31-1.08 1.05-1.08 2.57s1.1 2.98 1.25 3.19c.15.2 2.16 3.3 5.23 4.63.73.31 1.3.5 1.74.64.73.23 1.4.2 1.93.12.59-.09 1.82-.74 2.08-1.46.26-.72.26-1.33.18-1.46-.08-.13-.28-.2-.59-.36Z" />
@@ -286,22 +288,22 @@ export const PublicShowroomPage: React.FC<{ slug?: string; previewDealership?: D
         {filtered.length ? (
           <div className="dl-ps-grid">
             {filtered.map(vehicle => (
-              <article className="dl-ps-car" key={vehicle.id} role="link" tabIndex={0} onClick={() => goVehicle(vehicle)} onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); goVehicle(vehicle); } }}>
+              <article className={'dl-ps-car ' + (CARD_STYLE === 'overlay' ? 'is-overlay' : 'is-below') + (vehicle.status === 'sold' ? ' is-sold' : '')} key={vehicle.id} role="link" tabIndex={0} onClick={() => goVehicle(vehicle)} onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); goVehicle(vehicle); } }}>
                 <div className="dl-ps-photo">
-                  {vehicle.photos?.[0] ? <img loading="lazy" decoding="async" src={vehicle.photos[0]} alt={vehicle.make + ' ' + vehicle.model} /> : <span className="dl-ps-no-photo"><CarFront size={36} /></span>}
+                  {vehicle.photos?.[0] ? <img className="dl-ps-photo-image" loading="lazy" decoding="async" src={(() => { const source = vehicle.photos[0]; const clean = source.split('?')[0]; return clean.includes('/storage/v1/object/public/') ? clean.replace('/storage/v1/object/public/', '/storage/v1/render/image/public/') + '?width=900&height=1125&resize=cover&quality=78&format=webp' : source; })()} alt={vehicle.make + ' ' + vehicle.model} onLoad={e => e.currentTarget.classList.add('is-loaded')} /> : <span className="dl-ps-no-photo"><CarFront size={36} /></span>}
+                  <span className="dl-ps-photo-shade" aria-hidden="true" />
                   {vehicle.status !== 'available' && <span className={'dl-ps-status ' + vehicle.status}>{vehicle.status === 'reserved' ? 'Reserved' : 'Sold'}</span>}
                   <span className="dl-ps-photo-count">{(vehicle.photos || []).length} {(vehicle.photos || []).length === 1 ? 'photo' : 'photos'}</span>
                   <button className={'dl-ps-heart ' + (saved.includes(vehicle.id) ? 'saved' : '')} onClick={e => { e.stopPropagation(); toggleSave(vehicle.id); }} onKeyDown={e => e.stopPropagation()} aria-label={saved.includes(vehicle.id) ? 'Remove saved car' : 'Save car'}><Heart fill={saved.includes(vehicle.id) ? 'currentColor' : 'none'} size={18} /></button>
+                  {CARD_STYLE === 'overlay' && <div className="dl-ps-overlay-copy">
+                    <div className="dl-ps-overlay-details"><h2>{vehicle.make} {vehicle.model}</h2><div className="dl-ps-specs"><span><CalendarDays size={13} />{vehicle.year}</span><span><Gauge size={13} />{Number(vehicle.mileageKm || 0).toLocaleString()} km</span><span><Fuel size={13} />{vehicle.fuel}</span></div></div>
+                    <strong className="dl-ps-overlay-price">{money(vehicle)}</strong>
+                  </div>}
                 </div>
-                <div className="dl-ps-car-info">
+                {CARD_STYLE === 'below' && <div className="dl-ps-car-info">
                   <div className="dl-ps-car-heading"><h2>{vehicle.make} {vehicle.model}</h2><strong>{money(vehicle)}</strong></div>
-                  <div className="dl-ps-specs">
-                    <span><CalendarDays size={14} />{vehicle.year}</span>
-                    <span><Gauge size={14} />{Number(vehicle.mileageKm || 0).toLocaleString()} km</span>
-                    <span><Fuel size={14} />{vehicle.fuel}</span>
-                    <span><CarFront size={14} />{vehicle.transmission}</span>
-                  </div>
-                </div>
+                  <div className="dl-ps-specs"><span><CalendarDays size={14} />{vehicle.year}</span><span><Gauge size={14} />{Number(vehicle.mileageKm || 0).toLocaleString()} km</span><span><Fuel size={14} />{vehicle.fuel}</span><span><CarFront size={14} />{vehicle.transmission}</span></div>
+                </div>}
               </article>
             ))}
           </div>
