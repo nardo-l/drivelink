@@ -427,6 +427,14 @@ export const OnboardingFlow: React.FC<{ forceNewAccount?: boolean }> = ({ forceN
     return <div className="di-share-visual"><div className="di-public-card"><div className="di-public-logo">D</div><b>Elite Motors Harare</b><small>Quality Vehicles. Trusted Deals.</small><span><Car size={15}/> View Our Vehicles <ArrowRight size={14}/></span><span><MessageCircle size={15}/> WhatsApp Us <ArrowRight size={14}/></span><span>▣ Visit Our Store <ArrowRight size={14}/></span></div><div className="di-share-link"><Link2 size={17}/><span>drivelink.co/elite-motors</span><Copy size={17}/></div></div>;
   };
 
+  if (progressLoadError) {
+    return <main className="flex min-h-[100dvh] flex-col items-center justify-center gap-4 bg-white px-6 text-center text-sm text-gray-600"><p role="alert">{progressLoadError}</p><button type="button" onClick={() => window.location.reload()} className="rounded-full bg-black px-6 py-3 font-semibold text-white">Try again</button></main>;
+  }
+
+  if (!progressReady && !forceNewAccount && !forceNotificationsPreview) {
+    return <main className="flex min-h-[100dvh] items-center justify-center bg-white text-sm text-gray-500"><Loader2 size={18} className="mr-2 animate-spin"/> Loading your setup…</main>;
+  }
+
   if (!introDone) return <main className="di-onboarding">
     <section className="di-onboarding-phone" aria-label={'Drive Link introduction, screen ' + (introStep + 1) + ' of 6'} onTouchStart={handleIntroTouchStart} onTouchEnd={handleIntroTouchEnd}>
       <button className="di-skip" onClick={finishIntro}>Skip <ArrowRight size={14}/></button>
@@ -442,14 +450,6 @@ export const OnboardingFlow: React.FC<{ forceNewAccount?: boolean }> = ({ forceN
       </div>
     </section>
   </main>;
-
-  if (progressLoadError) {
-    return <main className="flex min-h-[100dvh] flex-col items-center justify-center gap-4 bg-white px-6 text-center text-sm text-gray-600"><p role="alert">{progressLoadError}</p><button type="button" onClick={() => window.location.reload()} className="rounded-full bg-black px-6 py-3 font-semibold text-white">Try again</button></main>;
-  }
-
-  if (!progressReady && !forceNewAccount && !forceNotificationsPreview) {
-    return <main className="flex min-h-[100dvh] items-center justify-center bg-white text-sm text-gray-500"><Loader2 size={18} className="mr-2 animate-spin"/> Loading your setup…</main>;
-  }
 
   const share = async () => {
     const url = `${window.location.origin}/showroom/${data.showroom.handle}`;
