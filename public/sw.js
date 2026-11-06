@@ -2,6 +2,10 @@
 // authenticated API calls, or user-specific application pages.
 const DRIVE_LINK_CACHE_VERSION = 'drivelink-runtime-v2';
 
+self.addEventListener('install', (event) => {
+  event.waitUntil(self.skipWaiting());
+});
+
 self.addEventListener('activate', (event) => {
   event.waitUntil((async () => {
     const names = await caches.keys();
