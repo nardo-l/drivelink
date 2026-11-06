@@ -163,14 +163,11 @@ export const PublicShowroomPage: React.FC<{ slug?: string; previewDealership?: D
     setMeta('og:title', dealer.name, true);
     setMeta('og:description', count + (count === 1 ? ' car available in ' : ' cars available in ') + city, true);
     if (dealer.coverUrl) {
-      const ogImage = dealer.coverUrl.replace(/\/banner\.webp(?:\?.*)?$/, '/banner-og.webp');
-      const transformedFallback = dealer.coverUrl.includes('/storage/v1/object/public/')
-        ? dealer.coverUrl.replace('/storage/v1/object/public/', '/storage/v1/render/image/public/') + '?width=1200&height=630&resize=cover&quality=80'
-        : dealer.coverUrl;
-      setMeta('og:image', transformedFallback, true);
-      void fetch(ogImage, { method: 'HEAD' }).then(response => {
-        if (response.ok) setMeta('og:image', ogImage, true);
-      }).catch(() => undefined);
+      const originalBanner = dealer.coverUrl.split('?')[0];
+      const ogImage = originalBanner.includes('/storage/v1/object/public/')
+        ? originalBanner.replace('/storage/v1/object/public/', '/storage/v1/render/image/public/') + '?width=1200&height=630&resize=cover&quality=80'
+        : originalBanner;
+      setMeta('og:image', ogImage, true);
       setMeta('og:image:width', '1200', true);
       setMeta('og:image:height', '630', true);
     }
