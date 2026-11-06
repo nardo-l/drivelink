@@ -247,15 +247,19 @@ export const OnboardingFlow: React.FC = () => {
         // trial dates on retries and marks onboarding complete in the same transaction.
         const { data: activation, error: activationError } = await supabase.rpc('activate_dealership_trial');
         if (activationError) throw activationError;
-        if (!activation?.trial_started_at || !activation?.trial_ends_at) {
-          throw new Error('Trial activation returned no trial dates.');
-        }
-        const activationNow = activation?.onboarding_completed_at
-          ? new Date(activation.onboarding_completed_at).getTime()
+        const activationResult = activation as {
+          status?: string;
+          trial_started_at?: string | null;
+          trial_ends_at?: string | null;
+          onboarding_completed_at?: string | null;
+          is_active?: boolean;
+        };
+        const activationNow = activationResult.onboarding_completed_at
+          ? new Date(activationResult.onboarding_completed_at).getTime()
           : Date.now();
-        const activationTrialValid = (activation.status === 'trial' || activation.status === 'trialing') &&
-          new Date(activation.trial_ends_at).getTime() > activationNow;
-        const activationPaidValid = activation.status === 'active' && activation.is_active === true;
+        const activationTrialValid = (activationResult.status === 'trial' || activationResult.status === 'trialing') &&
+          !!activationResult.trial_ends_at && new Date(activationResult.trial_ends_at).getTime() > activationNow;
+        const activationPaidValid = activationResult.status === 'active' && activationResult.is_active === true;
         if (!activationTrialValid && !activationPaidValid) {
           throw new Error('This account has already used its free trial or the trial has expired.');
         }
@@ -298,12 +302,12 @@ export const OnboardingFlow: React.FC = () => {
       });
 
       if (localStorage.getItem('drivelink_notifications_prompt_dismissed_at')) {
-        await notificationService.dismissOnboardingPrompt(result.dealer.id).catch(err =>
+        void notificationService.dismissOnboardingPrompt(result.dealer.id).catch(err =>
           console.warn('Could not persist notification prompt dismissal:', err)
         );
         localStorage.removeItem('drivelink_notifications_prompt_dismissed_at');
       } else if ('Notification' in window && Notification.permission === 'granted' && notificationService.isPushSupported()) {
-        await notificationService.enablePush(result.dealer.id, false).catch(err =>
+        void notificationService.enablePush(result.dealer.id, false).catch(err =>
           console.warn('Could not register the approved push subscription after dealership setup:', err)
         );
       }
