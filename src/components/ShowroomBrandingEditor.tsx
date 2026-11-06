@@ -76,7 +76,7 @@ export const ShowroomBrandingEditor: React.FC<ShowroomBrandingEditorProps> = ({
       });
       const width = image.naturalWidth, height = image.naturalHeight;
       const tips: string[] = [];
-      if (width >= height) tips.push('Tall photos look best on phones. You can still use this one.');
+      if (width > height) tips.push('Tall photos look best on phones. You can still use this one.');
       if (Math.min(width, height) < 800) tips.push('This photo may look blurry. A larger image works better.');
       const scale = Math.min(1, 1600 / Math.max(width, height));
       const canvas = document.createElement('canvas');
@@ -92,11 +92,11 @@ export const ShowroomBrandingEditor: React.FC<ShowroomBrandingEditorProps> = ({
       const compressed = new File([blob], 'banner.webp', { type: 'image/webp', lastModified: Date.now() });
       const localPreview = URL.createObjectURL(blob);
       updateAsset('banner', { tip: tips.join(' '), error: '' });
-      await uploadCropped('banner', compressed, localPreview);
+      const uploadTask = uploadCropped('banner', compressed, localPreview);
+      URL.revokeObjectURL(sourceUrl);
+      await uploadTask;
     } catch (error: any) {
       updateAsset('banner', { error: error?.message || 'Could not prepare this image. Please try again.', pendingFile: file });
-    } finally {
-      URL.revokeObjectURL(sourceUrl);
     }
   };
 
