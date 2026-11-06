@@ -3,6 +3,14 @@
   "trailingSlash": false,
   "rewrites": [
     {
+      "source": "/sitemap.xml",
+      "destination": "/api/sitemap"
+    },
+    {
+      "source": "/robots.txt",
+      "destination": "/api/robots"
+    },
+    {
       "source": "/google8b6400bfc235f3ba.html",
       "destination": "/google8b6400bfc235f3ba.html"
     },
@@ -11,4 +19,4 @@
       "destination": "/index.html"
     }
   ]
-}
+}\n
