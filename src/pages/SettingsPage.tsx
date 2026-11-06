@@ -1,3 +1,4 @@
+import { name, supportWhatsApp } from '../config/brand';
 import React,{useEffect,useMemo,useRef,useState} from 'react';
 import {
  ArrowLeft,Building2,Store,Image,UserRound,Phone,MapPin,Clock3,CreditCard,Bell,Headset,
@@ -15,7 +16,6 @@ import './SettingsPage.css';
 type SheetKey='profile'|'branding'|'name'|'contact'|'location'|'hours'|'terms'|'privacy'|'logout'|'delete'|null;
 type DealerDraft=Pick<Dealership,'name'|'city'|'address'|'phone'|'whatsapp'>;
 
-const SUPPORT_NUMBER='263789113734';
 const APP_VERSION='0.0.0';
 
 export const SettingsPage:React.FC=()=>{
@@ -57,7 +57,7 @@ export const SettingsPage:React.FC=()=>{
   finally{setUploading(null);}
  };
  const signOut=async()=>{setSaving(true);try{if(isSupabaseConfigured())await supabaseService.signOut();await storageService.clearAppUserData();window.location.assign('/login');}catch(error){showToast(error instanceof Error?error.message:'Could not sign out.');setSaving(false);setSheet(null);}};
- const requestDeletion=()=>{if(deleteText.trim()!=='DELETE')return;const msg=encodeURIComponent('Hi DriveLink Support, I would like to request deletion of my account and dealership data. Dealership: '+dealer.name+'. Please guide me through the verification process.');window.open('https://wa.me/'+SUPPORT_NUMBER+'?text='+msg,'_blank','noopener,noreferrer');setSheet(null);setDeleteText('');};
+ const requestDeletion=()=>{if(deleteText.trim()!=='DELETE')return;const msg=encodeURIComponent(`Hi ${name} Support, I would like to request deletion of my account and dealership data. Dealership: '+dealer.name+'. Please guide me through the verification process.`);window.open('https://wa.me/'+supportWhatsApp+'?text='+msg,'_blank','noopener,noreferrer');setSheet(null);setDeleteText('');};
  const Row=({icon:Icon,label,value,onClick,danger=false}:any)=><button type="button" className={'dl-settings-row'+(danger?' is-danger':'')} onClick={onClick}><span className="dl-settings-row-icon"><Icon size={17}/></span><span className="dl-settings-row-copy"><strong>{label}</strong>{value&&<small>{value}</small>}</span><ChevronRight className="dl-settings-chevron" size={17}/></button>;
  const openSheet=(key:SheetKey)=>{setDraft({name:dealer.name,city:dealer.city,address:dealer.address||'',phone:dealer.phone,whatsapp:dealer.whatsapp});setSheet(key);};
  return <div className="dl-settings-page">
@@ -87,19 +87,19 @@ export const SettingsPage:React.FC=()=>{
 
    <section className="dl-settings-group"><h2>Notifications</h2>
     <div className="dl-settings-toggle-row"><span className="dl-settings-row-icon"><Bell size={17}/></span><span className="dl-settings-row-copy"><strong>Push notifications</strong><small>{pushEnabled?'Notifications are enabled':'Get alerts about enquiries and activity'}</small></span><button type="button" role="switch" aria-checked={pushEnabled} disabled={pushBusy||!notificationService.isPushSupported()} onClick={togglePush} className={'dl-settings-switch'+(pushEnabled?' active':'')}><span/></button></div>
-    {permission==='denied'&&<p className="dl-settings-help">Notifications are blocked by your browser. Open your browser or device Settings → Site settings → Notifications, allow DriveLink, then return here and switch notifications on.</p>}
+    {permission==='denied'&&<p className="dl-settings-help">Notifications are blocked by your browser. Open your browser or device Settings → Site settings → Notifications, allow {name}, then return here and switch notifications on.</p>}
     {!notificationService.isPushSupported()&&<p className="dl-settings-help">This browser does not currently support push notifications. Try installing DriveLink to your home screen or use a supported browser.</p>}
    </section>
 
    <section className="dl-settings-group"><h2>Support</h2>
-    <Row icon={Headset} label="Contact support" value="Chat with the DriveLink team" onClick={()=>window.open('https://wa.me/'+SUPPORT_NUMBER,'_blank','noopener,noreferrer')}/>
+    <Row icon={Headset} label="Contact support" value="Chat with the DriveLink team" onClick={()=>window.open('https://wa.me/'+supportWhatsApp,'_blank','noopener,noreferrer')}/>
     <Row icon={FileText} label="Terms" value="Terms of service" onClick={()=>openSheet('terms')}/>
     <Row icon={Shield} label="Privacy" value="Privacy information" onClick={()=>openSheet('privacy')}/>
    </section>
 
    <section className="dl-settings-group dl-settings-account"><h2>Account</h2><Row icon={LogOut} label="Log out" onClick={()=>openSheet('logout')} danger/></section>
    <button type="button" className="dl-settings-delete-link" onClick={()=>openSheet('delete')}>Delete account</button>
-   <p className="dl-settings-version">DriveLink · Version {APP_VERSION}</p>
+   <p className="dl-settings-version">{name} · Version {APP_VERSION}</p>
   </main>
 
   {sheet&&<div className="dl-settings-scrim" role="presentation" onMouseDown={e=>{if(e.target===e.currentTarget&&!saving&&!uploading)setSheet(null);}}>
@@ -118,8 +118,8 @@ export const SettingsPage:React.FC=()=>{
     </div>}
     {sheet==='hours'&&<div className="dl-settings-sheet-body"><p className="dl-settings-note">Opening hours are not currently stored in the dealership profile, so there is no safe way to save them here yet. This screen leaves your existing dealership data unchanged.</p><button type="button" className="dl-settings-primary" onClick={()=>setSheet(null)}>Got it</button></div>}
     {(sheet==='terms'||sheet==='privacy')&&<div className="dl-settings-sheet-body"><p className="dl-settings-note">{sheet==='terms'?'The Terms page is not currently connected in this app.':'The Privacy page is not currently connected in this app.'} Contact support if you need a copy of the current policy.</p><a className="dl-settings-primary" href={'https://wa.me/'+SUPPORT_NUMBER} target="_blank" rel="noreferrer"><MessageCircle size={16}/> Contact support</a></div>}
-    {sheet==='logout'&&<div className="dl-settings-sheet-body"><p className="dl-settings-note">You’ll be signed out of this DriveLink account on this device.</p><button type="button" className="dl-settings-primary" disabled={saving} onClick={()=>void signOut()}>{saving?<Loader2 className="spin" size={16}/>:null}Log out</button><button type="button" className="dl-settings-secondary" onClick={()=>setSheet(null)}>Cancel</button></div>}
-    {sheet==='delete'&&<div className="dl-settings-sheet-body"><div className="dl-settings-warning"><AlertTriangle size={18}/> Account deletion requires identity verification by DriveLink Support. This will open a request; it will not delete your account immediately.</div><label>Type DELETE to confirm your request<input value={deleteText} onChange={e=>setDeleteText(e.target.value)} autoComplete="off" placeholder="DELETE"/></label><button type="button" className="dl-settings-danger" disabled={deleteText.trim()!=='DELETE'} onClick={requestDeletion}>Continue to support</button></div>}
+    {sheet==='logout'&&<div className="dl-settings-sheet-body"><p className="dl-settings-note">You’ll be signed out of this {name} account on this device.</p><button type="button" className="dl-settings-primary" disabled={saving} onClick={()=>void signOut()}>{saving?<Loader2 className="spin" size={16}/>:null}Log out</button><button type="button" className="dl-settings-secondary" onClick={()=>setSheet(null)}>Cancel</button></div>}
+    {sheet==='delete'&&<div className="dl-settings-sheet-body"><div className="dl-settings-warning"><AlertTriangle size={18}/> Account deletion requires identity verification by {name} Support. This will open a request; it will not delete your account immediately.</div><label>Type DELETE to confirm your request<input value={deleteText} onChange={e=>setDeleteText(e.target.value)} autoComplete="off" placeholder="DELETE"/></label><button type="button" className="dl-settings-danger" disabled={deleteText.trim()!=='DELETE'} onClick={requestDeletion}>Continue to support</button></div>}
    </section>
   </div>}
  </div>;
