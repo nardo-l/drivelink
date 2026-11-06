@@ -104,6 +104,7 @@ export interface DealershipRow {
   storefront_views: number;
   created_at: string;
   updated_at: string;
+  onboarding_completed_at?: string | null;
 }
 
 export interface VehicleRow {
