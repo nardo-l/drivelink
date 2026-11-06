@@ -1,3 +1,4 @@
+import { name } from '../../config/brand';
 import React from 'react';
 
 type Props = { children: React.ReactNode; label?: string };
@@ -12,7 +13,7 @@ export class ErrorBoundary extends React.Component<Props, State> {
   }
 
   componentDidCatch(error: Error, info: React.ErrorInfo) {
-    console.error(`DriveLink ${this.props.label || 'section'} render error:`, error, info.componentStack);
+    console.error(`${name} ${this.props.label || 'section'} render error:`, error, info.componentStack);
   }
 
   render() {
