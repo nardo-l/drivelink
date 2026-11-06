@@ -1,4 +1,4 @@
-import { name } from '../../config/brand';
+import { name, tagline } from '../../config/brand';
 import React from 'react';
 
 export interface LogoProps {
@@ -27,7 +27,7 @@ export const Logo: React.FC<LogoProps> = ({
         <path d="M7 20h57" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
       </svg>
       <span className="dl-logo-wordmark">{name}</span>
-      {showTagline && <span className="dl-logo-tagline">DEALER PORTAL</span>}
+      {showTagline && <span className="dl-logo-tagline">{tagline}</span>}
     </span>
   );
 };
