@@ -1,5 +1,5 @@
 /**
- * Shared DriveLink icon system.
+ * Shared Lotlé icon system.
  * Use Lucide only; default to 20px, 1.75 stroke, rounded caps/joins and currentColor.
  * Inline/chip icons should use 16px; header/empty-state icons may use 24px or 32px.
  * Standalone meaningful icons must receive ariaLabel; decorative icons stay aria-hidden.
