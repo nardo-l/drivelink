@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { DriveLinkLogo } from '../components/common/DriveLinkLogo';
+import { Logo } from '../components/common/Logo';
 import { Select } from '../components/common/Select';
 import { CalendarDays, CarFront, Fuel, Gauge, Heart, MapPin, Phone, Search, Share2, SlidersHorizontal, X, ArrowRight } from 'lucide-react';
 import { useNavigation } from '../context/NavigationContext';
@@ -319,7 +319,7 @@ export const PublicShowroomPage: React.FC<{ slug?: string; previewDealership?: D
         {dealer.phone && <a href={'tel:' + dealer.phone}><Phone size={14} />{dealer.phone}</a>}
         {dealer.address && <p><MapPin size={14} />{dealer.address}</p>}
         {(dealer as Dealership & { hours?: string }).hours && <p>{(dealer as Dealership & { hours?: string }).hours}</p>}
-        <a className="dl-ps-powered" href="https://drivelink.app.zw" aria-label="Powered by DriveLink"><span>Powered by</span><DriveLinkLogo variant="light" size="sm" /></a>
+        <a className="dl-ps-powered" href="https://drivelink.app.zw" aria-label="Powered by DriveLink"><span>Powered by</span><Logo variant="light" size="sm" /></a>
       </footer>
 
       {waNumber && <a className={'dl-ps-floating-wa ' + (!fabVisible ? 'hidden' : '')} href={wa(generalMessage)} target="_blank" rel="noreferrer" aria-label="Message dealership on WhatsApp"><WhatsAppMark size={24} /></a>}
