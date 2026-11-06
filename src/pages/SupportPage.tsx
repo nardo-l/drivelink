@@ -1,11 +1,12 @@
+import { name, supportWhatsApp } from '../config/brand';
 import React from 'react';
 import { ArrowLeft, Headset, MessageCircle, Phone, ShieldCheck } from 'lucide-react';
 import { useNavigation } from '../context/NavigationContext';
 import { BottomNav } from '../components/layout/BottomNav';
 
-const SUPPORT_PHONE = '+263789113734';
-const SUPPORT_TEL = 'tel:+263789113734';
-const SUPPORT_WHATSAPP = 'https://wa.me/263789113734';
+const SUPPORT_PHONE = '+' + supportWhatsApp;
+const SUPPORT_TEL = `tel:+${supportWhatsApp}`;
+const SUPPORT_WHATSAPP = `https://wa.me/${supportWhatsApp}`;
 
 export const SupportPage: React.FC = () => {
   const { navigate } = useNavigation();
@@ -22,7 +23,7 @@ export const SupportPage: React.FC = () => {
         <section className="rounded-3xl bg-slate-950 p-6 text-white">
           <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-white/10"><Headset className="h-6 w-6" /></div>
           <h2 className="text-xl font-extrabold">How can we help?</h2>
-          <p className="mt-2 text-sm leading-relaxed text-white/70">Talk to the DriveLink support team about your account, vehicle listings, showroom or any issue you’re experiencing.</p>
+          <p className="mt-2 text-sm leading-relaxed text-white/70">Talk to the {name} support team about your account, vehicle listings, showroom or any issue you’re experiencing.</p>
         </section>
         <section className="rounded-3xl border border-slate-200 bg-white p-5">
           <p className="text-xs font-bold uppercase tracking-wider text-slate-500">Contact our team</p>
