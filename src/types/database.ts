@@ -23,6 +23,7 @@ export interface Database {
           draft: Json;
           intro_completed: boolean;
           notifications_prompt_dismissed_at: string | null;
+          notifications_enabled: boolean;
           onboarding_completed_at: string | null;
           updated_at: string;
         };
@@ -32,6 +33,7 @@ export interface Database {
           draft?: Json;
           intro_completed?: boolean;
           notifications_prompt_dismissed_at?: string | null;
+          notifications_enabled?: boolean;
           onboarding_completed_at?: string | null;
           updated_at?: string;
         };
