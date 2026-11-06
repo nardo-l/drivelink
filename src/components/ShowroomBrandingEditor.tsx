@@ -93,7 +93,7 @@ export const ShowroomBrandingEditor: React.FC<ShowroomBrandingEditorProps> = ({
       updateAsset('banner', { tip: tips.join(' '), error: '' });
       await uploadCropped('banner', compressed, localPreview);
     } catch (error: any) {
-      updateAsset('banner', { error: error?.message || 'Could not prepare this image. Please try again.' });
+      updateAsset('banner', { error: error?.message || 'Could not prepare this image. Please try again.', pendingFile: file });
     } finally {
       URL.revokeObjectURL(sourceUrl);
     }
@@ -189,7 +189,7 @@ export const ShowroomBrandingEditor: React.FC<ShowroomBrandingEditorProps> = ({
 
   const retry = (kind: BrandingKind) => {
     const asset = kind === 'logo' ? logo : banner;
-    if (asset.pendingFile) void uploadCropped(kind, asset.pendingFile, asset.url?.startsWith('blob:') ? asset.url : undefined);
+    if (asset.pendingFile) { if (kind === 'banner') void uploadBanner(asset.pendingFile); else void uploadCropped(kind, asset.pendingFile, asset.url?.startsWith('blob:') ? asset.url : undefined); }
   };
 
   const remove = async (kind: BrandingKind) => {
@@ -214,7 +214,7 @@ export const ShowroomBrandingEditor: React.FC<ShowroomBrandingEditorProps> = ({
       {asset.url ? <div className="sb-upload-selected">
         <div className={`sb-thumb ${kind === "logo" ? "is-logo" : "is-banner"} ${aspect}`}>
           <img src={asset.url} alt={title} />
-          {asset.busy && <div className="sb-progress"><span style={{ width: asset.progress ? `${asset.progress}%` : '24%' }} /></div>}
+          {asset.busy && <div className="sb-progress-ring" style={{ '--progress': `${asset.progress || 8}%` } as React.CSSProperties} aria-label={`Uploading ${asset.progress}%`}><span>{asset.progress}%</span></div>}
         </div>
         <div className="sb-upload-actions">
           {asset.busy ? <span className="sb-upload-status"><Loader2 size={13} className="animate-spin"/> {asset.progress}%</span> : <button type="button" onClick={() => fileInputRefs[kind].current?.click()}>Change</button>}
