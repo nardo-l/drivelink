@@ -433,6 +433,5 @@ export const storageService = {
     localStorage.removeItem(STORAGE_KEYS.VEHICLES);
     localStorage.removeItem(STORAGE_KEYS.ENQUIRIES);
     localStorage.removeItem(STORAGE_KEYS.SESSION);
-    localStorage.removeItem(STORAGE_KEYS.ONBOARDING);
   },
 };
