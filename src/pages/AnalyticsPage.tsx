@@ -1,3 +1,4 @@
+import { name } from '../config/brand';
 import React, { useEffect, useMemo, useState } from 'react';
 import { BarChart3, Car, MessageSquare, Eye, TrendingUp, CircleHelp } from 'lucide-react';
 import { storageService } from '../services/storage';
@@ -163,7 +164,7 @@ export const AnalyticsPage: React.FC = () => {
         </section>
 
         <div className="rounded-xl border border-blue-100 bg-blue-50/70 p-3 flex gap-2 text-xs leading-relaxed text-blue-950">
-          <CircleHelp className="h-4 w-4 shrink-0 mt-0.5" /><p>Analytics only uses records saved to your dealership. DriveLink does not currently track individual vehicle views or WhatsApp clicks, so those metrics are not estimated.</p>
+          <CircleHelp className="h-4 w-4 shrink-0 mt-0.5" /><p>Analytics only uses records saved to your dealership. {name} does not currently track individual vehicle views or WhatsApp clicks, so those metrics are not estimated.</p>
         </div>
       </main>
       <BottomNav />
