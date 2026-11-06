@@ -100,3 +100,12 @@
 .sb-banner-update-notice button{flex:none;border:0;border-radius:999px;background:#111722;color:#fff;padding:8px 11px;font-size:10px;font-weight:800}
 @media(max-height:700px){.sb-crop-sheet{gap:8px;padding-top:10px;padding-bottom:10px}.sb-crop-viewport.is-portrait-banner{width:min(100%, 22.5dvh)}.sb-crop-live-preview{width:58px;height:103px}.sb-crop-actions button{min-height:46px}}
 @media(prefers-reduced-motion:reduce){.sb-crop-sheet *{transition:none!important;animation:none!important}}
+
+/* Banner crop guide: keep the vehicle in the upper 60% of the portrait. */
+.sb-crop-viewport.is-portrait-banner .sb-crop-safe-guide{position:absolute;z-index:2;inset:0;pointer-events:none;background:linear-gradient(to bottom,transparent 0%,transparent 58%,rgba(10,15,30,.18) 66%,rgba(10,15,30,.62) 100%)}
+.sb-crop-viewport.is-portrait-banner .sb-crop-safe-line{position:absolute;z-index:3;top:60%;left:0;right:0;border-top:1px dashed rgba(255,255,255,.8);pointer-events:none}
+.sb-crop-helper{align-self:center;flex:none;margin:-8px 0 0;color:#d9dee7;font-size:12px;line-height:1.4;text-align:center}
+.sb-crop-live-preview>img{object-position:top center}
+.sb-preview-banner{background:#0A0F1E}
+.sb-preview-banner>img{height:65%!important;object-position:top center}
+.sb-preview-shade{inset:0;background:linear-gradient(to bottom,rgba(0,0,0,.2) 0%,transparent 20%,transparent 52%,rgba(10,15,30,.3) 66%,rgba(10,15,30,.75) 84%,#0A0F1E 100%)}
