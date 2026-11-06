@@ -1,3 +1,17 @@
+// Push-only service worker. It intentionally does not cache fetch responses,
+// authenticated API calls, or user-specific application pages.
+const DRIVE_LINK_CACHE_VERSION = 'drivelink-runtime-v2';
+
+self.addEventListener('activate', (event) => {
+  event.waitUntil((async () => {
+    const names = await caches.keys();
+    await Promise.all(names
+      .filter(name => name.toLowerCase().startsWith('drivelink') && name !== DRIVE_LINK_CACHE_VERSION)
+      .map(name => caches.delete(name)));
+    await self.clients.claim();
+  })());
+});
+
 self.addEventListener('push', (event) => {
   let payload = {};
   try { payload = event.data ? event.data.json() : {}; } catch { payload = { body: event.data?.text() || '' }; }
