@@ -1,19 +1,20 @@
+import { name } from '../config/brand';
 import React, { useEffect, useState } from 'react';
 import { ArrowLeft, Bell, BellOff, CheckCheck, ShieldCheck } from 'lucide-react';
 import { useNavigation } from '../context/NavigationContext';
 import { storageService } from '../services/storage';
-import { notificationService, type DriveLinkNotification, type NotificationPreferences } from '../services/notificationService';
+import { notificationService, type LotleNotification, type NotificationPreferences } from '../services/notificationService';
 import { isSupabaseConfigured } from '../lib/supabase';
 import { BottomNav } from '../components/layout/BottomNav';
 
 const categoryLabel: Record<string, string> = {
   daily_summary: 'Daily summary', enquiry: 'Buyer enquiry', inventory: 'Inventory',
-  sharing: 'Showroom sharing', showroom: 'Showroom activity', subscription: 'Subscription', system: 'DriveLink',
+  sharing: 'Showroom sharing', showroom: 'Showroom activity', subscription: 'Subscription', system: name,
 };
 
 export const NotificationsPage: React.FC = () => {
   const { navigate, showToast } = useNavigation();
-  const [items, setItems] = useState<DriveLinkNotification[]>([]);
+  const [items, setItems] = useState<LotleNotification[]>([]);
   const [dealershipId, setDealershipId] = useState('');
   const [loading, setLoading] = useState(true);
   const [pushEnabled, setPushEnabled] = useState(false);
@@ -58,7 +59,7 @@ export const NotificationsPage: React.FC = () => {
     catch { showToast('Could not mark notifications as read'); }
   };
 
-  const openNotification = async (item: DriveLinkNotification) => {
+  const openNotification = async (item: LotleNotification) => {
     if (!item.read_at) {
       try { await notificationService.markRead(item.id); setItems(current => current.map(row => row.id === item.id ? { ...row, read_at: new Date().toISOString() } : row)); }
       catch { /* Keep notification visible even if marking read fails. */ }
@@ -78,13 +79,13 @@ export const NotificationsPage: React.FC = () => {
       <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
         <div className="flex items-start gap-3">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-100"><Bell className="h-5 w-5" /></div>
-          <div className="min-w-0 flex-1"><h2 className="text-sm font-bold">Browser notifications</h2><p className="mt-1 text-xs leading-relaxed text-slate-500">Get important dealership updates even when DriveLink is closed. Your browser will ask for permission.</p></div>
+          <div className="min-w-0 flex-1"><h2 className="text-sm font-bold">Browser notifications</h2><p className="mt-1 text-xs leading-relaxed text-slate-500">Get important dealership updates even when {name} is closed. Your browser will ask for permission.</p></div>
           <button disabled={busy || !isSupabaseConfigured()} onClick={() => void togglePush()} className={`shrink-0 rounded-full px-3 py-2 text-xs font-bold disabled:opacity-50 ${pushEnabled ? 'bg-slate-100 text-slate-700' : 'bg-slate-950 text-white'}`}>{busy ? '…' : pushEnabled ? 'Disable' : 'Enable'}</button>
         </div>
         <div className="mt-3 flex items-center gap-2 text-[10px] text-slate-400"><ShieldCheck className="h-3.5 w-3.5" /> Push permission is controlled by your browser.</div>
       </section>
       <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-        <h2 className="text-sm font-bold">What should DriveLink notify you about?</h2>
+        <h2 className="text-sm font-bold">What should {name} notify you about?</h2>
         <p className="mt-1 text-xs text-slate-500">Choose which updates appear in your inbox and can be sent as push alerts.</p>
         <div className="mt-3 divide-y divide-slate-100">
           {([
