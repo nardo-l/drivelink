@@ -737,6 +737,10 @@ export const supabaseService = {
       xhr.onabort = () => reject(new Error('Upload cancelled.'));
       xhr.send(file);
     });
+    if (type === 'banner') {
+      const { error: staleOgError } = await supabase.storage.from('dealership-branding').remove([`${user.id}/banner-og.webp`]);
+      if (staleOgError) console.warn('Could not remove the previous generated banner preview:', staleOgError.message);
+    }
     const { data } = supabase.storage.from('dealership-branding').getPublicUrl(path);
     const publicUrl = `${data.publicUrl}?v=${Date.now()}`;
     const dealer = await this.getCurrentDealership().catch(() => null);
