@@ -1,3 +1,4 @@
+import { name } from '../config/brand';
 import { name, supportWhatsApp } from '../config/brand';
 import React,{useEffect,useMemo,useRef,useState} from 'react';
 import {
@@ -88,11 +89,11 @@ export const SettingsPage:React.FC=()=>{
    <section className="dl-settings-group"><h2>Notifications</h2>
     <div className="dl-settings-toggle-row"><span className="dl-settings-row-icon"><Bell size={17}/></span><span className="dl-settings-row-copy"><strong>Push notifications</strong><small>{pushEnabled?'Notifications are enabled':'Get alerts about enquiries and activity'}</small></span><button type="button" role="switch" aria-checked={pushEnabled} disabled={pushBusy||!notificationService.isPushSupported()} onClick={togglePush} className={'dl-settings-switch'+(pushEnabled?' active':'')}><span/></button></div>
     {permission==='denied'&&<p className="dl-settings-help">Notifications are blocked by your browser. Open your browser or device Settings → Site settings → Notifications, allow {name}, then return here and switch notifications on.</p>}
-    {!notificationService.isPushSupported()&&<p className="dl-settings-help">This browser does not currently support push notifications. Try installing DriveLink to your home screen or use a supported browser.</p>}
+    {!notificationService.isPushSupported()&&<p className="dl-settings-help">This browser does not currently support push notifications. Try installing {name} to your home screen or use a supported browser.</p>}
    </section>
 
    <section className="dl-settings-group"><h2>Support</h2>
-    <Row icon={Headset} label="Contact support" value="Chat with the DriveLink team" onClick={()=>window.open('https://wa.me/'+supportWhatsApp,'_blank','noopener,noreferrer')}/>
+    <Row icon={Headset} label="Contact support" value="Chat with the {name} team" onClick={()=>window.open('https://wa.me/'+supportWhatsApp,'_blank','noopener,noreferrer')}/>
     <Row icon={FileText} label="Terms" value="Terms of service" onClick={()=>openSheet('terms')}/>
     <Row icon={Shield} label="Privacy" value="Privacy information" onClick={()=>openSheet('privacy')}/>
    </section>
