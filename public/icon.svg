@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">\n  <title>Lotlé</title>
   <rect width="512" height="512" rx="112" fill="#0A0F1E"/>
   <path d="M78 270c38-43 82-43 130-43 34-29 72-34 106-14l58 39 24 5" fill="none" stroke="#fff" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>
   <path d="M102 278h300" fill="none" stroke="#fff" stroke-width="14" stroke-linecap="round"/>
