@@ -21,6 +21,7 @@ const googleVerificationPlugin = {
 
 export default defineConfig(() => {
   return {
+    define: { 'import.meta.env.SITE_URL': JSON.stringify(process.env.SITE_URL || '') },
     plugins: [react(), tailwindcss(), googleVerificationPlugin],
     resolve: {
       alias: {
