@@ -133,3 +133,17 @@
 .dl-ps-landing{transition:opacity .16s ease,transform .16s ease}
 .dl-ps-landing.is-leaving{opacity:0;transform:translateY(-6px);pointer-events:none}
 @media(prefers-reduced-motion:reduce){.dl-ps-landing{transition:none}}
+
+/* Landing-only composition: full-colour banner fades into a solid dark content area. */
+.dl-ps-landing{background:#0A0F1E}
+.dl-ps-landing-image{inset:0 0 auto;width:100%;height:65dvh;min-height:0;object-fit:cover;object-position:top center;filter:none!important;-webkit-filter:none!important}
+.dl-ps-landing-placeholder{inset:0 0 auto;height:65dvh;background:#0A0F1E}
+.dl-ps-landing-fallback{inset:0 0 auto;height:65dvh;background:#0A0F1E}
+.dl-ps-landing-top-shade{inset:0 0 auto;height:65dvh;background:linear-gradient(to bottom,rgba(0,0,0,.22) 0%,rgba(0,0,0,.08) 12%,transparent 22%)}
+.dl-ps-landing-bottom-shade{inset:0 0 auto;height:65dvh;background:linear-gradient(to bottom,transparent 52%,rgba(10,15,30,.28) 68%,rgba(10,15,30,.72) 84%,#0A0F1E 100%)}
+.dl-ps-landing-copy{bottom:calc(28px + env(safe-area-inset-bottom));left:clamp(20px,6vw,54px);right:clamp(20px,6vw,54px);max-width:720px}
+.dl-ps-landing-copy h1{max-width:620px;color:#fff;line-height:1;text-shadow:none}
+.dl-ps-landing-copy p{color:rgba(255,255,255,.82)}
+.dl-ps-fallback-logo{display:none}
+.dl-ps-landing-wa{background:#151d30;border:1px solid rgba(255,255,255,.12)}
+@media(max-height:620px){.dl-ps-landing-copy{bottom:calc(16px + env(safe-area-inset-bottom))}.dl-ps-landing-copy h1{font-size:clamp(30px,7vw,48px)}.dl-ps-landing-copy p{margin:8px 0 14px}.dl-ps-explore,.dl-ps-landing-wa{height:48px}.dl-ps-landing-wa{width:48px}.dl-ps-explore i{width:36px;height:36px}}
