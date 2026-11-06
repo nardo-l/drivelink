@@ -3,6 +3,8 @@ export const nameAscii = 'lotle';
 export const tagline = 'Your car showroom, online';
 export const description = 'Create a professional online car showroom, manage vehicle inventory and receive buyer enquiries with Lotlé. Built for car dealers in Zimbabwe and South Africa.';
 export const supportWhatsApp = '263789113734';
+export const supportEmail = 'support@lotle.link';
+export const legacyName = 'DriveLink';
 const runtime = globalThis as typeof globalThis & {
   __SITE_URL__?: string;
   process?: { env?: Record<string, string | undefined> };
@@ -62,7 +64,7 @@ export function updateBrandMetadata(options: { title?: string; description?: str
     document.head.appendChild(structuredData);
   }
   structuredData.textContent = JSON.stringify([
-    { '@context': 'https://schema.org', '@type': 'Organization', name, alternateName: ['Lotle', 'DriveLink'], url: siteUrl, description },
+    { '@context': 'https://schema.org', '@type': 'Organization', name, alternateName: ['Lotle', legacyName], url: siteUrl, description },
     { '@context': 'https://schema.org', '@type': 'WebSite', name, alternateName: ['Lotle', 'DriveLink'], url: siteUrl, description },
   ]);
 }
