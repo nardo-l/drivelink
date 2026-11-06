@@ -263,8 +263,9 @@ export const ShowroomBrandingEditor: React.FC<ShowroomBrandingEditorProps> = ({
           onPointerUp={e=>{pointers.current.delete(e.pointerId);if(pointers.current.size<2)pinchStart.current=null;setDrag(null);}}
           onPointerCancel={e=>{pointers.current.delete(e.pointerId);pinchStart.current=null;setDrag(null);}}>
           <img draggable={false} src={cropSource || ""} alt="Crop preview" style={{width:Math.max(1,cropImage.naturalWidth*Math.max(cropWidth/cropImage.naturalWidth,cropHeight/cropImage.naturalHeight)),height:Math.max(1,cropImage.naturalHeight*Math.max(cropWidth/cropImage.naturalWidth,cropHeight/cropImage.naturalHeight)),transform:"translate(-50%, -50%) translate("+offset.x+"px, "+offset.y+"px) scale("+zoom+")"}} />
-          <span className="sb-crop-frame"/>
+          <span className="sb-crop-frame"/>{cropKind === 'banner' && <><span className="sb-crop-safe-guide" aria-hidden="true"/><span className="sb-crop-safe-line" aria-hidden="true"/></>}
         </div>
+        {cropKind === 'banner' && <p className="sb-crop-helper">Keep your car in the top part of the photo.</p>}
         {cropKind === 'banner' && <div className="sb-crop-live-preview"><img src={cropSource || ''} alt="" /><div><strong>{dealershipName || 'Your dealership'}</strong><span>{tagline.trim() || 'Find your next car.'}</span></div></div>}
         <label className="sb-zoom"><ZoomIn size={17}/><span>Zoom</span><input type="range" min="1" max="4" step="0.05" value={zoom} onChange={e=>{const z=Number(e.target.value);setZoom(z);setOffset(v=>clampCropOffset(v,z));}}/></label>
         {cropError && <p className="sb-inline-error">{cropError}</p>}
