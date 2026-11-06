@@ -37,7 +37,7 @@ const googleVerificationPlugin = {
 
 export default defineConfig(() => {
   return {
-    define: { 'import.meta.env.SITE_URL': JSON.stringify(process.env.SITE_URL || '') },
+    define: { 'globalThis.__SITE_URL__': JSON.stringify(process.env.SITE_URL || '') },
     plugins: [react(), tailwindcss(), googleVerificationPlugin, lotleSeoPlugin],
     resolve: {
       alias: {
