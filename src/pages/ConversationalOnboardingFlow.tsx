@@ -435,6 +435,10 @@ export const OnboardingFlow: React.FC<{ forceNewAccount?: boolean }> = ({ forceN
     </section>
   </main>;
 
+  if (!progressReady && !forceNewAccount && !forceNotificationsPreview) {
+    return <main className="flex min-h-[100dvh] items-center justify-center bg-white text-sm text-gray-500"><Loader2 size={18} className="mr-2 animate-spin"/> Loading your setup…</main>;
+  }
+
   const share = async () => {
     const url = `${window.location.origin}/showroom/${data.showroom.handle}`;
     const message = encodeURIComponent(`View our vehicles at ${url}`);
@@ -470,7 +474,7 @@ export const OnboardingFlow: React.FC<{ forceNewAccount?: boolean }> = ({ forceN
   return <main className={step === 8 ? 'dl-pro-page' : step === 6 ? 'sb-onboarding-page' : 'min-h-[100dvh] bg-white px-4 py-5 text-[#0A0A0A] sm:py-8'}>
     <section className={step === 8 ? 'dl-pro-page-inner' : step === 6 ? 'sb-onboarding-shell' : 'mx-auto flex min-h-[calc(100dvh-40px)] w-full max-w-[430px] flex-col rounded-[28px] bg-white px-1 py-3 sm:min-h-[780px] sm:px-5'}>
       {step < 7 && <header className="mb-7 flex items-center justify-between">
-        <button type="button" onClick={back} aria-label="Go back" className="flex h-10 items-center gap-2 rounded-full px-2 text-sm font-medium text-gray-600 hover:bg-gray-50" disabled={step===7}>
+        <button type="button" onClick={back} aria-label="Go back" className="flex h-10 items-center gap-2 rounded-full px-2 text-sm font-medium text-gray-600 hover:bg-gray-50" disabled={step===7 || (step === 2 && Boolean(data.account.email))}>
           {step!==7 && <><ArrowLeft size={17}/> Back</>}
         </button>
         <span className="text-xs font-medium text-gray-500">{step===6?'Brand your showroom':step===7?'Notifications':step===8?'DriveLink Pro':step===9?'Ready':`Setup ${step} of 5`}</span>
