@@ -12,7 +12,7 @@ const runtime = globalThis as typeof globalThis & {
 };
 let denoSiteUrl: string | undefined;
 try { denoSiteUrl = runtime.Deno?.env?.get('SITE_URL'); } catch { denoSiteUrl = undefined; }
-export const siteUrl = (runtime.__SITE_URL__ || runtime.process?.env?.SITE_URL || denoSiteUrl || 'https://drivelink-gilt.vercel.app').trim().replace(/\\/+$/, '');
+export const siteUrl = (runtime.__SITE_URL__ || runtime.process?.env?.SITE_URL || denoSiteUrl || 'https://drivelink-gilt.vercel.app').trim().replace(/\/+$/, '');
 export const homeTitle = 'Lotlé | Online car showroom for dealers in Zimbabwe';
 
 export function pageTitle(page: string): string {
@@ -65,6 +65,6 @@ export function updateBrandMetadata(options: { title?: string; description?: str
   }
   structuredData.textContent = JSON.stringify([
     { '@context': 'https://schema.org', '@type': 'Organization', name, alternateName: ['Lotle', legacyName], url: siteUrl, description },
-    { '@context': 'https://schema.org', '@type': 'WebSite', name, alternateName: ['Lotle', 'DriveLink'], url: siteUrl, description },
+    { '@context': 'https://schema.org', '@type': 'WebSite', name, alternateName: ['Lotle', legacyName], url: siteUrl, description },
   ]);
 }
