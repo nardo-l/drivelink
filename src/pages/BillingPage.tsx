@@ -68,7 +68,7 @@ export const BillingPage: React.FC = () => {
 
   const loadStatus = React.useCallback(async (silent = false) => {
     if (!isSupabaseConfigured() || storageService.isDemoModeActive()) {
-      setError('Subscription payments are available when ${name} is connected to your account.');
+      setError(`Subscription payments are available when ${name} is connected to your account.`);
       setLoading(false);
       return;
     }
