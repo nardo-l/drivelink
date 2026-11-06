@@ -260,8 +260,10 @@ export const OnboardingFlow: React.FC = () => {
         const activationTrialValid = (activationResult.status === 'trial' || activationResult.status === 'trialing') &&
           !!activationResult.trial_ends_at && new Date(activationResult.trial_ends_at).getTime() > activationNow;
         const activationPaidValid = activationResult.status === 'active' && activationResult.is_active === true;
-        if (!activationTrialValid && !activationPaidValid) {
-          throw new Error('This account has already used its free trial or the trial has expired.');
+        const activationExpiredTrial = activationResult.status === 'expired' &&
+          !!activationResult.trial_started_at && !!activationResult.trial_ends_at;
+        if (!activationTrialValid && !activationPaidValid && !activationExpiredTrial) {
+          throw new Error('Trial activation did not return a valid subscription state.');
         }
 
         if (data.branding.logoPreview || data.branding.coverPreview) {
@@ -282,8 +284,10 @@ export const OnboardingFlow: React.FC = () => {
           subscription?.trial_ends_at && new Date(subscription.trial_ends_at).getTime() > serverNow;
         const paidValid = subscription?.status === 'active' &&
           subscription?.current_period_end && new Date(subscription.current_period_end).getTime() > serverNow;
-        if (!trialValid && !paidValid) {
-          throw new Error('The server has not confirmed active trial access yet.');
+        const expiredTrial = subscription?.status === 'expired' &&
+          !!subscription?.trial_started_at && !!subscription?.trial_ends_at;
+        if (!trialValid && !paidValid && !expiredTrial) {
+          throw new Error('The server has not confirmed the trial or subscription state yet.');
         }
 
         const refreshedDealer = await supabaseService.getCurrentDealership();
