@@ -227,7 +227,7 @@ function AppContent() {
     }
 
     if (currentPath === '/onboarding') {
-      if (isLive && session.isLoggedIn && session.dealershipId) { console.info('[DriveLink onboarding] Get notified skipped: redirected (existing dealership session).'); return safeDashboard(); }
+      if (isLive && session.isLoggedIn && session.dealershipId) { console.info(`[${name} onboarding] Get notified skipped: redirected (existing dealership session).`); return safeDashboard(); }
       return <OnboardingFlow />;
     }
 
