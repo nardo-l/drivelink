@@ -43,6 +43,7 @@ export const OnboardingFlow: React.FC<{ forceNewAccount?: boolean }> = ({ forceN
   // Onboarding state is hydrated exclusively from the authenticated user's database row.
   const [data, setData] = useState<OnboardingState>(() => initialState());
   const [progressReady, setProgressReady] = useState(false);
+  const [progressLoadError, setProgressLoadError] = useState('');
   const [notificationsDismissedAt, setNotificationsDismissedAt] = useState<string | null>(null);
   const [available, setAvailable] = useState<boolean | null>(null);
   const [checking, setChecking] = useState(false);
@@ -124,7 +125,7 @@ export const OnboardingFlow: React.FC<{ forceNewAccount?: boolean }> = ({ forceN
         setProgressReady(true);
       } catch (error) {
         console.warn('Could not restore account onboarding progress:', error);
-        if (active) setProgressReady(true);
+        if (active) { setProgressLoadError('We could not load your saved setup. Check your connection and try again.'); setProgressReady(true); }
       }
     };
     void restore();
@@ -434,6 +435,10 @@ export const OnboardingFlow: React.FC<{ forceNewAccount?: boolean }> = ({ forceN
       </div>
     </section>
   </main>;
+
+  if (progressLoadError) {
+    return <main className="flex min-h-[100dvh] flex-col items-center justify-center gap-4 bg-white px-6 text-center text-sm text-gray-600"><p role="alert">{progressLoadError}</p><button type="button" onClick={() => window.location.reload()} className="rounded-full bg-black px-6 py-3 font-semibold text-white">Try again</button></main>;
+  }
 
   if (!progressReady && !forceNewAccount && !forceNotificationsPreview) {
     return <main className="flex min-h-[100dvh] items-center justify-center bg-white text-sm text-gray-500"><Loader2 size={18} className="mr-2 animate-spin"/> Loading your setup…</main>;
