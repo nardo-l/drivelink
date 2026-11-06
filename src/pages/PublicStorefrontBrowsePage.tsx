@@ -1,4 +1,4 @@
-import { name, siteUrl } from '../config/brand';
+import { name, siteUrl, absoluteUrl } from '../config/brand';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Select } from '../components/common/Select';
 import { ArrowRight, CarFront, Contact, Grid2x2, Heart, MapPin, Search, Share2, SlidersHorizontal, X } from 'lucide-react';
@@ -73,7 +73,7 @@ export const PublicStorefrontBrowsePage: React.FC<{ slug: string }> = ({ slug })
   const clearFilters = () => { setMinPrice(''); setMaxPrice(''); setYearFrom(''); setYearTo(''); setMinMileage(''); setMaxMileage(''); setTransmission('All'); setFuel('All'); setBrand('All'); };
   const goHome = () => navigate('/' + dealer.slug);
   const goContact = () => navigate('/' + dealer.slug + '/contact');
-  const shareShowroom = async () => { const url = window.location.origin + '/' + dealer.slug; if (navigator.share) { try { await navigator.share({ title: dealer.name, text: 'Browse vehicles at ' + dealer.name, url }); } catch { /* share sheet dismissed */ } } else if (navigator.clipboard) { await navigator.clipboard.writeText(url); } };
+  const shareShowroom = async () => { const url = absoluteUrl('/' + encodeURIComponent(dealer.slug)); if (navigator.share) { try { await navigator.share({ title: dealer.name, text: 'Browse vehicles at ' + dealer.name, url }); } catch { /* share sheet dismissed */ } } else if (navigator.clipboard) { await navigator.clipboard.writeText(url); } };
 
   return <main className="dl-store-browse">
     <header className="dl-store-header">
