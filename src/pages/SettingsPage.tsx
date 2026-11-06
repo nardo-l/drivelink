@@ -1,211 +1,126 @@
-import React, { useState } from 'react';
-import { useNavigation } from '../context/NavigationContext';
-import { storageService } from '../services/storage';
-import { supabaseService } from '../services/supabaseService';
-import { isSupabaseConfigured } from '../lib/supabase';
-import { CurrencyCode } from '../types';
-import { notificationService } from '../services/notificationService';
-import { ShowroomBrandingEditor } from '../components/ShowroomBrandingEditor';
-import { Bell } from 'lucide-react';
+import React,{useEffect,useMemo,useRef,useState} from 'react';
 import {
-  Building2, Phone, MessageCircle, MapPin, Globe, ExternalLink,
-  Save, Loader2,
+ ArrowLeft,Building2,Store,Image,UserRound,Phone,MapPin,Clock3,CreditCard,Bell,Headset,
+ FileText,Shield,LogOut,Trash2,ChevronRight,Copy,Check,Upload,Loader2,MessageCircle,
+ Globe,Mail,X,CheckCircle2,AlertTriangle,ExternalLink
 } from 'lucide-react';
+import {useNavigation} from '../context/NavigationContext';
+import {storageService} from '../services/storage';
+import {supabaseService} from '../services/supabaseService';
+import {notificationService} from '../services/notificationService';
+import {isSupabaseConfigured,supabase} from '../lib/supabase';
+import type {Dealership} from '../types';
+import './SettingsPage.css';
 
-export const SettingsPage: React.FC = () => {
-  const { navigate, showToast } = useNavigation();
-  const current = storageService.getDealership();
+type SheetKey='profile'|'branding'|'name'|'contact'|'location'|'hours'|'terms'|'privacy'|'logout'|'delete'|null;
+type DealerDraft=Pick<Dealership,'name'|'city'|'address'|'phone'|'whatsapp'>;
 
-  const [name, setName] = useState(current.name);
-  const [slug, setSlug] = useState(current.slug);
-  const [city, setCity] = useState(current.city);
-  const [address, setAddress] = useState(current.address || '');
-  const [phone, setPhone] = useState(current.phone);
-  const [whatsapp, setWhatsapp] = useState(current.whatsapp);
-  const [email, setEmail] = useState(current.email);
-  const [currency, setCurrency] = useState<CurrencyCode>(current.currency || 'USD');
-  const [bio, setBio] = useState(current.bio);
-  const [stickerText, setStickerText] = useState(current.stickerText || 'Good cars brighter days');
-  const [logoUrl, setLogoUrl] = useState<string>(current.logoUrl || '');
-  const [coverUrl, setCoverUrl] = useState<string>(current.coverUrl || '');
-  const [pushEnabled, setPushEnabled] = useState(false);
-  const [pushBusy, setPushBusy] = useState(false);
-  const [pushPermission, setPushPermission] = useState<NotificationPermission>(() => typeof Notification === 'undefined' ? 'default' : Notification.permission);
+const SUPPORT_NUMBER='263789113734';
+const APP_VERSION='0.0.0';
 
-  React.useEffect(() => {
-    const fetchDealership = async () => {
-      if (isSupabaseConfigured() && !storageService.isDemoModeActive()) {
-        try {
-          const live = await supabaseService.getCurrentDealership();
-          if (live) {
-            storageService.saveDealership(live);
-            setName(live.name || '');
-            setSlug(live.slug || '');
-            setCity(live.city || '');
-            setAddress(live.address || '');
-            setPhone(live.phone || '');
-            setWhatsapp(live.whatsapp || '');
-            setEmail(live.email || '');
-            setCurrency(live.currency || 'USD');
-            setBio(live.bio || '');
-            setStickerText(live.stickerText || 'Good cars brighter days');
-            setLogoUrl(live.logoUrl || '');
-            setCoverUrl(live.coverUrl || '');
-          }
-        } catch (e) {
-          console.warn('Could not fetch live dealership on mount in Settings:', e);
-        }
-      }
-    };
-    fetchDealership();
-  }, []);
+export const SettingsPage:React.FC=()=>{
+ const {navigate,showToast}=useNavigation();
+ const [dealer,setDealer]=useState<Dealership>(()=>storageService.getDealership());
+ const [sheet,setSheet]=useState<SheetKey>(null);
+ const [draft,setDraft]=useState<DealerDraft>(()=>({name:dealer.name,city:dealer.city,address:dealer.address||'',phone:dealer.phone,whatsapp:dealer.whatsapp}));
+ const [saving,setSaving]=useState(false);
+ const [uploading,setUploading]=useState<'logo'|'banner'|null>(null);
+ const [pushEnabled,setPushEnabled]=useState(false);
+ const [pushBusy,setPushBusy]=useState(false);
+ const [permission,setPermission]=useState<NotificationPermission>(()=>typeof Notification==='undefined'?'default':Notification.permission);
+ const [planStatus,setPlanStatus]=useState('Checking plan…');
+ const [deleteText,setDeleteText]=useState('');
+ const [copied,setCopied]=useState(false);
+ const logoInput=useRef<HTMLInputElement>(null),bannerInput=useRef<HTMLInputElement>(null);
+ const initials=useMemo(()=>dealer.name.trim().split(/\\s+/).filter(Boolean).slice(0,2).map(x=>x[0]).join('').toUpperCase()||'DL',[dealer.name]);
+ const showroomUrl=typeof window!=='undefined'?`${window.location.origin}/showroom/${encodeURIComponent(dealer.slug)}`:'';
 
-  React.useEffect(() => { notificationService.isPushEnabled().then(setPushEnabled).catch(() => setPushEnabled(false)); }, []);
-  const toggleNotifications = async () => {
-    setPushBusy(true);
-    try {
-      if (pushEnabled) { await notificationService.disablePush(current.id); setPushEnabled(false); showToast('Notifications turned off'); }
-      else { await notificationService.enablePush(current.id, true); setPushEnabled(true); setPushPermission(Notification.permission); showToast('Notifications enabled'); }
-    } catch (error: any) { setPushPermission(typeof Notification === 'undefined' ? 'default' : Notification.permission); showToast(error?.message || 'Could not update notification settings'); }
-    finally { setPushBusy(false); }
-  };
+ useEffect(()=>{let live=true;(async()=>{try{const latest=await storageService.getDealershipAsync();if(live){setDealer(latest);setDraft({name:latest.name,city:latest.city,address:latest.address||'',phone:latest.phone,whatsapp:latest.whatsapp});}}catch(e){console.warn('Settings profile refresh failed',e);}})();return()=>{live=false;};},[]);
+ useEffect(()=>{notificationService.isPushEnabled().then(setPushEnabled).catch(()=>setPushEnabled(false));if(isSupabaseConfigured()){supabase.functions.invoke('drivelink-payments',{body:{action:'status'}}).then(({data,error})=>{if(error)throw error;const s=data?.subscription;setPlanStatus(s?.status==='active'?'Active plan':s?.status==='trial'?'Free trial':s?.status?s.status.replace(/_/g,' '):'No active plan');}).catch(()=>setPlanStatus('View subscription details'));}else setPlanStatus('Demo account');},[]);
 
-  const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault();
-    await storageService.updateDealershipAsync({
-      name,
-      slug: slug.toLowerCase().replace(/[^a-z0-9-]/g, '-'),
-      city,
-      address,
-      phone,
-      whatsapp,
-      email,
-      currency,
-      bio,
-      stickerText,
-      template: current.template || 'signature',
-      logoUrl,
-      coverUrl,
-    });
-    showToast('Settings saved successfully!');
-  };
-
-
-  const handleSignOut = async () => {
-    if (isSupabaseConfigured()) {
-      try {
-        await supabaseService.signOut();
-      } catch (err) {
-        console.warn('Supabase sign out notice:', err);
-      }
-    }
-    storageService.setUserSession({
-      isLoggedIn: false,
-      email: '',
-      dealershipId: '',
-    });
-    showToast('Signed out of dealership');
-    navigate('/');
-  };
-
-  const publicStoreUrl = `${window.location.origin}/showroom/${encodeURIComponent(slug || current.slug)}`;
-
-  const handleCopyStoreLink = async () => {
-    try {
-      await navigator.clipboard.writeText(publicStoreUrl);
-      showToast('Store link copied');
-    } catch {
-      showToast('Could not copy link. Please copy it from the address field.');
-    }
-  };
-
-  return (
-    <div className="relative flex min-h-full flex-col bg-[#F4F5F6] text-[#292929]">
-      <header className="border-b border-[#E7E7E7] bg-white px-5 pb-5 pt-5">
-        <div className="mx-auto flex w-full max-w-xl items-center gap-3">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#242424] text-white">
-            <Building2 className="h-6 w-6" strokeWidth={1.8} />
-          </div>
-          <div className="min-w-0">
-            <p className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-[#F47716]">DriveLink</p>
-            <h1 className="text-[22px] font-extrabold leading-tight tracking-[-0.04em] text-[#242424]">Store Profile</h1>
-            <p className="mt-0.5 text-xs text-[#777777]">Manage how buyers see your dealership.</p>
-          </div>
-        </div>
-      </header>
-
-      <form onSubmit={handleSave} className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-4 overflow-y-auto px-4 py-5 pb-28">
-        <section className="rounded-2xl border border-[#E7E7E7] bg-white p-4 shadow-[0_2px_10px_rgba(20,20,20,0.025)]">
-          <div className="mb-4 flex items-center gap-2">
-            <Building2 className="h-4 w-4 text-[#F47716]" />
-            <h2 className="text-sm font-bold text-[#292929]">Dealership details</h2>
-          </div>
-          <label className="mb-1.5 block text-xs font-semibold text-[#555]">Dealership name</label>
-          <input type="text" required value={name} onChange={(e) => setName(e.target.value)}
-            className="mb-4 h-11 w-full rounded-xl border border-[#E4E4E4] bg-white px-3 text-sm outline-none transition focus:border-[#F47716] focus:ring-2 focus:ring-[#F47716]/10" />
-          <label className="mb-1.5 block text-xs font-semibold text-[#555]">Location</label>
-          <div className="relative">
-            <MapPin className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#999]" />
-            <input type="text" value={city} onChange={(e) => setCity(e.target.value)} placeholder="City or area"
-              className="h-11 w-full rounded-xl border border-[#E4E4E4] bg-white pl-9 pr-3 text-sm outline-none transition focus:border-[#F47716] focus:ring-2 focus:ring-[#F47716]/10" />
-          </div>
-        </section>
-
-        <section className="rounded-2xl border border-[#E7E7E7] bg-white p-4 shadow-[0_2px_10px_rgba(20,20,20,0.025)]">
-          <div className="mb-4"><h2 className="text-sm font-bold text-[#292929]">Brand your showroom</h2><p className="mt-1 text-[11px] text-[#888]">Your logo and banner help buyers recognise your dealership.</p></div>
-          <ShowroomBrandingEditor
-            dealershipName={name}
-            city={city}
-            tagline={current.tagline || ''}
-            logoUrl={logoUrl || null}
-            bannerUrl={coverUrl || null}
-            onChange={value => { setLogoUrl(value.logoUrl || ''); setCoverUrl(value.bannerUrl || ''); storageService.updateDealership({ logoUrl: value.logoUrl || '', coverUrl: value.bannerUrl || '' }); }}
-          />
-        </section>
-
-        <section className="rounded-2xl border border-[#E7E7E7] bg-white p-4 shadow-[0_2px_10px_rgba(20,20,20,0.025)]">
-          <div className="mb-4 flex items-center gap-2">
-            <Phone className="h-4 w-4 text-[#F47716]" />
-            <h2 className="text-sm font-bold text-[#292929]">Contact details</h2>
-          </div>
-          <label className="mb-1.5 block text-xs font-semibold text-[#555]">Phone number</label>
-          <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+263..."
-            className="mb-4 h-11 w-full rounded-xl border border-[#E4E4E4] px-3 text-sm outline-none transition focus:border-[#F47716] focus:ring-2 focus:ring-[#F47716]/10" />
-          <div className="mb-1.5 flex items-center gap-2">
-            <MessageCircle className="h-3.5 w-3.5 text-[#F47716]" />
-            <label className="text-xs font-semibold text-[#555]">WhatsApp contact</label>
-          </div>
-          <input type="tel" value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} placeholder="+263..."
-            className="h-11 w-full rounded-xl border border-[#E4E4E4] px-3 text-sm outline-none transition focus:border-[#F47716] focus:ring-2 focus:ring-[#F47716]/10" />
-          <p className="mt-1.5 text-[10px] text-[#999]">Buyers can use this number to contact your dealership on WhatsApp.</p>
-        </section>
-
-        <section className="rounded-2xl border border-[#E7E7E7] bg-white p-4 shadow-[0_2px_10px_rgba(20,20,20,0.025)]">
-          <div className="mb-3 flex items-center gap-2">
-            <Globe className="h-4 w-4 text-[#F47716]" />
-            <h2 className="text-sm font-bold text-[#292929]">Store link</h2>
-          </div>
-          <div className="flex items-center gap-2 rounded-xl border border-[#E7E7E7] bg-[#F8F8F8] p-2">
-            <span className="min-w-0 flex-1 truncate px-1 text-xs text-[#666]">{publicStoreUrl}</span>
-            <button type="button" onClick={handleCopyStoreLink} className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg bg-white px-3 text-xs font-bold text-[#333] shadow-sm ring-1 ring-[#E7E7E7] transition hover:bg-[#F1F1F1]">
-              <ExternalLink className="h-3.5 w-3.5" /> Copy
-            </button>
-          </div>
-          <p className="mt-2 text-[10px] text-[#999]">Share this link so buyers can view your dealership and available cars.</p>
-        </section>
-
-        <section className="rounded-2xl border border-[#E7E7E7] bg-white p-4 shadow-[0_2px_10px_rgba(20,20,20,0.025)]">
-          <div className="flex items-center justify-between gap-3"><div className="flex items-center gap-3"><div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#F4F4F4] text-[#242424]"><Bell size={18}/></div><div><h2 className="text-sm font-bold text-[#292929]">Notifications</h2><p className="mt-0.5 text-[11px] text-[#888]">Get alerts for new buyer enquiries and account updates.</p></div></div><button type="button" role="switch" aria-checked={pushEnabled} disabled={pushBusy || !notificationService.isPushSupported()} onClick={toggleNotifications} className={`relative h-7 w-12 shrink-0 rounded-full transition ${pushEnabled?'bg-[#0A0F1E]':'bg-[#D5D7DC]'} disabled:opacity-50`}><span className={`absolute top-1 h-5 w-5 rounded-full bg-white shadow transition-all ${pushEnabled?'left-6':'left-1'}`}/></button></div>
-          {!notificationService.isPushSupported() && <p className="mt-3 text-xs leading-5 text-[#777]">To receive notifications on iPhone, add DriveLink to your Home Screen using Safari’s Share menu, then choose “Add to Home Screen”.</p>}
-          {pushPermission==='denied' && <p className="mt-3 text-xs leading-5 text-[#777]">Notifications are blocked by your browser. Open your browser’s site settings for DriveLink and allow notifications, then return here.</p>}
-        </section>
-
-        <button type="submit"
-          className="mt-1 flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#F47716] text-sm font-extrabold text-white shadow-[0_5px_14px_rgba(244,119,22,0.2)] transition hover:bg-[#E96B0C] active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60">
-          <Save className="h-4 w-4" /> Save changes
-        </button>
-      </form>
-
+ const saveProfile=async(patch:Partial<DealerDraft>)=>{
+  setSaving(true);
+  try{const updated=await storageService.updateDealershipAsync(patch);setDealer(updated);setDraft({name:updated.name,city:updated.city,address:updated.address||'',phone:updated.phone,whatsapp:updated.whatsapp});setSheet(null);showToast('Saved');}
+  catch(error){showToast(error instanceof Error?error.message:'Could not save changes. Your edits are still here.');}
+  finally{setSaving(false);}
+ };
+ const saveSheet=async()=>{if(sheet==='profile'||sheet==='name')return saveProfile({name:draft.name});if(sheet==='contact')return saveProfile({phone:draft.phone,whatsapp:draft.whatsapp});if(sheet==='location')return saveProfile({city:draft.city,address:draft.address});};
+ const copyLink=async()=>{try{await navigator.clipboard.writeText(showroomUrl);setCopied(true);showToast('Showroom link copied');window.setTimeout(()=>setCopied(false),1800);}catch{showToast('Could not copy the showroom link');}};
+ const togglePush=async()=>{if(pushBusy)return;setPushBusy(true);try{if(pushEnabled){await notificationService.disablePush(dealer.id);setPushEnabled(false);showToast('Saved');}else{await notificationService.enablePush(dealer.id,true);setPushEnabled(true);setPermission(typeof Notification==='undefined'?'default':Notification.permission);showToast('Saved');}}catch(error){setPermission(typeof Notification==='undefined'?'default':Notification.permission);showToast(error instanceof Error?error.message:'Could not update notifications.');}finally{setPushBusy(false);}};
+ const uploadAsset=async(kind:'logo'|'banner',file?:File)=>{
+  if(!file)return;
+  if(!['image/jpeg','image/png','image/webp'].includes(file.type)){showToast('Choose a JPG, PNG or WebP image.');return;}
+  if(file.size>10*1024*1024){showToast('Image must be smaller than 10 MB.');return;}
+  setUploading(kind);
+  try{const url=await supabaseService.uploadShowroomBrandingAsset(file,kind);const updated={...dealer,...(kind==='logo'?{logoUrl:url}:{coverUrl:url})};setDealer(updated);storageService.saveDealership(updated);showToast('Saved');setSheet(null);}
+  catch(error){showToast(error instanceof Error?error.message:'Upload failed. Your previous image is unchanged.');}
+  finally{setUploading(null);}
+ };
+ const signOut=async()=>{setSaving(true);try{if(isSupabaseConfigured())await supabaseService.signOut();storageService.setUserSession({isLoggedIn:false,email:'',dealershipId:''});showToast('Signed out');navigate('/');}catch(error){showToast(error instanceof Error?error.message:'Could not sign out.');}finally{setSaving(false);setSheet(null);}};
+ const requestDeletion=()=>{if(deleteText.trim()!=='DELETE')return;const msg=encodeURIComponent('Hi DriveLink Support, I would like to request deletion of my account and dealership data. Dealership: '+dealer.name+'. Please guide me through the verification process.');window.open('https://wa.me/'+SUPPORT_NUMBER+'?text='+msg,'_blank','noopener,noreferrer');setSheet(null);setDeleteText('');};
+ const Row=({icon:Icon,label,value,onClick,danger=false}:any)=><button type="button" className={'dl-settings-row'+(danger?' is-danger':'')} onClick={onClick}><span className="dl-settings-row-icon"><Icon size={17}/></span><span className="dl-settings-row-copy"><strong>{label}</strong>{value&&<small>{value}</small>}</span><ChevronRight className="dl-settings-chevron" size={17}/></button>;
+ const openSheet=(key:SheetKey)=>{setDraft({name:dealer.name,city:dealer.city,address:dealer.address||'',phone:dealer.phone,whatsapp:dealer.whatsapp});setSheet(key);};
+ return <div className="dl-settings-page">
+  <header className="dl-settings-header"><button type="button" onClick={()=>navigate('/app/more')} aria-label="Back" className="dl-settings-back"><ArrowLeft size={18}/></button><h1>Settings</h1></header>
+  <main className="dl-settings-main">
+   <section className="dl-settings-profile">
+    <div className="dl-settings-profile-top">
+     {dealer.logoUrl?<img className="dl-settings-logo" src={dealer.logoUrl} alt={dealer.name+' logo'}/>:<span className="dl-settings-logo dl-settings-initials">{initials}</span>}
+     <div className="dl-settings-profile-info"><strong>{dealer.name}</strong><small>{dealer.city||'Location not set'}{dealer.country?', '+dealer.country:''}</small></div>
+     <button type="button" onClick={()=>openSheet('profile')} className="dl-settings-edit">Edit</button>
     </div>
-  );
+    <button type="button" className="dl-settings-copy" onClick={copyLink}>{copied?<Check size={14}/>:<Copy size={14}/>} {copied?'Copied':'Copy showroom link'}</button>
+   </section>
+
+   <section className="dl-settings-group"><h2>Showroom</h2>
+    <Row icon={Image} label="Logo and banner" value="Update your showroom images" onClick={()=>openSheet('branding')}/>
+    <Row icon={Store} label="Dealership name" value={dealer.name} onClick={()=>openSheet('name')}/>
+    <Row icon={Phone} label="Phone and WhatsApp number" value={dealer.phone||dealer.whatsapp||'Add contact numbers'} onClick={()=>openSheet('contact')}/>
+    <Row icon={MapPin} label="Location" value={[dealer.city,dealer.address].filter(Boolean).join(' · ')||'Add dealership location'} onClick={()=>openSheet('location')}/>
+    <Row icon={Clock3} label="Opening hours" value="Not set" onClick={()=>openSheet('hours')}/>
+   </section>
+
+   <section className="dl-settings-group"><h2>Subscription</h2>
+    <Row icon={CreditCard} label="Plan status" value={planStatus} onClick={()=>navigate('/app/billing')}/>
+    <Row icon={ExternalLink} label="Manage billing" value="Plans and payment history" onClick={()=>navigate('/app/billing')}/>
+   </section>
+
+   <section className="dl-settings-group"><h2>Notifications</h2>
+    <div className="dl-settings-toggle-row"><span className="dl-settings-row-icon"><Bell size={17}/></span><span className="dl-settings-row-copy"><strong>Push notifications</strong><small>{pushEnabled?'Notifications are enabled':'Get alerts about enquiries and activity'}</small></span><button type="button" role="switch" aria-checked={pushEnabled} disabled={pushBusy||!notificationService.isPushSupported()} onClick={togglePush} className={'dl-settings-switch'+(pushEnabled?' active':'')}><span/></button></div>
+    {permission==='denied'&&<p className="dl-settings-help">Notifications are blocked by your browser. Open your browser or device Settings → Site settings → Notifications, allow DriveLink, then return here and switch notifications on.</p>}
+    {!notificationService.isPushSupported()&&<p className="dl-settings-help">This browser does not currently support push notifications. Try installing DriveLink to your home screen or use a supported browser.</p>}
+   </section>
+
+   <section className="dl-settings-group"><h2>Support</h2>
+    <Row icon={Headset} label="Contact support" value="Chat with the DriveLink team" onClick={()=>window.open('https://wa.me/'+SUPPORT_NUMBER,'_blank','noopener,noreferrer')}/>
+    <Row icon={FileText} label="Terms" value="Terms of service" onClick={()=>openSheet('terms')}/>
+    <Row icon={Shield} label="Privacy" value="Privacy information" onClick={()=>openSheet('privacy')}/>
+   </section>
+
+   <section className="dl-settings-group dl-settings-account"><h2>Account</h2><Row icon={LogOut} label="Log out" onClick={()=>openSheet('logout')} danger/></section>
+   <button type="button" className="dl-settings-delete-link" onClick={()=>openSheet('delete')}>Delete account</button>
+   <p className="dl-settings-version">DriveLink · Version {APP_VERSION}</p>
+  </main>
+
+  {sheet&&<div className="dl-settings-scrim" role="presentation" onMouseDown={e=>{if(e.target===e.currentTarget&&!saving&&!uploading)setSheet(null);}}>
+   <section className="dl-settings-sheet" role="dialog" aria-modal="true" aria-labelledby="dl-settings-sheet-title">
+    <div className="dl-settings-sheet-handle"/>
+    <div className="dl-settings-sheet-heading"><h2 id="dl-settings-sheet-title">{({profile:'Edit dealership profile',branding:'Showroom images',name:'Dealership name',contact:'Contact numbers',location:'Dealership location',hours:'Opening hours',terms:'Terms',privacy:'Privacy',logout:'Log out?',delete:'Delete account'} as Record<string,string>)[sheet]}</h2><button type="button" onClick={()=>setSheet(null)} aria-label="Close" disabled={saving||!!uploading}><X size={18}/></button></div>
+    {(sheet==='profile'||sheet==='name'||sheet==='contact'||sheet==='location')&&<div className="dl-settings-sheet-body">
+     {(sheet==='profile'||sheet==='name')&&<label>Dealership name<input value={draft.name} onChange={e=>setDraft(v=>({...v,name:e.target.value}))} maxLength={90}/></label>}
+     {(sheet==='profile'||sheet==='contact')&&<><label>Phone number<input type="tel" value={draft.phone} onChange={e=>setDraft(v=>({...v,phone:e.target.value}))} placeholder="+263…"/></label><label>WhatsApp number<input type="tel" value={draft.whatsapp} onChange={e=>setDraft(v=>({...v,whatsapp:e.target.value}))} placeholder="+263…"/></label></>}
+     {(sheet==='profile'||sheet==='location')&&<><label>City or area<input value={draft.city} onChange={e=>setDraft(v=>({...v,city:e.target.value}))} placeholder="e.g. Bulawayo"/></label><label>Street address <span>Optional</span><input value={draft.address} onChange={e=>setDraft(v=>({...v,address:e.target.value}))} placeholder="Street or business address"/></label></>}
+     <button type="button" className="dl-settings-primary" disabled={saving||!draft.name.trim()&&(sheet==='profile'||sheet==='name')} onClick={()=>void saveSheet()}>{saving?<Loader2 className="spin" size={16}/>:null}Save changes</button>
+    </div>}
+    {sheet==='branding'&&<div className="dl-settings-sheet-body dl-settings-branding">
+     <div className="dl-settings-brand-preview"><span>Logo</span>{dealer.logoUrl?<img src={dealer.logoUrl} alt="Dealership logo"/>:<b>{initials}</b>}<button type="button" onClick={()=>logoInput.current?.click()} disabled={!!uploading}>{uploading==='logo'?<Loader2 className="spin" size={15}/>:<Upload size={15}/>} Upload logo</button><input ref={logoInput} hidden type="file" accept="image/png,image/jpeg,image/webp" onChange={e=>void uploadAsset('logo',e.target.files?.[0])}/></div>
+     <div className="dl-settings-banner-preview"><span>Banner</span>{dealer.coverUrl?<img src={dealer.coverUrl} alt="Showroom banner preview"/>:<div className="dl-settings-banner-empty">No banner uploaded</div>}<button type="button" onClick={()=>bannerInput.current?.click()} disabled={!!uploading}>{uploading==='banner'?<Loader2 className="spin" size={15}/>:<Upload size={15}/>} Upload banner</button><input ref={bannerInput} hidden type="file" accept="image/png,image/jpeg,image/webp" onChange={e=>void uploadAsset('banner',e.target.files?.[0])}/><small>JPG, PNG or WebP · Max 10 MB · Uploaded as-is, no crop step</small></div>
+    </div>}
+    {sheet==='hours'&&<div className="dl-settings-sheet-body"><p className="dl-settings-note">Opening hours are not currently stored in the dealership profile, so there is no safe way to save them here yet. This screen leaves your existing dealership data unchanged.</p><button type="button" className="dl-settings-primary" onClick={()=>setSheet(null)}>Got it</button></div>}
+    {(sheet==='terms'||sheet==='privacy')&&<div className="dl-settings-sheet-body"><p className="dl-settings-note">{sheet==='terms'?'The Terms page is not currently connected in this app.':'The Privacy page is not currently connected in this app.'} Contact support if you need a copy of the current policy.</p><a className="dl-settings-primary" href={'https://wa.me/'+SUPPORT_NUMBER} target="_blank" rel="noreferrer"><MessageCircle size={16}/> Contact support</a></div>}
+    {sheet==='logout'&&<div className="dl-settings-sheet-body"><p className="dl-settings-note">You’ll be signed out of this DriveLink account on this device.</p><button type="button" className="dl-settings-primary" disabled={saving} onClick={()=>void signOut()}>{saving?<Loader2 className="spin" size={16}/>:null}Log out</button><button type="button" className="dl-settings-secondary" onClick={()=>setSheet(null)}>Cancel</button></div>}
+    {sheet==='delete'&&<div className="dl-settings-sheet-body"><div className="dl-settings-warning"><AlertTriangle size={18}/> Account deletion requires identity verification by DriveLink Support. This will open a request; it will not delete your account immediately.</div><label>Type DELETE to confirm your request<input value={deleteText} onChange={e=>setDeleteText(e.target.value)} autoComplete="off" placeholder="DELETE"/></label><button type="button" className="dl-settings-danger" disabled={deleteText.trim()!=='DELETE'} onClick={requestDeletion}>Continue to support</button></div>}
+   </section>
+  </div>}
+ </div>;
 };
