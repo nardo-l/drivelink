@@ -5,7 +5,7 @@ import { supabaseService } from '../services/supabaseService';
 import { isSupabaseConfigured } from '../lib/supabase';
 import { ArrowRight, Eye, EyeOff, Loader2, AlertCircle, Mail, LockKeyhole } from 'lucide-react';
 import { MARKETING_CAR_IMAGES } from '../utils/marketingCarImages';
-import { DriveLinkLogo } from '../components/common/DriveLinkLogo';
+import { Logo } from '../components/common/Logo';
 
 export const LoginPage: React.FC = () => {
   const { navigate, showToast } = useNavigation();
@@ -83,7 +83,7 @@ export const LoginPage: React.FC = () => {
             fetchPriority="high"
           />
           <div className="dl-login-hero-shade" aria-hidden="true" />
-          <div className="dl-login-brand"><DriveLinkLogo variant="light" size="md" showTagline /></div>
+          <div className="dl-login-brand"><Logo variant="light" size="md" showTagline /></div>
 
           <div className="dl-login-intro">
             <h1>Welcome back</h1>
