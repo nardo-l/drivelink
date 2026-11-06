@@ -63,7 +63,7 @@ export const OnboardingFlow: React.FC<{ forceNewAccount?: boolean }> = ({ forceN
     { title: 'Get more WhatsApp enquiries.', body: 'Let buyers reach you instantly with one tap.' },
     { title: 'Everything buyers need, in one link.', body: 'Photos, specs, price, location and WhatsApp — all in one place.' },
     { title: 'Keep your showroom looking sharp.', body: 'Customise your link, match your brand and track your results.' },
-    { title: 'Launch your showroom in minutes.', body: 'Join dealers in Zimbabwe and South Africa building smarter with ${name}.' },
+    { title: 'Launch your showroom in minutes.', body: `Join dealers in Zimbabwe and South Africa building smarter with ${name}.` },
   ];
   const finishIntro = () => {
     setIntroDone(true);
@@ -75,7 +75,7 @@ export const OnboardingFlow: React.FC<{ forceNewAccount?: boolean }> = ({ forceN
       setIntroDone(true);
       setData(prev => ({ ...prev, currentStep: 7, isCompleted: false }));
       setProgressReady(true);
-      console.info(`[${name} onboarding] Get notified shown: dev preview query parameter.');
+      console.info(`[${name} onboarding] Get notified shown: dev preview query parameter.`);
       return;
     }
     if (forceNewAccount) {
@@ -96,7 +96,7 @@ export const OnboardingFlow: React.FC<{ forceNewAccount?: boolean }> = ({ forceN
         if (dealer) {
           storageService.saveDealership(dealer);
           storageService.setUserSession({ isLoggedIn: true, email: user.email || '', dealershipId: dealer.id, userId: user.id });
-          console.info('[DriveLink onboarding] Existing dealership found during server session restore.');
+          console.info(`[${name} onboarding] Existing dealership found during server session restore.');
           window.location.assign('/app');
           return;
         }
@@ -139,10 +139,10 @@ export const OnboardingFlow: React.FC<{ forceNewAccount?: boolean }> = ({ forceN
   useEffect(() => {
     if (data.currentStep !== 7 || typeof window === 'undefined' || forceNotificationsPreview) return;
     if (notificationsDismissedAt || notificationsEnabled) {
-      console.info('[DriveLink onboarding] Get notified skipped: this account already made its notification choice.');
+      console.info(`[${name} onboarding] Get notified skipped: this account already made its notification choice.`);
       setData(prev => ({ ...prev, currentStep: 8 }));
     } else {
-      console.info('[DriveLink onboarding] Get notified shown: this account has not dismissed the prompt.');
+      console.info(`[${name} onboarding] Get notified shown: this account has not dismissed the prompt.`);
     }
   }, [data.currentStep, forceNotificationsPreview, notificationsDismissedAt, notificationsEnabled]);
 
@@ -408,7 +408,7 @@ export const OnboardingFlow: React.FC<{ forceNewAccount?: boolean }> = ({ forceN
       // Force a fresh app boot so the access gate cannot reuse pre-activation state.
       window.location.assign('/app');
     } catch (e: any) {
-      console.error(`[${name} onboarding] Trial activation failed:', e);
+      console.error(`[${name} onboarding] Trial activation failed:`, e);
       setError("Couldn't start your trial. Check your connection and try again.");
     } finally {
       activationInFlight.current = false;
@@ -460,7 +460,7 @@ export const OnboardingFlow: React.FC<{ forceNewAccount?: boolean }> = ({ forceN
   const continueWithoutNotifications = async () => {
     setNotificationsEnabled(false);
     setNotificationsDismissedAt(new Date().toISOString());
-    console.info('[DriveLink onboarding] Get notified skipped: dismissed by this account.');
+    console.info(`[${name} onboarding] Get notified skipped: dismissed by this account.`);
     setStep(8);
   };
   const enableOnboardingNotifications = async () => {
@@ -470,7 +470,7 @@ export const OnboardingFlow: React.FC<{ forceNewAccount?: boolean }> = ({ forceN
       if (permission === 'denied') {
         setNotificationsEnabled(false);
         setNotificationsDismissedAt(new Date().toISOString());
-        console.info('[DriveLink onboarding] Get notified skipped: denied for this account.');
+        console.info(`[${name} onboarding] Get notified skipped: denied for this account.`);
         setStep(8);
         return;
       }
@@ -605,7 +605,7 @@ export const OnboardingFlow: React.FC<{ forceNewAccount?: boolean }> = ({ forceN
       {step === 9 && <section className="di-setup-screen flex flex-1 flex-col items-center justify-center text-center">
         <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-black text-white"><Check size={32}/></div>
         <h1 className="text-[30px] font-bold tracking-tight">Your {name} Pro trial is active.</h1><p className="mt-3 max-w-xs text-sm leading-6 text-gray-500">You have 3 days of full access. When your trial ends, you can subscribe for $3.99 per month through EcoCash. No payment is taken today.</p>
-        <div className="mt-8 flex w-full items-center gap-3 rounded-[16px] border border-[#E5E7EB] p-4 text-left"><Link2 size={18} className="shrink-0 text-gray-500"/><span className="min-w-0 flex-1 truncate text-sm font-medium">drivelink.co/{data.showroom.handle}</span><button type="button" onClick={copyShowroomLink} aria-label="Copy showroom link" className="rounded-full p-2 hover:bg-gray-100"><Copy size={17}/></button></div>
+        <div className="mt-8 flex w-full items-center gap-3 rounded-[16px] border border-[#E5E7EB] p-4 text-left"><Link2 size={18} className="shrink-0 text-gray-500"/><span className="min-w-0 flex-1 truncate text-sm font-medium">{new URL(siteUrl).host}/{data.showroom.handle}</span><button type="button" onClick={copyShowroomLink} aria-label="Copy showroom link" className="rounded-full p-2 hover:bg-gray-100"><Copy size={17}/></button></div>
         <button type="button" onClick={share} className="mt-4 flex h-12 w-full items-center justify-center gap-2 rounded-full border border-[#E5E7EB] text-sm font-semibold"><MessageCircle size={17}/> Share on WhatsApp</button>
         <button type="button" onClick={()=>navigate('/app')} className="mt-auto flex h-12 w-full items-center justify-center gap-2 rounded-full bg-black text-sm font-semibold text-white">Go to dashboard <ArrowRight size={17}/></button>
       </section>}
