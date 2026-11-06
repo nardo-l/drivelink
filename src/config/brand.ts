@@ -3,7 +3,14 @@ export const nameAscii = 'lotle';
 export const tagline = 'Your car showroom, online';
 export const description = 'Create a professional online car showroom, manage vehicle inventory and receive buyer enquiries with Lotlé. Built for car dealers in Zimbabwe and South Africa.';
 export const supportWhatsApp = '263789113734';
-export const siteUrl = (import.meta.env.SITE_URL || 'https://drivelink-gilt.vercel.app').trim().replace(/\/+$/, '');
+const runtime = globalThis as typeof globalThis & {
+  __SITE_URL__?: string;
+  process?: { env?: Record<string, string | undefined> };
+  Deno?: { env?: { get(key: string): string | undefined } };
+};
+let denoSiteUrl: string | undefined;
+try { denoSiteUrl = runtime.Deno?.env?.get('SITE_URL'); } catch { denoSiteUrl = undefined; }
+export const siteUrl = (runtime.__SITE_URL__ || runtime.process?.env?.SITE_URL || denoSiteUrl || 'https://drivelink-gilt.vercel.app').trim().replace(/\\/+$/, '');
 export const homeTitle = 'Lotlé | Online car showroom for dealers in Zimbabwe';
 
 export function pageTitle(page: string): string {
