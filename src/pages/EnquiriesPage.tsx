@@ -280,6 +280,7 @@ export const EnquiriesPage: React.FC = () => {
             {visible.map((enquiry, index) => {
               const vehicle = vehicleFor(enquiry);
               const carName = vehicle ? `${vehicle.year} ${vehicle.make} ${vehicle.model}` : 'your showroom';
+              const contactUrl = whatsappUrl(enquiry);
               return (
                 <article key={enquiry.id} className={`enquiry-card-wrap ${swipedId === enquiry.id ? 'is-swiped' : ''}`} onTouchStart={onTouchStart} onTouchEnd={event => onTouchEnd(event, enquiry.id)}>
                   <div className="enquiry-swipe-actions" aria-hidden={swipedId !== enquiry.id}>
@@ -287,8 +288,8 @@ export const EnquiriesPage: React.FC = () => {
                     <button type="button" onClick={() => { setSwipedId(null); void quickUpdateStage(enquiry, 'sold'); }}><Check size={15}/> Converted</button>
                     <button type="button" className="delete" onClick={() => setDeleteTarget(enquiry)}><Trash2 size={15}/> Delete</button>
                   </div>
-                  <div className={`enquiry-card ${enquiry.stage === 'new' ? 'is-new' : ''}`} style={{ animationDelay: `${Math.min(index, 8) * 35}ms` }}>
-                    <div className="enquiry-card-main" onClick={() => open(enquiry)} role="button" tabIndex={0} onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); open(enquiry); } }}>
+                  <div className={`enquiry-card ${enquiry.stage === 'new' ? 'is-new' : ''}`} role="button" tabIndex={0} onClick={() => open(enquiry)} onKeyDown={event => { if (event.target === event.currentTarget && (event.key === 'Enter' || event.key === ' ')) { event.preventDefault(); open(enquiry); } }} style={{ animationDelay: `${Math.min(index, 8) * 35}ms` }}>
+                    <div className="enquiry-card-main">
                       <div className="enquiry-avatar">{initials(enquiry.buyerName)}</div>
                       <div className="enquiry-buyer">
                         <div className="enquiry-name-line"><strong>{enquiry.buyerName}</strong></div>
@@ -296,15 +297,15 @@ export const EnquiriesPage: React.FC = () => {
                       </div>
                       <div className="enquiry-time-line"><span className="enquiry-time">{timeAgo(enquiry.createdAt)}</span>{enquiry.stage === 'new' && <i className="enquiry-unread-dot"/>}</div>
                     </div>
-                    <div className="enquiry-vehicle-row" onClick={() => open(enquiry)} role="button" tabIndex={0} onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); open(enquiry); } }}>
+                    <div className="enquiry-vehicle-row">
                       {vehicle?.photos?.[0] ? <img className="enquiry-car-thumb" src={vehicle.photos[0]} alt="" loading="lazy"/> : <div className="enquiry-car-thumb enquiry-car-thumb-empty"><CarFront size={19}/></div>}
                       <span>Asked about {carName}</span>
                     </div>
                     <div className="enquiry-card-status"><span className={`enquiry-status ${statusClass(enquiry)}`}>{displayStage(enquiry)}</span></div>
                     <p className="enquiry-message-preview">{enquiry.message || 'No message provided.'}</p>
-                    {enquiry.buyerPhone ? <div className="enquiry-contact-actions">
-                      <a className="enquiry-whatsapp-cta" href={whatsappUrl(enquiry)} target="_blank" rel="noreferrer" onClick={() => confirmContacted(enquiry)}><WhatsAppIcon size={18}/> Reply on WhatsApp</a>
-                      <a className="enquiry-call-cta" href={`tel:${enquiry.buyerPhone}`} aria-label={`Call ${enquiry.buyerName}`} onClick={() => confirmContacted(enquiry)}><Phone size={16}/></a>
+                    {contactUrl ? <div className="enquiry-contact-actions">
+                      <a className="enquiry-whatsapp-cta" href={contactUrl} target="_blank" rel="noreferrer" onClick={event => { event.stopPropagation(); confirmContacted(enquiry); }}><WhatsAppIcon size={18}/> Reply on WhatsApp</a>
+                      <a className="enquiry-call-cta" href={`tel:${enquiry.buyerPhone}`} aria-label={`Call ${enquiry.buyerName}`} onClick={event => { event.stopPropagation(); confirmContacted(enquiry); }}><Phone size={16}/></a>
                     </div> : <p className="enquiry-no-phone">No contact number</p>}
                   </div>
                 </article>
