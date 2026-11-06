@@ -172,7 +172,7 @@ export const OnboardingFlow: React.FC<{ forceNewAccount?: boolean }> = ({ forceN
   const updateShowroom = (patch: Partial<OnboardingState['showroom']>) => setData(prev => ({ ...prev, showroom: { ...prev.showroom, ...patch } }));
 
   useEffect(() => {
-    if (!progressReady) return;
+    if (!progressReady || forceNewAccount || forceNotificationsPreview) return;
     let active = true;
     const timer = window.setTimeout(async () => {
       try {
@@ -203,7 +203,7 @@ export const OnboardingFlow: React.FC<{ forceNewAccount?: boolean }> = ({ forceN
       }
     }, 350);
     return () => { active = false; window.clearTimeout(timer); };
-  }, [data, introDone, notificationsDismissedAt, progressReady, step]);
+  }, [data, introDone, notificationsDismissedAt, progressReady, step, forceNewAccount, forceNotificationsPreview]);
   useEffect(() => {
     const slug = data.showroom.handle.trim();
     if (!slug || slug.length < 3) { setAvailable(null); setChecking(false); return; }
