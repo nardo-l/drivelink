@@ -1,3 +1,4 @@
+import { name } from "../../../src/config/brand.ts";
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -115,7 +116,7 @@ Deno.serve(async (req: Request) => {
   const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
   const apiKey = Deno.env.get("NARDOPAY_API_KEY");
   if (!supabaseUrl || !serviceKey || !apiKey || !appUrl) {
-    return json({ error: "Payment service is not configured. Contact DriveLink support." }, 503);
+    return json({ error: "Payment service is not configured. Contact ${name} support." }, 503);
   }
 
   const token = (req.headers.get("Authorization") || "").replace(/^Bearer\s+/i, "");
@@ -158,10 +159,10 @@ Deno.serve(async (req: Request) => {
     const webhookUrl = `${supabaseUrl}/functions/v1/nardopay-webhook${webhookToken ? `?token=${encodeURIComponent(webhookToken)}` : ""}`;
     const payload = {
       link_type: "payment",
-      product_name: `Drive Link Pro – ${label}`,
+      product_name: `${name} Pro – ${label}`,
       amount,
       currency: "USD",
-      description: `DriveLink Pro ${label.toLowerCase()} subscription`,
+      description: `${name} Pro ${label.toLowerCase()} subscription`,
       webhook_url: webhookUrl,
       redirect_url: `${appUrl}/#/app/billing?checkout=${encodeURIComponent(payment.id)}`,
       metadata: { checkout_id: payment.id, reference, dealership_id: dealership.id, plan_code: planCode },
