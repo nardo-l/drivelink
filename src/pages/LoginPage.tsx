@@ -1,3 +1,4 @@
+import { name } from '../config/brand';
 import React, { useState } from 'react';
 import { useNavigation } from '../context/NavigationContext';
 import { storageService } from '../services/storage';
@@ -74,7 +75,7 @@ export const LoginPage: React.FC = () => {
   return (
     <main className="dl-login-page">
       <div className="dl-login-ambient" aria-hidden="true" />
-      <section className="dl-login-panel" aria-label="DriveLink dealer sign in">
+      <section className="dl-login-panel" aria-label={`${name} dealer sign in`}>
         <div className="dl-login-hero">
           <img
             className="dl-login-car-image"
