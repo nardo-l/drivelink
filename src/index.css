@@ -104,7 +104,7 @@ img { max-width: 100%; }
 .dl-workspace .border-blue-100 { border-color: #ffd8bd !important; }
 
 
-/* DriveLink public marketing site */
+/* Lotlé public marketing site */
 .dl-frame:has(.dl-marketing-page) { background:#f8f7f4; }
 .dl-frame:has(.dl-marketing-page) > .dl-frame-inner { width:100%; max-width:none !important; min-height:100vh; overflow:visible !important; border:0 !important; box-shadow:none !important; background:transparent; }
 .dl-marketing-page { --marketing-orange:#ff7417; --marketing-ink:#17191d; --marketing-muted:#6e7077; position:relative; isolation:isolate; overflow:hidden; min-height:100vh; color:var(--marketing-ink); background:linear-gradient(125deg,#fbfaf8 0%,#f6f4f1 58%,#fbf9f6 100%); font-family:Manrope,Inter,ui-sans-serif,system-ui,sans-serif; }
@@ -714,7 +714,7 @@ html, body, #root, * { scrollbar-width: none; -ms-overflow-style: none; }
 html::-webkit-scrollbar, body::-webkit-scrollbar, #root::-webkit-scrollbar, *::-webkit-scrollbar { display: none; width: 0; height: 0; }
 
 
-/* Floating DriveLink dashboard navigation */
+/* Floating Lotlé dashboard navigation */
 .dl-bottom-nav {
   position: fixed !important;
   z-index: 60;
@@ -892,7 +892,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar, #root::-webkit-scrollbar, *::-
   .dl-bottom-nav-label { transition: none; }
 }
 
-/* DriveLink cinematic dealer login */
+/* Lotlé cinematic dealer login */
 .dl-frame:has(.dl-login-page) {
   min-height: 100svh;
   background: radial-gradient(ellipse at 8% 18%, rgba(100,112,139,.34), transparent 38%), radial-gradient(ellipse at 92% 82%, rgba(43,63,91,.38), transparent 42%), #080b11;
@@ -1154,7 +1154,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar, #root::-webkit-scrollbar, *::-
 
 
 /* ==========================================================================
-   DriveLink monochrome design system
+   Lotlé monochrome design system
    Shared visual overrides only — no application behaviour or layout changes.
    ========================================================================== */
 :root {
@@ -1510,7 +1510,7 @@ body, .dl-frame, .dl-workspace { color: #171717; background: #FAF9F6 !important;
 
 
 /* ══ Stacked bars (components/charts/StackedBars.tsx) ═══
-   DriveLink token mapping stays local to the chart: ink, surface,
+   Lotlé token mapping stays local to the chart: ink, surface,
    border and UI font inherit the existing application tokens. */
 .stb {
   --fill-on: var(--dl-ink, #171717);
@@ -1594,7 +1594,7 @@ body, .dl-frame, .dl-workspace { color: #171717; background: #FAF9F6 !important;
 .dl-contact-profile>img{width:88px!important;height:88px!important;min-width:88px;min-height:88px}
 
 
-/* Shared vector DriveLink logo */
+/* Shared vector Lotlé logo */
 .dl-logo{display:inline-flex;width:max-content;max-width:100%;flex-direction:column;align-items:flex-start;justify-content:center;color:inherit;line-height:1;text-decoration:none;white-space:nowrap}
 .dl-logo-mark{display:block;width:100%;height:auto;overflow:visible;flex:none}
 .dl-logo-wordmark{display:block;font-family:Inter,ui-sans-serif,system-ui,sans-serif;font-size:28px;font-weight:600;line-height:.98;letter-spacing:-.065em}
