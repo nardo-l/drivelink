@@ -1,4 +1,4 @@
-import { name } from "../../../src/config/brand.ts";
+import { name, siteUrl } from "../../../src/config/brand.ts";
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -16,7 +16,7 @@ type PaymentRow = {
 };
 
 const NARDOPAY_BASE = "https://mczqwqsvumfsneoknlep.supabase.co/functions/v1";
-const appUrl = (Deno.env.get("DRIVELINK_APP_URL") ?? "").replace(/\/$/, "");
+const appUrl = (Deno.env.get("SITE_URL") || Deno.env.get("DRIVELINK_APP_URL") || siteUrl).replace(/\/$/, "");
 const cors = {
   "Access-Control-Allow-Origin": appUrl || "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
