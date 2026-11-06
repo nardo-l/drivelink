@@ -1,3 +1,4 @@
+import { name } from '../config/brand';
 /**
  * High-fidelity automotive imagery and graphics.
  * Generates crisp, realistic automotive vector renders matching the reference image.
@@ -485,6 +486,6 @@ export const CAR_REAR_SHOT = svgToDataUri(`
   <polygon points="465,175 435,175 440,220 470,210" fill="#EF4444" />
   <!-- Registration plate frame -->
   <rect x="240" y="210" width="120" height="32" rx="4" fill="#FFFFFF" stroke="#0F172A" stroke-width="2" />
-  <text x="300" y="232" fill="#0F172A" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="14" text-anchor="middle">DRIVELINK</text>
+  <text x="300" y="232" fill="#0F172A" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="14" text-anchor="middle">${name.toUpperCase()}</text>
 </svg>
 `);
