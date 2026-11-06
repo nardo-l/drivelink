@@ -118,3 +118,57 @@
 @media(min-width:640px){.enquiries-main{padding-right:24px;padding-left:24px}.enquiries-filter-viewport{margin-left:-24px;margin-right:-24px}.enquiries-filter-row{padding-left:24px}}
 @media(max-width:380px){.enquiries-header{padding-left:16px;padding-right:16px}.enquiries-main{padding-left:13px;padding-right:13px}.enquiries-filter-viewport{margin-left:-13px;margin-right:-13px}.enquiries-filter-row{padding-left:13px;gap:6px}.enquiry-card{padding-left:11px;padding-right:11px}.enquiry-card-footer{margin-left:49px}.enquiry-contact-actions{gap:4px}.enquiry-contact-actions a{padding:0 8px}}
 @media(prefers-reduced-motion:reduce){.enquiry-card,.enquiries-skeleton>*{animation:none!important;transition:none!important}}
+
+
+/* Enquiry inbox cards — compact contact-first layout */
+.enquiries-list{gap:12px}
+.enquiry-card-wrap{border-radius:20px;overflow:hidden}
+.enquiry-card{
+  padding:15px!important;border:1px solid #E7EAF0!important;border-radius:20px!important;
+  background:#fff!important;box-shadow:none!important;cursor:pointer
+}
+.enquiry-card.is-new{border-color:#DCE6F3!important;box-shadow:none!important}
+.enquiry-card.is-new:after{display:none!important}
+.enquiry-card-main{display:flex;align-items:center;gap:12px;min-width:0}
+.enquiry-avatar{width:48px!important;height:48px!important;flex:none;border-radius:50%;background:#EEF1F5;color:#465368;font-size:13px}
+.enquiry-buyer{min-width:0;flex:1}
+.enquiry-name-line{min-width:0}
+.enquiry-name-line strong{display:block;max-width:100%;overflow:hidden;color:#111827;font-size:14px;font-weight:800;letter-spacing:-.025em;text-overflow:ellipsis;white-space:nowrap}
+.enquiry-time-line{display:flex;align-items:center;gap:8px;flex:none;align-self:flex-start;padding-top:3px}
+.enquiry-time{margin:0;color:#929AA7;font-size:10px;font-weight:650}
+.enquiry-unread-dot{width:8px;height:8px;background:#3184E8;box-shadow:0 0 0 3px rgba(49,132,232,.1)}
+.enquiry-vehicle-row{display:flex;align-items:center;gap:10px;min-width:0;margin:12px 0 0 60px}
+.enquiry-car-thumb{width:48px;height:48px;flex:none;display:block;overflow:hidden;border-radius:12px;background:#EEF1F4;object-fit:cover}
+.enquiry-car-thumb-empty{display:grid;place-items:center;color:#9AA3B1}
+.enquiry-vehicle-row>span{min-width:0;overflow:hidden;color:#8992A0;font-size:11px;font-weight:550;text-overflow:ellipsis;white-space:nowrap}
+.enquiry-card-status{display:flex;align-items:center;margin:12px 0 0 60px}
+.enquiry-status{min-height:23px;padding:0 10px;font-size:9px;font-weight:750}
+.enquiry-status.new{background:#EAF3FF;color:#2867B3}
+.enquiry-status.contacted{background:#FFF1D9;color:#94620F}
+.enquiry-status.converted{background:#E7F5EB;color:#26713F}
+.enquiry-status.lost{background:#EFF1F4;color:#687282}
+.enquiry-message-preview{display:-webkit-box;overflow:hidden;margin:11px 0 0 60px;color:#747E8C;font-size:11px;line-height:1.5;font-weight:450;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow-wrap:anywhere}
+.enquiry-contact-actions{display:flex;align-items:center;gap:9px;margin:14px 0 0 60px}
+.enquiry-contact-actions a{height:48px;display:flex;align-items:center;justify-content:center;gap:9px;padding:0 14px;border:0;border-radius:999px;text-decoration:none}
+.enquiry-contact-actions a.enquiry-whatsapp-cta{min-width:0;flex:1;background:#0A0F1E;color:#fff;font-size:12px;font-weight:750}
+.enquiry-contact-actions a.enquiry-call-cta{width:48px;flex:none;padding:0;border:1px solid #E6E9EE;border-radius:50%;background:#fff;color:#253044}
+.enquiry-no-phone{margin:14px 0 0 60px;padding:10px 0 2px;color:#929AA7;font-size:11px;font-weight:600}
+.enquiries-swipe-actions{width:235px}
+.enquiries-skeleton-list{gap:12px}
+.enquiries-skeleton{height:190px;align-items:flex-start;padding:15px;border-radius:20px;box-shadow:none}
+.enquiries-skeleton>span{width:48px;height:48px}
+.enquiries-skeleton>div{padding-top:4px}
+.enquiries-skeleton i:first-child{width:58%;height:12px}
+.enquiries-skeleton i:nth-child(2){width:74%;height:9px;margin-top:11px}
+.enquiries-skeleton b{width:100%;height:48px;margin-top:22px;border-radius:999px}
+.enquiries-empty-cta{min-height:48px;box-shadow:none}
+@media(max-width:380px){
+ .enquiry-card{padding:13px!important}
+ .enquiry-vehicle-row,.enquiry-card-status,.enquiry-message-preview,.enquiry-contact-actions,.enquiry-no-phone{margin-left:0}
+ .enquiry-name-line strong{font-size:13px}
+ .enquiry-time{font-size:9px}
+ .enquiry-vehicle-row{margin-top:11px}
+ .enquiry-card-status{margin-top:11px}
+ .enquiry-message-preview{margin-top:9px}
+ .enquiry-contact-actions{margin-top:12px}
+}
