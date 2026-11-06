@@ -4,6 +4,8 @@ import { storageService } from '../services/storage';
 import { isSupabaseConfigured, supabase } from '../lib/supabase';
 import { StatusBadge } from '../components/common/Badge';
 import { PerformanceSection } from '../components/dashboard/PerformanceSection';
+import { TrialUpgradeCard } from '../components/dashboard/TrialUpgradeCard';
+import { CAR_MERC_BLACK } from '../utils/carVisuals';
 import { Bell, CarFront, ChevronRight, Eye, MessageCircle, Plus, Share2, ArrowUpRight } from 'lucide-react';
 import './DashboardPage.css';
 
@@ -135,7 +137,7 @@ export const DashboardPage: React.FC = () => {
           </div>
         </header>
 
-        {loading ? <div className="dl-skeleton-card h-[138px] mb-4"/> : null}
+        <TrialUpgradeCard subscription={subscription} serverNow={serverClock.current.serverMs + (window.performance.now() - serverClock.current.monotonicMs)} vehiclePhoto={latestVehicle?.photos?.[0]} defaultPhoto={CAR_MERC_BLACK} onUpgrade={() => navigate('/app/billing')}/>
         {loading ? <div className="dl-skeleton-card h-[104px] mb-4"/> : vehicles.length === 0 ? (
           <section className="dl-empty-inventory mb-4">
             <div className="dl-empty-icon"><CarFront size={22}/></div><div className="min-w-0 flex-1"><h2>Add your first vehicle</h2><p>It goes live on your showroom link right away</p></div>
