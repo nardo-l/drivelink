@@ -1,5 +1,5 @@
 {
-  "name": "DriveLink",
+  "name": "Lotlé",
   "description": "Mobile-first automotive showroom platform for car dealerships and vehicle importers in Zimbabwe and South Africa.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
