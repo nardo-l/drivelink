@@ -1,4 +1,4 @@
--- DriveLink notification foundation: in-app inbox, preferences, push endpoints and real activity events.
+-- Lotlé notification foundation: in-app inbox, preferences, push endpoints and real activity events.
 create table if not exists public.notification_preferences (
   dealership_id uuid primary key references public.dealerships(id) on delete cascade,
   daily_summary boolean not null default true,
