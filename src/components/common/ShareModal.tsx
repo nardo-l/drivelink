@@ -1,4 +1,4 @@
-import { name } from '../../config/brand';
+import { name, siteUrl } from '../../config/brand';
 import React, { useState } from 'react';
 import { X, Copy, Check, MessageCircle, QrCode, ExternalLink } from 'lucide-react';
 import { useNavigation } from '../../context/NavigationContext';
