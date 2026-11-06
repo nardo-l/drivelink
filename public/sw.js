@@ -1,6 +1,6 @@
-// Push-only service worker. It intentionally does not cache fetch responses,
+// Push-only service worker. Existing home-screen installs keep the old app label until reinstall.\n// It intentionally does not cache fetch responses,
 // authenticated API calls, or user-specific application pages.
-const DRIVE_LINK_CACHE_VERSION = 'drivelink-runtime-v2';
+const LOTLE_CACHE_VERSION = 'lotle-runtime-v3';
 
 self.addEventListener('install', (event) => {
   event.waitUntil(self.skipWaiting());
@@ -10,7 +10,7 @@ self.addEventListener('activate', (event) => {
   event.waitUntil((async () => {
     const names = await caches.keys();
     await Promise.all(names
-      .filter(name => name.toLowerCase().startsWith('drivelink') && name !== DRIVE_LINK_CACHE_VERSION)
+      .filter(name => name.toLowerCase().startsWith('drivelink') && name !== LOTLE_CACHE_VERSION)
       .map(name => caches.delete(name)));
     await self.clients.claim();
   })());
@@ -19,13 +19,13 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('push', (event) => {
   let payload = {};
   try { payload = event.data ? event.data.json() : {}; } catch { payload = { body: event.data?.text() || '' }; }
-  const title = payload.title || 'DriveLink';
+  const title = payload.title || 'Lotlé';
   const options = {
     body: payload.body || 'You have an update from your dealership.',
     icon: '/icon.svg',
     badge: '/icon.svg',
     data: payload.data || { url: '/#/app/notifications' },
-    tag: payload.tag || 'drivelink-notification',
+    tag: payload.tag || 'lotle-notification',
     renotify: false,
   };
   event.waitUntil(self.registration.showNotification(title, options));
