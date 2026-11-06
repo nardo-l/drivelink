@@ -89,7 +89,7 @@ function AppContent() {
       const subscription = data?.subscription;
       const now = data?.server_now ? new Date(data.server_now).getTime() : Date.now();
       setSubscriptionServerNow(now);
-      const trialValid = subscription?.status === 'trial' && subscription?.trial_ends_at && new Date(subscription.trial_ends_at).getTime() > now;
+      const trialValid = (subscription?.status === 'trial' || subscription?.status === 'trialing') && subscription?.trial_ends_at && new Date(subscription.trial_ends_at).getTime() > now;
       const paidValid = subscription?.status === 'active' && subscription?.current_period_end && new Date(subscription.current_period_end).getTime() > now;
       setTrialEndsAt(subscription?.trial_ends_at || null);
       setAccessEndsAt(trialValid ? subscription.trial_ends_at : paidValid ? subscription.current_period_end : null);
