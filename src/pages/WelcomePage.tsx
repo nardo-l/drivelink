@@ -1,4 +1,4 @@
-import { name, nameAscii, tagline, description, siteUrl, supportEmail, supportWhatsApp } from '../config/brand';
+import { name, nameAscii, description, siteUrl, supportEmail, supportWhatsApp } from '../config/brand';
 import React, { useState } from 'react';
 import { useNavigation } from '../context/NavigationContext';
 import { MARKETING_CAR_IMAGES } from '../utils/marketingCarImages';
