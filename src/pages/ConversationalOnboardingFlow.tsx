@@ -7,6 +7,7 @@ import { storageService } from '../services/storage';
 import { supabaseService } from '../services/supabaseService';
 import { isSupabaseConfigured, supabase } from '../lib/supabase';
 import { OnboardingState, SellerType } from '../types';
+import type { Json } from '../types/database';
 import { toE164 } from '../utils/phoneUtils';
 import { MARKETING_CAR_IMAGES } from '../utils/marketingCarImages';
 import { DriveLinkLogo } from '../components/common/DriveLinkLogo';
@@ -192,7 +193,7 @@ export const OnboardingFlow: React.FC<{ forceNewAccount?: boolean }> = ({ forceN
           .upsert({
             user_id: user.id,
             onboarding_step: Math.max(0, step - 2),
-            draft,
+            draft: draft as unknown as Json,
             intro_completed: introDone,
             notifications_prompt_dismissed_at: notificationsDismissedAt,
             onboarding_completed_at: data.isCompleted ? new Date().toISOString() : null,
@@ -261,7 +262,7 @@ export const OnboardingFlow: React.FC<{ forceNewAccount?: boolean }> = ({ forceN
       const { error: progressError } = await supabase.from('user_onboarding_progress').upsert({
         user_id: user.id,
         onboarding_step: 0,
-        draft: initialDraft,
+        draft: initialDraft as unknown as Json,
         intro_completed: introDone,
         notifications_prompt_dismissed_at: null,
         updated_at: new Date().toISOString(),
@@ -390,7 +391,7 @@ export const OnboardingFlow: React.FC<{ forceNewAccount?: boolean }> = ({ forceN
           branding: data.branding,
           template: data.template,
           firstVehicle: data.firstVehicle,
-        },
+        } as unknown as Json,
         intro_completed: true,
         notifications_prompt_dismissed_at: notificationsDismissedAt,
         onboarding_completed_at: new Date().toISOString(),
