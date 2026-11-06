@@ -543,3 +543,5 @@ html:has(.dl-ps-landing),body:has(.dl-ps-landing){
 @media(min-width:640px){.dl-pd-gallery{border-radius:0 0 4px 4px}.dl-pd-content{padding-left:28px;padding-right:28px}.dl-pd-gallery{max-height:920px}}
 @media(max-width:380px){.dl-pd-content{padding-left:16px;padding-right:16px}.dl-pd-specs{gap:6px}.dl-pd-specs>div{padding:10px 7px}.dl-pd-specs strong{font-size:10px}.dl-pd-dealer{gap:8px}.dl-pd-dealer>button{font-size:9px}}
 @media(prefers-reduced-motion:reduce){.dl-public-detail *{scroll-behavior:auto!important;transition:none!important}}
+
+.dl-pd-whatsapp-icon{width:19px;height:19px;flex:0 0 19px}
