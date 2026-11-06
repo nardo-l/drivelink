@@ -1,6 +1,6 @@
 // Push-only service worker. Existing home-screen installs keep the old app label until reinstall.\n// It intentionally does not cache fetch responses,
 // authenticated API calls, or user-specific application pages.
-const LOTLE_CACHE_VERSION = 'lotle-runtime-v4';
+const LOTLE_CACHE_VERSION = 'lotle-runtime-v5';
 
 self.addEventListener('install', (event) => {
   event.waitUntil(self.skipWaiting());
@@ -23,7 +23,7 @@ self.addEventListener('push', (event) => {
   const options = {
     body: payload.body || 'You have an update from your dealership.',
     icon: '/icon.svg?v=lotle-4',
-    badge: '/icon.svg',
+    badge: '/icon.svg?v=lotle-5',
     data: payload.data || { url: '/#/app/notifications' },
     tag: payload.tag || 'lotle-notification',
     renotify: false,
