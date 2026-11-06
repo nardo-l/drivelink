@@ -34,7 +34,7 @@ const timeAgo = (date: string) => {
 };
 
 export const EnquiriesPage: React.FC = () => {
-  const { showToast, navigate } = useNavigation();
+  const { showToast } = useNavigation();
   const [leads, setLeads] = useState<Enquiry[]>([]);
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [filter, setFilter] = useState<EnquiryFilter>('all');
