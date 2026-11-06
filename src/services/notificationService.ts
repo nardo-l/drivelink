@@ -1,6 +1,6 @@
 import { supabase } from '../lib/supabase';
 
-export interface DriveLinkNotification {
+export interface LotleNotification {
   id: string;
   category: string;
   title: string;
@@ -27,11 +27,11 @@ function urlBase64ToUint8Array(value: string): Uint8Array {
 }
 
 export const notificationService = {
-  async list(dealershipId: string, limit = 50): Promise<DriveLinkNotification[]> {
+  async list(dealershipId: string, limit = 50): Promise<LotleNotification[]> {
     const { data, error } = await (supabase as any).from('notifications').select('id,category,title,body,data,read_at,created_at')
       .eq('dealership_id', dealershipId).order('created_at', { ascending: false }).limit(limit);
     if (error) throw error;
-    return (data || []) as DriveLinkNotification[];
+    return (data || []) as LotleNotification[];
   },
   async getPreferences(dealershipId: string): Promise<NotificationPreferences> {
     const { data, error } = await (supabase as any).from('notification_preferences').select('*').eq('dealership_id', dealershipId).maybeSingle();
