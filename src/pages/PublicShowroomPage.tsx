@@ -1,3 +1,4 @@
+import { name, siteUrl, pageTitle, absoluteUrl } from '../config/brand';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Logo } from '../components/common/Logo';
 import { Select } from '../components/common/Select';
@@ -174,7 +175,7 @@ export const PublicShowroomPage: React.FC<{ slug?: string; previewDealership?: D
       setMeta('og:image:height', '630', true);
     }
     setMeta('description', count + (count === 1 ? ' car available in ' : ' cars available in ') + city + '. Browse the showroom at ' + dealer.name + '.');
-    return () => { document.title = 'DriveLink | Online Showrooms for Car Dealerships'; };
+    return () => { document.title = pageTitle(name); };
   }, [dealer, vehicles]);
 
   const available = useMemo(() => vehicles.filter(v => v.status === 'available'), [vehicles]);
@@ -235,9 +236,9 @@ export const PublicShowroomPage: React.FC<{ slug?: string; previewDealership?: D
           {dealer.coverUrl && !bannerFailed ? (
             <>
               <div className="dl-ps-landing-placeholder" />
-              <img className="dl-ps-landing-image" src={dealer.coverUrl} alt="" fetchPriority="high" loading="eager" decoding="async" onError={() => { console.error('[DriveLink showroom] Banner failed to load:', dealer.coverUrl); setBannerFailed(true); }} />
+              <img className="dl-ps-landing-image" src={dealer.coverUrl} alt="" fetchPriority="high" loading="eager" decoding="async" onError={() => { console.error(`[${name} showroom] Banner failed to load:`, dealer.coverUrl); setBannerFailed(true); }} />
             </>
-            ) : !fallbackImageFailed && vehicles.find(vehicle => vehicle.photos?.[0]) ? <img className="dl-ps-landing-image" src={vehicles.find(vehicle => vehicle.photos?.[0])?.photos?.[0]} alt="" fetchPriority="high" loading="eager" decoding="async" onError={() => { console.error('[DriveLink showroom] First vehicle cover failed to load.'); setFallbackImageFailed(true); }} /> : <div className="dl-ps-landing-fallback" />}
+            ) : !fallbackImageFailed && vehicles.find(vehicle => vehicle.photos?.[0]) ? <img className="dl-ps-landing-image" src={vehicles.find(vehicle => vehicle.photos?.[0])?.photos?.[0]} alt="" fetchPriority="high" loading="eager" decoding="async" onError={() => { console.error(`[${name} showroom] First vehicle cover failed to load.`); setFallbackImageFailed(true); }} /> : <div className="dl-ps-landing-fallback" />}
           <div className="dl-ps-landing-top-shade" />
           <div className="dl-ps-landing-bottom-shade" />
           <div className="dl-ps-landing-top">
@@ -319,7 +320,7 @@ export const PublicShowroomPage: React.FC<{ slug?: string; previewDealership?: D
         {dealer.phone && <a href={'tel:' + dealer.phone}><Phone size={14} />{dealer.phone}</a>}
         {dealer.address && <p><MapPin size={14} />{dealer.address}</p>}
         {(dealer as Dealership & { hours?: string }).hours && <p>{(dealer as Dealership & { hours?: string }).hours}</p>}
-        <a className="dl-ps-powered" href="https://drivelink.app.zw" aria-label="Powered by DriveLink"><span>Powered by</span><Logo variant="light" size="sm" /></a>
+        <a className="dl-ps-powered" NaN><span>Powered by</span><Logo variant="light" size="sm" /></a>
       </footer>
 
       {waNumber && <a className={'dl-ps-floating-wa ' + (!fabVisible ? 'hidden' : '')} href={wa(generalMessage)} target="_blank" rel="noreferrer" aria-label="Message dealership on WhatsApp"><WhatsAppMark size={24} /></a>}
