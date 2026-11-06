@@ -36,23 +36,14 @@ const withTimeout = <T,>(promise: Promise<T>, timeoutMs = 15000): Promise<T> => 
   return Promise.race([promise, timeout]).finally(() => window.clearTimeout(timeoutId));
 };
 
-export const OnboardingFlow: React.FC = () => {
+export const OnboardingFlow: React.FC<{ forceNewAccount?: boolean }> = ({ forceNewAccount = false }) => {
   const { navigate, showToast } = useNavigation();
   const previewQuery = typeof window !== 'undefined' ? `${window.location.search}&${window.location.hash.split('?')[1] || ''}` : '';
   const forceNotificationsPreview = import.meta.env.DEV && new URLSearchParams(previewQuery).get('onboarding') === 'notifications';
-  const [data, setData] = useState<OnboardingState>(() => {
-    try {
-      const raw = localStorage.getItem('drivelink_onboarding_v1');
-      if (!raw) return initialState();
-      const saved = JSON.parse(raw);
-      if ((saved.flowVersion === 3 || saved.flowVersion === 2) && saved.currentStep >= 1 && saved.currentStep <= TOTAL) {
-        const migratedStep = saved.flowVersion === 2 && saved.currentStep >= 6 ? saved.currentStep + 1 : saved.currentStep;
-        return { ...initialState(), ...saved, currentStep: Math.min(TOTAL, migratedStep), branding: { ...initialState().branding, ...saved.branding }, account: { ...initialState().account, ...saved.account, password: '' } };
-      }
-      // Legacy drafts must re-authenticate first; a live session is advanced to setup below.
-      return { ...initialState(), ...saved, currentStep: 1, account: { ...initialState().account, ...saved.account, password: '' } };
-    } catch { return initialState(); }
-  });
+  // Onboarding state is hydrated exclusively from the authenticated user's database row.
+  const [data, setData] = useState<OnboardingState>(() => initialState());
+  const [progressReady, setProgressReady] = useState(false);
+  const [notificationsDismissedAt, setNotificationsDismissedAt] = useState<string | null>(null);
   const [available, setAvailable] = useState<boolean | null>(null);
   const [checking, setChecking] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -60,9 +51,7 @@ export const OnboardingFlow: React.FC = () => {
   const activationInFlight = useRef(false);
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [introDone, setIntroDone] = useState(() => {
-    try { return localStorage.getItem('drivelink_intro_completed_v1') === 'true'; } catch { return false; }
-  });
+  const [introDone, setIntroDone] = useState(false);
   const [introStep, setIntroStep] = useState(0);
   const introSlides = [
     { title: 'Your dealership, online.', body: 'Turn your cars into customers with a single powerful link.' },
@@ -73,7 +62,6 @@ export const OnboardingFlow: React.FC = () => {
     { title: 'Launch your showroom in minutes.', body: 'Join dealers in Zimbabwe and South Africa building smarter with Drive Link.' },
   ];
   const finishIntro = () => {
-    try { localStorage.setItem('drivelink_intro_completed_v1', 'true'); } catch {}
     setIntroDone(true);
     update({ currentStep: 1 });
   };
@@ -82,45 +70,75 @@ export const OnboardingFlow: React.FC = () => {
     if (forceNotificationsPreview) {
       setIntroDone(true);
       setData(prev => ({ ...prev, currentStep: 7, isCompleted: false }));
+      setProgressReady(true);
       console.info('[DriveLink onboarding] Get notified shown: dev preview query parameter.');
       return;
     }
+    if (forceNewAccount) {
+      // /signup is deliberately independent of any currently authenticated account.
+      setProgressReady(true);
+      return;
+    }
     let active = true;
-    supabaseService.getCurrentUser().then(async user => {
-      if (!active || !user) return;
-      const dealer = await supabaseService.getCurrentDealership();
-      if (!active) return;
-      if (dealer) {
-        storageService.saveDealership(dealer);
-        storageService.setUserSession({ isLoggedIn: true, email: user.email || '', dealershipId: dealer.id, userId: user.id });
-        console.info('[DriveLink onboarding] Get notified skipped: redirected (existing dealership found during session restore).');
-        navigate('/app');
-      } else {
-        try { localStorage.setItem('drivelink_intro_completed_v1', 'true'); } catch {}
-        setIntroDone(true);
-        setData(prev => ({ ...prev, currentStep: prev.currentStep <= 1 ? 2 : prev.currentStep }));
+    const restore = async () => {
+      try {
+        const user = await supabaseService.getCurrentUser();
+        if (!active) return;
+        if (!user) { setProgressReady(true); return; }
+        await storageService.syncUserScope(user.id);
+        if (!active) return;
+        const dealer = await supabaseService.getCurrentDealership();
+        if (!active) return;
+        if (dealer) {
+          storageService.saveDealership(dealer);
+          storageService.setUserSession({ isLoggedIn: true, email: user.email || '', dealershipId: dealer.id, userId: user.id });
+          console.info('[DriveLink onboarding] Existing dealership found during server session restore.');
+          window.location.assign('/app');
+          return;
+        }
         storageService.setUserSession({ isLoggedIn: true, email: user.email || '', dealershipId: '', userId: user.id });
+        const { data: progress, error: progressError } = await supabase
+          .from('user_onboarding_progress')
+          .select('onboarding_step,draft,intro_completed,notifications_prompt_dismissed_at,onboarding_completed_at')
+          .eq('user_id', user.id)
+          .maybeSingle();
+        if (progressError) throw progressError;
+        if (!active) return;
+        if (progress) {
+          const savedDraft = (progress.draft || {}) as Partial<OnboardingState>;
+          setData({
+            ...initialState(),
+            ...savedDraft,
+            currentStep: progress.onboarding_completed_at ? 9 : Math.max(1, Math.min(TOTAL, progress.onboarding_step || 1)),
+            account: { ...initialState().account, email: user.email || '' },
+            branding: { ...initialState().branding, ...(savedDraft.branding || {}) },
+            isCompleted: Boolean(progress.onboarding_completed_at),
+          });
+          setIntroDone(Boolean(progress.intro_completed));
+          setNotificationsDismissedAt(progress.notifications_prompt_dismissed_at || null);
+        } else {
+          setData({ ...initialState(), account: { ...initialState().account, email: user.email || '' } });
+          setIntroDone(false);
+          setNotificationsDismissedAt(null);
+        }
+        setProgressReady(true);
+      } catch (error) {
+        console.warn('Could not restore account onboarding progress:', error);
+        if (active) setProgressReady(true);
       }
-    }).catch(error => console.warn('Could not restore onboarding session:', error));
+    };
+    void restore();
     return () => { active = false; };
-  }, []);
+  }, [forceNewAccount, forceNotificationsPreview]);
   useEffect(() => {
     if (data.currentStep !== 7 || typeof window === 'undefined' || forceNotificationsPreview) return;
-    const supported = notificationService.isPushSupported();
-    const permission = 'Notification' in window ? Notification.permission : 'unsupported';
-    const dismissed = Boolean(localStorage.getItem('drivelink_notifications_prompt_dismissed_at'));
-    let reason = '';
-    if (!supported) reason = 'unsupported';
-    else if (permission === 'granted') reason = 'already granted';
-    else if (permission === 'denied') reason = 'denied';
-    else if (dismissed) reason = 'dismissed';
-    if (reason) {
-      console.info(`[DriveLink onboarding] Get notified skipped: ${reason}.`);
+    if (notificationsDismissedAt) {
+      console.info('[DriveLink onboarding] Get notified skipped: dismissed for this account.');
       setData(prev => ({ ...prev, currentStep: 8 }));
     } else {
-      console.info('[DriveLink onboarding] Get notified shown: notifications supported, permission default, prompt not dismissed.');
+      console.info('[DriveLink onboarding] Get notified shown: this account has not dismissed the prompt.');
     }
-  }, [data.currentStep, forceNotificationsPreview]);
+  }, [data.currentStep, forceNotificationsPreview, notificationsDismissedAt]);
 
   const introTouchStart = useRef<number | null>(null);
   const handleIntroTouchStart = (event: React.TouchEvent<HTMLElement>) => { introTouchStart.current = event.changedTouches[0]?.clientX ?? null; };
@@ -154,13 +172,38 @@ export const OnboardingFlow: React.FC = () => {
   const updateShowroom = (patch: Partial<OnboardingState['showroom']>) => setData(prev => ({ ...prev, showroom: { ...prev.showroom, ...patch } }));
 
   useEffect(() => {
-    if (data.isCompleted) { storageService.clearOnboardingState(); return; }
-    storageService.saveOnboardingState({ ...data, currentStep: step, isCompleted: false } as OnboardingState);
-    try {
-      const draft = JSON.parse(localStorage.getItem('drivelink_onboarding_v1') || '{}');
-      localStorage.setItem('drivelink_onboarding_v1', JSON.stringify({ ...draft, flowVersion: 3 }));
-    } catch {}
-  }, [data]);
+    if (!progressReady) return;
+    let active = true;
+    const timer = window.setTimeout(async () => {
+      try {
+        const user = await supabaseService.getCurrentUser();
+        if (!active || !user) return;
+        const draft = {
+          sellerType: data.sellerType,
+          showroom: data.showroom,
+          contact: data.contact,
+          branding: data.branding,
+          template: data.template,
+          firstVehicle: data.firstVehicle,
+        };
+        const { error: saveError } = await supabase
+          .from('user_onboarding_progress')
+          .upsert({
+            user_id: user.id,
+            onboarding_step: step,
+            draft,
+            intro_completed: introDone,
+            notifications_prompt_dismissed_at: notificationsDismissedAt,
+            onboarding_completed_at: data.isCompleted ? new Date().toISOString() : null,
+            updated_at: new Date().toISOString(),
+          }, { onConflict: 'user_id' });
+        if (saveError) throw saveError;
+      } catch (error) {
+        console.warn('Could not save account onboarding progress:', error);
+      }
+    }, 350);
+    return () => { active = false; window.clearTimeout(timer); };
+  }, [data, introDone, notificationsDismissedAt, progressReady, step]);
   useEffect(() => {
     const slug = data.showroom.handle.trim();
     if (!slug || slug.length < 3) { setAvailable(null); setChecking(false); return; }
@@ -173,7 +216,7 @@ export const OnboardingFlow: React.FC = () => {
   }, [data.showroom.handle]);
 
   const setStep = (next: number) => { update({ currentStep: Math.max(1, Math.min(TOTAL, next)), ...(next === 9 ? { isCompleted: true } : {}) }); setError(''); window.scrollTo({ top: 0, behavior: 'smooth' }); };
-  const back = () => { if (step === 1) { try { localStorage.removeItem('drivelink_intro_completed_v1'); } catch {} setIntroDone(false); setIntroStep(5); } else setStep(step - 1); };
+  const back = () => { if (step === 1) { setIntroDone(false); setIntroStep(5); } else setStep(step - 1); };
   const validSlug = /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(data.showroom.handle);
   const validWhatsapp = data.contact.whatsappNumber.replace(/[^0-9]/g, '').length >= 7;
   const continueStep = () => {
@@ -194,18 +237,37 @@ export const OnboardingFlow: React.FC = () => {
     if (!isSupabaseConfigured()) { setError('Account creation requires a configured connection.'); return; }
     setBusy(true); setError('');
     try {
-      const existingUser = await supabaseService.getCurrentUser();
-      if (!existingUser) {
-        const auth = await supabaseService.signUp(data.account.email.trim(), data.account.password);
-        if (!auth.session || !auth.user) {
-          setError('Check your email to confirm your account, then sign in to continue setting up your dealership.');
-          return;
-        }
+      // Never reuse a session from a different account when the user chooses Sign Up.
+      const previousSession = await supabaseService.getSession();
+      if (previousSession?.user) await supabaseService.signOut();
+      await storageService.clearAppUserData();
+      const auth = await supabaseService.signUp(data.account.email.trim(), data.account.password);
+      if (!auth.session || !auth.user) {
+        setError('Check your email to confirm your account, then sign in to continue setting up your dealership.');
+        return;
       }
-      const user = await supabaseService.getCurrentUser();
-      if (!user) throw new Error('Your account was created. Please sign in to continue setup.');
+      const user = auth.user;
+      await storageService.syncUserScope(user.id);
       storageService.setUserSession({ isLoggedIn: true, email: user.email || data.account.email, dealershipId: '', userId: user.id });
-      setStep(2);
+      const initialDraft = {
+        sellerType: data.sellerType,
+        showroom: data.showroom,
+        contact: data.contact,
+        branding: data.branding,
+        template: data.template,
+        firstVehicle: data.firstVehicle,
+      };
+      const { error: progressError } = await supabase.from('user_onboarding_progress').upsert({
+        user_id: user.id,
+        onboarding_step: 2,
+        draft: initialDraft,
+        intro_completed: introDone,
+        notifications_prompt_dismissed_at: null,
+        updated_at: new Date().toISOString(),
+      }, { onConflict: 'user_id' });
+      if (progressError) throw progressError;
+      // A hard reload drops any state held by the previous account's React tree.
+      window.location.assign('/onboarding');
     } catch (e: any) {
       setError(e?.message || 'We could not create your account. Please try again.');
     } finally { setBusy(false); }
@@ -308,19 +370,31 @@ export const OnboardingFlow: React.FC = () => {
         userId: result.user.id,
       });
 
-      if (localStorage.getItem('drivelink_notifications_prompt_dismissed_at')) {
+      if (notificationsDismissedAt) {
         void notificationService.dismissOnboardingPrompt(result.dealer.id).catch(err =>
           console.warn('Could not persist notification prompt dismissal:', err)
         );
-        localStorage.removeItem('drivelink_notifications_prompt_dismissed_at');
       } else if ('Notification' in window && Notification.permission === 'granted' && notificationService.isPushSupported()) {
         void notificationService.enablePush(result.dealer.id, false).catch(err =>
           console.warn('Could not register the approved push subscription after dealership setup:', err)
         );
       }
-      localStorage.removeItem('drivelink_notification_permission_granted');
-      storageService.clearOnboardingState();
-      localStorage.removeItem('drivelink_onboarding_v1');
+      await supabase.from('user_onboarding_progress').upsert({
+        user_id: result.user.id,
+        onboarding_step: 9,
+        draft: {
+          sellerType: data.sellerType,
+          showroom: data.showroom,
+          contact: data.contact,
+          branding: data.branding,
+          template: data.template,
+          firstVehicle: data.firstVehicle,
+        },
+        intro_completed: true,
+        notifications_prompt_dismissed_at: notificationsDismissedAt,
+        onboarding_completed_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      }, { onConflict: 'user_id' });
 
       // Force a fresh app boot so the access gate cannot reuse pre-activation state.
       window.location.assign('/app');
@@ -367,8 +441,8 @@ export const OnboardingFlow: React.FC = () => {
     window.open(`https://wa.me/?text=${message}`, '_blank', 'noopener,noreferrer');
   };
   const continueWithoutNotifications = async () => {
-    try { localStorage.setItem('drivelink_notifications_prompt_dismissed_at', new Date().toISOString()); } catch {}
-    console.info('[DriveLink onboarding] Get notified skipped: dismissed by user.');
+    setNotificationsDismissedAt(new Date().toISOString());
+    console.info('[DriveLink onboarding] Get notified skipped: dismissed by this account.');
     setStep(8);
   };
   const enableOnboardingNotifications = async () => {
@@ -376,13 +450,13 @@ export const OnboardingFlow: React.FC = () => {
     try {
       const permission = Notification.permission === 'default' ? await Notification.requestPermission() : Notification.permission;
       if (permission === 'denied') {
-        console.info('[DriveLink onboarding] Get notified skipped: denied.');
+        setNotificationsDismissedAt(new Date().toISOString());
+        console.info('[DriveLink onboarding] Get notified skipped: denied for this account.');
         setStep(8);
         return;
       }
       if (permission !== 'granted') throw new Error('Notification permission was not granted.');
-      localStorage.removeItem('drivelink_notifications_prompt_dismissed_at');
-      localStorage.setItem('drivelink_notification_permission_granted', 'true');
+      setNotificationsDismissedAt(null);
       setStep(8);
     } catch (e: any) { setError(e?.message || 'Could not enable notifications. You can try again in Settings.'); }
     finally { setBusy(false); }
