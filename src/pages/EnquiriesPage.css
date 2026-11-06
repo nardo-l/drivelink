@@ -172,3 +172,5 @@
  .enquiry-message-preview{margin-top:9px}
  .enquiry-contact-actions{margin-top:12px}
 }
+
+.enquiries-swipe-actions{pointer-events:none}.enquiry-card-wrap.is-swiped .enquiries-swipe-actions{pointer-events:auto}
