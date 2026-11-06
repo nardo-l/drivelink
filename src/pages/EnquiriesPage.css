@@ -10,7 +10,8 @@
 .enquiries-summary{margin:5px 0 0;color:#858E9C;font-size:11px;font-weight:600;font-variant-numeric:tabular-nums}
 .enquiries-summary span{padding:0 4px;color:#B9BFC8}
 .enquiries-main{width:100%;max-width:700px;margin:0 auto;padding:16px 16px calc(env(safe-area-inset-bottom,0px) + 112px)}
-.enquiries-pull-indicator{display:flex;align-items:center;justify-content:center;gap:8px;overflow:hidden;color:#858E9C;font-size:10px;font-weight:650;transition:height .12s ease}\n.enquiries-summary-strip{height:66px;display:flex;align-items:center;justify-content:space-around;margin-bottom:15px;padding:0 8px;border:1px solid #ECEEF2;border-radius:17px;background:#fff;box-shadow:0 4px 16px rgba(10,15,30,.035)}
+.enquiries-pull-indicator{display:flex;align-items:center;justify-content:center;gap:8px;overflow:hidden;color:#858E9C;font-size:10px;font-weight:650;transition:height .12s ease}
+.enquiries-summary-strip{height:66px;display:flex;align-items:center;justify-content:space-around;margin-bottom:15px;padding:0 8px;border:1px solid #ECEEF2;border-radius:17px;background:#fff;box-shadow:0 4px 16px rgba(10,15,30,.035)}
 .enquiries-summary-strip>div{min-width:0;display:flex;flex:1;flex-direction:column;align-items:center;gap:2px}
 .enquiries-summary-strip strong{color:#0A0F1E;font-size:17px;line-height:1.1;font-weight:850;font-variant-numeric:tabular-nums}
 .enquiries-summary-strip span{color:#929AA7;font-size:9px;font-weight:650}
@@ -174,3 +175,21 @@
 }
 
 .enquiries-swipe-actions{pointer-events:none}.enquiry-card-wrap.is-swiped .enquiries-swipe-actions{pointer-events:auto}
+
+/* Final enquiry-card refinements */
+.enquiry-card{border:1px solid #E6E9EF!important;box-shadow:none!important}
+.enquiry-card-main{cursor:pointer}
+.enquiry-name-line strong{min-width:0}
+.enquiry-vehicle-row{justify-content:space-between}
+.enquiry-vehicle-row>span{flex:1;white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.enquiry-car-thumb{margin-left:auto}
+.enquiry-contact-actions .enquiry-whatsapp-cta{min-width:0}
+.enquiry-contact-actions .enquiry-call-cta{width:48px;height:48px;padding:0;border-radius:50%}
+.enquiry-no-phone{display:block}
+.enquiries-swipe-actions{gap:2px}
+.enquiries-swipe-actions button{min-width:0;flex:1}
+@media(max-width:380px){
+ .enquiry-vehicle-row{gap:8px}
+ .enquiry-car-thumb{width:48px;height:48px}
+ .enquiry-contact-actions .enquiry-whatsapp-cta{font-size:11px}
+}
