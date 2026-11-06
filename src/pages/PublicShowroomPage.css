@@ -495,3 +495,51 @@ html:has(.dl-ps-landing),body:has(.dl-ps-landing){
  .dl-ps-car.is-overlay .dl-ps-specs span{font-size:8px;gap:3px}
  .dl-ps-car.is-overlay .dl-ps-overlay-price{font-size:15px}
 }
+
+
+/* Public vehicle detail — gallery-led layout and compact mobile information sheet. */
+.dl-public-detail{width:100%;max-width:760px;margin:0 auto;padding:0 0 calc(94px + env(safe-area-inset-bottom));background:#fff;color:#0a0f1e;overflow:hidden}
+.dl-pd-gallery{position:relative;width:100%;aspect-ratio:4/5;overflow:hidden;border-radius:0;background:#e9edf1;touch-action:pan-y}
+.dl-pd-gallery>img{display:block;width:100%;height:100%;object-fit:cover;cursor:zoom-in}
+.dl-pd-no-photo{width:100%;height:100%;display:grid;place-items:center;background:#e9edf1;color:#697484;font-size:12px}
+.dl-pd-top-actions{position:absolute;z-index:5;top:calc(14px + env(safe-area-inset-top));left:15px;right:15px;display:flex;align-items:center;justify-content:space-between;pointer-events:none}
+.dl-pd-top-actions button{width:43px;height:43px;display:grid;place-items:center;border:1px solid rgba(255,255,255,.22);border-radius:50%;background:rgba(10,15,30,.58);color:#fff;pointer-events:auto}
+.dl-pd-counter{position:absolute;right:14px;bottom:30px;padding:7px 11px;border-radius:999px;background:rgba(10,15,30,.62);color:#fff;font-size:11px;font-weight:800;font-variant-numeric:tabular-nums}
+.dl-pd-gallery>button:not(.dl-pd-top-actions button){position:absolute;top:50%;transform:translateY(-50%);width:36px;height:36px;display:grid;place-items:center;border:0;border-radius:50%;background:rgba(10,15,30,.48);color:#fff}
+.dl-pd-prev{left:12px}.dl-pd-next{right:12px}
+.dl-pd-content{position:relative;z-index:2;margin-top:-22px;padding:25px 20px 26px;border-radius:24px 24px 0 0;background:#fff}
+.dl-pd-heading{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:start;column-gap:12px;row-gap:10px}
+.dl-pd-heading h1{min-width:0;margin:0;color:#0a0f1e;font-size:clamp(21px,6vw,30px);font-weight:900;line-height:1.08;letter-spacing:-.9px;overflow-wrap:anywhere}
+.dl-pd-price{max-width:46vw;color:#0a0f1e;font-size:clamp(18px,5vw,25px);font-weight:900;line-height:1.1;letter-spacing:-.6px;text-align:right;overflow-wrap:anywhere}
+.dl-pd-status{grid-column:1/-1;justify-self:start;padding:6px 10px;border-radius:999px;background:#edf4ee;color:#356b43;font-size:10px;font-weight:850}
+.dl-pd-status.reserved{background:#f6f0e4;color:#876a31}.dl-pd-status.sold{background:#171c25;color:#fff}
+.dl-pd-section{margin:25px 0 0}.dl-pd-section h2{margin:0 0 12px;color:#0a0f1e;font-size:14px;font-weight:900;letter-spacing:-.2px}
+.dl-pd-specs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.dl-pd-specs>div{min-width:0;min-height:88px;padding:11px 9px;border:1px solid #edf0f2;border-radius:13px;background:#f8f9fa}
+.dl-pd-specs svg{display:block;margin-bottom:8px;color:#737e8c}
+.dl-pd-specs small{display:block;color:#89919c;font-size:9px;line-height:1.2}
+.dl-pd-specs strong{display:block;margin-top:4px;color:#0a0f1e;font-size:11px;font-weight:850;line-height:1.25;overflow-wrap:anywhere}
+.dl-pd-description{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:4;overflow:hidden;margin:0;color:#626c79;font-size:12px;line-height:1.7;white-space:pre-wrap}
+.dl-pd-description.expanded{display:block;overflow:visible}
+.dl-pd-readmore{margin-top:8px;padding:0;border:0;background:transparent;color:#0a0f1e;font-size:11px;font-weight:850}
+.dl-pd-features{display:flex;flex-wrap:wrap;gap:7px}
+.dl-pd-features span{padding:7px 10px;border:1px solid #e8ebef;border-radius:999px;background:#fff;color:#4d5866;font-size:10px;font-weight:650}
+.dl-pd-dealer{display:flex;align-items:center;gap:10px;margin-top:27px;padding:15px 0 2px;border-top:1px solid #edf0f2}
+.dl-pd-dealer>img,.dl-pd-dealer-initials{width:43px;height:43px;flex:0 0 43px;border-radius:50%;object-fit:cover;background:#eef0f3}
+.dl-pd-dealer-initials{display:grid;place-items:center;color:#354052;font-size:11px;font-weight:900}
+.dl-pd-dealer-info{flex:1;min-width:0}
+.dl-pd-dealer-info>strong{display:block;overflow:hidden;color:#0a0f1e;font-size:12px;font-weight:900;text-overflow:ellipsis;white-space:nowrap}
+.dl-pd-dealer-info small{display:flex;align-items:center;gap:4px;margin-top:4px;color:#89919c;font-size:10px}
+.dl-pd-dealer>button{display:flex;align-items:center;gap:2px;flex-shrink:0;padding:8px 0 8px 6px;border:0;background:transparent;color:#0a0f1e;font-size:10px;font-weight:850;white-space:nowrap}
+.dl-pd-actions{position:fixed;z-index:40;left:50%;bottom:0;transform:translateX(-50%);width:min(760px,100%);min-height:75px;display:flex;align-items:center;gap:10px;padding:10px 18px calc(10px + env(safe-area-inset-bottom));border-top:1px solid #edf0f2;background:#fff}
+.dl-pd-whatsapp,.dl-pd-call,.dl-pd-similar{height:49px;display:flex;align-items:center;justify-content:center;gap:9px;border:0;border-radius:999px;background:#0a0f1e;color:#fff;text-decoration:none;font-size:12px;font-weight:850}
+.dl-pd-whatsapp{flex:1}.dl-pd-call{width:49px;flex:0 0 49px}.dl-pd-similar{width:100%}
+.dl-pd-fullscreen{position:fixed;z-index:100;inset:0;background:#05070b;display:grid;place-items:center}
+.dl-pd-fullscreen>img{width:100%;height:100%;object-fit:contain}
+.dl-pd-fullscreen>button{position:absolute;z-index:2;width:42px;height:42px;border:0;border-radius:50%;background:#ffffff25;color:white;display:grid;place-items:center}
+.dl-pd-fullscreen>button:first-child{right:18px;top:calc(18px + env(safe-area-inset-top))}
+.dl-pd-fullscreen>button.prev{left:12px;top:50%}.dl-pd-fullscreen>button.next{right:12px;top:50%}
+.dl-pd-fullscreen-counter{position:absolute;top:calc(22px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);color:#fff;font-size:12px;font-weight:800}
+@media(min-width:640px){.dl-pd-gallery{border-radius:0 0 4px 4px}.dl-pd-content{padding-left:28px;padding-right:28px}.dl-pd-gallery{max-height:920px}}
+@media(max-width:380px){.dl-pd-content{padding-left:16px;padding-right:16px}.dl-pd-specs{gap:6px}.dl-pd-specs>div{padding:10px 7px}.dl-pd-specs strong{font-size:10px}.dl-pd-dealer{gap:8px}.dl-pd-dealer>button{font-size:9px}}
+@media(prefers-reduced-motion:reduce){.dl-public-detail *{scroll-behavior:auto!important;transition:none!important}}
