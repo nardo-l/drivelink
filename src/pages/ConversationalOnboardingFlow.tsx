@@ -247,6 +247,9 @@ export const OnboardingFlow: React.FC = () => {
         // trial dates on retries and marks onboarding complete in the same transaction.
         const { data: activation, error: activationError } = await supabase.rpc('activate_dealership_trial');
         if (activationError) throw activationError;
+        if (!activation || typeof activation !== 'object' || Array.isArray(activation)) {
+          throw new Error('Trial activation returned an invalid response.');
+        }
         const activationResult = activation as {
           status?: string;
           trial_started_at?: string | null;
@@ -266,7 +269,7 @@ export const OnboardingFlow: React.FC = () => {
           throw new Error('Trial activation did not return a valid subscription state.');
         }
 
-        if (data.branding.logoPreview || data.branding.coverPreview) {
+        if ((activationTrialValid || activationPaidValid) && (data.branding.logoPreview || data.branding.coverPreview)) {
           dealer = await supabaseService.updateDealership(dealer.id, {
             ...(data.branding.logoPreview ? { logoUrl: data.branding.logoPreview } : {}),
             ...(data.branding.coverPreview ? { coverUrl: data.branding.coverPreview } : {}),
