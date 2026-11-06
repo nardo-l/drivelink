@@ -1,4 +1,4 @@
-import { Dealership, Enquiry, UserSession, Vehicle, VehicleStatus, EnquiryStage, OnboardingState } from '../types';
+import { Dealership, Enquiry, UserSession, Vehicle, VehicleStatus, EnquiryStage } from '../types';
 import { supabaseService } from './supabaseService';
 import { isSupabaseConfigured, supabase } from '../lib/supabase';
 import {
@@ -19,7 +19,6 @@ const STORAGE_KEYS = {
   VEHICLES: 'drivelink_vehicles_v1',
   ENQUIRIES: 'drivelink_enquiries_v1',
   SESSION: 'drivelink_session_v1',
-  ONBOARDING: 'drivelink_onboarding_v1',
   DEMO_MODE_ACTIVE: 'drivelink_demo_active_v1',
 };
 
@@ -289,44 +288,6 @@ export const storageService = {
     const newViews = (dealer.storefrontViews || 0) + 1;
     this.updateDealership({ storefrontViews: newViews });
     return newViews;
-  },
-
-  clearOnboardingState(): void {
-    try {
-      localStorage.removeItem(STORAGE_KEYS.ONBOARDING);
-    } catch {
-      // ignore
-    }
-  },
-
-  saveOnboardingState(state: OnboardingState): void {
-    try {
-      // Avoid storing temporary blob: URLs or oversized strings in localStorage that exceed browser quota
-      const safeLogo =
-        state.branding?.logoPreview &&
-        !state.branding.logoPreview.startsWith('blob:') &&
-        state.branding.logoPreview.length < 500000
-          ? state.branding.logoPreview
-          : null;
-      const safeCover =
-        state.branding?.coverPreview &&
-        !state.branding.coverPreview.startsWith('blob:') &&
-        state.branding.coverPreview.length < 500000
-          ? state.branding.coverPreview
-          : null;
-
-      const serializableState = {
-        ...state,
-        account: { ...state.account, password: '' },
-        branding: {
-          logoPreview: safeLogo,
-          coverPreview: safeCover,
-        },
-      };
-      localStorage.setItem(STORAGE_KEYS.ONBOARDING, JSON.stringify(serializableState));
-    } catch (e) {
-      console.warn('localStorage saveOnboardingState error:', e);
-    }
   },
 
   isSupabaseMode(): boolean {
