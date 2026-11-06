@@ -1,3 +1,4 @@
+import { name } from '../config/brand';
 import React from 'react';
 import { Logo } from '../components/common/Logo';
 import {
@@ -67,7 +68,7 @@ export const BillingPage: React.FC = () => {
 
   const loadStatus = React.useCallback(async (silent = false) => {
     if (!isSupabaseConfigured() || storageService.isDemoModeActive()) {
-      setError('Subscription payments are available when DriveLink is connected to your account.');
+      setError('Subscription payments are available when ${name} is connected to your account.');
       setLoading(false);
       return;
     }
@@ -222,7 +223,7 @@ export const BillingPage: React.FC = () => {
         </button>
         <div>
           <h1 className="text-base font-extrabold tracking-tight">Subscription &amp; billing</h1>
-          <p className="mt-0.5 text-[11px] text-slate-500">Manage your DriveLink access</p>
+          <p className="mt-0.5 text-[11px] text-slate-500">Manage your {name} access</p>
         </div>
       </header>
 
@@ -237,11 +238,11 @@ export const BillingPage: React.FC = () => {
 
           {loading ? (
             <div className="flex items-center gap-2 py-7 text-xs text-slate-500">
-              <Loader2 className="h-4 w-4 animate-spin" /> Checking your DriveLink access…
+              <Loader2 className="h-4 w-4 animate-spin" /> Checking your {name} access…
             </div>
           ) : hasAccess ? (
             <>
-              <h2 className="mt-4 text-[22px] font-extrabold tracking-[-0.04em]">DriveLink Pro</h2>
+              <h2 className="mt-4 text-[22px] font-extrabold tracking-[-0.04em]">{name} Pro</h2>
               <p className="mt-1 text-xs leading-5 text-slate-500">
                 {trialActive
                   ? `Your free trial ends on ${dateLabel(subscription?.trial_ends_at)}`
@@ -361,7 +362,7 @@ export const BillingPage: React.FC = () => {
 
         {paymentCheck === 'completed' && (
           <div role="status" className="rounded-2xl border border-emerald-100 bg-emerald-50 p-3 text-xs font-semibold text-emerald-800">
-            Payment confirmed. Your DriveLink subscription is active.
+            Payment confirmed. Your {name} subscription is active.
           </div>
         )}
 
@@ -422,7 +423,7 @@ export const BillingPage: React.FC = () => {
 
         <div className="flex items-start gap-2 px-1 pb-1 text-[10px] leading-relaxed text-slate-500">
           <ShieldCheck className="h-4 w-4 shrink-0" />
-          <span>Payments are verified with NardoPay before access is extended. Renewals are manual; DriveLink will never charge you automatically.</span>
+          <span>Payments are verified with NardoPay before access is extended. Renewals are manual; {name} will never charge you automatically.</span>
         </div>
 
       </main>
