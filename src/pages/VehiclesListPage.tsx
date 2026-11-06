@@ -31,7 +31,9 @@ export const VehiclesListPage: React.FC = () => {
   const [viewMode, setViewMode] = useState<ViewMode>(() => {
     try { const id = storageService.getUserSession().dealershipId || 'default'; return localStorage.getItem(`drivelink_garage_columns_${id}`) === 'double' ? 'double' : 'single'; } catch { return 'single'; }
   });
-  const [showAddButton, setShowAddButton] = useState(true);
+  const floatingAddButtonRef = useRef<HTMLButtonElement | null>(null);
+  const scrollFrameRef = useRef<number | null>(null);
+  const showAddButtonRef = useRef(true);
   const [pullDistance, setPullDistance] = useState(0);
   const touchStartY = useRef<number | null>(null);
   const lastScrollY = useRef(0);
@@ -54,14 +56,33 @@ export const VehiclesListPage: React.FC = () => {
 
   useEffect(() => {
     const onScroll = () => {
-      const currentY = window.scrollY;
-      if (currentY < 24) setShowAddButton(true);
-      else if (currentY > lastScrollY.current + 5) setShowAddButton(false);
-      else if (currentY < lastScrollY.current - 5) setShowAddButton(true);
-      lastScrollY.current = currentY;
+      if (scrollFrameRef.current !== null) return;
+      scrollFrameRef.current = window.requestAnimationFrame(() => {
+        scrollFrameRef.current = null;
+        const currentY = window.scrollY;
+        let visible = showAddButtonRef.current;
+        if (currentY < 24) visible = true;
+        else if (currentY > lastScrollY.current + 5) visible = false;
+        else if (currentY < lastScrollY.current - 5) visible = true;
+        lastScrollY.current = currentY;
+        if (visible !== showAddButtonRef.current) {
+          showAddButtonRef.current = visible;
+          const button = floatingAddButtonRef.current;
+          if (button) {
+            button.classList.toggle('is-visible', visible);
+            button.classList.toggle('is-hidden', !visible);
+            button.setAttribute('aria-hidden', String(!visible));
+            button.tabIndex = visible ? 0 : -1;
+          }
+        }
+      });
     };
     window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      if (scrollFrameRef.current !== null) window.cancelAnimationFrame(scrollFrameRef.current);
+      scrollFrameRef.current = null;
+    };
   }, []);
 
   const counts = useMemo(() => ({
@@ -258,9 +279,10 @@ export const VehiclesListPage: React.FC = () => {
         <button
           type="button"
           onClick={() => navigate('/app/vehicles/new')}
-          className={`garage-floating-add ${showAddButton ? 'is-visible' : 'is-hidden'}`}
-          aria-hidden={!showAddButton}
-          tabIndex={showAddButton ? 0 : -1}
+          ref={floatingAddButtonRef}
+          className="garage-floating-add is-visible"
+          aria-hidden="false"
+          tabIndex={0}
         >
           <Plus size={17}/> Add vehicle
         </button>
