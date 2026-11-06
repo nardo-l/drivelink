@@ -1,3 +1,4 @@
+import { name } from "../../../src/config/brand.ts";
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -91,7 +92,7 @@ async function verifyAndApply(admin: ReturnType<typeof createClient>, payment: P
   }
   const { error: notificationError } = await admin.from("notifications").upsert({
     dealership_id: payment.dealership_id, category: "subscription", title: "Payment confirmed",
-    body: `Your DriveLink ${payment.plan_code} subscription payment has been confirmed. Your plan is now active.`,
+    body: `Your ${name} ${payment.plan_code} subscription payment has been confirmed. Your plan is now active.`,
     data: { url: "/app/billing", paymentReference: payment.reference },
     dedupe_key: `payment-confirmed:${payment.id}`,
   }, { onConflict: "dealership_id,dedupe_key", ignoreDuplicates: true });
