@@ -1,3 +1,4 @@
+import { name } from '../../config/brand';
 import React from 'react';
 import { ArrowRight } from 'lucide-react';
 import './TrialUpgradeCard.css';
@@ -44,9 +45,9 @@ export const TrialUpgradeCard: React.FC<Props> = ({ subscription, serverNow, veh
     const remaining = periodEnd ? periodEnd - now : 0;
     const daysRemaining = periodEnd ? Math.max(0, remaining / DAY) : Infinity;
     return (
-      <section className="dl-plan-slim-card" aria-label="DriveLink Pro subscription">
+      <section className="dl-plan-slim-card" aria-label={`${name} Pro subscription`}>
         <div className="dl-plan-slim-copy">
-          <strong>DriveLink Pro</strong>
+          <strong>{name} Pro</strong>
           <span>{periodEnd ? `Renews on ${dateLabel(subscription.current_period_end!)}` : 'Your Pro subscription is active'}</span>
         </div>
         {daysRemaining <= 5 && <button type="button" onClick={onUpgrade}>Renew <ArrowRight size={14}/></button>}
