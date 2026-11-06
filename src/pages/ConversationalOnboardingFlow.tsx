@@ -1,4 +1,4 @@
-import { name, siteUrl } from '../config/brand';
+import { name, siteUrl, absoluteUrl } from '../config/brand';
 import React, { useEffect, useRef, useState } from 'react';
 import { Select } from '../components/common/Select';
 import './ConversationalOnboardingFlow.css';
@@ -453,7 +453,7 @@ export const OnboardingFlow: React.FC<{ forceNewAccount?: boolean }> = ({ forceN
   </main>;
 
   const share = async () => {
-    const url = `${window.location.origin}/showroom/${data.showroom.handle}`;
+    const url = absoluteUrl(`/showroom/${encodeURIComponent(data.showroom.handle)}`);
     const message = encodeURIComponent(`View our vehicles at ${url}`);
     window.open(`https://wa.me/?text=${message}`, '_blank', 'noopener,noreferrer');
   };
