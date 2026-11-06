@@ -24,6 +24,48 @@ const STORAGE_KEYS = {
 };
 
 export const storageService = {
+  // All browser-persisted DriveLink data is cleared when the authenticated
+  // account changes. Onboarding progress itself is stored only on the server.
+  async clearAppUserData(nextUserId?: string): Promise<void> {
+    try {
+      for (const key of Object.keys(localStorage)) {
+        if (key.startsWith('drivelink_') || key.startsWith('drivelink:')) localStorage.removeItem(key);
+      }
+    } catch {}
+    try {
+      for (const key of Object.keys(sessionStorage)) {
+        if (key.startsWith('drivelink_') || key.startsWith('drivelink:')) sessionStorage.removeItem(key);
+      }
+    } catch {}
+    try {
+      if ('caches' in window) {
+        const names = await caches.keys();
+        await Promise.all(names.filter(name => name.toLowerCase().startsWith('drivelink')).map(name => caches.delete(name)));
+      }
+    } catch (error) {
+      console.warn('Could not clear DriveLink browser caches:', error);
+    }
+    try {
+      if (typeof document !== 'undefined') {
+        document.cookie.split(';').forEach(cookie => {
+          const name = cookie.split('=')[0]?.trim();
+          if (name?.startsWith('drivelink_') || name?.startsWith('drivelink:')) {
+            document.cookie = name + '=; Max-Age=0; path=/; SameSite=Lax';
+          }
+        });
+      }
+    } catch {}
+    if (nextUserId) {
+      try { localStorage.setItem('drivelink_active_user_id_v1', nextUserId); } catch {}
+    }
+  },
+
+  async syncUserScope(userId: string): Promise<void> {
+    if (!userId) return;
+    let previousUserId = '';
+    try { previousUserId = localStorage.getItem('drivelink_active_user_id_v1') || ''; } catch {}
+    if (previousUserId !== userId) await this.clearAppUserData(userId);
+  },
   getDealership(): Dealership {
     try {
       const data = localStorage.getItem(STORAGE_KEYS.DEALERSHIP);
