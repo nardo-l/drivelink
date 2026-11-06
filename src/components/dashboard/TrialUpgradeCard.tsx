@@ -42,7 +42,7 @@ export const TrialUpgradeCard: React.FC<Props> = ({ subscription, serverNow, veh
 
   if (subscribed) {
     const remaining = periodEnd ? periodEnd - now : 0;
-    const daysRemaining = periodEnd ? Math.max(0, Math.ceil(remaining / DAY)) : Infinity;
+    const daysRemaining = periodEnd ? Math.max(0, remaining / DAY) : Infinity;
     return (
       <section className="dl-plan-slim-card" aria-label="DriveLink Pro subscription">
         <div className="dl-plan-slim-copy">
