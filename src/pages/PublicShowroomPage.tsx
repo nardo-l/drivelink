@@ -252,10 +252,10 @@ export const PublicShowroomPage: React.FC<{ slug?: string; previewDealership?: D
             <div className="dl-ps-fallback-logo">{dealer.logoUrl ? <img src={dealer.logoUrl} alt={dealer.name} /> : <span>{initials}</span>}</div>
           )}
           <div className="dl-ps-landing-copy">
-            <h1>{dealer.tagline?.trim() && dealer.tagline.trim() !== 'Quality vehicles. Fair prices.' && dealer.tagline.trim() !== dealer.name ? dealer.tagline.trim() : 'Find your next car.'}</h1>
-            <p>{countLabel(available.length)} available{dealer.city ? ' · ' + dealer.city : ''}</p>
+            <h1>Drive Your Dream Today.</h1>
+            <p>Premium cars. Great deals. Right here in {dealer.city || dealer.country || 'Harare'}.</p>
             <div className="dl-ps-landing-actions">
-              <button className="dl-ps-explore" onClick={scrollCars}>Explore cars <i><ArrowRight size={16} /></i></button>
+              <button className="dl-ps-explore" onClick={scrollCars}>Explore Our Showroom <i><ArrowRight size={18} /></i></button>
               {waNumber && <a className="dl-ps-landing-wa" href={wa(generalMessage)} target="_blank" rel="noreferrer" aria-label="Contact dealership on WhatsApp"><WhatsAppMark size={22} /></a>}
             </div>
           </div>
