@@ -210,7 +210,7 @@ export const PublicShowroomPage: React.FC<{ slug?: string; previewDealership?: D
     return next;
   });
   const share = async () => {
-    const url = window.location.origin + '/' + encodeURIComponent(dealer.slug);
+    const url = absoluteUrl('/' + encodeURIComponent(dealer.slug));
     if (navigator.share) {
       try { await navigator.share({ title: dealer.name, text: available.length + ' cars available in ' + (dealer.city || dealer.country), url }); } catch { /* share dismissed */ }
     } else {
