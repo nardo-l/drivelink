@@ -42,6 +42,7 @@ export interface Database {
           storefront_views: number;
           created_at: string;
           updated_at: string;
+          onboarding_completed_at: string | null;
         };
         Insert: {
           id?: string;
@@ -68,6 +69,7 @@ export interface Database {
           storefront_views?: number;
           created_at?: string;
           updated_at?: string;
+          onboarding_completed_at?: string | null;
         };
         Update: {
           id?: string;
@@ -94,6 +96,7 @@ export interface Database {
           storefront_views?: number;
           created_at?: string;
           updated_at?: string;
+          onboarding_completed_at?: string | null;
         };
         Relationships: [];
       };
@@ -229,6 +232,10 @@ export interface Database {
       get_storefront_view_history: {
         Args: { p_days?: number };
         Returns: { view_date: string; views: number }[];
+      };
+      activate_dealership_trial: {
+        Args: Record<PropertyKey, never>;
+        Returns: Json;
       };
     };
     Enums: {
