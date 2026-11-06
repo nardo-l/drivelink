@@ -294,3 +294,37 @@ html:has(.dl-ps-landing),body:has(.dl-ps-landing){
   overflow:hidden!important;
   overscroll-behavior:none!important;
 }
+
+
+/* Preserve the complete uploaded hero photograph instead of cropping/zooming it. */
+.dl-ps-landing-image{
+  object-fit:contain!important;
+  object-position:center center!important;
+  background:#08090b!important;
+}
+
+/* Dealership logo is presented as a circular mark on the landing header. */
+.dl-ps-landing-top .dl-ps-logo{
+  width:54px!important;
+  height:54px!important;
+  flex:0 0 54px!important;
+  overflow:hidden!important;
+  border-radius:50%!important;
+  background:rgba(255,255,255,.08)!important;
+  border:1px solid rgba(255,255,255,.22)!important;
+}
+.dl-ps-landing-top .dl-ps-logo img{
+  display:block!important;
+  width:100%!important;
+  height:100%!important;
+  border-radius:50%!important;
+  object-fit:cover!important;
+  object-position:center!important;
+}
+.dl-ps-landing-top .dl-ps-logo span{
+  width:100%;
+  height:100%;
+  display:grid;
+  place-items:center;
+  border-radius:50%;
+}
