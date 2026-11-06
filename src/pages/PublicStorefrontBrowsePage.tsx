@@ -1,4 +1,4 @@
-import { absoluteUrl } from '../config/brand';
+import { absoluteUrl, name } from '../config/brand';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Select } from '../components/common/Select';
 import { ArrowRight, CarFront, Contact, Grid2x2, Heart, MapPin, Search, Share2, SlidersHorizontal, X } from 'lucide-react';
