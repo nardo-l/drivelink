@@ -1,3 +1,4 @@
+import { name, supportEmail } from "../../../src/config/brand.ts";
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 import webpush from "npm:web-push@3.6.7";
@@ -7,7 +8,7 @@ const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const cronSecret = Deno.env.get("NOTIFICATION_CRON_SECRET")!;
 const vapidPublicKey = Deno.env.get("VAPID_PUBLIC_KEY")!;
 const vapidPrivateKey = Deno.env.get("VAPID_PRIVATE_KEY")!;
-const vapidSubject = Deno.env.get("VAPID_SUBJECT") || "mailto:support@drivelink.app";
+const vapidSubject = Deno.env.get("VAPID_SUBJECT") || `mailto:${supportEmail}`;
 const db = createClient(supabaseUrl, serviceRoleKey, { auth: { persistSession: false } });
 
 const pushReady = Boolean(vapidPublicKey && vapidPrivateKey);
@@ -84,7 +85,7 @@ async function createScheduledNotifications() {
       if (!shareCount && ageHours >= 24 && ageHours < 72) {
         await insertNotification(dealer.id, "sharing", "Share your showroom link", "Your online showroom is ready. Share its link on WhatsApp and social media to reach more buyers.", "share-reminder:24h", { url: "/app" });
       } else if (!shareCount && ageHours >= 72 && ageHours < 168) {
-        await insertNotification(dealer.id, "sharing", "Bring buyers to your showroom", "Your DriveLink showroom is ready to share. Post the link on WhatsApp Status and your social pages.", "share-reminder:3d", { url: "/app" });
+        await insertNotification(dealer.id, "sharing", "Bring buyers to your showroom", "Your ${name} showroom is ready to share. Post the link on WhatsApp Status and your social pages.", "share-reminder:3d", { url: "/app" });
       } else if (!shareCount && ageHours >= 168) {
         await insertNotification(dealer.id, "sharing", "Give your showroom more reach", "A quick share can help more buyers discover your vehicles. Share your showroom link today.", "share-reminder:7d", { url: "/app" });
       }
@@ -100,25 +101,25 @@ async function createScheduledNotifications() {
       const trialHours = trialEnd ? (trialEnd.getTime() - now.getTime()) / 3600000 : null;
       const paidHours = paidEnd ? (paidEnd.getTime() - now.getTime()) / 3600000 : null;
       if (subscription.status === "trial" && trialStart && now.getTime() - trialStart.getTime() < 24 * 3600000) {
-        await insertNotification(dealer.id, "subscription", "Your 3-day free trial has started", "You have full access to DriveLink for the next 72 hours. Add vehicles and share your showroom.", `trial-start:${trialStart.toISOString()}`, { url: "/app/billing" });
+        await insertNotification(dealer.id, "subscription", "Your 3-day free trial has started", "You have full access to ${name} for the next 72 hours. Add vehicles and share your showroom.", `trial-start:${trialStart.toISOString()}`, { url: "/app/billing" });
       }
       if (subscription.status === "trial" && trialHours !== null && trialHours <= 24 && trialHours > 6) {
-        await insertNotification(dealer.id, "subscription", "Your free trial ends tomorrow", "Your DriveLink trial has 24 hours remaining. Subscribe to keep adding vehicles and managing your showroom.", `trial-24h:${trialEnd!.toISOString()}`, { url: "/app/billing" });
+        await insertNotification(dealer.id, "subscription", "Your free trial ends tomorrow", "Your ${name} trial has 24 hours remaining. Subscribe to keep adding vehicles and managing your showroom.", `trial-24h:${trialEnd!.toISOString()}`, { url: "/app/billing" });
       }
       if (subscription.status === "trial" && trialHours !== null && trialHours <= 6 && trialHours > 0) {
-        await insertNotification(dealer.id, "subscription", "Your free trial is nearly over", "Your DriveLink trial ends in 6 hours. Choose a plan to keep full access.", `trial-6h:${trialEnd!.toISOString()}`, { url: "/app/billing" });
+        await insertNotification(dealer.id, "subscription", "Your free trial is nearly over", "Your ${name} trial ends in 6 hours. Choose a plan to keep full access.", `trial-6h:${trialEnd!.toISOString()}`, { url: "/app/billing" });
       }
       if (subscription.status === "trial" && trialHours !== null && trialHours <= 0) {
         await insertNotification(dealer.id, "subscription", "Your free trial has ended", "Your account is now in view-only mode. Subscribe to restore full access.", `trial-ended:${trialEnd!.toISOString()}`, { url: "/app/billing" });
       }
       if (subscription.status === "active" && paidHours !== null && paidHours <= 120 && paidHours > 24) {
-        await insertNotification(dealer.id, "subscription", "Your subscription renews in 5 days", "Renew your DriveLink subscription to keep your dealership tools active.", `renew-5d:${paidEnd!.toISOString()}`, { url: "/app/billing" });
+        await insertNotification(dealer.id, "subscription", "Your subscription renews in 5 days", `Renew your ${name} subscription to keep your dealership tools active.`, `renew-5d:${paidEnd!.toISOString()}`, { url: "/app/billing" });
       }
       if (subscription.status === "active" && paidHours !== null && paidHours <= 24 && paidHours > 0) {
         await insertNotification(dealer.id, "subscription", "Your subscription expires tomorrow", "Renew now to avoid interruption to your dealership workspace.", `renew-1d:${paidEnd!.toISOString()}`, { url: "/app/billing" });
       }
       if ((subscription.status === "expired" || (subscription.status === "active" && paidHours !== null && paidHours <= 0)) && paidEnd) {
-        await insertNotification(dealer.id, "subscription", "Your subscription has expired", "Your DriveLink access has ended. Renew your plan to restore full access to your dealership workspace.", `subscription-expired:${paidEnd.toISOString()}`, { url: "/app/billing" });
+        await insertNotification(dealer.id, "subscription", "Your subscription has expired", `Your ${name} access has ended. Renew your plan to restore full access to your dealership workspace.`, `subscription-expired:${paidEnd.toISOString()}`, { url: "/app/billing" });
       }
       if (subscription.status === "grace_period" && graceEnd && graceEnd.getTime() <= now.getTime()) {
         await insertNotification(dealer.id, "subscription", "Your grace period has ended", "Your account is now view-only. Renew your subscription to restore full access.", `grace-ended:${graceEnd.toISOString()}`, { url: "/app/billing" });
