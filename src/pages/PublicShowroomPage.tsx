@@ -250,9 +250,9 @@ export const PublicShowroomPage: React.FC<{ slug?: string; previewDealership?: D
           )}
           <div className="dl-ps-landing-copy">
             <h1>Drive Your Dream Today.</h1>
-            <p>Premium cars. Great deals. Right here in {dealer.city || dealer.country || 'Harare'}.</p>
+            <p>{available.length} {available.length === 1 ? 'car' : 'cars'} available · {dealer.city || dealer.country || 'Harare'}</p>
             <div className="dl-ps-landing-actions">
-              <button className="dl-ps-explore" onClick={scrollCars}>Explore Our Showroom <i><ArrowRight size={18} /></i></button>
+              <button className="dl-ps-explore" onClick={scrollCars}>Explore cars <i><ArrowRight size={18} /></i></button>
               {waNumber && <a className="dl-ps-landing-wa" href={wa(generalMessage)} target="_blank" rel="noreferrer" aria-label="Contact dealership on WhatsApp"><WhatsAppMark size={22} /></a>}
             </div>
           </div>
