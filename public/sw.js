@@ -1,4 +1,5 @@
-// Push-only service worker. Existing home-screen installs keep the old app label until reinstall.\n// It intentionally does not cache fetch responses,
+// Push-only service worker. Existing home-screen installs keep the old app label until reinstall.
+// It intentionally does not cache fetch responses,
 // authenticated API calls, or user-specific application pages.
 const LOTLE_CACHE_VERSION = 'lotle-runtime-v5';
 
@@ -30,6 +31,7 @@ self.addEventListener('push', (event) => {
   };
   event.waitUntil(self.registration.showNotification(title, options));
 });
+
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
   const path = event.notification.data?.url || '/app/notifications';
