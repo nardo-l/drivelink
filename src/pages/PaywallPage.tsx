@@ -32,8 +32,8 @@ export const PaywallPage: React.FC = () => {
       const { data, error } = await supabase.functions.invoke('drivelink-payments', { body: { action: 'status' } });
       if (error) throw error;
       const subscription = data?.subscription;
-      const now = Date.now();
-      const trialValid = subscription?.status === 'trial' && subscription?.trial_ends_at && new Date(subscription.trial_ends_at).getTime() > now;
+      const now = data?.server_now ? new Date(data.server_now).getTime() : Date.now();
+      const trialValid = (subscription?.status === 'trial' || subscription?.status === 'trialing') && subscription?.trial_ends_at && new Date(subscription.trial_ends_at).getTime() > now;
       const paidValid = subscription?.status === 'active' && subscription?.current_period_end && new Date(subscription.current_period_end).getTime() > now;
       if (trialValid || paidValid) {
         navigate('/app');
