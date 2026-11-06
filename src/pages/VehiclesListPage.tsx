@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Search, Plus, CarFront, MoreHorizontal, Pencil, Trash2, X, LayoutGrid,
-  List as ListIcon, Share2, RefreshCw, ArrowUpRight, SlidersHorizontal,
+  Share2, RefreshCw, ArrowUpRight, SlidersHorizontal, CalendarDays, Gauge, Fuel,
 } from 'lucide-react';
 import { useNavigation } from '../context/NavigationContext';
 import { storageService } from '../services/storage';
@@ -9,7 +9,7 @@ import { Vehicle, VehicleStatus } from '../types';
 import './VehiclesListPage.css';
 
 type InventoryFilter = 'all' | 'available' | 'reserved' | 'sold';
-type ViewMode = 'grid' | 'list';
+type ViewMode = 'single' | 'double';
 
 const filters: { id: InventoryFilter; label: string }[] = [
   { id: 'all', label: 'All' },
@@ -29,7 +29,7 @@ export const VehiclesListPage: React.FC = () => {
   const [menuId, setMenuId] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Vehicle | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>(() => {
-    try { return localStorage.getItem('drivelink_garage_view') === 'list' ? 'list' : 'grid'; } catch { return 'grid'; }
+    try { const id = storageService.getUserSession().dealershipId || 'default'; return localStorage.getItem(`drivelink_garage_columns_${id}`) === 'double' ? 'double' : 'single'; } catch { return 'single'; }
   });
   const [showAddButton, setShowAddButton] = useState(true);
   const [pullDistance, setPullDistance] = useState(0);
@@ -76,7 +76,7 @@ export const VehiclesListPage: React.FC = () => {
     const query = search.toLowerCase().trim();
     const matchesSearch = !query || `${v.year} ${v.make} ${v.model}`.toLowerCase().includes(query);
     return matchesFilter && matchesSearch;
-  }), [vehicles, filter, search]);
+  }).sort((a, b) => Number(a.status === 'sold') - Number(b.status === 'sold')), [vehicles, filter, search]);
 
   const updateStatus = async (vehicle: Vehicle, status: VehicleStatus) => {
     try {
@@ -105,7 +105,7 @@ export const VehiclesListPage: React.FC = () => {
   const openVehicle = (vehicle: Vehicle) => navigate(`/app/vehicles/${vehicle.id}`);
   const setView = (mode: ViewMode) => {
     setViewMode(mode);
-    try { localStorage.setItem('drivelink_garage_view', mode); } catch { /* storage unavailable */ }
+    try { const id = storageService.getUserSession().dealershipId || 'default'; localStorage.setItem(`drivelink_garage_columns_${id}`, mode); } catch { /* storage unavailable */ }
   };
   const shareVehicle = async (vehicle: Vehicle) => {
     const dealer = storageService.getDealership();
@@ -137,6 +137,7 @@ export const VehiclesListPage: React.FC = () => {
   };
 
   const statusLabel: Record<string, string> = { available: 'Available', reserved: 'Reserved', sold: 'Sold', draft: 'Draft' };
+  const imageSource = (url: string) => { try { const parsed = new URL(url); if (!parsed.pathname.includes('/storage/v1/object/public/')) return url; parsed.pathname = parsed.pathname.replace('/storage/v1/object/public/', '/storage/v1/render/image/public/'); parsed.searchParams.set('width', '800'); parsed.searchParams.set('quality', '78'); parsed.searchParams.set('format', 'webp'); return parsed.toString(); } catch { return url; } };
 
   return (
     <div className="dl-workspace garage-page min-h-full flex flex-col" onClick={() => menuId && setMenuId(null)}>
@@ -195,9 +196,9 @@ export const VehiclesListPage: React.FC = () => {
               ))}
             </div>
           </div>
-          <div className="garage-view-toggle" role="group" aria-label="Inventory view">
-            <button type="button" onClick={() => setView('grid')} aria-label="Grid view" aria-pressed={viewMode === 'grid'} className={viewMode === 'grid' ? 'is-active' : ''}><LayoutGrid size={16}/></button>
-            <button type="button" onClick={() => setView('list')} aria-label="List view" aria-pressed={viewMode === 'list'} className={viewMode === 'list' ? 'is-active' : ''}><ListIcon size={17}/></button>
+          <div className="garage-view-toggle" role="group" aria-label="Card columns">
+            <button type="button" onClick={() => setView('single')} aria-label="Single column" aria-pressed={viewMode === 'single'} className={viewMode === 'single' ? 'is-active' : ''}><span className="garage-column-icon single"/></button>
+            <button type="button" onClick={() => setView('double')} aria-label="Two columns" aria-pressed={viewMode === 'double'} className={viewMode === 'double' ? 'is-active' : ''}><span className="garage-column-icon double"/></button>
           </div>
         </div>
 
@@ -205,7 +206,7 @@ export const VehiclesListPage: React.FC = () => {
 
         {loading ? (
           <div className={`garage-vehicle-layout ${viewMode}`} aria-label="Loading vehicles">
-            {[1, 2, 3].map(n => <div key={n} className="garage-skeleton"><div/><span/><i/></div>)}
+            {[1, 2, 3].map(n => <div key={n} className="garage-skeleton"><div/></div>)}
           </div>
         ) : vehicles.length === 0 ? (
           <section className="garage-empty">
@@ -225,40 +226,27 @@ export const VehiclesListPage: React.FC = () => {
         ) : (
           <div className={`garage-vehicle-layout ${viewMode}`}>
             {visible.map((vehicle, index) => (
-              <article
-                key={vehicle.id}
-                role="button"
-                tabIndex={0}
+              <article key={vehicle.id} role="button" tabIndex={0}
                 aria-label={`${vehicle.year} ${vehicle.make} ${vehicle.model}, ${statusLabel[vehicle.status] || vehicle.status}`}
                 onClick={() => openVehicle(vehicle)}
                 onKeyDown={event => { if (event.target !== event.currentTarget) return; if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); openVehicle(vehicle); } }}
-                className="garage-vehicle-card"
-                style={{ animationDelay: `${Math.min(index, 7) * 45}ms` }}
-              >
+                className={`garage-vehicle-card ${vehicle.status === 'sold' ? 'is-sold' : ''}`}
+                style={{ animationDelay: `${Math.min(index, 7) * 45}ms` }}>
                 <div className="garage-vehicle-photo">
                   {vehicle.photos?.[0]
-                    ? <img src={vehicle.photos[0]} alt={`${vehicle.make} ${vehicle.model}`} loading={index > 2 ? 'lazy' : 'eager'}/>
-                    : <div className="garage-photo-placeholder"><CarFront size={38}/></div>}
+                    ? <div className="garage-image-frame"><div className="garage-image-skeleton"/><img src={imageSource(vehicle.photos[0])} alt={`${vehicle.make} ${vehicle.model}`} loading="lazy" decoding="async" onLoad={event => event.currentTarget.classList.add('is-loaded')} onError={event => { event.currentTarget.style.display = 'none'; event.currentTarget.parentElement?.classList.add('has-error'); }}/></div>
+                    : <div className="garage-photo-placeholder"><CarFront size={34}/><span>Add photos</span></div>}
+                  <div className="garage-photo-gradient"/>
                   <span className={`garage-status-pill ${vehicle.status}`}>{statusLabel[vehicle.status] || vehicle.status}</span>
                   <div className="garage-card-menu" onClick={event => event.stopPropagation()}>
                     <button type="button" aria-label={`Actions for ${vehicle.make} ${vehicle.model}`} aria-expanded={menuId === vehicle.id} onClick={() => setMenuId(menuId === vehicle.id ? null : vehicle.id)}><MoreHorizontal size={20}/></button>
-                    {menuId === vehicle.id && (
-                      <div className="garage-menu-popover" role="menu">
-                        <button type="button" role="menuitem" onClick={() => { setMenuId(null); navigate(`/app/vehicles/${vehicle.id}/edit`); }}><Pencil size={14}/> Edit</button>
-                        {(['reserved', 'sold', 'available'] as VehicleStatus[]).filter(status => status !== vehicle.status).map(status => (
-                          <button type="button" role="menuitem" key={status} onClick={() => { setMenuId(null); void updateStatus(vehicle, status); }}>Mark as {status}</button>
-                        ))}
-                        <button type="button" role="menuitem" onClick={() => { setMenuId(null); void shareVehicle(vehicle); }}><Share2 size={14}/> Share link</button>
-                        <div className="garage-menu-divider"/>
-                        <button type="button" role="menuitem" className="is-danger" onClick={() => { setMenuId(null); setDeleteTarget(vehicle); }}><Trash2 size={14}/> Delete</button>
-                      </div>
-                    )}
                   </div>
-                </div>
-                <div className="garage-vehicle-info">
-                  <h2>{vehicle.year} {vehicle.make} {vehicle.model}</h2>
-                  <p className="garage-vehicle-price">{price(vehicle)}</p>
-                  <p className="garage-vehicle-meta">{vehicle.mileageKm.toLocaleString()} km <span>·</span> {vehicle.transmission}</p>
+                  <div className="garage-photo-copy">
+                    <div className="garage-photo-details"><h2>{vehicle.make} {vehicle.model}</h2>
+                      <p className="garage-vehicle-meta"><span><CalendarDays size={11}/>{vehicle.year}</span><span><Gauge size={11}/>{vehicle.mileageKm.toLocaleString()} km</span><span><Fuel size={11}/>{vehicle.fuel || 'Petrol'}</span></p>
+                    </div>
+                    <p className="garage-vehicle-price">{price(vehicle)}</p>
+                  </div>
                 </div>
               </article>
             ))}
@@ -277,6 +265,22 @@ export const VehiclesListPage: React.FC = () => {
           <Plus size={17}/> Add vehicle
         </button>
       )}
+
+      {menuId && (() => {
+        const selected = vehicles.find(vehicle => vehicle.id === menuId);
+        if (!selected) return null;
+        return <div className="garage-sheet-backdrop" onClick={() => setMenuId(null)}>
+          <section className="garage-action-sheet" role="dialog" aria-modal="true" aria-label={`Actions for ${selected.make} ${selected.model}`} onClick={event => event.stopPropagation()}>
+            <div className="garage-sheet-handle"/><p className="garage-sheet-title">{selected.year} {selected.make} {selected.model}</p>
+            <button type="button" onClick={() => { setMenuId(null); navigate(`/app/vehicles/${selected.id}/edit`); }}><Pencil size={17}/> Edit</button>
+            {selected.status !== 'reserved' && <button type="button" onClick={() => { setMenuId(null); void updateStatus(selected, 'reserved'); }}>Mark as reserved</button>}
+            {selected.status !== 'sold' && <button type="button" onClick={() => { setMenuId(null); void updateStatus(selected, 'sold'); }}>Mark as sold</button>}
+            <button type="button" onClick={() => { setMenuId(null); void shareVehicle(selected); }}><Share2 size={17}/> Share link</button>
+            <button type="button" className="is-danger" onClick={() => { setMenuId(null); setDeleteTarget(selected); }}><Trash2 size={17}/> Delete</button>
+            <button type="button" className="garage-sheet-cancel" onClick={() => setMenuId(null)}>Cancel</button>
+          </section>
+        </div>;
+      })()}
 
       {deleteTarget && (
         <div className="garage-delete-backdrop" onClick={() => setDeleteTarget(null)}>
