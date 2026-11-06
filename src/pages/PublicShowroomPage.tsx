@@ -9,7 +9,7 @@ import { isSupabaseConfigured } from '../lib/supabase';
 import type { Dealership, Vehicle } from '../types';
 import './PublicShowroomPage.css';
 
-const CARD_STYLE: 'overlay' | 'below' = 'overlay';
+const CARD_STYLE: string = 'overlay';
 
 const WhatsAppMark: React.FC<{ size?: number }> = ({ size = 20 }) => (
   <svg width={size} height={size} viewBox="0 0 32 32" fill="currentColor" aria-hidden="true">

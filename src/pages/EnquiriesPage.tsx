@@ -295,7 +295,7 @@ export const EnquiriesPage: React.FC = () => {
                       <span>Asked about {carName}</span>
                       {vehicle?.photos?.[0] ? <img className="enquiry-car-thumb" src={vehicle.photos[0]} alt="" loading="lazy"/> : <div className="enquiry-car-thumb enquiry-car-thumb-empty"><CarFront size={19}/></div>}
                     </div>
-                    <div className="enquiry-card-status"><span className={`enquiry-status ${statusClass(enquiry)}`}>{displayStage(enquiry)}</span></div>
+                    <div className="enquiry-card-status"><span className={`enquiry-status ${statusClass(enquiry)}`}>{displayStage(enquiry.stage)}</span></div>
                     <p className="enquiry-message-preview">{enquiry.message || 'No message provided.'}</p>
                     {contactUrl ? <div className="enquiry-contact-actions">
                       <a className="enquiry-whatsapp-cta" href={contactUrl} target="_blank" rel="noreferrer" onClick={event => { event.stopPropagation(); confirmContacted(enquiry); }}><WhatsAppIcon size={18}/> Reply on WhatsApp</a>

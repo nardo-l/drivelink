@@ -42,13 +42,15 @@ export function getSupabaseHost(): string | null {
   }
 }
 
-// Fallback dummy values for client initialization if keys are not yet configured
 const dummyUrl = 'https://placeholder-project.supabase.co';
 const dummyAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.dummy-anon-key-placeholder';
 
+export const supabaseUrl = isSupabaseConfigured() ? envUrl! : dummyUrl;
+export const supabaseAnonKey = isSupabaseConfigured() ? envAnonKey! : dummyAnonKey;
+
 export const supabase = createClient<Database>(
-  isSupabaseConfigured() ? envUrl! : dummyUrl,
-  isSupabaseConfigured() ? envAnonKey! : dummyAnonKey,
+  supabaseUrl,
+  supabaseAnonKey,
   {
     auth: {
       persistSession: true,

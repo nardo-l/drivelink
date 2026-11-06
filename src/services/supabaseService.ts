@@ -1,4 +1,4 @@
-import { supabase, isSupabaseConfigured } from '../lib/supabase';
+import { supabase, isSupabaseConfigured, supabaseUrl, supabaseAnonKey } from '../lib/supabase';
 import type { Database } from '../types/database';
 import type {
   Dealership,
@@ -715,12 +715,12 @@ export const supabaseService = {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session?.access_token) throw new Error('Your session has expired. Please sign in again.');
     const path = `${user.id}/${type}.webp`;
-    const url = `${supabase.supabaseUrl}/storage/v1/object/dealership-branding/${encodeURIComponent(user.id)}/${encodeURIComponent(type)}.webp`;
+    const url = `${supabaseUrl}/storage/v1/object/dealership-branding/${encodeURIComponent(user.id)}/${encodeURIComponent(type)}.webp`;
     await new Promise<void>((resolve, reject) => {
       const xhr = new XMLHttpRequest();
       xhr.open('POST', url);
       xhr.setRequestHeader('Authorization', `Bearer ${session.access_token}`);
-      xhr.setRequestHeader('apikey', supabase.supabaseKey);
+      xhr.setRequestHeader('apikey', supabaseAnonKey);
       xhr.setRequestHeader('Content-Type', file.type || 'image/webp');
       xhr.setRequestHeader('x-upsert', 'true');
       xhr.setRequestHeader('cache-control', '3600');
