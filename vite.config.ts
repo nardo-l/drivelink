@@ -12,9 +12,9 @@ const lotleSeoPlugin = {
       { '@context': 'https://schema.org', '@type': 'WebSite', name, alternateName: ['Lotle', legacyName], url: siteUrl, description },
     ];
     return html
-      .replace('__LOTLE_HOME_TITLE__', homeTitle)
-      .replace('__LOTLE_DESCRIPTION__', description)
-      .replace('__LOTLE_NAME__', name)
+      .replaceAll('__LOTLE_HOME_TITLE__', homeTitle)
+      .replaceAll('__LOTLE_DESCRIPTION__', description)
+      .replaceAll('__LOTLE_NAME__', name)
       .replace('__LOTLE_SITE_URL__', siteUrl)
       .replace('</head>', `<link rel="canonical" href="${siteUrl}/" />
     <meta property="og:url" content="${siteUrl}/" />
