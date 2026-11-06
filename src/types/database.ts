@@ -16,6 +16,36 @@ export type Json =
 export interface Database {
   public: {
     Tables: {
+      user_onboarding_progress: {
+        Row: {
+          user_id: string;
+          onboarding_step: number;
+          draft: Json;
+          intro_completed: boolean;
+          notifications_prompt_dismissed_at: string | null;
+          onboarding_completed_at: string | null;
+          updated_at: string;
+        };
+        Insert: {
+          user_id: string;
+          onboarding_step?: number;
+          draft?: Json;
+          intro_completed?: boolean;
+          notifications_prompt_dismissed_at?: string | null;
+          onboarding_completed_at?: string | null;
+          updated_at?: string;
+        };
+        Update: {
+          user_id?: string;
+          onboarding_step?: number;
+          draft?: Json;
+          intro_completed?: boolean;
+          notifications_prompt_dismissed_at?: string | null;
+          onboarding_completed_at?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       dealerships: {
         Row: {
           id: string;
