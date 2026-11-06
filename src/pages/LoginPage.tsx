@@ -29,6 +29,11 @@ export const LoginPage: React.FC = () => {
     }
 
     try {
+      const previousSession = await supabaseService.getSession();
+      if (previousSession?.user) {
+        await supabaseService.signOut();
+        await storageService.clearAppUserData();
+      }
       const { user } = await supabaseService.signIn(email.trim(), password);
       if (!user) throw new Error('Sign in succeeded but no user data returned.');
       await storageService.syncUserScope(user.id);
