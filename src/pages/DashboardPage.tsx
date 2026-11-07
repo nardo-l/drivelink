@@ -18,7 +18,7 @@ type SubscriptionStatus = {
   grace_until: string | null;
 };
 
-export const DashboardPage: React.FC = () => {
+export const DashboardPage: React.FC<{ onEnsureTrialSetup?: () => Promise<void> }> = ({ onEnsureTrialSetup }) => {
   const { navigate, showToast } = useNavigation();
   const isLive = isSupabaseConfigured() && !storageService.isDemoModeActive();
   const [dealership, setDealership] = useState(() => isLive ? { ...storageService.getDealership(), name: 'Your dealership', slug: '' } : storageService.getDealership());
@@ -39,6 +39,9 @@ export const DashboardPage: React.FC = () => {
     setLoading(true);
     setLoadError('');
     try {
+      // Reconcile a missing/interrupted trial before the dashboard reads protected data.
+      // The RPC is idempotent and returns expired when an anti-abuse identity has already used its trial.
+      if (onEnsureTrialSetup) await onEnsureTrialSetup();
       const [d, v, e] = await Promise.all([
         storageService.getDealershipAsync(),
         storageService.getVehiclesAsync(),
