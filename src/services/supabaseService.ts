@@ -620,7 +620,10 @@ export const supabaseService = {
         code: (error as any).code || null,
         details: (error as any).details || null,
       });
-      throw error;
+      const checkError: any = new Error('Could not verify dealership access. Reload the app and try again. [ACCESS_CHECK_FAILED]');
+      checkError.code = 'ACCESS_CHECK_FAILED';
+      checkError.cause = error;
+      throw checkError;
     }
     if (data?.status === 'expired' || data?.is_active === false) {
       const expired = new Error('Your trial has ended. Choose a plan to continue. [TRIAL_EXPIRED]');
