@@ -54,7 +54,7 @@ const TrialBanner: React.FC<TrialBannerProps> = ({ subscriptionState, trialEndsA
   const trialMinutesLeft = trialRemainingMs !== null ? Math.max(0, Math.floor((trialRemainingMs % 3600000) / 60000)) : 0;
   const paidDaysLeft = accessEndsAt ? Math.ceil((new Date(accessEndsAt).getTime() - now) / 86400000) : null;
 
-  const showTrial = subscriptionState === 'trial' && trialRemainingMs !== null && trialRemainingMs > 0 && trialRemainingMs <= 2 * 86400000;
+  const showTrial = subscriptionState === 'trial' && trialRemainingMs !== null && trialRemainingMs > 0;
   const showPaid = subscriptionState === 'active' && paidDaysLeft !== null && paidDaysLeft > 0 && paidDaysLeft <= 5;
 
   if (!showTrial && !showPaid) return null;
@@ -86,6 +86,17 @@ function AppContent() {
   const [trialEndsAt, setTrialEndsAt] = React.useState<string | null>(null);
   const [accessEndsAt, setAccessEndsAt] = React.useState<string | null>(null);
   const [subscriptionServerNow, setSubscriptionServerNow] = React.useState(Date.now());
+  const trialSetupAttemptedForUser = React.useRef<string | null>(null);
+  const ensureTrialSetupOnLoad = React.useCallback(async (userId: string) => {
+    if (trialSetupAttemptedForUser.current === userId) return;
+    trialSetupAttemptedForUser.current = userId;
+    try {
+      const { error } = await supabase.rpc('activate_dealership_trial');
+      if (error) console.error('Background trial setup retry failed; dashboard access will continue:', error);
+    } catch (error) {
+      console.error('Background trial setup retry failed; dashboard access will continue:', error);
+    }
+  }, []);
   const verifySubscription = React.useCallback(async () => {
     setSubscriptionState('checking');
     try {
@@ -96,9 +107,11 @@ function AppContent() {
       setSubscriptionServerNow(now);
       const trialValid = (subscription?.status === 'trial' || subscription?.status === 'trialing') && subscription?.trial_ends_at && new Date(subscription.trial_ends_at).getTime() > now;
       const paidValid = subscription?.status === 'active' && subscription?.current_period_end && new Date(subscription.current_period_end).getTime() > now;
+      const hasTrialHistory = !!(subscription?.trial_started_at || subscription?.trial_ends_at);
+      const trialExpired = hasTrialHistory && (!subscription?.trial_ends_at || new Date(subscription.trial_ends_at).getTime() <= now);
       setTrialEndsAt(subscription?.trial_ends_at || null);
       setAccessEndsAt(trialValid ? subscription.trial_ends_at : paidValid ? subscription.current_period_end : null);
-      setSubscriptionState(trialValid ? 'trial' : paidValid ? 'active' : 'expired');
+      setSubscriptionState(trialValid ? 'trial' : paidValid ? 'active' : trialExpired || subscription?.status === 'expired' || subscription?.status === 'cancelled' ? 'expired' : 'setup');
     } catch (error) {
       console.warn('Subscription access verification failed:', error);
       setSubscriptionState('unverified');
@@ -119,6 +132,7 @@ function AppContent() {
             const liveDealer = await supabaseService.getCurrentDealership();
             if (liveDealer) {
               storageService.saveDealership(liveDealer);
+              await ensureTrialSetupOnLoad(session.user.id);
               await verifySubscription();
             } else {
               setSubscriptionState('setup');
@@ -152,6 +166,7 @@ function AppContent() {
             const liveDealer = await supabaseService.getCurrentDealership();
             if (liveDealer) {
               storageService.saveDealership(liveDealer);
+              await ensureTrialSetupOnLoad(session.user.id);
               await verifySubscription();
             } else {
               setSubscriptionState('setup');
@@ -179,7 +194,7 @@ function AppContent() {
     } else {
       setSessionChecked(true);
     }
-  }, [isConfigured, isDemo, verifySubscription]);
+  }, [isConfigured, isDemo, verifySubscription, ensureTrialSetupOnLoad]);
 
   React.useEffect(() => {
     const current = storageService.getUserSession();

@@ -52,49 +52,6 @@
 @media(prefers-reduced-motion:reduce){.di-setup-screen{animation:none}}
 
 
-/* Lotlé Pro subscription paywall — isolated cinematic dark surface. */
-.dl-pro-paywall{position:relative;display:flex;flex:1;flex-direction:column;gap:0;box-sizing:border-box;width:calc(100% + 8px);min-height:calc(100svh - 40px);margin:-12px -4px;padding:22px 20px 18px;overflow-x:hidden;overflow-y:auto;border-radius:28px;background:#050505;color:#fff;font-family:Manrope,Inter,ui-sans-serif,system-ui,sans-serif;scrollbar-width:none}
-.dl-pro-paywall::-webkit-scrollbar{display:none}
-.dl-pro-header{position:absolute;z-index:3;top:22px;left:20px;right:20px;display:flex;align-items:center;justify-content:space-between}
-.dl-pro-brand{display:flex;flex-direction:column;gap:1px;color:#fff;font-size:19px;font-weight:750;letter-spacing:-.055em;line-height:1}
-.dl-pro-brand svg{width:62px;height:31px;margin-bottom:-2px}
-.dl-pro-close{display:grid;place-items:center;width:48px;height:48px;border:1px solid rgba(255,255,255,.12);border-radius:50%;background:rgba(12,12,12,.78);color:#fff;font-size:30px;font-weight:300;line-height:1}
-.dl-pro-hero{position:relative;flex:none;height:clamp(185px,27svh,250px);margin:-22px -20px 0;overflow:hidden;background:#111}
-.dl-pro-hero img{display:block;width:100%;height:100%;object-fit:cover;object-position:center 56%;filter:grayscale(1) brightness(.76)}
-.dl-pro-hero-shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.14) 0%,rgba(0,0,0,.04) 42%,#050505 100%)}
-.dl-pro-intro{position:relative;margin-top:-1px}
-.dl-pro-intro h1{margin:0;color:#fff;font-size:clamp(34px,9vw,43px);font-weight:800;line-height:1.02;letter-spacing:-.055em}
-.dl-pro-intro p{max-width:340px;margin:14px 0 0;color:#a5a5a5;font-size:16px;line-height:1.45}
-.dl-pro-timeline{position:relative;display:flex;flex-direction:column;gap:16px;margin:27px 0 22px}
-.dl-pro-timeline-line{position:absolute;top:62px;bottom:62px;left:35px;width:2px;background:linear-gradient(#777,#333)}
-.dl-pro-step{position:relative;display:flex;align-items:center;gap:16px;min-height:76px}
-.dl-pro-step-icon{z-index:1;display:grid;place-items:center;flex:0 0 72px;width:72px;height:72px;border:1px solid #f5f5f5;border-radius:50%;background:#fff;color:#080808}
-.dl-pro-step-icon.is-outline{border-color:#777;background:#090909;color:#fff}
-.dl-pro-step-copy{display:flex;flex:1;flex-direction:column;gap:5px;min-width:0;padding:16px 18px;border:1px solid rgba(255,255,255,.14);border-radius:25px;background:linear-gradient(135deg,#1b1b1b,#101010)}
-.dl-pro-step:not(.is-current) .dl-pro-step-copy{padding-left:0;border-color:transparent;background:transparent}
-.dl-pro-step-copy strong{color:#fff;font-size:18px;font-weight:750;letter-spacing:-.025em;line-height:1.2}
-.dl-pro-step-copy span{color:#aaa;font-size:13px;line-height:1.4}
-.dl-pro-features{display:flex;flex-direction:column;padding:10px 18px;border:1px solid rgba(255,255,255,.15);border-radius:23px;background:linear-gradient(145deg,#171717,#101010)}
-.dl-pro-features>div{display:flex;align-items:center;gap:17px;min-height:46px;color:#fff}
-.dl-pro-features>div+div{border-top:1px solid rgba(255,255,255,.09)}
-.dl-pro-features svg{flex:none;color:#f4f4f4;stroke-width:1.8}
-.dl-pro-features span{font-size:13px;line-height:1.25}
-.dl-pro-error{margin:12px 0 0;padding:11px 13px;border:1px solid rgba(255,130,130,.3);border-radius:13px;background:#241313;color:#ffc1c1;font-size:12px;line-height:1.4}
-.dl-pro-price-card{margin-top:17px;padding:17px 16px 12px;border:1px solid rgba(255,255,255,.17);border-radius:25px;background:linear-gradient(145deg,#171717,#0d0d0d);box-shadow:0 16px 38px rgba(0,0,0,.22)}
-.dl-pro-price{display:flex;align-items:baseline;gap:5px;min-height:58px}
-.dl-pro-price strong{color:#fff;font-size:42px;font-weight:800;letter-spacing:-.055em;line-height:1}
-.dl-pro-price span{color:#aaa;font-size:15px}
-.dl-pro-price em{margin-left:auto;padding:8px 12px;border:1px solid rgba(255,255,255,.09);border-radius:99px;background:#222;color:#eee;font-size:10px;font-style:normal;white-space:nowrap}
-.dl-pro-price-card>button{display:flex;align-items:center;justify-content:center;gap:12px;width:100%;min-height:58px;margin-top:10px;padding:0 16px;border:0;border-radius:999px;background:#fff;color:#080808;font-size:16px;font-weight:800;letter-spacing:-.02em;transition:transform .15s ease,background .15s ease}
-.dl-pro-price-card>button:active{transform:scale(.985)}
-.dl-pro-price-card>button:disabled{opacity:.7}
-.dl-pro-price-card>button svg{flex:none}
-.dl-pro-price-card>p{display:flex;align-items:center;justify-content:center;gap:7px;margin:14px 0 0;color:#aaa;font-size:11px;line-height:1.3;text-align:center}
-@media(min-width:600px){.dl-pro-paywall{min-height:min(900px,calc(100svh - 48px));border-radius:30px}}
-@media(max-height:760px){.dl-pro-hero{height:clamp(150px,22svh,195px)}.dl-pro-timeline{gap:10px;margin:19px 0 16px}.dl-pro-step-icon{flex-basis:62px;width:62px;height:62px}.dl-pro-timeline-line{left:30px;top:52px;bottom:52px}.dl-pro-step-copy{padding:12px 14px}.dl-pro-step-copy strong{font-size:16px}.dl-pro-features>div{min-height:40px}.dl-pro-price-card{margin-top:13px;padding:14px 14px 10px}.dl-pro-price strong{font-size:36px}.dl-pro-price-card>button{min-height:52px}}
-@media(max-width:360px){.dl-pro-paywall{padding-right:16px;padding-left:16px}.dl-pro-header{left:16px;right:16px}.dl-pro-hero{margin-right:-16px;margin-left:-16px}.dl-pro-step{gap:11px}.dl-pro-step-icon{flex-basis:58px;width:58px;height:58px}.dl-pro-timeline-line{left:28px}.dl-pro-step-copy strong{font-size:15px}.dl-pro-step-copy span{font-size:12px}.dl-pro-features{padding-right:13px;padding-left:13px}.dl-pro-features span{font-size:12px}.dl-pro-price-card>button{font-size:14px}}
-@media(prefers-reduced-motion:reduce){.dl-pro-price-card>button{transition:none}}
-
 /* Post-signup notification permission screen */
 .dl-notify-screen{position:relative;min-height:0;overflow:hidden;margin:-8px -12px -12px;padding:18px 16px calc(env(safe-area-inset-bottom,0px) + 14px);border-radius:22px;background:linear-gradient(155deg,#fbfcfe 0%,#f3f5f8 100%);color:#0A0F1E}
 .dl-notify-bell{display:grid;place-items:center;width:48px;height:48px;margin:0 0 20px;border:1px solid #e7e9ee;border-radius:17px;background:#f1f2f5;color:#111827}

@@ -2,7 +2,7 @@ import { name, siteUrl, absoluteUrl } from '../config/brand';
 import React, { useEffect, useRef, useState } from 'react';
 import { Select } from '../components/common/Select';
 import './ConversationalOnboardingFlow.css';
-import { ArrowLeft, ArrowRight, Check, Copy, Car, Truck, Bus, Crown, Eye, EyeOff, Link2, Loader2, MessageCircle, CreditCard, BarChart3, Users } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, Copy, Car, Truck, Bus, Eye, EyeOff, Link2, Loader2, MessageCircle } from 'lucide-react';
 import { useNavigation } from '../context/NavigationContext';
 import { storageService } from '../services/storage';
 import { supabaseService } from '../services/supabaseService';
@@ -16,7 +16,7 @@ import { notificationService } from '../services/notificationService';
 import { ShowroomBrandingEditor } from '../components/ShowroomBrandingEditor';
 import { Bell, MessageSquare, Eye as EyeIcon, CreditCard as CreditCardIcon } from 'lucide-react';
 
-const TOTAL = 9;
+const TOTAL = 8;
 const initialState = (): OnboardingState => ({
   currentStep: 1,
   account: { businessName: '', email: '', password: '', handle: '' },
@@ -29,14 +29,6 @@ const initialState = (): OnboardingState => ({
   isCompleted: false,
 });
 
-
-const withTimeout = <T,>(promise: Promise<T>, timeoutMs = 15000): Promise<T> => {
-  let timeoutId = 0;
-  const timeout = new Promise<never>((_, reject) => {
-    timeoutId = window.setTimeout(() => reject(new Error('TRIAL_ACTIVATION_TIMEOUT')), timeoutMs);
-  });
-  return Promise.race([promise, timeout]).finally(() => window.clearTimeout(timeoutId));
-};
 
 export const OnboardingFlow: React.FC<{ forceNewAccount?: boolean }> = ({ forceNewAccount = false }) => {
   const { navigate, showToast } = useNavigation();
@@ -52,7 +44,7 @@ export const OnboardingFlow: React.FC<{ forceNewAccount?: boolean }> = ({ forceN
   const [checking, setChecking] = useState(false);
   const [busy, setBusy] = useState(false);
   const [brandingBusy, setBrandingBusy] = useState(false);
-  const activationInFlight = useRef(false);
+  const completionInFlight = useRef(false);
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [introDone, setIntroDone] = useState(false);
@@ -113,13 +105,13 @@ export const OnboardingFlow: React.FC<{ forceNewAccount?: boolean }> = ({ forceN
           setData({
             ...initialState(),
             ...savedDraft,
-            currentStep: progress.onboarding_completed_at ? 9 : Math.max(2, Math.min(TOTAL, (progress.onboarding_step ?? 0) + 2)),
+            currentStep: progress.onboarding_completed_at || (progress.onboarding_step ?? 0) >= 6 ? 8 : Math.max(2, Math.min(TOTAL, (progress.onboarding_step ?? 0) + 2)),
             account: { ...initialState().account, email: user.email || '' },
             branding: { ...initialState().branding, ...(savedDraft.branding || {}) },
             isCompleted: Boolean(progress.onboarding_completed_at),
           });
           setIntroDone(Boolean(progress.intro_completed));
-          setNotificationsDismissedAt(progress.notifications_prompt_dismissed_at || null);
+          setNotificationsDismissedAt(progress.notifications_prompt_dismissed_at || ((progress.onboarding_step ?? 0) >= 6 && !progress.notifications_enabled ? new Date().toISOString() : null));
           setNotificationsEnabled(Boolean(progress.notifications_enabled));
         } else {
           setData({ ...initialState(), currentStep: 2, account: { ...initialState().account, email: user.email || '' } });
@@ -159,19 +151,6 @@ export const OnboardingFlow: React.FC<{ forceNewAccount?: boolean }> = ({ forceN
 
 
   const step = data.currentStep || 1;
-  React.useEffect(() => {
-    if (step !== 8) return;
-    const previousOverflow = document.body.style.overflow;
-    document.documentElement.classList.add('dl-pro-active');
-    document.body.classList.add('dl-pro-active');
-    document.body.style.overflow = 'hidden';
-    return () => {
-      document.documentElement.classList.remove('dl-pro-active');
-      document.body.classList.remove('dl-pro-active');
-      document.body.style.overflow = previousOverflow;
-    };
-  }, [step]);
-
   const countryCode = data.contact.country === 'South Africa' ? '+27' : '+263';
   const update = (patch: Partial<OnboardingState>) => setData(prev => ({ ...prev, ...patch }));
   const updateContact = (patch: Partial<OnboardingState['contact']>) => setData(prev => ({ ...prev, contact: { ...prev.contact, ...patch } }));
@@ -196,7 +175,7 @@ export const OnboardingFlow: React.FC<{ forceNewAccount?: boolean }> = ({ forceN
           .from('user_onboarding_progress')
           .upsert({
             user_id: user.id,
-            onboarding_step: Math.max(0, step - 2),
+            onboarding_step: data.isCompleted ? 7 : Math.max(0, step - 2),
             draft: draft as unknown as Json,
             intro_completed: introDone,
             notifications_prompt_dismissed_at: notificationsDismissedAt,
@@ -222,7 +201,7 @@ export const OnboardingFlow: React.FC<{ forceNewAccount?: boolean }> = ({ forceN
     return () => { active = false; window.clearTimeout(timer); };
   }, [data.showroom.handle]);
 
-  const setStep = (next: number) => { update({ currentStep: Math.max(1, Math.min(TOTAL, next)), ...(next === 9 ? { isCompleted: true } : {}) }); setError(''); window.scrollTo({ top: 0, behavior: 'smooth' }); };
+  const setStep = (next: number) => { update({ currentStep: Math.max(1, Math.min(TOTAL, next)), ...(next === 8 ? { isCompleted: true } : {}) }); setError(''); window.scrollTo({ top: 0, behavior: 'smooth' }); };
   const back = () => { if (step === 1) { setIntroDone(false); setIntroStep(5); } else setStep(step - 1); };
   const validSlug = /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(data.showroom.handle);
   const validWhatsapp = data.contact.whatsappNumber.replace(/[^0-9]/g, '').length >= 7;
@@ -282,100 +261,64 @@ export const OnboardingFlow: React.FC<{ forceNewAccount?: boolean }> = ({ forceN
   };
 
   const finishExistingSession = async () => {
-    if (activationInFlight.current || busy) return;
-    if (brandingBusy) { setError('Your showroom images are still uploading. Please wait a moment.'); return; }
-    activationInFlight.current = true;
+    if (completionInFlight.current) return;
+    if (brandingBusy) { setError('Your showroom images are still uploading. Please wait a moment.'); setStep(7); return; }
+    completionInFlight.current = true;
     setBusy(true);
     setError('');
 
     try {
-      const result = await withTimeout((async () => {
-        const user = await supabaseService.getCurrentUser();
-        if (!user) throw new Error('Please sign in to finish your setup.');
+      const user = await supabaseService.getCurrentUser();
+      if (!user) throw new Error('Please sign in to finish your setup.');
 
-        let dealer = await supabaseService.getCurrentDealership();
-        if (!dealer) {
-          dealer = await supabaseService.createDealership({
-            name: data.showroom.businessName.trim(),
-            slug: data.showroom.handle.trim(),
-            country: data.contact.country,
-            city: data.contact.city.trim(),
-            address: data.contact.address.trim(),
-            phone: toE164(countryCode, data.contact.whatsappNumber) || '',
-            whatsapp: toE164(countryCode, data.contact.whatsappNumber) || '',
-            email: user.email || data.account.email.trim(),
-            currency: data.contact.country === 'South Africa' ? 'ZAR' : 'USD',
-            template: 'signature',
-            dealershipType: data.sellerType,
-            bio: '',
-            tagline: data.showroom.businessName.trim(),
-            isPublished: true,
-          });
-        }
+      let dealer = await supabaseService.getCurrentDealership();
+      if (!dealer) {
+        dealer = await supabaseService.createDealership({
+          name: data.showroom.businessName.trim(),
+          slug: data.showroom.handle.trim(),
+          country: data.contact.country,
+          city: data.contact.city.trim(),
+          address: data.contact.address.trim(),
+          phone: toE164(countryCode, data.contact.whatsappNumber) || '',
+          whatsapp: toE164(countryCode, data.contact.whatsappNumber) || '',
+          email: user.email || data.account.email.trim(),
+          currency: data.contact.country === 'South Africa' ? 'ZAR' : 'USD',
+          template: 'signature',
+          dealershipType: data.sellerType,
+          bio: '',
+          tagline: data.showroom.businessName.trim(),
+          isPublished: true,
+        });
+      }
 
-        // This database function is atomic and idempotent. It returns the original
-        // trial dates on retries and marks onboarding complete in the same transaction.
-        const { data: activation, error: activationError } = await supabase.rpc('activate_dealership_trial');
-        if (activationError) throw activationError;
-        if (!activation || typeof activation !== 'object' || Array.isArray(activation)) {
-          throw new Error('Trial activation returned an invalid response.');
-        }
-        const activationResult = activation as {
-          status?: string;
-          trial_started_at?: string | null;
-          trial_ends_at?: string | null;
-          onboarding_completed_at?: string | null;
-          is_active?: boolean;
-        };
-        const activationNow = activationResult.onboarding_completed_at
-          ? new Date(activationResult.onboarding_completed_at).getTime()
-          : Date.now();
-        const activationTrialValid = (activationResult.status === 'trial' || activationResult.status === 'trialing') &&
-          !!activationResult.trial_ends_at && new Date(activationResult.trial_ends_at).getTime() > activationNow;
-        const activationPaidValid = activationResult.status === 'active' && activationResult.is_active === true;
-        if (activationResult.status === 'expired' &&
-          !!activationResult.trial_started_at && !!activationResult.trial_ends_at) {
-          throw new Error('TRIAL_ALREADY_USED');
-        }
-        if (!activationTrialValid && !activationPaidValid) {
-          throw new Error('TRIAL_STATE_INVALID');
-        }
+      if (data.branding.logoPreview || data.branding.coverPreview) {
+        dealer = await supabaseService.updateDealership(dealer.id, {
+          ...(data.branding.logoPreview ? { logoUrl: data.branding.logoPreview } : {}),
+          ...(data.branding.coverPreview ? { coverUrl: data.branding.coverPreview } : {}),
+        });
+      }
 
-        if ((activationTrialValid || activationPaidValid) && (data.branding.logoPreview || data.branding.coverPreview)) {
-          dealer = await supabaseService.updateDealership(dealer.id, {
-            ...(data.branding.logoPreview ? { logoUrl: data.branding.logoPreview } : {}),
-            ...(data.branding.coverPreview ? { coverUrl: data.branding.coverPreview } : {}),
-          });
-        }
-
-        // The activation RPC is the authoritative, transactional result. Do not
-        // make trial activation depend on the separate NardoPay status endpoint.
-        const refreshedDealer = await supabaseService.getCurrentDealership();
-        if (!refreshedDealer || refreshedDealer.id !== dealer.id) {
-          throw new Error('Could not refresh the dealership session after trial activation.');
-        }
-        return { user, dealer: refreshedDealer };
-      })());
-
-      storageService.saveDealership(result.dealer);
+      storageService.saveDealership(dealer);
       storageService.setUserSession({
         isLoggedIn: true,
-        email: result.user.email || data.account.email,
-        dealershipId: result.dealer.id,
-        userId: result.user.id,
+        email: user.email || data.account.email,
+        dealershipId: dealer.id,
+        userId: user.id,
       });
 
       if (notificationsDismissedAt) {
-        void notificationService.dismissOnboardingPrompt(result.dealer.id).catch(err =>
+        void notificationService.dismissOnboardingPrompt(dealer.id).catch(err =>
           console.warn('Could not persist notification prompt dismissal:', err)
         );
       } else if (notificationsEnabled && 'Notification' in window && Notification.permission === 'granted' && notificationService.isPushSupported()) {
-        void notificationService.enablePush(result.dealer.id, false).catch(err =>
+        void notificationService.enablePush(dealer.id, false).catch(err =>
           console.warn('Could not register the approved push subscription after dealership setup:', err)
         );
       }
-      await supabase.from('user_onboarding_progress').upsert({
-        user_id: result.user.id,
+
+      const completionNow = new Date().toISOString();
+      const { error: progressError } = await supabase.from('user_onboarding_progress').upsert({
+        user_id: user.id,
         onboarding_step: 7,
         draft: {
           sellerType: data.sellerType,
@@ -388,51 +331,34 @@ export const OnboardingFlow: React.FC<{ forceNewAccount?: boolean }> = ({ forceN
         intro_completed: true,
         notifications_prompt_dismissed_at: notificationsDismissedAt,
         notifications_enabled: notificationsEnabled,
-        onboarding_completed_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
+        onboarding_completed_at: completionNow,
+        updated_at: completionNow,
       }, { onConflict: 'user_id' });
+      if (progressError) console.warn('Onboarding completion progress could not be saved; server trial setup will retry:', progressError);
 
-      // Force a fresh app boot so the access gate cannot reuse pre-activation state.
+      // Dealership creation starts the trial in a database trigger. This redirect
+      // intentionally does not wait for trial setup or payment status.
       window.location.assign('/app');
     } catch (e: any) {
-      const diagnostic = {
-        name: e?.name ?? null,
+      console.error(`[${name} onboarding] Could not complete dealership setup:`, {
         message: e?.message ?? String(e),
         code: e?.code ?? null,
         details: e?.details ?? null,
         hint: e?.hint ?? null,
         status: e?.status ?? e?.context?.status ?? null,
-        statusText: e?.statusText ?? e?.context?.statusText ?? null,
-        context: e?.context?.body ?? e?.context?.message ?? null,
-      };
-      console.error(`[${name} onboarding] Trial activation failed (full diagnostic):`, diagnostic, e);
-
-      if (diagnostic.message === 'TRIAL_ALREADY_USED') {
-        setError('This account has already used its 3-day free trial. Choose a subscription plan to continue.');
-      } else if (diagnostic.message === 'TRIAL_STATE_INVALID') {
-        setError('The activation service returned an invalid trial status. Please retry; if it continues, contact support.');
-      } else if (diagnostic.code === '42501' || /authentication required|invalid jwt|session.*expired/i.test(diagnostic.message)) {
-        setError('Your sign-in session has expired. Sign in again, then retry activating your trial.');
-      } else if (diagnostic.code === 'P0002' || /no dealership profile/i.test(diagnostic.message)) {
-        setError('Your dealership profile is missing. Go back and complete your business details, then retry.');
-      } else if (diagnostic.code === '23505' || /duplicate key/i.test(diagnostic.message)) {
-        setError('Your setup is already being processed. Wait a moment, then retry.');
-      } else if (diagnostic.status === 401 || diagnostic.status === 403) {
-        setError('Your session could not be authorised. Sign in again, then retry.');
-      } else if (diagnostic.status === 406) {
-        setError('Your dealership profile could not be saved because access is not active yet. Retry activation; if it continues, contact support.');
-      } else if (/TRIAL_ACTIVATION_TIMEOUT|timeout/i.test(diagnostic.message)) {
-        setError('The activation service took too long to respond. Check your connection and retry.');
-      } else if (/fetch|network/i.test(diagnostic.message)) {
-        setError('Could not reach the activation service. Check your connection and retry.');
-      } else {
-        setError('Trial activation failed. Please retry. The technical error has been recorded for support.');
-      }
+      }, e);
+      setError(e?.message || 'We could not finish your setup. Please try again.');
+      setStep(7);
     } finally {
-      activationInFlight.current = false;
+      completionInFlight.current = false;
       setBusy(false);
     }
   };
+
+  useEffect(() => {
+    if (step !== 8 || !progressReady || forceNotificationsPreview) return;
+    void finishExistingSession();
+  }, [step, progressReady, forceNotificationsPreview]);
 
 
   const renderIntroVisual = () => {
@@ -505,13 +431,15 @@ export const OnboardingFlow: React.FC<{ forceNewAccount?: boolean }> = ({ forceN
     catch { setError('Could not copy the link. Please copy it from the address shown.'); }
   };
 
-  return <main className={step === 8 ? 'dl-pro-page' : step === 6 ? 'sb-onboarding-page' : 'min-h-[100dvh] bg-white px-4 py-5 text-[#0A0A0A] sm:py-8'}>
-    <section className={step === 8 ? 'dl-pro-page-inner' : step === 6 ? 'sb-onboarding-shell' : 'mx-auto flex min-h-[calc(100dvh-40px)] w-full max-w-[430px] flex-col rounded-[28px] bg-white px-1 py-3 sm:min-h-[780px] sm:px-5'}>
+  if (step === 8) return null;
+
+  return <main className={step === 6 ? 'sb-onboarding-page' : 'min-h-[100dvh] bg-white px-4 py-5 text-[#0A0A0A] sm:py-8'}>
+    <section className={step === 6 ? 'sb-onboarding-shell' : 'mx-auto flex min-h-[calc(100dvh-40px)] w-full max-w-[430px] flex-col rounded-[28px] bg-white px-1 py-3 sm:min-h-[780px] sm:px-5'}>
       {step < 7 && <header className="mb-7 flex items-center justify-between">
         <button type="button" onClick={back} aria-label="Go back" className="flex h-10 items-center gap-2 rounded-full px-2 text-sm font-medium text-gray-600 hover:bg-gray-50" disabled={step===7 || (step === 2 && Boolean(data.account.email))}>
           {step!==7 && <><ArrowLeft size={17}/> Back</>}
         </button>
-        <span className="text-xs font-medium text-gray-500">{step===6?'Brand your showroom':step===7?'Notifications':step===8?`${name} Pro`:step===9?'Ready':`Setup ${step} of 5`}</span>
+        <span className="text-xs font-medium text-gray-500">{step===6?'Brand your showroom':step===7?'Get notified':`Setup ${step} of 5`}</span>
       </header>}
       {step <= 5 && <div className="mb-8 flex items-center justify-center gap-2" aria-label={`Setup step ${step} of 5`}>
         {Array.from({length:5},(_,i)=><span key={i} className={`h-1.5 rounded-full transition-all duration-300 ${i+1===step?'w-7 bg-[#0A0A0A]':i+1<step?'w-2 bg-[#0A0A0A]':'w-2 bg-gray-200'}`} />)}
@@ -567,7 +495,7 @@ export const OnboardingFlow: React.FC<{ forceNewAccount?: boolean }> = ({ forceN
       </section>}
 
       {step === 6 && <section className="sb-onboarding-screen">
-        <div className="sb-stage-progress"><span>Step 2 of 4</span><div><i className="is-done"/><i className="is-current"/><i/><i/></div></div>
+        <div className="sb-stage-progress"><span>Step 2 of 3</span><div><i className="is-done"/><i className="is-current"/><i/></div></div>
         <div className="sb-screen-heading"><h1>Brand your showroom</h1><p>Add your logo and banner so buyers recognise your dealership.</p></div>
         <ShowroomBrandingEditor dealershipName={data.showroom.businessName} city={data.contact.city} logoUrl={data.branding.logoPreview || null} bannerUrl={data.branding.coverPreview || null} onChange={value => update({ branding: { ...data.branding, logoPreview: value.logoUrl, coverPreview: value.bannerUrl } })} onUploadingChange={setBrandingBusy}/>
         {error && <p role="alert" className="sb-inline-error">{error}</p>}
@@ -577,33 +505,8 @@ export const OnboardingFlow: React.FC<{ forceNewAccount?: boolean }> = ({ forceN
         </div>
       </section>}
 
-      {step === 8 && <section className="dl-pro-paywall">
-        <header className="dl-pro-header">
-          <div className="dl-pro-brand"><Logo variant="light" size="md"/></div>
-          <button type="button" className="dl-pro-close" aria-label="Back to notifications" onClick={()=>setStep(7)}><span aria-hidden="true">×</span></button>
-        </header>
-        <div className="dl-pro-hero"><img src={MARKETING_CAR_IMAGES.hero} alt="Premium vehicle outside a modern dealership"/><div className="dl-pro-hero-shade"/></div>
-        <div className="dl-pro-intro"><h1>Upgrade to<br/>{name} Pro</h1><p>Unlock more features and grow your dealership online.</p></div>
-        <div className="dl-pro-timeline">
-          <div className="dl-pro-timeline-line"/>
-          <div className="dl-pro-step is-current"><div className="dl-pro-step-icon"><Crown size={24} fill="currentColor"/></div><div className="dl-pro-step-copy"><strong>3-Day Free Trial</strong><span>Try all premium features for free.</span></div></div>
-          <div className="dl-pro-step"><div className="dl-pro-step-icon is-outline"><CreditCard size={23}/></div><div className="dl-pro-step-copy"><strong>Then $3.99 / month</strong><span>After 3 days, continue with {name} Pro for $3.99 per month. No payment is taken today.</span></div></div>
-        </div>
-        <div className="dl-pro-features">
-          <div><Car size={21}/><span>Online Dealership Showroom</span></div>
-          <div><BarChart3 size={21}/><span>Advanced Analytics &amp; Insights</span></div>
-          <div><Users size={21}/><span>Manage Buyer Leads</span></div>
-          <div><MessageCircle size={21}/><span>WhatsApp Enquiries</span></div>
-          <div><Car size={21}/><span>Vehicle Inventory Management</span></div>
-        </div>
-        {error&&<p role="alert" className="dl-pro-error">{error}</p>}
-        <footer className="dl-pro-sticky-footer">
-          <button type="button" disabled={busy || brandingBusy} onClick={finishExistingSession}>{busy?<><Loader2 size={19} className="animate-spin"/> Activating your trial…</>:<>{error?'Retry':'Start 3-day free trial'} <ArrowRight size={20}/></>}</button>
-          <p>No payment is taken today. Then $3.99/month.</p>
-        </footer>
-      </section>}
-
       {step === 7 && <section className="dl-notify-screen di-setup-screen flex flex-1 flex-col" aria-label="Get notified">
+        <div className="sb-stage-progress"><span>Step 3 of 3</span><div><i className="is-done"/><i className="is-done"/><i className="is-current"/></div></div>
         <div className="dl-notify-bell"><Bell size={21} strokeWidth={1.8}/></div>
         <h1>Get notified</h1>
         <p className="dl-notify-subtitle">Know the moment a buyer enquires about one of your cars.</p>
@@ -620,13 +523,7 @@ export const OnboardingFlow: React.FC<{ forceNewAccount?: boolean }> = ({ forceN
         </div>
       </section>}
 
-      {step === 9 && <section className="di-setup-screen flex flex-1 flex-col items-center justify-center text-center">
-        <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-black text-white"><Check size={32}/></div>
-        <h1 className="text-[30px] font-bold tracking-tight">Your {name} Pro trial is active.</h1><p className="mt-3 max-w-xs text-sm leading-6 text-gray-500">You have 3 days of full access. When your trial ends, you can subscribe for $3.99 per month through EcoCash. No payment is taken today.</p>
-        <div className="mt-8 flex w-full items-center gap-3 rounded-[16px] border border-[#E5E7EB] p-4 text-left"><Link2 size={18} className="shrink-0 text-gray-500"/><span className="min-w-0 flex-1 truncate text-sm font-medium">{new URL(siteUrl).host}/{data.showroom.handle}</span><button type="button" onClick={copyShowroomLink} aria-label="Copy showroom link" className="rounded-full p-2 hover:bg-gray-100"><Copy size={17}/></button></div>
-        <button type="button" onClick={share} className="mt-4 flex h-12 w-full items-center justify-center gap-2 rounded-full border border-[#E5E7EB] text-sm font-semibold"><MessageCircle size={17}/> Share on WhatsApp</button>
-        <button type="button" onClick={()=>navigate('/app')} className="mt-auto flex h-12 w-full items-center justify-center gap-2 rounded-full bg-black text-sm font-semibold text-white">Go to dashboard <ArrowRight size={17}/></button>
-      </section>}
+
     </section>
   </main>;
 };
