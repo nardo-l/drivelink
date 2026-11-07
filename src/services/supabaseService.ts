@@ -607,6 +607,28 @@ export const supabaseService = {
   // ---------------------------------------------------------------------------
   // SUPABASE STORAGE (Strict path convention: {dealership_id}/{filename})
   // ---------------------------------------------------------------------------
+  async assertCurrentDealershipWriteAccess(): Promise<void> {
+    const dealer = await this.getCurrentDealership().catch(() => null);
+    // Onboarding branding is staged under the authenticated user folder before
+    // the dealership row exists. Storage RLS restricts that pre-dealership case.
+    if (!dealer?.id) return;
+    const { data, error } = await supabase.rpc('activate_dealership_trial');
+    if (error) {
+      console.error('[DriveLink entitlement check] Trial/subscription reconciliation failed', {
+        dealershipId: dealer.id,
+        message: error.message,
+        code: (error as any).code || null,
+        details: (error as any).details || null,
+      });
+      throw error;
+    }
+    if (data?.status === 'expired' || data?.is_active === false) {
+      const expired = new Error('Your trial has ended. Choose a plan to continue. [TRIAL_EXPIRED]');
+      (expired as any).code = 'TRIAL_EXPIRED';
+      throw expired;
+    }
+  },
+
   async uploadVehiclePhoto(dealershipId: string, file: File, draftId: string, photoIndex: number, isCover: boolean): Promise<string> {
     const bucket = 'vehicle-photos';
     const user = await this.getCurrentUser();
@@ -639,6 +661,8 @@ export const supabaseService = {
       });
       throw new Error('You can only upload photos to your own dealership. Refresh and try again.');
     }
+
+    await this.assertCurrentDealershipWriteAccess();
 
     const extension = file.name.split('.').pop()?.toLowerCase();
     const safeExtension = extension && ['jpg', 'jpeg', 'png', 'webp'].includes(extension)
@@ -711,6 +735,7 @@ export const supabaseService = {
       : type === 'logo'
       ? 'png'
       : 'jpg';
+    await this.assertCurrentDealershipWriteAccess();
     const path = `${targetDealershipId}/${type}_${Date.now()}.${ext}`;
 
     const { error: uploadError } = await supabase.storage
@@ -757,6 +782,7 @@ export const supabaseService = {
     if (!user) throw new Error('Please sign in before uploading showroom branding.');
     const { data: { session } } = await supabase.auth.getSession();
     if (!session?.access_token) throw new Error('Your session has expired. Please sign in again.');
+    await this.assertCurrentDealershipWriteAccess();
     const path = `${user.id}/${type}.webp`;
     const url = `${supabaseUrl}/storage/v1/object/dealership-branding/${encodeURIComponent(user.id)}/${encodeURIComponent(type)}.webp`;
     await new Promise<void>((resolve, reject) => {
@@ -773,7 +799,13 @@ export const supabaseService = {
         else {
           let message = 'Image upload failed. Please try again.';
           try { message = JSON.parse(xhr.responseText)?.message || message; } catch {}
-          reject(new Error(message));
+          const uploadError: any = new Error(xhr.status === 403
+            ? `Storage access denied. Check dealership ownership and storage permissions. [STORAGE_RLS_403]`
+            : message);
+          uploadError.code = xhr.status === 403 ? 'STORAGE_RLS_403' : xhr.status === 409 ? 'STORAGE_CONFLICT_409' : undefined;
+          uploadError.status = xhr.status;
+          uploadError.details = xhr.responseText;
+          reject(uploadError);
         }
       };
       xhr.onerror = () => reject(new Error('Network error while uploading. Check your connection and retry.'));
