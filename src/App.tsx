@@ -89,8 +89,19 @@ function AppContent() {
   const trialSetupAttemptedForUser = React.useRef<string | null>(null);
   const ensureTrialSetupOnLoad = React.useCallback(async (userId: string) => {
     if (trialSetupAttemptedForUser.current === userId) return;
-    trialSetupAttemptedForUser.current = userId;
     try {
+      const { data: progress, error: progressError } = await supabase
+        .from('user_onboarding_progress')
+        .select('onboarding_step,onboarding_completed_at')
+        .eq('user_id', userId)
+        .maybeSingle();
+      if (progressError) {
+        console.warn('Could not inspect onboarding completion before trial retry:', progressError);
+        return;
+      }
+      // Do not alter accounts that are genuinely still in the earlier setup steps.
+      if (!progress || (!progress.onboarding_completed_at && (progress.onboarding_step ?? 0) < 6)) return;
+      trialSetupAttemptedForUser.current = userId;
       const { error } = await supabase.rpc('activate_dealership_trial');
       if (error) console.error('Background trial setup retry failed; dashboard access will continue:', error);
     } catch (error) {
