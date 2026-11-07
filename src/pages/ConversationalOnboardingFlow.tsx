@@ -377,7 +377,17 @@ export const OnboardingFlow: React.FC<{ forceNewAccount?: boolean }> = ({ forceN
   }
 
   if (!progressReady && !forceNewAccount && !forceNotificationsPreview) {
-    return <main className="flex min-h-[100dvh] items-center justify-center bg-white text-sm text-gray-500"><Loader2 size={18} className="mr-2 animate-spin"/> Loading your setup…</main>;
+    return <main className="min-h-[100dvh] bg-[#f4f4f3] px-4 py-6 sm:py-8" aria-label="Loading your setup">
+      <section className="mx-auto flex min-h-[calc(100dvh-48px)] w-full max-w-[430px] animate-pulse flex-col rounded-[28px] bg-white px-5 py-6">
+        <div className="mb-8 flex items-center justify-between"><div className="h-8 w-20 rounded-full bg-gray-100"/><div className="h-3 w-24 rounded-full bg-gray-100"/></div>
+        <div className="mx-auto mb-8 h-2 w-32 rounded-full bg-gray-100"/>
+        <div className="mb-3 h-8 w-3/4 rounded-lg bg-gray-100"/>
+        <div className="mb-8 h-4 w-full rounded-lg bg-gray-100"/>
+        <div className="mb-4 h-12 w-full rounded-xl bg-gray-100"/>
+        <div className="mb-4 h-12 w-full rounded-xl bg-gray-100"/>
+        <div className="mt-auto h-12 w-full rounded-full bg-gray-200"/>
+      </section>
+    </main>;
   }
 
   if (!introDone) return <main className="di-onboarding">
