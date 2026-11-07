@@ -607,7 +607,7 @@ export const supabaseService = {
   // ---------------------------------------------------------------------------
   // SUPABASE STORAGE (Strict path convention: {dealership_id}/{filename})
   // ---------------------------------------------------------------------------
-  async uploadVehiclePhoto(dealershipId: string, file: File, draftId: string): Promise<string> {
+  async uploadVehiclePhoto(dealershipId: string, file: File, draftId: string, photoIndex: number, isCover: boolean): Promise<string> {
     const bucket = 'vehicle-photos';
     const user = await this.getCurrentUser();
     const diagnosticBase = {
@@ -616,6 +616,8 @@ export const supabaseService = {
       userId: user?.id || null,
       dealershipId: dealershipId || null,
       draftId: draftId || null,
+      photoIndex,
+      isCover,
     };
 
     if (!isSupabaseConfigured()) {
