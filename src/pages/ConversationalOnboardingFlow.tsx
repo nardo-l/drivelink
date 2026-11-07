@@ -180,7 +180,7 @@ export const OnboardingFlow: React.FC<{ forceNewAccount?: boolean }> = ({ forceN
             intro_completed: introDone,
             notifications_prompt_dismissed_at: notificationsDismissedAt,
             notifications_enabled: notificationsEnabled,
-            onboarding_completed_at: data.isCompleted ? new Date().toISOString() : null,
+            ...(data.isCompleted ? {} : { onboarding_completed_at: null }),
             updated_at: new Date().toISOString(),
           }, { onConflict: 'user_id' });
         if (saveError) throw saveError;
@@ -316,7 +316,7 @@ export const OnboardingFlow: React.FC<{ forceNewAccount?: boolean }> = ({ forceN
         );
       }
 
-      const completionNow = new Date().toISOString();
+      const savedAt = new Date().toISOString();
       const { error: progressError } = await supabase.from('user_onboarding_progress').upsert({
         user_id: user.id,
         onboarding_step: 7,
@@ -331,8 +331,7 @@ export const OnboardingFlow: React.FC<{ forceNewAccount?: boolean }> = ({ forceN
         intro_completed: true,
         notifications_prompt_dismissed_at: notificationsDismissedAt,
         notifications_enabled: notificationsEnabled,
-        onboarding_completed_at: completionNow,
-        updated_at: completionNow,
+        updated_at: savedAt,
       }, { onConflict: 'user_id' });
       if (progressError) console.warn('Onboarding completion progress could not be saved; server trial setup will retry:', progressError);
 
