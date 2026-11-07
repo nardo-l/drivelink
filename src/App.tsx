@@ -89,19 +89,11 @@ function AppContent() {
   const trialSetupAttemptedForUser = React.useRef<string | null>(null);
   const ensureTrialSetupOnLoad = React.useCallback(async (userId: string) => {
     if (trialSetupAttemptedForUser.current === userId) return;
+    trialSetupAttemptedForUser.current = userId;
     try {
-      const { data: progress, error: progressError } = await supabase
-        .from('user_onboarding_progress')
-        .select('onboarding_step,onboarding_completed_at')
-        .eq('user_id', userId)
-        .maybeSingle();
-      if (progressError) {
-        console.warn('Could not inspect onboarding completion before trial retry:', progressError);
-        return;
-      }
-      // Do not alter accounts that are genuinely still in the earlier setup steps.
-      if (!progress || (!progress.onboarding_completed_at && (progress.onboarding_step ?? 0) < 6)) return;
-      trialSetupAttemptedForUser.current = userId;
+      // A dealership is only created at the final onboarding hand-off. Retry the
+      // server-side idempotent trial setup directly; do not make dashboard entry
+      // depend on a separate onboarding-progress read or client-side flag.
       const { error } = await supabase.rpc('activate_dealership_trial');
       if (error) console.error('Background trial setup retry failed; dashboard access will continue:', error);
     } catch (error) {
@@ -124,8 +116,10 @@ function AppContent() {
       setAccessEndsAt(trialValid ? subscription.trial_ends_at : paidValid ? subscription.current_period_end : null);
       setSubscriptionState(trialValid ? 'trial' : paidValid ? 'active' : trialExpired || subscription?.status === 'expired' || subscription?.status === 'cancelled' ? 'expired' : 'setup');
     } catch (error) {
-      console.warn('Subscription access verification failed:', error);
-      setSubscriptionState('unverified');
+      console.error('Subscription access verification failed; allowing dashboard to render while verification can retry:', error);
+      setTrialEndsAt(null);
+      setAccessEndsAt(null);
+      setSubscriptionState('setup');
     }
   }, []);
   const isDemo = storageService.isDemoModeActive();
@@ -233,7 +227,14 @@ function AppContent() {
     const isProtectedRoute = currentPath.startsWith('/app');
     if (forceNotificationsPreview) return <OnboardingFlow />;
     if (isLive && !sessionChecked) {
-      return <div className="flex min-h-[100dvh] items-center justify-center bg-white text-sm text-gray-500">Loading your {name} account…</div>;
+      return <div className="min-h-[100dvh] bg-[#f4f4f3] px-5 py-8" aria-label="Loading account">
+        <div className="mx-auto w-full max-w-[520px] animate-pulse space-y-5">
+          <div className="h-10 w-36 rounded-xl bg-gray-200" />
+          <div className="h-28 rounded-2xl bg-white" />
+          <div className="grid grid-cols-2 gap-3"><div className="h-28 rounded-2xl bg-white"/><div className="h-28 rounded-2xl bg-white"/></div>
+          <div className="h-44 rounded-2xl bg-white" />
+        </div>
+      </div>;
     }
 
     if (currentPath === '/welcome') return <WelcomePage />;
@@ -376,12 +377,13 @@ function AppContent() {
   const currentSession = storageService.getUserSession();
   const dealerAppRoute = currentSession.isLoggedIn && !!currentSession.dealershipId && (currentPath.startsWith('/app') || ['/', '/login', '/signup', '/onboarding'].includes(currentPath));
   const forcePaywall = !forceNotificationsPreview && isConfigured && !isDemo && dealerAppRoute && currentSession.isLoggedIn && !!currentSession.dealershipId && subscriptionState === 'expired';
-  const blockUntilVerified = !forceNotificationsPreview && isConfigured && !isDemo && dealerAppRoute && currentSession.isLoggedIn && !!currentSession.dealershipId && ['checking', 'unverified'].includes(subscriptionState);
+  // Subscription checks never hold the UI hostage. A confirmed expired response
+  // still enforces the existing hard paywall; missing/error states render the page.
 
   return (
     <DeviceFrame>
 
-      {!forcePaywall && !blockUntilVerified && dealerAppRoute && (
+      {!forcePaywall && dealerAppRoute && (
         <ErrorBoundary label="trial banner">
           <TrialBanner
             subscriptionState={subscriptionState}
@@ -392,8 +394,10 @@ function AppContent() {
           />
         </ErrorBoundary>
       )}
-      {forcePaywall || (blockUntilVerified && subscriptionState === 'unverified') ? <PaywallPage /> : blockUntilVerified ? <div className="flex min-h-[100dvh] items-center justify-center bg-white px-6 text-center text-sm text-gray-500">Verifying your {name} subscription…</div> : renderRoute()}
-      {!forcePaywall && !blockUntilVerified && (['/app', '/app/vehicles', '/app/enquiries', '/app/more'].includes(currentPath) || (currentPath === '/' && storageService.getUserSession().isLoggedIn && !!storageService.getUserSession().dealershipId)) && <BottomNav />}
+      {forcePaywall
+        ? <ErrorBoundary label="subscription paywall"><PaywallPage /></ErrorBoundary>
+        : <ErrorBoundary label={`${currentPath || 'home'} page`}>{renderRoute()}</ErrorBoundary>}
+      {!forcePaywall && (['/app', '/app/vehicles', '/app/enquiries', '/app/more'].includes(currentPath) || (currentPath === '/' && storageService.getUserSession().isLoggedIn && !!storageService.getUserSession().dealershipId)) && <BottomNav />}
 
       {/* Global Toast Notification */}
       {toast && (
@@ -409,7 +413,7 @@ function AppContent() {
 export default function App() {
   return (
     <NavigationProvider>
-      <AppContent />
+      <ErrorBoundary label="application"><AppContent /></ErrorBoundary>
     </NavigationProvider>
   );
 }

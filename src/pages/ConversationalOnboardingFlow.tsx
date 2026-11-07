@@ -347,7 +347,8 @@ export const OnboardingFlow: React.FC<{ forceNewAccount?: boolean }> = ({ forceN
         status: e?.status ?? e?.context?.status ?? null,
       }, e);
       setError(e?.message || 'We could not finish your setup. Please try again.');
-      setStep(7);
+      // Stay on a visible recovery screen instead of returning to an empty step.
+      update({ currentStep: 8, isCompleted: false });
     } finally {
       completionInFlight.current = false;
       setBusy(false);
@@ -420,7 +421,20 @@ export const OnboardingFlow: React.FC<{ forceNewAccount?: boolean }> = ({ forceN
     finally { setBusy(false); }
   };
 
-  if (step === 8) return null;
+  if (step === 8) return <main className="flex min-h-[100dvh] items-center justify-center bg-[#f4f4f3] px-5 py-8">
+    <section className="w-full max-w-[430px] rounded-[28px] bg-white px-6 py-10 text-center shadow-sm">
+      <div className="mx-auto mb-5 flex h-12 w-12 items-center justify-center rounded-full bg-gray-100">
+        {busy ? <Loader2 size={22} className="animate-spin text-gray-700"/> : <Check size={22} className="text-gray-800"/>}
+      </div>
+      <h1 className="text-xl font-bold tracking-tight">{busy ? 'Setting up your showroom…' : 'Your showroom is almost ready'}</h1>
+      <p className="mt-2 text-sm leading-6 text-gray-500">{busy ? 'We’re saving your setup and preparing your dashboard. This can take a moment.' : 'We could not finish the setup automatically. Your details are saved; you can safely retry.'}</p>
+      {error && <p role="alert" className="mt-4 rounded-xl bg-red-50 p-3 text-left text-sm text-red-700">{error}</p>}
+      <button type="button" onClick={() => void finishExistingSession()} disabled={busy} className="mt-7 flex h-12 w-full items-center justify-center gap-2 rounded-full bg-black px-5 text-sm font-semibold text-white disabled:cursor-wait disabled:opacity-50">
+        {busy ? <><Loader2 size={17} className="animate-spin"/> Finishing setup…</> : <>Try again <ArrowRight size={17}/></>}
+      </button>
+      {!busy && <button type="button" onClick={() => setStep(7)} className="mt-3 h-10 w-full text-sm font-semibold text-gray-600">Back to notifications</button>}
+    </section>
+  </main>;
 
   return <main className={step === 6 ? 'sb-onboarding-page' : 'min-h-[100dvh] bg-white px-4 py-5 text-[#0A0A0A] sm:py-8'}>
     <section className={step === 6 ? 'sb-onboarding-shell' : 'mx-auto flex min-h-[calc(100dvh-40px)] w-full max-w-[430px] flex-col rounded-[28px] bg-white px-1 py-3 sm:min-h-[780px] sm:px-5'}>

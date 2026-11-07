@@ -21,8 +21,8 @@ export class ErrorBoundary extends React.Component<Props, State> {
       return (
         <div role="alert" className="mx-4 my-4 rounded-2xl border border-[#e5e7eb] bg-white p-5 text-center text-sm text-[#0A0F1E] shadow-sm">
           <p className="font-semibold">Something went wrong.</p>
-          <p className="mt-1 text-xs text-[#667085]">Tap to reload and try again.</p>
-          <button type="button" onClick={() => window.location.reload()} className="mt-4 rounded-full bg-[#0A0F1E] px-5 py-2.5 font-semibold text-white">Reload</button>
+          <p className="mt-1 text-xs text-[#667085]">Something went wrong. Tap to reload.</p>
+          <button type="button" onClick={() => window.location.reload()} className="mt-4 rounded-full bg-[#0A0F1E] px-5 py-2.5 font-semibold text-white">Reload page</button>
         </div>
       );
     }
