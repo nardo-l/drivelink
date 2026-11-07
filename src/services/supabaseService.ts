@@ -251,46 +251,40 @@ export const supabaseService = {
 
   async checkHandleAvailability(slug: string): Promise<boolean> {
     if (!isSupabaseConfigured()) return true;
-
-    const { count, error } = await supabase
-      .from('dealerships')
-      .select('id', { count: 'exact', head: true })
-      .eq('slug', slug);
-
+    const { data, error } = await supabase.rpc('check_dealership_slug_availability' as any, { p_slug: slug } as any);
     if (error) {
-      console.error('Error checking handle availability:', error);
+      console.error('Error checking showroom link availability:', error);
       return false;
     }
-    return count === 0;
+    return data === true;
+  },
+
+  async updateDealershipSlug(slug: string): Promise<Dealership> {
+    if (!isSupabaseConfigured()) throw new Error('Showroom links are unavailable offline.');
+    const { data, error } = await supabase.rpc('update_my_dealership_slug' as any, { p_slug: slug } as any);
+    if (error) {
+      console.error('Error updating showroom link:', error);
+      throw new Error(error.message?.toLowerCase().includes('taken') ? 'That showroom link is taken. Try another.' : 'Could not update your showroom link. Please try again.');
+    }
+    return mapDealershipFromRow(data as DealershipRow);
   },
 
   async createDealership(dealershipData: Partial<Dealership>): Promise<Dealership> {
-    if (!isSupabaseConfigured()) {
-      throw new Error('Supabase is not configured.');
-    }
+    if (!isSupabaseConfigured()) throw new Error('Supabase is not configured.');
     const user = await this.getCurrentUser();
-    if (!user) {
-      throw new Error('Authentication required to create a dealership.');
-    }
-
-    // Prevent duplicate records if user retries onboarding
-    const existing = await this.getCurrentDealership();
-    if (existing) {
-      return await this.updateDealership(existing.id, dealershipData);
-    }
-
+    if (!user) throw new Error('Authentication required to create a dealership.');
     const payload = mapDealershipToRow(dealershipData, user.id);
-    const { data, error } = await supabase
-      .from('dealerships')
-      .insert(payload)
-      .select()
-      .single();
-
+    const { data, error } = await supabase.rpc(
+      'complete_dealership_onboarding' as any,
+      { p_dealership: payload as any } as any
+    );
     if (error) {
-      console.error('Error creating dealership:', error);
-      throw error;
+      console.error('Server-side dealership onboarding failed:', {
+        message: error.message, code: error.code, details: error.details, hint: error.hint
+      });
+      throw new Error('We could not finish setting up your showroom. Your details are saved. Please try again.');
     }
-    return mapDealershipFromRow(data);
+    return mapDealershipFromRow(data as DealershipRow);
   },
 
   async updateDealership(dealershipId: string, updates: Partial<Dealership>): Promise<Dealership> {

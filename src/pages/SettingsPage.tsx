@@ -13,7 +13,7 @@ import {isSupabaseConfigured,supabase} from '../lib/supabase';
 import type {Dealership} from '../types';
 import './SettingsPage.css';
 
-type SheetKey='profile'|'branding'|'name'|'contact'|'location'|'hours'|'terms'|'privacy'|'logout'|'delete'|null;
+type SheetKey='profile'|'branding'|'name'|'slug'|'contact'|'location'|'hours'|'terms'|'privacy'|'logout'|'delete'|null;
 type DealerDraft=Pick<Dealership,'name'|'city'|'address'|'phone'|'whatsapp'>;
 
 const APP_VERSION='0.0.0';
@@ -31,6 +31,8 @@ export const SettingsPage:React.FC=()=>{
  const [planStatus,setPlanStatus]=useState('Checking plan…');
  const [deleteText,setDeleteText]=useState('');
  const [copied,setCopied]=useState(false);
+ const [slugDraft,setSlugDraft]=useState(dealer.slug);
+ const [slugAvailability,setSlugAvailability]=useState<'idle'|'checking'|'available'|'taken'>('idle');
  const logoInput=useRef<HTMLInputElement>(null),bannerInput=useRef<HTMLInputElement>(null);
  const initials=useMemo(()=>dealer.name.trim().split(/\\s+/).filter(Boolean).slice(0,2).map(x=>x[0]).join('').toUpperCase()||'DL',[dealer.name]);
  const showroomUrl=typeof window!=='undefined'?`${window.location.origin}/showroom/${encodeURIComponent(dealer.slug)}`:'';
@@ -45,6 +47,8 @@ export const SettingsPage:React.FC=()=>{
   finally{setSaving(false);}
  };
  const saveSheet=async()=>{if(sheet==='profile')return saveProfile(draft);if(sheet==='name')return saveProfile({name:draft.name});if(sheet==='contact')return saveProfile({phone:draft.phone,whatsapp:draft.whatsapp});if(sheet==='location')return saveProfile({city:draft.city,address:draft.address});};
+ useEffect(()=>{if(sheet!=='slug')return;const clean=slugDraft.toLowerCase().trim().replace(/[^a-z0-9-]+/g,'-').replace(/-+/g,'-').replace(/^-|-$/g,'');if(clean.length<3){setSlugAvailability('idle');return;}setSlugAvailability('checking');let active=true;const timer=window.setTimeout(()=>{supabaseService.checkHandleAvailability(clean).then(ok=>{if(active)setSlugAvailability(ok?'available':'taken');}).catch(()=>{if(active)setSlugAvailability('taken');});},300);return()=>{active=false;window.clearTimeout(timer);};},[slugDraft,sheet]);
+ const saveSlug=async()=>{if(slugAvailability!=='available')return;setSaving(true);try{const updated=await supabaseService.updateDealershipSlug(slugDraft);setDealer(updated);storageService.saveDealership(updated);setSheet(null);showToast('Showroom link updated');}catch(error){showToast(error instanceof Error?error.message:'Could not update your showroom link.');}finally{setSaving(false);}};
  const copyLink=async()=>{try{await navigator.clipboard.writeText(showroomUrl);setCopied(true);showToast('Showroom link copied');window.setTimeout(()=>setCopied(false),1800);}catch{showToast('Could not copy the showroom link');}};
  const togglePush=async()=>{if(pushBusy)return;setPushBusy(true);try{if(pushEnabled){await notificationService.disablePush(dealer.id);setPushEnabled(false);showToast('Saved');}else{await notificationService.enablePush(dealer.id,true);setPushEnabled(true);setPermission(typeof Notification==='undefined'?'default':Notification.permission);showToast('Saved');}}catch(error){setPermission(typeof Notification==='undefined'?'default':Notification.permission);showToast(error instanceof Error?error.message:'Could not update notifications.');}finally{setPushBusy(false);}};
  const uploadAsset=async(kind:'logo'|'banner',file?:File)=>{
@@ -59,7 +63,7 @@ export const SettingsPage:React.FC=()=>{
  const signOut=async()=>{setSaving(true);try{if(isSupabaseConfigured())await supabaseService.signOut();await storageService.clearAppUserData();window.location.assign('/login');}catch(error){showToast(error instanceof Error?error.message:'Could not sign out.');setSaving(false);setSheet(null);}};
  const requestDeletion=()=>{if(deleteText.trim()!=='DELETE')return;const msg=encodeURIComponent(`Hi ${name} Support, I would like to request deletion of my account and dealership data. Dealership: '+dealer.name+'. Please guide me through the verification process.`);window.open('https://wa.me/'+supportWhatsApp+'?text='+msg,'_blank','noopener,noreferrer');setSheet(null);setDeleteText('');};
  const Row=({icon:Icon,label,value,onClick,danger=false}:any)=><button type="button" className={'dl-settings-row'+(danger?' is-danger':'')} onClick={onClick}><span className="dl-settings-row-icon"><Icon size={17}/></span><span className="dl-settings-row-copy"><strong>{label}</strong>{value&&<small>{value}</small>}</span><ChevronRight className="dl-settings-chevron" size={17}/></button>;
- const openSheet=(key:SheetKey)=>{setDraft({name:dealer.name,city:dealer.city,address:dealer.address||'',phone:dealer.phone,whatsapp:dealer.whatsapp});setSheet(key);};
+ const openSheet=(key:SheetKey)=>{setDraft({name:dealer.name,city:dealer.city,address:dealer.address||'',phone:dealer.phone,whatsapp:dealer.whatsapp});setSlugDraft(dealer.slug);setSlugAvailability('idle');setSheet(key);};
  return <div className="dl-settings-page">
   <header className="dl-settings-header"><button type="button" onClick={()=>navigate('/app/more')} aria-label="Back" className="dl-settings-back"><ArrowLeft size={18}/></button><h1>Settings</h1></header>
   <main className="dl-settings-main">
@@ -69,6 +73,7 @@ export const SettingsPage:React.FC=()=>{
      <div className="dl-settings-profile-info"><strong>{dealer.name}</strong><small>{dealer.city||'Location not set'}{dealer.country?', '+dealer.country:''}</small></div>
      <button type="button" onClick={()=>openSheet('profile')} className="dl-settings-edit">Edit</button>
     </div>
+    <button type="button" className="dl-settings-copy" onClick={()=>openSheet('slug')}>Edit showroom link</button>
     <button type="button" className="dl-settings-copy" onClick={copyLink}>{copied?<Check size={14}/>:<Copy size={14}/>} {copied?'Copied':'Copy showroom link'}</button>
    </section>
 
@@ -105,12 +110,17 @@ export const SettingsPage:React.FC=()=>{
   {sheet&&<div className="dl-settings-scrim" role="presentation" onMouseDown={e=>{if(e.target===e.currentTarget&&!saving&&!uploading)setSheet(null);}}>
    <section className="dl-settings-sheet" role="dialog" aria-modal="true" aria-labelledby="dl-settings-sheet-title">
     <div className="dl-settings-sheet-handle"/>
-    <div className="dl-settings-sheet-heading"><h2 id="dl-settings-sheet-title">{({profile:'Edit dealership profile',branding:'Showroom images',name:'Dealership name',contact:'Contact numbers',location:'Dealership location',hours:'Opening hours',terms:'Terms',privacy:'Privacy',logout:'Log out?',delete:'Delete account'} as Record<string,string>)[sheet]}</h2><button type="button" onClick={()=>setSheet(null)} aria-label="Close" disabled={saving||!!uploading}><X size={18}/></button></div>
+    <div className="dl-settings-sheet-heading"><h2 id="dl-settings-sheet-title">{({profile:'Edit dealership profile',branding:'Showroom images',name:'Dealership name',slug:'Edit showroom link',contact:'Contact numbers',location:'Dealership location',hours:'Opening hours',terms:'Terms',privacy:'Privacy',logout:'Log out?',delete:'Delete account'} as Record<string,string>)[sheet]}</h2><button type="button" onClick={()=>setSheet(null)} aria-label="Close" disabled={saving||!!uploading}><X size={18}/></button></div>
     {(sheet==='profile'||sheet==='name'||sheet==='contact'||sheet==='location')&&<div className="dl-settings-sheet-body">
      {(sheet==='profile'||sheet==='name')&&<label>Dealership name<input value={draft.name} onChange={e=>setDraft(v=>({...v,name:e.target.value}))} maxLength={90}/></label>}
      {(sheet==='profile'||sheet==='contact')&&<><label>Phone number<input type="tel" value={draft.phone} onChange={e=>setDraft(v=>({...v,phone:e.target.value}))} placeholder="+263…"/></label><label>WhatsApp number<input type="tel" value={draft.whatsapp} onChange={e=>setDraft(v=>({...v,whatsapp:e.target.value}))} placeholder="+263…"/></label></>}
      {(sheet==='profile'||sheet==='location')&&<><label>City or area<input value={draft.city} onChange={e=>setDraft(v=>({...v,city:e.target.value}))} placeholder="e.g. Bulawayo"/></label><label>Street address <span>Optional</span><input value={draft.address} onChange={e=>setDraft(v=>({...v,address:e.target.value}))} placeholder="Street or business address"/></label></>}
      <button type="button" className="dl-settings-primary" disabled={saving||!draft.name.trim()&&(sheet==='profile'||sheet==='name')} onClick={()=>void saveSheet()}>{saving?<Loader2 className="spin" size={16}/>:null}Save changes</button>
+    </div>}
+    {sheet==='slug'&&<div className="dl-settings-sheet-body">
+     <label>Showroom link <span>lotle.link/</span><input value={slugDraft} onChange={e=>setSlugDraft(e.target.value.toLowerCase().replace(/[^a-z0-9-]+/g,'-').replace(/-+/g,'-').replace(/^-|-$/g,''))} maxLength={63} autoCapitalize="none" autoCorrect="off" spellCheck={false}/></label>
+     <p className="dl-settings-note">{slugAvailability==='checking'?'Checking availability…':slugAvailability==='available'?'lotle.link/'+slugDraft+' is available':slugAvailability==='taken'?'That link is taken or reserved. Try another.':'Use at least 3 letters or numbers. Letters, numbers and hyphens only.'}</p>
+     <button type="button" className="dl-settings-primary" disabled={saving||slugAvailability!=='available'} onClick={()=>void saveSlug()}>{saving?<Loader2 className="spin" size={16}/>:null}Save showroom link</button>
     </div>}
     {sheet==='branding'&&<div className="dl-settings-sheet-body dl-settings-branding">
      <div className="dl-settings-brand-preview"><span>Logo</span>{dealer.logoUrl?<img src={dealer.logoUrl} alt="Dealership logo"/>:<b>{initials}</b>}<button type="button" onClick={()=>logoInput.current?.click()} disabled={!!uploading}>{uploading==='logo'?<Loader2 className="spin" size={15}/>:<Upload size={15}/>} Upload logo</button><input ref={logoInput} hidden type="file" accept="image/png,image/jpeg,image/webp" onChange={e=>void uploadAsset('logo',e.target.files?.[0])}/></div>

@@ -271,25 +271,22 @@ export const OnboardingFlow: React.FC<{ forceNewAccount?: boolean }> = ({ forceN
       const user = await supabaseService.getCurrentUser();
       if (!user) throw new Error('Please sign in to finish your setup.');
 
-      let dealer = await supabaseService.getCurrentDealership();
-      if (!dealer) {
-        dealer = await supabaseService.createDealership({
-          name: data.showroom.businessName.trim(),
-          slug: data.showroom.handle.trim(),
-          country: data.contact.country,
-          city: data.contact.city.trim(),
-          address: data.contact.address.trim(),
-          phone: toE164(countryCode, data.contact.whatsappNumber) || '',
-          whatsapp: toE164(countryCode, data.contact.whatsappNumber) || '',
-          email: user.email || data.account.email.trim(),
-          currency: data.contact.country === 'South Africa' ? 'ZAR' : 'USD',
-          template: 'signature',
-          dealershipType: data.sellerType,
-          bio: '',
-          tagline: data.showroom.businessName.trim(),
-          isPublished: true,
-        });
-      }
+      let dealer = await supabaseService.createDealership({
+        name: data.showroom.businessName.trim(),
+        slug: data.showroom.handle.trim(),
+        country: data.contact.country,
+        city: data.contact.city.trim(),
+        address: data.contact.address.trim(),
+        phone: toE164(countryCode, data.contact.whatsappNumber) || '',
+        whatsapp: toE164(countryCode, data.contact.whatsappNumber) || '',
+        email: user.email || data.account.email.trim(),
+        currency: data.contact.country === 'South Africa' ? 'ZAR' : 'USD',
+        template: 'signature',
+        dealershipType: data.sellerType,
+        bio: '',
+        tagline: data.showroom.businessName.trim(),
+        isPublished: true,
+      });
 
       if (data.branding.logoPreview || data.branding.coverPreview) {
         dealer = await supabaseService.updateDealership(dealer.id, {
@@ -346,7 +343,7 @@ export const OnboardingFlow: React.FC<{ forceNewAccount?: boolean }> = ({ forceN
         hint: e?.hint ?? null,
         status: e?.status ?? e?.context?.status ?? null,
       }, e);
-      setError(e?.message || 'We could not finish your setup. Please try again.');
+      setError('We could not finish setting up your showroom. Your details are saved. Tap Try again to resume.');
       // Stay on a visible recovery screen instead of returning to an empty step.
       update({ currentStep: 8, isCompleted: false });
     } finally {
