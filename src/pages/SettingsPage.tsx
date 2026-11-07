@@ -25,6 +25,7 @@ export const SettingsPage:React.FC=()=>{
  const [draft,setDraft]=useState<DealerDraft>(()=>({name:dealer.name,city:dealer.city,address:dealer.address||'',phone:dealer.phone,whatsapp:dealer.whatsapp}));
  const [saving,setSaving]=useState(false);
  const [uploading,setUploading]=useState<'logo'|'banner'|null>(null);
+ const [uploadError,setUploadError]=useState('');
  const [pushEnabled,setPushEnabled]=useState(false);
  const [pushBusy,setPushBusy]=useState(false);
  const [permission,setPermission]=useState<NotificationPermission>(()=>typeof Notification==='undefined'?'default':Notification.permission);
@@ -55,9 +56,9 @@ export const SettingsPage:React.FC=()=>{
   if(!file)return;
   if(!['image/jpeg','image/png','image/webp'].includes(file.type)){showToast('Choose a JPG, PNG or WebP image.');return;}
   if(file.size>10*1024*1024){showToast('Image must be smaller than 10 MB.');return;}
-  setUploading(kind);
+  setUploading(kind);setUploadError('');
   try{const url=await supabaseService.uploadShowroomBrandingAsset(file,kind);const updated={...dealer,...(kind==='logo'?{logoUrl:url}:{coverUrl:url})};setDealer(updated);storageService.saveDealership(updated);showToast('Saved');setSheet(null);}
-  catch(error){showToast(error instanceof Error?error.message:'Upload failed. Your previous image is unchanged.');}
+  catch(error){const message=error instanceof Error?error.message:'Upload failed. Your previous image is unchanged.';setUploadError(message);showToast(message.replace(/\s*\[[A-Z0-9_]+\]$/,''));}
   finally{setUploading(null);}
  };
  const signOut=async()=>{setSaving(true);try{if(isSupabaseConfigured())await supabaseService.signOut();await storageService.clearAppUserData();window.location.assign('/login');}catch(error){showToast(error instanceof Error?error.message:'Could not sign out.');setSaving(false);setSheet(null);}};
@@ -126,6 +127,7 @@ export const SettingsPage:React.FC=()=>{
      <div className="dl-settings-brand-preview"><span>Logo</span>{dealer.logoUrl?<img src={dealer.logoUrl} alt="Dealership logo"/>:<b>{initials}</b>}<button type="button" onClick={()=>logoInput.current?.click()} disabled={!!uploading}>{uploading==='logo'?<Loader2 className="spin" size={15}/>:<Upload size={15}/>} Upload logo</button><input ref={logoInput} hidden type="file" accept="image/png,image/jpeg,image/webp" onChange={e=>void uploadAsset('logo',e.target.files?.[0])}/></div>
      <div className="dl-settings-banner-preview"><span>Banner</span>{dealer.coverUrl?<img src={dealer.coverUrl} alt="Showroom banner preview"/>:<div className="dl-settings-banner-empty">No banner uploaded</div>}<button type="button" onClick={()=>bannerInput.current?.click()} disabled={!!uploading}>{uploading==='banner'?<Loader2 className="spin" size={15}/>:<Upload size={15}/>} Upload banner</button><input ref={bannerInput} hidden type="file" accept="image/png,image/jpeg,image/webp" onChange={e=>void uploadAsset('banner',e.target.files?.[0])}/><small>JPG, PNG or WebP · Max 10 MB · Uploaded as-is, no crop step</small></div>
     </div>}
+    {sheet==='branding'&&uploadError&&<p role="alert" className="px-1 text-xs text-[#475467]">{uploadError.replace(/\s*\[([A-Z0-9_]+)\]$/,'')}<small className="mt-1 block text-[10px] text-[#98A2B3]">{uploadError.match(/\[([A-Z0-9_]+)\]$/)?.[1]?`Code: ${uploadError.match(/\[([A-Z0-9_]+)\]$/)?.[1]}`:''}</small></p>}
     {sheet==='hours'&&<div className="dl-settings-sheet-body"><p className="dl-settings-note">Opening hours are not currently stored in the dealership profile, so there is no safe way to save them here yet. This screen leaves your existing dealership data unchanged.</p><button type="button" className="dl-settings-primary" onClick={()=>setSheet(null)}>Got it</button></div>}
     {(sheet==='terms'||sheet==='privacy')&&<div className="dl-settings-sheet-body"><p className="dl-settings-note">{sheet==='terms'?'The Terms page is not currently connected in this app.':'The Privacy page is not currently connected in this app.'} Contact support if you need a copy of the current policy.</p><a className="dl-settings-primary" href={'https://wa.me/'+supportWhatsApp} target="_blank" rel="noreferrer"><MessageCircle size={16}/> Contact support</a></div>}
     {sheet==='logout'&&<div className="dl-settings-sheet-body"><p className="dl-settings-note">You’ll be signed out of this {name} account on this device.</p><button type="button" className="dl-settings-primary" disabled={saving} onClick={()=>void signOut()}>{saving?<Loader2 className="spin" size={16}/>:null}Log out</button><button type="button" className="dl-settings-secondary" onClick={()=>setSheet(null)}>Cancel</button></div>}
