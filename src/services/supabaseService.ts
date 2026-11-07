@@ -279,10 +279,23 @@ export const supabaseService = {
       { p_dealership: payload as any } as any
     );
     if (error) {
-      console.error('Server-side dealership onboarding failed:', {
-        message: error.message, code: error.code, details: error.details, hint: error.hint
-      });
-      throw new Error('We could not finish setting up your showroom. Your details are saved. Please try again.');
+      const message = error.message || 'Unknown database error';
+      const details = error.details || null;
+      const hint = error.hint || null;
+      const code = error.code || null;
+      const diagnostic = { step: 'dealership_insert_update', message, code, details, hint };
+      console.error('[DriveLink onboarding][dealership_insert_update] RPC failed:', diagnostic, error);
+      const lower = [message, details || '', hint || ''].join(' ').toLowerCase();
+      const setupCode =
+        code === '42501' ? 'SETUP_PERMISSION' :
+        (code === '42883' || code === 'PGRST202') ? 'SETUP_DB_MISSING_FUNCTION' :
+        (code === '23505' && lower.includes('slug')) ? 'SETUP_SLUG_TAKEN' :
+        code === 'P0002' ? 'SETUP_DEALERSHIP_MISSING' :
+        'SETUP_UNKNOWN';
+      throw Object.assign(
+        new Error('We could not finish setting up your showroom. Your details are saved. Please try again.'),
+        { code, details, hint, setupCode, setupStep: 'dealership_insert_update' }
+      );
     }
     return mapDealershipFromRow(data as DealershipRow);
   },
