@@ -287,7 +287,7 @@ export const supabaseService = {
       console.error('[DriveLink onboarding][dealership_insert_update] RPC failed:', diagnostic, error);
       const lower = [message, details || '', hint || ''].join(' ').toLowerCase();
       const setupCode =
-        code === '42501' ? 'SETUP_PERMISSION' :
+        (code === '42501' || (code === 'PGRST116' && lower.includes('0 rows'))) ? 'SETUP_PERMISSION' :
         (code === '42883' || code === 'PGRST202') ? 'SETUP_DB_MISSING_FUNCTION' :
         (code === '23505' && lower.includes('slug')) ? 'SETUP_SLUG_TAKEN' :
         code === 'P0002' ? 'SETUP_DEALERSHIP_MISSING' :
