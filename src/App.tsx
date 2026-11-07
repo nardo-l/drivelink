@@ -412,8 +412,10 @@ function AppContent() {
 
 export default function App() {
   return (
-    <NavigationProvider>
-      <ErrorBoundary label="application"><AppContent /></ErrorBoundary>
-    </NavigationProvider>
+    <ErrorBoundary label="application">
+      <NavigationProvider>
+        <AppContent />
+      </NavigationProvider>
+    </ErrorBoundary>
   );
 }
