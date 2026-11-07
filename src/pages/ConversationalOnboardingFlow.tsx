@@ -46,6 +46,7 @@ export const OnboardingFlow: React.FC<{ forceNewAccount?: boolean }> = ({ forceN
   const [brandingBusy, setBrandingBusy] = useState(false);
   const completionInFlight = useRef(false);
   const [error, setError] = useState('');
+  const [setupErrorCode, setSetupErrorCode] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [introDone, setIntroDone] = useState(false);
   const [introStep, setIntroStep] = useState(0);
@@ -201,7 +202,7 @@ export const OnboardingFlow: React.FC<{ forceNewAccount?: boolean }> = ({ forceN
     return () => { active = false; window.clearTimeout(timer); };
   }, [data.showroom.handle]);
 
-  const setStep = (next: number) => { update({ currentStep: Math.max(1, Math.min(TOTAL, next)), ...(next === 8 ? { isCompleted: true } : {}) }); setError(''); window.scrollTo({ top: 0, behavior: 'smooth' }); };
+  const setStep = (next: number) => { update({ currentStep: Math.max(1, Math.min(TOTAL, next)), ...(next === 8 ? { isCompleted: true } : {}) }); setError(''); setSetupErrorCode(''); window.scrollTo({ top: 0, behavior: 'smooth' }); };
   const back = () => { if (step === 1) { setIntroDone(false); setIntroStep(5); } else setStep(step - 1); };
   const validSlug = /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(data.showroom.handle);
   const validWhatsapp = data.contact.whatsappNumber.replace(/[^0-9]/g, '').length >= 7;
@@ -266,12 +267,19 @@ export const OnboardingFlow: React.FC<{ forceNewAccount?: boolean }> = ({ forceN
     completionInFlight.current = true;
     setBusy(true);
     setError('');
+    setSetupErrorCode('');
+    let setupStep = 'dealership_lookup';
 
     try {
+      console.info(`[${name} onboarding][dealership_lookup] Resolving the signed-in account.`);
       const user = await supabaseService.getCurrentUser();
-      if (!user) throw new Error('Please sign in to finish your setup.');
+      if (!user) throw Object.assign(new Error('Please sign in to finish your setup.'), { setupCode: 'SETUP_PERMISSION' });
 
-      let dealer = await supabaseService.createDealership({
+      setupStep = 'slug_generation';
+      console.info(`[${name} onboarding][slug_generation] Slug normalization and collision suffixing run inside complete_dealership_onboarding.`);
+      setupStep = 'dealership_insert_update';
+      console.info(`[${name} onboarding][dealership_insert_update] Calling the idempotent onboarding RPC; existing dealership rows are resumed.`);
+      const dealer = await supabaseService.createDealership({
         name: data.showroom.businessName.trim(),
         slug: data.showroom.handle.trim(),
         country: data.contact.country,
@@ -286,15 +294,12 @@ export const OnboardingFlow: React.FC<{ forceNewAccount?: boolean }> = ({ forceN
         bio: '',
         tagline: data.showroom.businessName.trim(),
         isPublished: true,
+        ...(data.branding.logoPreview ? { logoUrl: data.branding.logoPreview } : {}),
+        ...(data.branding.coverPreview ? { coverUrl: data.branding.coverPreview } : {}),
       });
 
-      if (data.branding.logoPreview || data.branding.coverPreview) {
-        dealer = await supabaseService.updateDealership(dealer.id, {
-          ...(data.branding.logoPreview ? { logoUrl: data.branding.logoPreview } : {}),
-          ...(data.branding.coverPreview ? { coverUrl: data.branding.coverPreview } : {}),
-        });
-      }
-
+      setupStep = 'trial_start';
+      console.info(`[${name} onboarding][trial_start] Trial activation is attempted by the database RPC and is non-blocking if it fails.`);
       storageService.saveDealership(dealer);
       storageService.setUserSession({
         isLoggedIn: true,
@@ -313,6 +318,8 @@ export const OnboardingFlow: React.FC<{ forceNewAccount?: boolean }> = ({ forceN
         );
       }
 
+      setupStep = 'onboarding_completion';
+      console.info(`[${name} onboarding][onboarding_completion] The RPC has persisted dealership and account completion markers.`);
       const savedAt = new Date().toISOString();
       const { error: progressError } = await supabase.from('user_onboarding_progress').upsert({
         user_id: user.id,
@@ -330,21 +337,23 @@ export const OnboardingFlow: React.FC<{ forceNewAccount?: boolean }> = ({ forceN
         notifications_enabled: notificationsEnabled,
         updated_at: savedAt,
       }, { onConflict: 'user_id' });
-      if (progressError) console.warn('Onboarding completion progress could not be saved; server trial setup will retry:', progressError);
+      if (progressError) console.warn('[DriveLink onboarding][onboarding_completion] Client progress refresh was non-critical; server completion is already persisted:', {
+        message: progressError.message, code: progressError.code, details: progressError.details, hint: progressError.hint
+      });
 
-      // Dealership creation starts the trial in a database trigger. This redirect
-      // intentionally does not wait for trial setup or payment status.
       window.location.assign('/app');
     } catch (e: any) {
-      console.error(`[${name} onboarding] Could not complete dealership setup:`, {
+      const diagnostic = {
+        step: e?.setupStep || setupStep,
         message: e?.message ?? String(e),
         code: e?.code ?? null,
         details: e?.details ?? null,
         hint: e?.hint ?? null,
         status: e?.status ?? e?.context?.status ?? null,
-      }, e);
-      setError('We could not finish setting up your showroom. Your details are saved. Tap Try again to resume.');
-      // Stay on a visible recovery screen instead of returning to an empty step.
+      };
+      console.error(`[${name} onboarding][${diagnostic.step}] Setup failed:`, diagnostic, e);
+      setError('We could not finish setting up your showroom. Your details are saved; you can safely retry.');
+      setSetupErrorCode(e?.setupCode || 'SETUP_UNKNOWN');
       update({ currentStep: 8, isCompleted: false });
     } finally {
       completionInFlight.current = false;
@@ -435,6 +444,7 @@ export const OnboardingFlow: React.FC<{ forceNewAccount?: boolean }> = ({ forceN
       </div>
       <h1 className="text-xl font-bold tracking-tight">{busy ? 'Setting up your showroom…' : 'Your showroom is almost ready'}</h1>
       <p className="mt-2 text-sm leading-6 text-gray-500">{busy ? 'We’re saving your setup and preparing your dashboard. This can take a moment.' : 'We could not finish the setup automatically. Your details are saved; you can safely retry.'}</p>
+      {!busy && setupErrorCode && <p className="mt-2 text-[11px] text-gray-400" aria-live="polite">Setup code: {setupErrorCode}</p>}
       {error && <p role="alert" className="mt-4 rounded-xl bg-red-50 p-3 text-left text-sm text-red-700">{error}</p>}
       <button type="button" onClick={() => void finishExistingSession()} disabled={busy} className="mt-7 flex h-12 w-full items-center justify-center gap-2 rounded-full bg-black px-5 text-sm font-semibold text-white disabled:cursor-wait disabled:opacity-50">
         {busy ? <><Loader2 size={17} className="animate-spin"/> Finishing setup…</> : <>Try again <ArrowRight size={17}/></>}
