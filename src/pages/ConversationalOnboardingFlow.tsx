@@ -2,7 +2,7 @@ import { name, siteUrl } from '../config/brand';
 import React, { useEffect, useRef, useState } from 'react';
 import { Select } from '../components/common/Select';
 import './ConversationalOnboardingFlow.css';
-import { ArrowLeft, ArrowRight, Check, Copy, Car, Truck, Bus, Eye, EyeOff, Link2, Loader2, MessageCircle } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, Copy, Car, Truck, Bus, Crown, Eye, EyeOff, Link2, Loader2, MessageCircle } from 'lucide-react';
 import { useNavigation } from '../context/NavigationContext';
 import { storageService } from '../services/storage';
 import { supabaseService } from '../services/supabaseService';
