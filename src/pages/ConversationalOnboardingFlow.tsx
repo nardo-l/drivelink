@@ -298,8 +298,9 @@ export const OnboardingFlow: React.FC<{ forceNewAccount?: boolean }> = ({ forceN
         ...(data.branding.coverPreview ? { coverUrl: data.branding.coverPreview } : {}),
       });
 
-      setupStep = 'trial_start';
-      console.info(`[${name} onboarding][trial_start] Trial activation is attempted by the database RPC and is non-blocking if it fails.`);
+      console.info(`[${name} onboarding][trial_start] Trial activation was handled by the database RPC; a trial failure does not block onboarding.`);
+      setupStep = 'session_persist';
+      console.info(`[${name} onboarding][session_persist] Saving the dealership and authenticated session locally.`);
       storageService.saveDealership(dealer);
       storageService.setUserSession({
         isLoggedIn: true,
@@ -318,8 +319,8 @@ export const OnboardingFlow: React.FC<{ forceNewAccount?: boolean }> = ({ forceN
         );
       }
 
-      setupStep = 'onboarding_completion';
-      console.info(`[${name} onboarding][onboarding_completion] The RPC has persisted dealership and account completion markers.`);
+      setupStep = 'onboarding_progress_sync';
+      console.info(`[${name} onboarding][onboarding_progress_sync] The RPC has already persisted the completion markers; refreshing the saved draft progress.`);
       const savedAt = new Date().toISOString();
       const { error: progressError } = await supabase.from('user_onboarding_progress').upsert({
         user_id: user.id,
@@ -337,7 +338,7 @@ export const OnboardingFlow: React.FC<{ forceNewAccount?: boolean }> = ({ forceN
         notifications_enabled: notificationsEnabled,
         updated_at: savedAt,
       }, { onConflict: 'user_id' });
-      if (progressError) console.warn('[DriveLink onboarding][onboarding_completion] Client progress refresh was non-critical; server completion is already persisted:', {
+      if (progressError) console.warn('[DriveLink onboarding][onboarding_progress_sync] Client progress refresh was non-critical; server completion is already persisted:', {
         message: progressError.message, code: progressError.code, details: progressError.details, hint: progressError.hint
       });
 
