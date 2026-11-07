@@ -75,7 +75,7 @@ const TrialBanner: React.FC<TrialBannerProps> = ({ subscriptionState, trialEndsA
 };
 
 function AppContent() {
-  const safeDashboard = () => <ErrorBoundary label="dashboard"><DashboardPage /></ErrorBoundary>;
+  const safeDashboard = () => <ErrorBoundary label="dashboard"><DashboardPage onEnsureTrialSetup={async () => { const { data: { user } } = await supabase.auth.getUser(); if (user) await ensureTrialSetupOnLoad(user.id); await verifySubscription(); }} /></ErrorBoundary>;
   const { currentPath, navigate, toast, showToast } = useNavigation();
   React.useEffect(() => {
     const page = currentPath === '/' || currentPath === '' ? homeTitle : currentPath.split('/').filter(Boolean).slice(-1)[0]?.replace(/[-_]/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) || name;
@@ -86,14 +86,10 @@ function AppContent() {
   const [trialEndsAt, setTrialEndsAt] = React.useState<string | null>(null);
   const [accessEndsAt, setAccessEndsAt] = React.useState<string | null>(null);
   const [subscriptionServerNow, setSubscriptionServerNow] = React.useState(Date.now());
-  const trialSetupAttemptedForUser = React.useRef<string | null>(null);
   const ensureTrialSetupOnLoad = React.useCallback(async (userId: string) => {
-    if (trialSetupAttemptedForUser.current === userId) return;
-    trialSetupAttemptedForUser.current = userId;
     try {
-      // A dealership is only created at the final onboarding hand-off. Retry the
-      // server-side idempotent trial setup directly; do not make dashboard entry
-      // depend on a separate onboarding-progress read or client-side flag.
+      // The server-side function is idempotent: it starts a trial only when the
+      // anti-abuse identity has no prior trial, and preserves every existing trial.
       const { error } = await supabase.rpc('activate_dealership_trial');
       if (error) console.error('Background trial setup retry failed; dashboard access will continue:', error);
     } catch (error) {
