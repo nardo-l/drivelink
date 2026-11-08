@@ -400,6 +400,7 @@ export const supabaseService = {
   // ---------------------------------------------------------------------------
   async getVehicles(dealershipId: string, isPublic: boolean = false): Promise<Vehicle[]> {
     if (!isSupabaseConfigured()) return [];
+    if (isPublic) await planService.getPublicPlan(dealershipId); // reconcile downgrade before reading public inventory
 
     let query = supabase
       .from('vehicles')
