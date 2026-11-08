@@ -446,11 +446,18 @@ export const supabaseService = {
       throw error;
     }
     if (!data) return null;
-    const vehicle = mapVehicleFromRow(data);
+    let row = data;
+    let photoLimit = 10;
     if (isPublic) {
       const plan = await planService.getPublicPlan(data.dealership_id);
-      vehicle.photos = (vehicle.photos || []).slice(0, plan.plan === 'pro' ? 10 : 5);
+      photoLimit = plan.plan === 'pro' ? 10 : 5;
+      const refreshed = await supabase.from('vehicles').select('*').eq('id', vehicleId).eq('status', 'available').maybeSingle();
+      if (refreshed.error) throw refreshed.error;
+      if (!refreshed.data) return null;
+      row = refreshed.data;
     }
+    const vehicle = mapVehicleFromRow(row);
+    if (isPublic) vehicle.photos = (vehicle.photos || []).slice(0, photoLimit);
     return vehicle;
   },
 
