@@ -178,9 +178,10 @@ security definer
 set search_path = ''
 as $
 declare v_dealership_id uuid;
+  v_vehicle_limit integer := (private.plan_config() -> 'free' ->> 'maxVehicles')::integer;
 begin
   if auth.uid() is null then raise exception 'Authentication required' using errcode='42501'; end if;
-  if coalesce(cardinality(p_vehicle_ids),0)>3 then
+  if coalesce(cardinality(p_vehicle_ids),0)>v_vehicle_limit then
     raise exception 'PLAN_LIMIT_VEHICLES' using errcode='23514';
   end if;
   select d.id into v_dealership_id from public.dealerships d
