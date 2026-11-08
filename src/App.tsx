@@ -258,7 +258,6 @@ function AppContent() {
     return <WelcomePage />;
   };
 
-  const currentSession = storageService.getUserSession();
 
   return (
     <DeviceFrame>
