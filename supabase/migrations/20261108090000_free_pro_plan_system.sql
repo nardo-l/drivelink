@@ -556,6 +556,94 @@ create trigger vehicles_enforce_plan_limits
 before insert or update of photos on public.vehicles
 for each row execute function private.enforce_vehicle_plan_limits();
 
+-- A server-issued photo session binds Storage uploads to one vehicle-edit flow.
+-- The vehicle row trigger remains the final per-vehicle cap; this trigger also
+-- rejects the 6th/11th object in a single upload session before it reaches Storage.
+create table if not exists public.vehicle_photo_upload_sessions (
+  id uuid primary key default gen_random_uuid(),
+  dealership_id uuid not null references public.dealerships(id) on delete cascade,
+  user_id uuid not null references auth.users(id) on delete cascade,
+  created_at timestamptz not null default pg_catalog.now()
+);
+alter table public.vehicle_photo_upload_sessions enable row level security;
+revoke all on public.vehicle_photo_upload_sessions from public,anon,authenticated;
+
+create or replace function public.create_vehicle_photo_session(p_dealership_id uuid)
+returns uuid
+language plpgsql
+security definer
+set search_path = ''
+as $
+declare v_session_id uuid;
+begin
+  if auth.uid() is null then raise exception 'Authentication required' using errcode='42501'; end if;
+  if not exists (
+    select 1 from public.dealerships d
+    where d.id=p_dealership_id and d.user_id=auth.uid()
+  ) then raise exception 'Dealership ownership check failed' using errcode='42501'; end if;
+  insert into public.vehicle_photo_upload_sessions(dealership_id,user_id)
+  values(p_dealership_id,auth.uid())
+  returning id into v_session_id;
+  return v_session_id;
+end;
+$;
+revoke all on function public.create_vehicle_photo_session(uuid) from public,anon;
+grant execute on function public.create_vehicle_photo_session(uuid) to authenticated;
+
+create or replace function private.enforce_vehicle_photo_storage_limit()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $
+declare
+  v_dealership_text text := (storage.foldername(new.name))[1];
+  v_folder text := (storage.foldername(new.name))[2];
+  v_session_text text := (storage.foldername(new.name))[3];
+  v_dealership_id uuid;
+  v_user_id uuid;
+  v_plan text;
+  v_limit integer;
+  v_count integer;
+begin
+  if new.bucket_id <> 'vehicle-photos' then return new; end if;
+  if v_folder is distinct from 'vehicles' or v_dealership_text is null or v_session_text is null then
+    raise exception 'PHOTO_SESSION_INVALID' using errcode='42501',detail='Vehicle photos must use a server-issued upload session.';
+  end if;
+
+  select s.dealership_id,s.user_id into v_dealership_id,v_user_id
+  from public.vehicle_photo_upload_sessions s
+  where s.id::text=v_session_text
+    and s.dealership_id::text=v_dealership_text
+    and s.created_at > pg_catalog.now()-interval '24 hours'
+  for update;
+
+  if v_dealership_id is null or v_user_id is distinct from (select auth.uid()) then
+    raise exception 'PHOTO_SESSION_INVALID' using errcode='42501',detail='Upload session is missing, expired or belongs to another account.';
+  end if;
+
+  v_plan := private.dealership_plan(v_dealership_id);
+  v_limit := (private.plan_config() -> v_plan ->> 'maxPhotosPerVehicle')::integer;
+  select count(*)::integer into v_count
+  from storage.objects o
+  where o.bucket_id='vehicle-photos'
+    and (storage.foldername(o.name))[1]=v_dealership_text
+    and (storage.foldername(o.name))[2]='vehicles'
+    and (storage.foldername(o.name))[3]=v_session_text;
+
+  if v_count >= v_limit then
+    raise exception 'PLAN_LIMIT_PHOTOS' using errcode='23514',
+      detail=format('Your %s plan allows up to %s photos per vehicle.',v_plan,v_limit);
+  end if;
+  return new;
+end;
+$;
+
+drop trigger if exists vehicle_photo_storage_plan_limit on storage.objects;
+create trigger vehicle_photo_storage_plan_limit
+before insert on storage.objects
+for each row execute function private.enforce_vehicle_photo_storage_limit();
+
 -- Storage writes are ownership-only. The vehicle photo cap is enforced when
 -- photo URLs are attached to a vehicle row by the trigger above.
 drop policy if exists "Subscribed dealers upload vehicle photos" on storage.objects;
