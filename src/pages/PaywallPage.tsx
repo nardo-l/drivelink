@@ -114,6 +114,7 @@ export const PaywallPage: React.FC = () => {
 
   const upgradeReason = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('reason') : null;
   const upgradeReasonCopy: Record<string,string> = {
+    general: 'Upgrade to Lotlé Pro for unlimited vehicles, up to 10 photos per vehicle and full analytics.',
     vehicle_limit: "You've reached the 3-vehicle Free plan limit. Pro includes unlimited vehicles.",
     photo_limit: 'Upgrade to Pro for up to 10 photos per vehicle.',
     analytics: 'Upgrade to Pro to unlock full analytics.',
