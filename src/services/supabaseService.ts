@@ -421,7 +421,7 @@ export const supabaseService = {
     const mapped = (data || []).map(mapVehicleFromRow);
     if (isPublic && mapped.length) {
       const plan = await planService.getPublicPlan(dealershipId);
-      const photoLimit = plan.plan === 'pro' ? 10 : 5;
+      const photoLimit = plan.config[plan.plan].maxPhotosPerVehicle;
       return mapped.map(vehicle => ({ ...vehicle, photos: (vehicle.photos || []).slice(0, photoLimit) }));
     }
     return mapped;
@@ -450,7 +450,7 @@ export const supabaseService = {
     let photoLimit = 10;
     if (isPublic) {
       const plan = await planService.getPublicPlan(data.dealership_id);
-      photoLimit = plan.plan === 'pro' ? 10 : 5;
+      photoLimit = plan.config[plan.plan].maxPhotosPerVehicle;
       const refreshed = await supabase.from('vehicles').select('*').eq('id', vehicleId).eq('status', 'available').maybeSingle();
       if (refreshed.error) throw refreshed.error;
       if (!refreshed.data) return null;
