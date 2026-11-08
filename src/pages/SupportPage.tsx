@@ -1,5 +1,6 @@
 import { name, supportWhatsApp } from '../config/brand';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { planService } from '../services/planService';
 import { ArrowLeft, Headset, MessageCircle, Phone, ShieldCheck } from 'lucide-react';
 import { useNavigation } from '../context/NavigationContext';
 import { BottomNav } from '../components/layout/BottomNav';
@@ -10,6 +11,8 @@ const SUPPORT_WHATSAPP = `https://wa.me/${supportWhatsApp}`;
 
 export const SupportPage: React.FC = () => {
   const { navigate } = useNavigation();
+  const [isPro, setIsPro] = useState(false);
+  useEffect(() => { void planService.getMyPlan().then(snapshot => setIsPro(snapshot.plan === 'pro')).catch(error => console.error('[Lotle plan] Support plan lookup failed', error)); }, []);
 
   return (
     <div className="dl-workspace min-h-full flex flex-col bg-[#F8F9FA] text-slate-900">
@@ -26,13 +29,13 @@ export const SupportPage: React.FC = () => {
           <p className="mt-2 text-sm leading-relaxed text-white/70">Talk to the {name} support team about your account, vehicle listings, showroom or any issue you’re experiencing.</p>
         </section>
         <section className="rounded-3xl border border-slate-200 bg-white p-5">
-          <p className="text-xs font-bold uppercase tracking-wider text-slate-500">Contact our team</p>
+          <p className="text-xs font-bold uppercase tracking-wider text-slate-500">{isPro ? "Priority support" : "Standard support"}</p>
           <div className="mt-4 flex items-center gap-3">
             <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-100"><Phone className="h-5 w-5" /></span>
             <div><p className="text-sm font-bold">Phone support</p><p className="mt-0.5 text-sm text-slate-500">{SUPPORT_PHONE}</p></div>
           </div>
           <a href={SUPPORT_TEL} className="mt-4 flex min-h-12 items-center justify-center gap-2 rounded-full border border-slate-200 px-4 text-sm font-bold text-slate-900"><Phone className="h-4 w-4" /> Call support</a>
-          <a href={SUPPORT_WHATSAPP} target="_blank" rel="noopener noreferrer" className="mt-3 flex min-h-12 items-center justify-center gap-2 rounded-full bg-[#171717] px-4 text-sm font-bold text-white"><MessageCircle className="h-4 w-4" /> Chat on WhatsApp</a>
+          <a href={isPro ? SUPPORT_WHATSAPP + "?text=" + encodeURIComponent("Lotlé Pro priority support request") : SUPPORT_WHATSAPP} target="_blank" rel="noopener noreferrer" className="mt-3 flex min-h-12 items-center justify-center gap-2 rounded-full bg-[#171717] px-4 text-sm font-bold text-white"><MessageCircle className="h-4 w-4" /> {isPro ? "Contact priority support" : "Chat on WhatsApp"}</a>
         </section>
         <div className="flex items-start gap-3 rounded-2xl border border-slate-200 bg-white p-4 text-xs leading-relaxed text-slate-500">
           <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-slate-700" />
