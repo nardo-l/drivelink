@@ -29,6 +29,16 @@ begin
           auth_user_id=coalesce(private.subscription_trial_identities.auth_user_id,excluded.auth_user_id),
           updated_at=v_now;
 
+    -- If this phone identity exists but has never had a Pro trial, mark it used
+    -- as Free so a different email cannot claim a second trial on the same phone.
+    if v_phone is not null then
+      update private.subscription_trial_identities
+        set pro_trial_started_at=coalesce(pro_trial_started_at,v_now),
+            pro_trial_ends_at=least(coalesce(pro_trial_ends_at,v_now),v_now),
+            updated_at=v_now
+      where normalized_phone=v_phone and pro_trial_started_at is null;
+    end if;
+
     -- Attach the phone only if it is not already claimed by a different email.
     if v_phone is not null and not exists (
       select 1 from private.subscription_trial_identities t
