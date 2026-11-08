@@ -1,5 +1,6 @@
 import { supabase, isSupabaseConfigured, supabaseUrl, supabaseAnonKey } from '../lib/supabase';
 import type { Database } from '../types/database';
+import { planService } from './planService';
 import type {
   Dealership,
   Vehicle,
@@ -416,7 +417,13 @@ export const supabaseService = {
       console.error('Error fetching vehicles from Supabase:', error);
       throw error;
     }
-    return (data || []).map(mapVehicleFromRow);
+    const mapped = (data || []).map(mapVehicleFromRow);
+    if (isPublic && mapped.length) {
+      const plan = await planService.getPublicPlan(dealershipId);
+      const photoLimit = plan.plan === 'pro' ? 10 : 5;
+      return mapped.map(vehicle => ({ ...vehicle, photos: (vehicle.photos || []).slice(0, photoLimit) }));
+    }
+    return mapped;
   },
 
   async getVehicleById(vehicleId: string, isPublic: boolean = false): Promise<Vehicle | null> {
@@ -437,7 +444,13 @@ export const supabaseService = {
       console.error('Error fetching vehicle by ID:', error);
       throw error;
     }
-    return data ? mapVehicleFromRow(data) : null;
+    if (!data) return null;
+    const vehicle = mapVehicleFromRow(data);
+    if (isPublic) {
+      const plan = await planService.getPublicPlan(data.dealership_id);
+      vehicle.photos = (vehicle.photos || []).slice(0, plan.plan === 'pro' ? 10 : 5);
+    }
+    return vehicle;
   },
 
   async createVehicle(
@@ -608,28 +621,11 @@ export const supabaseService = {
   // SUPABASE STORAGE (Strict path convention: {dealership_id}/{filename})
   // ---------------------------------------------------------------------------
   async assertCurrentDealershipWriteAccess(): Promise<void> {
-    const dealer = await this.getCurrentDealership().catch(() => null);
-    // Onboarding branding is staged under the authenticated user folder before
-    // the dealership row exists. Storage RLS restricts that pre-dealership case.
-    if (!dealer?.id) return;
-    const { data, error } = await supabase.rpc('activate_dealership_trial');
-    if (error) {
-      console.error('[DriveLink entitlement check] Trial/subscription reconciliation failed', {
-        dealershipId: dealer.id,
-        message: error.message,
-        code: (error as any).code || null,
-        details: (error as any).details || null,
-      });
-      const checkError: any = new Error('Could not verify dealership access. Reload the app and try again. [ACCESS_CHECK_FAILED]');
-      checkError.code = 'ACCESS_CHECK_FAILED';
-      checkError.cause = error;
-      throw checkError;
-    }
-    if (data?.status === 'expired' || data?.is_active === false) {
-      const expired = new Error('Your trial has ended. Choose a plan to continue. [TRIAL_EXPIRED]');
-      (expired as any).code = 'TRIAL_EXPIRED';
-      throw expired;
-    }
+    const user = await this.getCurrentUser();
+    if (!user) throw new Error('Authentication required to upload dealership assets.');
+    // Storage RLS now checks dealership ownership. Plan dates never gate uploads.
+    // Vehicle photo counts are enforced separately by the database vehicle trigger.
+    await this.getCurrentDealership();
   },
 
   async uploadVehiclePhoto(dealershipId: string, file: File, draftId: string, photoIndex: number, isCover: boolean): Promise<string> {
