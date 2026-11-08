@@ -29,6 +29,8 @@ export const VehiclesListPage: React.FC = () => {
   const [error, setError] = useState('');
   const [plan, setPlan] = useState<'free' | 'pro'>('free');
   const [showVehicleLimitSheet, setShowVehicleLimitSheet] = useState(false);
+  const [showKeepVehiclesSheet, setShowKeepVehiclesSheet] = useState(false);
+  const [selectedKeepVehicleIds, setSelectedKeepVehicleIds] = useState<string[]>([]);
   const [menuId, setMenuId] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Vehicle | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>(() => {
@@ -58,6 +60,12 @@ export const VehiclesListPage: React.FC = () => {
   useEffect(() => { void load(); void planService.getMyPlan().then(p => setPlan(p.plan)).catch(e => console.error('[Lotle plan] Garage plan load failed', e)); }, [load]);
 
   const activeVehicleCount = vehicles.filter(v => v.status !== 'hidden').length;
+  const hiddenVehicleCount = vehicles.filter(v => v.status === 'hidden').length;
+  const openKeepPicker = () => { setSelectedKeepVehicleIds(vehicles.filter(v => v.status !== 'hidden').slice(0,3).map(v => v.id)); setShowKeepVehiclesSheet(true); };
+  const saveKeepSelection = async () => {
+    try { await planService.chooseFreeVehicles(selectedKeepVehicleIds); setShowKeepVehiclesSheet(false); await load(true); showToast('Your showroom selection is saved.'); }
+    catch (e: any) { showToast(e?.message || 'Could not save your showroom selection.'); }
+  };
   const requestAddVehicle = () => {
     if (plan === 'free' && activeVehicleCount >= 3) { setShowVehicleLimitSheet(true); return; }
     navigate('/app/vehicles/new');
@@ -166,7 +174,7 @@ export const VehiclesListPage: React.FC = () => {
     setPullDistance(0);
   };
 
-  const statusLabel: Record<string, string> = { available: 'Available', reserved: 'Reserved', sold: 'Sold', draft: 'Draft' };
+  const statusLabel: Record<string, string> = { available: 'Available', reserved: 'Reserved', sold: 'Sold', draft: 'Draft', hidden: 'Hidden' };
   const imageSource = (url: string) => { try { const parsed = new URL(url); if (!parsed.pathname.includes('/storage/v1/object/public/')) return url; parsed.pathname = parsed.pathname.replace('/storage/v1/object/public/', '/storage/v1/render/image/public/'); parsed.searchParams.set('width', '800'); parsed.searchParams.set('height', '1000'); parsed.searchParams.set('resize', 'cover'); parsed.searchParams.set('quality', '78'); parsed.searchParams.set('format', 'webp'); return parsed.toString(); } catch { return url; } };
 
   return (
@@ -231,6 +239,11 @@ export const VehiclesListPage: React.FC = () => {
             <button type="button" onClick={() => setView('double')} aria-label="Two columns" aria-pressed={viewMode === 'double'} className={viewMode === 'double' ? 'is-active' : ''}><span className="garage-column-icon double"/></button>
           </div>
         </div>
+
+        {plan === 'free' && hiddenVehicleCount > 0 && <aside className="mb-4 rounded-2xl border border-slate-200 bg-white p-4">
+          <p className="text-xs leading-relaxed text-slate-600">Your showroom shows 3 vehicles on the Free plan. Choose which ones to keep, or upgrade to show them all.</p>
+          <button type="button" className="mt-3 text-xs font-bold text-slate-900 underline underline-offset-4" onClick={openKeepPicker}>Choose vehicles</button>
+        </aside>}
 
         {error && <div role="alert" className="garage-error">{error}<button type="button" onClick={() => void load()}>Try again</button></div>}
 
@@ -312,6 +325,25 @@ export const VehiclesListPage: React.FC = () => {
           </section>
         </div>;
       })()}
+
+      {showKeepVehiclesSheet && <div className="garage-sheet-backdrop" onClick={() => setShowKeepVehiclesSheet(false)}>
+        <section className="garage-action-sheet" role="dialog" aria-modal="true" aria-label="Choose showroom vehicles" onClick={event => event.stopPropagation()}>
+          <div className="garage-sheet-handle"/>
+          <p className="garage-sheet-title">Choose 3 vehicles for your showroom</p>
+          <p className="px-2 text-xs text-slate-500">Your other vehicles stay saved and can be restored by upgrading.</p>
+          <div className="max-h-[42vh] overflow-y-auto space-y-1 px-1">
+            {vehicles.map(vehicle => <button key={vehicle.id} type="button" onClick={() => setSelectedKeepVehicleIds(ids => ids.includes(vehicle.id) ? ids.filter(id => id !== vehicle.id) : ids.length < 3 ? [...ids, vehicle.id] : ids)} className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left hover:bg-slate-50">
+              <span className={'grid h-5 w-5 place-items-center rounded-md border '+(selectedKeepVehicleIds.includes(vehicle.id)?'border-slate-900 bg-slate-900 text-white':'border-slate-300')}>{selectedKeepVehicleIds.includes(vehicle.id)?'✓':''}</span>
+              <span className="min-w-0 flex-1 text-xs font-semibold">{vehicle.year} {vehicle.make} {vehicle.model}</span>
+              <span className="text-[10px] text-slate-400">{vehicle.status==='hidden'?'Hidden':'Shown'}</span>
+            </button>)}
+          </div>
+          <p className="px-2 text-[10px] text-slate-400">{selectedKeepVehicleIds.length} of 3 selected</p>
+          <button type="button" disabled={selectedKeepVehicleIds.length===0} onClick={() => void saveKeepSelection()}>Save selection</button>
+          <button type="button" onClick={() => navigate('/app/billing?reason=vehicle_limit')}>Upgrade to show them all</button>
+          <button type="button" className="garage-sheet-cancel" onClick={() => setShowKeepVehiclesSheet(false)}>Not now</button>
+        </section>
+      </div>}
 
       {showVehicleLimitSheet && <div className="garage-sheet-backdrop" onClick={() => setShowVehicleLimitSheet(false)}>
         <section className="garage-action-sheet" role="dialog" aria-modal="true" aria-label="Free vehicle limit" onClick={event => event.stopPropagation()}>
