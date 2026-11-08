@@ -50,6 +50,7 @@ function AppContent() {
             const liveDealer = await supabaseService.getCurrentDealership();
             if (liveDealer) {
               storageService.saveDealership(liveDealer);
+            }
             storageService.setUserSession({
               isLoggedIn: true,
               email: session.user.email || '',
@@ -78,6 +79,7 @@ function AppContent() {
             const liveDealer = await supabaseService.getCurrentDealership();
             if (liveDealer) {
               storageService.saveDealership(liveDealer);
+            }
             storageService.setUserSession({
               isLoggedIn: true,
               email: session.user.email || '',
