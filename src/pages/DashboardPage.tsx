@@ -12,6 +12,136 @@ import './DashboardPage.css';
 
 type SubscriptionStatus = {
   status: string;
+  plan: 'free' | 'pro';
+  pro_trial_ends_at: string | null;
+  current_period_end: string | null;
+};port React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useNavigation } from '../context/NavigationContext';
+import { storageService } from '../services/storage';
+import { isSupabaseConfigured, supabase } from '../lib/supabase';
+import { StatusBadge } from '../components/common/Badge';
+import { PerformanceSection } from '../components/dashboard/PerformanceSection';
+import { TrialUpgradeCard } from '../components/dashboard/TrialUpgradeCard';
+import { planService } from '../services/planService';
+import { Bell, CarFront, ChevronRight, Eye, MessageCircle, Plus, Share2, ArrowUpRight } from 'lucide-react';
+import { absoluteUrl, legacyName, name } from '../config/brand';
+import './DashboardPage.css';
+
+type SubscriptionStatus = {
+  status: string;
+  trial_started_at: string | null;
+  trial_ends_at: string | null;
+  current_period_end: string | null;
+  grace_until: string | null;
+};
+
+export const DashboardPage: React.FC<{ onEnsureTrialSetup?: () => Promise<void> }> = ({ onEnsureTrialSetup }) => {
+  const { navigate, showToast } = useNavigation();
+  const isLive = isSupabaseConfigured() && !storageService.isDemoModeActive();
+  const [dealership, setDealership] = useState(() => isLive ? { ...storageService.getDealership(), name: 'Your dealership', slug: '' } : storageService.getDealership());
+  const [vehicles, setVehicles] = useState(() => isLive ? [] : storageService.getVehicles());
+  const [enquiries, setEnquiries] = useState(() => isLive ? [] : storageService.getEnquiries());
+  const [loading, setLoading] = useState(isLive);
+  const [loadError, setLoadError] = useState('');
+  const [performancePeriod, setPerformancePeriod] = useState<7 | 30 | 90>(7);
+  const [performance, setPerformance] = useState({ visits: 0, enquiries: 0 });
+  const [performanceLoading, setPerformanceLoading] = useState(true);
+  const markPerformanceLoaded = useCallback(() => setPerformanceLoading(false), []);
+  const [subscription, setSubscription] = useState<SubscriptionStatus | null>(null);
+  const serverClock = useRef({ serverMs: Date.now(), monotonicMs: window.performance.now() });
+  const [subscriptionLoading, setSubscriptionLoading] = useState(false);
+  const [brandNoticeVisible, setBrandNoticeVisible] = useState(false);
+  const expiryCheck = useRef(false);
+  const load = async () => {
+    setLoading(true);
+    setLoadError('');
+    try {
+      // Reconcile a missing/interrupted trial before the dashboard reads protected data.
+      // The RPC is idempotent and returns expired when an anti-abuse identity has already used its trial.
+      if (onEnsureTrialSetup) await onEnsureTrialSetup();
+      const [d, v, e] = await Promise.all([
+        storageService.getDealershipAsync(),
+        storageService.getVehiclesAsync(),
+        storageService.getEnquiriesAsync(),
+      ]);
+      setDealership(d); setVehicles(v); setEnquiries(e);
+    } catch (error: any) {
+      setLoadError(error?.message || 'We could not load your dealership data.');
+      if (isLive) { setVehicles([]); setEnquiries([]); }
+    } finally { setLoading(false); }
+  };
+  useEffect(() => { void load(); }, []);
+
+  useEffect(() => {
+    if (!isLive) return;
+    let active = true;
+    void (async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data, error } = await supabase
+        .from('user_onboarding_progress')
+        .select('brand_notice_dismissed_at')
+        .eq('user_id', user.id)
+        .maybeSingle();
+      if (active && !error) setBrandNoticeVisible(!data?.brand_notice_dismissed_at);
+    })();
+    return () => { active = false; };
+  }, [isLive]);
+
+  const dismissBrandNotice = async () => {
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (userError || !user) { showToast('Could not save this notice. Try again.'); return; }
+    const { error } = await supabase.from('user_onboarding_progress').upsert({
+      user_id: user.id,
+      brand_notice_dismissed_at: new Date().toISOString(),
+    }, { onConflict: 'user_id' });
+    if (error) { showToast('Could not save this notice. Try again.'); return; }
+    setBrandNoticeVisible(false);
+  };
+
+  const refreshSubscription = async () => {
+    if (!isLive) return null;
+    const snapshot = await planService.getMyPlan();
+    const value: SubscriptionStatus = {
+      status: snapshot.subscription_status || 'inactive',
+      plan: snapshot.plan,
+      pro_trial_ends_at: snapshot.pro_trial_ends_at,
+      current_period_end: snapshot.current_period_end,
+    };
+    serverClock.current = { serverMs: Date.now(), monotonicMs: window.performance.now() };
+    setSubscription(value);
+    return value;
+  };rt React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useNavigation } from '../context/NavigationContext';
+import { storageService } from '../services/storage';
+import { isSupabaseConfigured, supabase } from '../lib/supabase';
+import { StatusBadge } from '../components/common/Badge';
+import { PerformanceSection } from '../components/dashboard/PerformanceSection';
+import { TrialUpgradeCard } from '../components/dashboard/TrialUpgradeCard';
+import { planService } from '../services/planService';
+import { Bell, CarFront, ChevronRight, Eye, MessageCircle, Plus, Share2, ArrowUpRight } from 'lucide-react';
+import { absoluteUrl, legacyName, name } from '../config/brand';
+import './DashboardPage.css';
+
+type SubscriptionStatus = {
+  status: string;
+  plan: 'free' | 'pro';
+  pro_trial_ends_at: string | null;
+  current_period_end: string | null;
+};port React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useNavigation } from '../context/NavigationContext';
+import { storageService } from '../services/storage';
+import { isSupabaseConfigured, supabase } from '../lib/supabase';
+import { StatusBadge } from '../components/common/Badge';
+import { PerformanceSection } from '../components/dashboard/PerformanceSection';
+import { TrialUpgradeCard } from '../components/dashboard/TrialUpgradeCard';
+import { planService } from '../services/planService';
+import { Bell, CarFront, ChevronRight, Eye, MessageCircle, Plus, Share2, ArrowUpRight } from 'lucide-react';
+import { absoluteUrl, legacyName, name } from '../config/brand';
+import './DashboardPage.css';
+
+type SubscriptionStatus = {
+  status: string;
   trial_started_at: string | null;
   trial_ends_at: string | null;
   current_period_end: string | null;
