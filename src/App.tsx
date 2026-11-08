@@ -75,6 +75,8 @@ function AppContent() {
       });
 
       const sub = supabaseService.onAuthStateChange(async (session) => {
+        // Gate protected screens while account-scoped data and in-memory page state are replaced.
+        setSessionChecked(false);
         if (session?.user) {
           try {
             await storageService.syncUserScope(session.user.id);
@@ -93,9 +95,11 @@ function AppContent() {
           } catch (err) {
             console.warn('Auth change error:', err);
           }
+          setSessionChecked(true);
         } else {
           // Sign-out must not leave another account's dealership or records on-device.
           await storageService.clearAppUserData();
+          setSessionChecked(true);
         }
       });
 
