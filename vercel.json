@@ -21,6 +21,26 @@
   ],
   "redirects": [
     {
+      "source": "/:dealerSlug/cars/:vehicleId",
+      "destination": "/:dealerSlug/vehicle/:vehicleId",
+      "permanent": true
+    },
+    {
+      "source": "/:dealerSlug/cars",
+      "destination": "/:dealerSlug",
+      "permanent": true
+    },
+    {
+      "source": "/showroom/:dealerSlug/cars/:vehicleId",
+      "destination": "/showroom/:dealerSlug/vehicle/:vehicleId",
+      "permanent": true
+    },
+    {
+      "source": "/showroom/:dealerSlug/cars",
+      "destination": "/showroom/:dealerSlug",
+      "permanent": true
+    },
+    {
       "source": "/:dealerSlug/cars",
       "destination": "/:dealerSlug",
       "permanent": true
