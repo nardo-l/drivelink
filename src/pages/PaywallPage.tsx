@@ -1,11 +1,12 @@
 import { name } from '../config/brand';
 import React from 'react';
 import { Logo } from '../components/common/Logo';
-import { Check, Loader2, LockKeyhole, ShieldCheck, Store, CarFront, MessageCircle, CalendarDays, Sparkles } from 'lucide-react';
+import { Check, Loader2, ShieldCheck, Store, CarFront, MessageCircle, CalendarDays, Sparkles } from 'lucide-react';
 import { useNavigation } from '../context/NavigationContext';
 import { supabase } from '../lib/supabase';
 import { supabaseService } from '../services/supabaseService';
 import { storageService } from '../services/storage';
+import { planService } from '../services/planService';
 
 type Plan = 'monthly' | 'yearly';
 
@@ -30,20 +31,15 @@ export const PaywallPage: React.FC = () => {
     setChecking(true);
     setMessage('');
     try {
-      const { data, error } = await supabase.functions.invoke('drivelink-payments', { body: { action: 'status' } });
-      if (error) throw error;
-      const subscription = data?.subscription;
-      const now = data?.server_now ? new Date(data.server_now).getTime() : Date.now();
-      const trialValid = (subscription?.status === 'trial' || subscription?.status === 'trialing') && subscription?.trial_ends_at && new Date(subscription.trial_ends_at).getTime() > now;
-      const paidValid = subscription?.status === 'active' && subscription?.current_period_end && new Date(subscription.current_period_end).getTime() > now;
-      if (trialValid || paidValid) {
+      const snapshot = await planService.getMyPlan();
+      if (snapshot.plan === 'pro') {
         navigate('/app');
         return true;
       }
-      setMessage('No active subscription was found yet. If you have just paid, allow a moment for NardoPay to confirm it, then check again.');
+      setMessage('You are on the Free plan. Your showroom and data remain available; upgrade whenever you are ready.');
       return false;
     } catch (error: any) {
-      setMessage(error?.message || 'We could not verify your subscription. Please try again.');
+      setMessage(error?.message || 'We could not verify your Pro access. Please try again.');
       return false;
     } finally {
       setChecking(false);
@@ -60,7 +56,7 @@ export const PaywallPage: React.FC = () => {
       });
       if (error) throw error;
       if (data?.paid || data?.status === 'completed') {
-        setMessage('Payment confirmed. Restoring your {name} access…');
+        setMessage('Payment confirmed. Restoring your Pro features…');
         await refreshAccess();
       } else if (data?.status === 'failed' || data?.status === 'cancelled') {
         setMessage('That payment was not completed. You can try again when ready.');
@@ -116,10 +112,17 @@ export const PaywallPage: React.FC = () => {
     }
   };
 
+  const upgradeReason = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('reason') : null;
+  const upgradeReasonCopy: Record<string,string> = {
+    vehicle_limit: "You've reached the 3-vehicle Free plan limit. Pro includes unlimited vehicles.",
+    photo_limit: 'Upgrade to Pro for up to 10 photos per vehicle.',
+    analytics: 'Upgrade to Pro to unlock full analytics.',
+  };
+
   const features = [
-    { title: 'Your showroom and public link', caption: 'Stays live for your buyers', Icon: Store, tint: 'bg-sky-50 text-sky-700' },
-    { title: 'Inventory, photos and listings', caption: "Everything you've added is safe", Icon: CarFront, tint: 'bg-indigo-50 text-indigo-700' },
-    { title: 'Enquiries and lead management', caption: 'Never miss a buyer', Icon: MessageCircle, tint: 'bg-amber-50 text-amber-700' },
+    { title: 'Unlimited vehicles', caption: 'No inventory cap on your showroom', Icon: CarFront, tint: 'bg-indigo-50 text-indigo-700' },
+    { title: 'Up to 10 photos per vehicle', caption: 'Show buyers more of every car', Icon: Store, tint: 'bg-sky-50 text-sky-700' },
+    { title: 'Full analytics and priority support', caption: 'Understand performance and get help faster', Icon: MessageCircle, tint: 'bg-amber-50 text-amber-700' },
   ];
 
   return (
@@ -128,11 +131,13 @@ export const PaywallPage: React.FC = () => {
         <header className="flex flex-col items-center text-center">
           <div className="mb-5"><Logo variant="dark" size="sm" /></div>
           <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-full bg-white/75 text-slate-500 shadow-sm ring-1 ring-white/90">
-            <LockKeyhole size={17} strokeWidth={1.8} />
+            <Sparkles size={17} strokeWidth={1.8} />
           </div>
-          <h1 className="text-[27px] font-extrabold leading-[1.12] tracking-[-0.045em] text-[#0A0F1E]">Your free trial has ended</h1>
-          <p className="mt-2 text-[13px] font-medium text-slate-500">Subscribe to unlock your dealership workspace</p>
+          <h1 className="text-[27px] font-extrabold leading-[1.12] tracking-[-0.045em] text-[#0A0F1E]">Upgrade to Lotlé Pro</h1>
+          <p className="mt-2 text-[13px] font-medium text-slate-500">Keep your Free plan, or unlock more with Pro</p>
         </header>
+
+        {upgradeReason && upgradeReasonCopy[upgradeReason] && <aside className="mt-5 rounded-2xl border border-slate-200 bg-white/80 px-4 py-3 text-xs leading-relaxed text-slate-600">{upgradeReasonCopy[upgradeReason]}</aside>}
 
         <div className="mt-7 space-y-4">
           {features.map(({ title, caption, Icon, tint }) => (
@@ -196,7 +201,7 @@ export const PaywallPage: React.FC = () => {
             className="flex h-14 w-full items-center justify-center gap-2 rounded-full bg-[#0A0F1E] px-5 text-[14px] font-bold tracking-[-0.01em] text-white shadow-[0_8px_20px_rgba(10,15,30,0.16)] transition-all duration-200 hover:bg-slate-800 active:scale-[0.99] disabled:opacity-60"
           >
             {busy ? <Loader2 size={17} className="animate-spin" /> : <ShieldCheck size={17} />}
-            {busy ? 'Connecting to NardoPay…' : `Subscribe now · ${plan === 'yearly' ? '$2.67/mo' : '$3.99/mo'}`}
+            {busy ? 'Connecting to NardoPay…' : `Upgrade to Pro · ${plan === 'yearly' ? '$32/year' : '$3.99/month'}`}
           </button>
 
           {plan === 'yearly' && <p className="mt-2 text-center text-[10px] font-medium text-slate-500">Yearly plan billed as a single $32 payment</p>}
@@ -213,7 +218,7 @@ export const PaywallPage: React.FC = () => {
             <span className="h-3 w-px bg-slate-200" />
             <button type="button" onClick={logout} disabled={busy} className="transition-colors hover:text-[#0A0F1E] disabled:opacity-50">Log out</button>
           </div>
-          <p className="mx-auto mt-3 max-w-[330px] text-center text-[9px] leading-[1.45] text-slate-400">Payments are verified securely by NardoPay. Your dealership data is never deleted when access expires.</p>
+          <p className="mx-auto mt-3 max-w-[330px] text-center text-[9px] leading-[1.45] text-slate-400">Payments are verified securely by NardoPay. Your Free plan remains available, and plan changes never delete dealership data.</p>
         </div>
       </section>
     </main>
