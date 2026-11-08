@@ -45,7 +45,17 @@ export const AnalyticsPage: React.FC = () => {
   };
 
   useEffect(() => { void planService.getMyPlan().then(snapshot => setPlan(snapshot.plan)).catch(error => console.error('[Lotle plan] Analytics plan load failed', error)); }, []);
-  useEffect(() => { if (plan === 'pro') void loadAnalytics(); else setLoading(false); }, [period, plan]);
+  useEffect(() => {
+    if (plan === 'pro') {
+      void loadAnalytics();
+    } else {
+      setLoading(true);
+      void storageService.getDealershipAsync()
+        .then(setDealership)
+        .catch(error => { console.error('Could not load visit total for Free plan', error); setError('We could not load your visit total.'); })
+        .finally(() => setLoading(false));
+    }
+  }, [period, plan]);
 
   const views = dealership?.storefrontViews ?? 0;
   const availableVehicles = vehicles.filter(v => v.status === 'available').length;
