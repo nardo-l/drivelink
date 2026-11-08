@@ -298,7 +298,7 @@ export const OnboardingFlow: React.FC<{ forceNewAccount?: boolean }> = ({ forceN
         ...(data.branding.coverPreview ? { coverUrl: data.branding.coverPreview } : {}),
       });
 
-      console.info(`[${name} onboarding][trial_start] Trial activation was handled by the database RPC; a trial failure does not block onboarding.`);
+      console.info(`[${name} onboarding][pro_trial_start] The database creates the 14-day Pro trial atomically with dealership creation.`);
       setupStep = 'session_persist';
       console.info(`[${name} onboarding][session_persist] Saving the dealership and authenticated session locally.`);
       storageService.saveDealership(dealer);
