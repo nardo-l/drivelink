@@ -7,6 +7,8 @@ begin
   for r in
     select d.id
     from public.dealerships d
+    join auth.users u on u.id=d.user_id
+    where u.email is not null
     order by d.created_at
   loop
     perform private.start_pro_trial_for_dealership(r.id);
