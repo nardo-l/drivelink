@@ -340,7 +340,7 @@ export const VehiclesListPage: React.FC = () => {
           </div>
           <p className="px-2 text-[10px] text-slate-400">{selectedKeepVehicleIds.length} of 3 selected</p>
           <button type="button" disabled={selectedKeepVehicleIds.length===0} onClick={() => void saveKeepSelection()}>Save selection</button>
-          <button type="button" onClick={() => navigate('/app/billing?reason=vehicle_limit')}>Upgrade to show them all</button>
+          <button type="button" onClick={() => navigate('/app/upgrade?reason=vehicle_limit')}>Upgrade to show them all</button>
           <button type="button" className="garage-sheet-cancel" onClick={() => setShowKeepVehiclesSheet(false)}>Not now</button>
         </section>
       </div>}
@@ -350,7 +350,7 @@ export const VehiclesListPage: React.FC = () => {
           <div className="garage-sheet-handle"/>
           <p className="garage-sheet-title">You've used your 3 free vehicles.</p>
           <p className="text-sm text-slate-500 px-2">Upgrade to Pro for unlimited vehicles.</p>
-          <button type="button" onClick={() => navigate('/app/billing?reason=vehicle_limit')}>Upgrade</button>
+          <button type="button" onClick={() => navigate('/app/upgrade?reason=vehicle_limit')}>Upgrade</button>
           <button type="button" className="garage-sheet-cancel" onClick={() => setShowVehicleLimitSheet(false)}>Not now</button>
         </section>
       </div>}
