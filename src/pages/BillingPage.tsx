@@ -181,8 +181,8 @@ export const BillingPage: React.FC = () => {
   const now = Date.now();
   const periodEnd = subscription?.current_period_end ? new Date(subscription.current_period_end).getTime() : 0;
   const proTrialEnd = subscription?.pro_trial_ends_at ? new Date(subscription.pro_trial_ends_at).getTime() : 0;
-  const proTrialActive = Boolean(proTrialEnd && now < proTrialEnd && !periodEnd);
   const active = Boolean(subscription?.status === 'active' && periodEnd > now);
+  const proTrialActive = Boolean(!active && proTrialEnd && now < proTrialEnd);
   const inGrace = Boolean(periodEnd && now > periodEnd && graceEnd >= now);
   const accessEnd = proTrialActive ? proTrialEnd : periodEnd;
   const daysLeft = accessEnd ? Math.max(0, Math.ceil((accessEnd - now) / 86400000)) : 0;
