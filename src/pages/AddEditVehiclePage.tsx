@@ -33,7 +33,6 @@ const DRAFT='drivelink:add-vehicle-draft:v2';
 const money=(v:string)=>v.replace(/\D/g,'').replace(/\B(?=(\d{3})+(?!\d))/g,',');
 const number=(v:string)=>Number(v.replace(/,/g,''));
 const id=()=>Math.random().toString(36).slice(2,10);
-const newUuid=()=>typeof crypto!=='undefined'&&'randomUUID' in crypto?crypto.randomUUID():Date.now().toString(36)+'-'+Math.random().toString(36).slice(2);
 const read=(f:File)=>new Promise<string>((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(String(r.result));r.onerror=()=>reject(new Error('Could not read photo.'));r.readAsDataURL(f);});
 async function compress(f:File):Promise<File>{const b=await createImageBitmap(f);const scale=Math.min(1,1600/b.width);const c=document.createElement('canvas');c.width=Math.round(b.width*scale);c.height=Math.round(b.height*scale);const ctx=c.getContext('2d');if(!ctx)throw new Error('Could not prepare photo.');ctx.drawImage(b,0,0,c.width,c.height);b.close();const blob=await new Promise<Blob>((res,rej)=>c.toBlob(x=>x?res(x):rej(new Error('Compression failed.')),'image/jpeg',.8));return new File([blob],f.name.replace(/\.[^.]+$/,'')+'.jpg',{type:'image/jpeg'});}
 
