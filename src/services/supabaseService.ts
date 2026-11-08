@@ -747,6 +747,7 @@ export const supabaseService = {
         expiresAt: activeAuthSession.expires_at || null,
       },
       userId: activeAuthSession.user.id,
+      requestedDealershipId: dealershipId || null,
       dealershipIdUsedInPath: freshDealershipId,
       freshDealershipId: confirmedOwner.id,
       sessionId: activeSessionId,
