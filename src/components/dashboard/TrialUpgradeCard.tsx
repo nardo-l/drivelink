@@ -39,13 +39,14 @@ export const TrialUpgradeCard: React.FC<Props> = ({ subscription, vehicleCount, 
   if (!subscription) return null;
 
   if (subscription.plan === 'free') {
+    const trialEnded = !!subscription.pro_trial_ends_at && new Date(subscription.pro_trial_ends_at).getTime() <= now;
     return (
-      <section className="dl-plan-slim-card" aria-label="Free plan">
+      <section className={`dl-plan-slim-card ${trialEnded ? 'is-urgent' : ''}`} aria-label="Free plan">
         <div className="dl-plan-slim-copy">
-          <strong>Free plan · {Math.min(vehicleCount, 3)} of 3 vehicles</strong>
-          <span>Showroom, enquiries and WhatsApp included</span>
+          <strong>{trialEnded ? 'Pro trial ended · Free plan' : `Free plan · ${Math.min(vehicleCount, maxVehicles)} of ${maxVehicles} vehicles`}</strong>
+          <span>{trialEnded ? 'Your showroom stays active. Upgrade any time to restore Pro.' : 'Showroom, enquiries and WhatsApp included'}</span>
         </div>
-        <button type="button" onClick={onUpgrade}>Upgrade <ArrowRight size={14}/></button>
+        <button type="button" onClick={onUpgrade}>{trialEnded ? 'Keep Pro' : 'Upgrade'} <ArrowRight size={14}/></button>
       </section>
     );
   }
