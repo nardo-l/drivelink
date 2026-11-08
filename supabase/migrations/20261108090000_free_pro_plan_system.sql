@@ -62,6 +62,20 @@ as $$
   end;
 $$;
 
+-- Public showroom access remains available on Free when the dealership is published.
+create or replace function private.dealership_has_public_access(p_dealership_id uuid)
+returns boolean
+language sql
+stable
+security definer
+set search_path = ''
+as $
+  select exists (
+    select 1 from public.dealerships d
+    where d.id = p_dealership_id and d.is_published = true
+  );
+$;
+
 -- Ownership, not subscription dates, controls ordinary write access.
 -- Existing RLS policies that call this helper inherit the new ownership-only rule.
 create or replace function private.dealership_has_write_access(p_dealership_id uuid)
@@ -313,8 +327,8 @@ set search_path = ''
 as $$
 declare
   v_plan text := private.dealership_plan(new.dealership_id);
-  v_vehicle_limit integer := case when v_plan='pro' then null else 3 end;
-  v_photo_limit integer := case when v_plan='pro' then 10 else 5 end;
+  v_vehicle_limit integer := nullif(private.plan_config() -> v_plan ->> 'maxVehicles','null')::integer;
+  v_photo_limit integer := (private.plan_config() -> v_plan ->> 'maxPhotosPerVehicle')::integer;
   v_count integer;
 begin
   if tg_op='INSERT' then
