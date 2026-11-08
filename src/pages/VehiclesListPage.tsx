@@ -243,7 +243,7 @@ export const VehiclesListPage: React.FC = () => {
             <div className="garage-empty-icon"><CarFront size={36} strokeWidth={1.65}/></div>
             <h2>Your garage is empty</h2>
             <p>Add your first vehicle and it goes live on your showroom link right away.</p>
-            <button type="button" onClick={() => navigate('/app/vehicles/new')} className="garage-empty-cta"><Plus size={18}/> Add your first vehicle</button>
+            <button type="button" onClick={requestAddVehicle} className="garage-empty-cta"><Plus size={18}/> Add your first vehicle</button>
             <button type="button" onClick={previewShowroom} className="garage-preview-link">Preview my showroom <ArrowUpRight size={14}/></button>
           </section>
         ) : visible.length === 0 ? (
