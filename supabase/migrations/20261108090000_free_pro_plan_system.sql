@@ -170,6 +170,48 @@ begin
 end;
 $$;
 
+create or replace function public.choose_free_plan_vehicles(p_vehicle_ids uuid[])
+returns void
+language plpgsql
+security definer
+set search_path = ''
+as $
+declare v_dealership_id uuid;
+begin
+  if auth.uid() is null then raise exception 'Authentication required' using errcode='42501'; end if;
+  if coalesce(cardinality(p_vehicle_ids),0)>3 then
+    raise exception 'PLAN_LIMIT_VEHICLES' using errcode='23514';
+  end if;
+  select d.id into v_dealership_id from public.dealerships d
+  where d.user_id=auth.uid() order by d.created_at desc limit 1;
+  if v_dealership_id is null then raise exception 'Dealership not found' using errcode='P0002'; end if;
+  if private.dealership_plan(v_dealership_id)<>'free' then
+    raise exception 'Vehicle picker is only available on the Free plan';
+  end if;
+  if exists(
+    select 1 from unnest(coalesce(p_vehicle_ids,'{}'::uuid[])) requested(id)
+    where not exists(select 1 from public.vehicles v where v.id=requested.id and v.dealership_id=v_dealership_id)
+  ) then raise exception 'A selected vehicle does not belong to this dealership' using errcode='42501'; end if;
+
+  update public.vehicles v
+    set status=coalesce(v.plan_hidden_status,v.status),
+        plan_hidden_status=null,
+        updated_at=pg_catalog.now()
+  where v.dealership_id=v_dealership_id and v.id=any(coalesce(p_vehicle_ids,'{}'::uuid[]));
+
+  update public.vehicles v
+    set plan_hidden_status=coalesce(v.plan_hidden_status,v.status),
+        status='hidden',
+        updated_at=pg_catalog.now()
+  where v.dealership_id=v_dealership_id
+    and v.status<>'hidden'
+    and not (v.id=any(coalesce(p_vehicle_ids,'{}'::uuid[])));
+end;
+$;
+
+revoke all on function public.choose_free_plan_vehicles(uuid[]) from public,anon;
+grant execute on function public.choose_free_plan_vehicles(uuid[]) to authenticated;
+
 create or replace function public.get_public_dealership_plan(p_dealership_id uuid)
 returns jsonb
 language plpgsql
