@@ -181,6 +181,7 @@ export const BillingPage: React.FC = () => {
   const now = Date.now();
   const periodEnd = subscription?.current_period_end ? new Date(subscription.current_period_end).getTime() : 0;
   const proTrialEnd = subscription?.pro_trial_ends_at ? new Date(subscription.pro_trial_ends_at).getTime() : 0;
+  const graceEnd = subscription?.grace_until ? new Date(subscription.grace_until).getTime() : 0;
   const active = Boolean(subscription?.status === 'active' && periodEnd > now);
   const proTrialActive = Boolean(!active && proTrialEnd && now < proTrialEnd);
   const inGrace = Boolean(periodEnd && now > periodEnd && graceEnd >= now);
@@ -206,8 +207,6 @@ export const BillingPage: React.FC = () => {
     photo_limit: 'Upgrade to Pro for up to 10 photos per vehicle.',
     analytics: 'Upgrade to Pro to unlock full showroom analytics.',
   };
-  const visiblePayments = showAllPayments ? payments : payments.slice(0, 5);
-
   const visiblePayments = showAllPayments ? payments : payments.slice(0, 5);
 
   return (
