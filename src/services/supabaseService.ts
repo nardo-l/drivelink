@@ -202,12 +202,12 @@ export const supabaseService = {
     return session;
   },
 
-  onAuthStateChange(callback: (session: any) => void) {
+  onAuthStateChange(callback: (session: any, event?: string) => void) {
     if (!isSupabaseConfigured()) {
       return { unsubscribe: () => {} };
     }
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      callback(session);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      callback(session, event);
     });
     return subscription;
   },
@@ -636,6 +636,17 @@ export const supabaseService = {
     await this.getCurrentDealership();
   },
 
+  async getFreshVehiclePhotoDealershipId(): Promise<{ userId: string; dealershipId: string }> {
+    if (!isSupabaseConfigured()) throw new Error('Supabase Storage is not configured.');
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError) throw authError;
+    if (!user) throw new Error('Authentication required: You must be signed in to upload photos.');
+    const { data, error } = await supabase.from('dealerships').select('id').eq('user_id', user.id).maybeSingle();
+    if (error) throw error;
+    if (!data?.id) throw new Error('No dealership is linked to the signed-in account. Complete dealership onboarding first.');
+    return { userId: user.id, dealershipId: data.id };
+  },
+
   async createVehiclePhotoSession(dealershipId: string): Promise<string> {
     if (!isSupabaseConfigured()) throw new Error('Supabase Storage is not configured.');
     const { data, error } = await supabase.rpc('create_vehicle_photo_session' as any, { p_dealership_id: dealershipId } as any);
@@ -649,73 +660,44 @@ export const supabaseService = {
 
   async uploadVehiclePhoto(dealershipId: string, file: File, uploadSessionId: string, photoIndex: number, isCover: boolean): Promise<string> {
     const bucket = 'vehicle-photos';
-    const user = await this.getCurrentUser();
-    const diagnosticBase = {
-      bucket,
-      fileName: file?.name || null,
-      userId: user?.id || null,
-      dealershipId: dealershipId || null,
-      uploadSessionId: uploadSessionId || null,
-      photoIndex,
-      isCover,
-    };
-
-    if (!isSupabaseConfigured()) {
-      throw new Error('Supabase Storage is not configured.');
-    }
-    if (!user) {
-      throw new Error('Authentication required: You must be signed in to upload photos.');
-    }
-    if (!dealershipId || !uploadSessionId) {
-      console.error('[DriveLink vehicle photo upload] Blocked: missing upload scope', diagnosticBase);
-      throw new Error('Photo upload is not ready: the dealership or vehicle draft is missing. Please go back and try again.');
-    }
-
-    const currentDealership = await this.getCurrentDealership();
-    if (!currentDealership || currentDealership.id !== dealershipId) {
-      console.error('[DriveLink vehicle photo upload] Blocked: dealership ownership mismatch', {
-        ...diagnosticBase,
-        resolvedDealershipId: currentDealership?.id || null,
+    if (!isSupabaseConfigured()) throw new Error('Supabase Storage is not configured.');
+    // Resolve ownership from the live auth user on every attempt; never trust a device cache for the path.
+    const { userId, dealershipId: freshDealershipId } = await this.getFreshVehiclePhotoDealershipId();
+    if (!uploadSessionId) throw new Error('Photo upload is not ready: the upload session is missing. Please retry.');
+    let activeSessionId = uploadSessionId;
+    if (dealershipId !== freshDealershipId) {
+      console.warn('[Lotlé vehicle photo upload] Requested dealership differs from fresh owner query; creating a fresh session.', {
+        signedInUserId: userId, requestedDealershipId: dealershipId || null, freshDealershipId, previousSessionId: uploadSessionId,
       });
-      throw new Error('You can only upload photos to your own dealership. Refresh and try again.');
+      activeSessionId = await this.createVehiclePhotoSession(freshDealershipId);
     }
-
     await this.assertCurrentDealershipWriteAccess();
-
     const extension = file.name.split('.').pop()?.toLowerCase();
     const safeExtension = extension && ['jpg', 'jpeg', 'png', 'webp'].includes(extension)
-      ? extension
-      : file.type === 'image/png' ? 'png' : file.type === 'image/webp' ? 'webp' : 'jpg';
+      ? extension : file.type === 'image/png' ? 'png' : file.type === 'image/webp' ? 'webp' : 'jpg';
     const uploadId = typeof crypto !== 'undefined' && 'randomUUID' in crypto
-      ? crypto.randomUUID()
-      : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
-    // Keep dealershipId as the first path segment for existing dealership-folder Storage RLS.
-    // Each attempt gets a new object key; the source filename is diagnostic metadata only.
-    const path = `${dealershipId}/vehicles/${uploadSessionId}/${uploadId}.${safeExtension}`;
-    const diagnostic = { ...diagnosticBase, path };
-
-    console.info('[DriveLink vehicle photo upload] Starting upload', diagnostic);
-    const { error: uploadError } = await supabase.storage
-      .from(bucket)
-      .upload(path, file, { cacheControl: '3600', upsert: false });
-
+      ? crypto.randomUUID() : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+    const path = `${freshDealershipId}/vehicles/${activeSessionId}/${uploadId}.${safeExtension}`;
+    const diagnostic = {
+      bucket, fileName: file?.name || null, signedInUserId: userId,
+      dealershipIdUsedInPath: freshDealershipId, requestedDealershipId: dealershipId || null,
+      freshDealershipId, sessionId: activeSessionId, sessionDealershipId: freshDealershipId,
+      photoIndex, isCover, path, dealershipIdsMatch: dealershipId === freshDealershipId,
+      sessionAndPathDealershipMatch: true,
+    };
+    console.info('[Lotlé vehicle photo upload] Identity and path check', diagnostic);
+    const { error: uploadError } = await supabase.storage.from(bucket).upload(path, file, { cacheControl: '3600', upsert: false });
     if (uploadError) {
-      console.error('[DriveLink vehicle photo upload] Upload failed', {
-        ...diagnostic,
-        statusCode: (uploadError as any).statusCode || (uploadError as any).status || null,
-        error: (uploadError as any).error || null,
-        message: uploadError.message || null,
-        details: (uploadError as any).details || null,
-        fullError: uploadError,
+      console.error('[Lotlé vehicle photo upload] Upload failed', {
+        ...diagnostic, statusCode: (uploadError as any).statusCode || (uploadError as any).status || null,
+        error: (uploadError as any).error || null, message: uploadError.message || null,
+        details: (uploadError as any).details || null, fullError: uploadError,
       });
       throw uploadError;
     }
-
-    console.info('[DriveLink vehicle photo upload] Upload succeeded', diagnostic);
+    console.info('[Lotlé vehicle photo upload] Upload succeeded', diagnostic);
     const { data } = supabase.storage.from(bucket).getPublicUrl(path);
-    if (!data?.publicUrl) {
-      throw new Error('Photo uploaded, but its public URL could not be created.');
-    }
+    if (!data?.publicUrl) throw new Error('Photo uploaded, but its public URL could not be created.');
     return data.publicUrl;
   },
 
