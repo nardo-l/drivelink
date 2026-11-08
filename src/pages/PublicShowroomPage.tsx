@@ -131,8 +131,10 @@ export const PublicShowroomPage: React.FC<{ slug?: string; previewDealership?: D
     };
     setMeta('og:title', dealer.name, true);
     setMeta('og:description', count + (count === 1 ? ' car available in ' : ' cars available in ') + city, true);
-    if (dealer.coverUrl) {
-      const originalBanner = dealer.coverUrl.split('?')[0];
+    const firstCarImage = vehicles.find(vehicle => vehicle.photos?.[0])?.photos?.[0];
+    const shareImage = dealer.coverUrl || firstCarImage;
+    if (shareImage) {
+      const originalBanner = shareImage.split('?')[0];
       const ogImage = originalBanner.includes('/storage/v1/object/public/')
         ? originalBanner.replace('/storage/v1/object/public/', '/storage/v1/render/image/public/') + '?width=1200&height=630&resize=cover&quality=80'
         : originalBanner;
@@ -140,7 +142,22 @@ export const PublicShowroomPage: React.FC<{ slug?: string; previewDealership?: D
       setMeta('og:image:width', '1200', true);
       setMeta('og:image:height', '630', true);
     }
-    setMeta('description', count + (count === 1 ? ' car available in ' : ' cars available in ') + city + '. Browse the showroom at ' + dealer.name + '.');
+    const description = count + (count === 1 ? ' car available in ' : ' cars available in ') + city + '. ' + (dealer.tagline?.trim() || 'Find your next car.') + ' Browse the showroom at ' + dealer.name + '.';
+    setMeta('description', description);
+    setMeta('twitter:card', 'summary_large_image');
+    setMeta('twitter:title', dealer.name + ' cars');
+    setMeta('twitter:description', description);
+    if (shareImage) {
+      const original = shareImage.split('?')[0];
+      const twitterImage = original.includes('/storage/v1/object/public/')
+        ? original.replace('/storage/v1/object/public/', '/storage/v1/render/image/public/') + '?width=1200&height=630&resize=cover&quality=80'
+        : original;
+      setMeta('twitter:image', twitterImage);
+    }
+    const canonicalUrl = absoluteUrl('/' + encodeURIComponent(dealer.slug));
+    let canonical = document.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
+    if (!canonical) { canonical = document.createElement('link'); canonical.rel = 'canonical'; document.head.appendChild(canonical); }
+    canonical.href = canonicalUrl;
     return () => { document.title = homeTitle; };
   }, [dealer, vehicles]);
 
