@@ -636,6 +636,17 @@ export const supabaseService = {
     await this.getCurrentDealership();
   },
 
+  async createVehiclePhotoSession(dealershipId: string): Promise<string> {
+    if (!isSupabaseConfigured()) throw new Error('Supabase Storage is not configured.');
+    const { data, error } = await supabase.rpc('create_vehicle_photo_session' as any, { p_dealership_id: dealershipId } as any);
+    if (error) {
+      console.error('[Lotlé photo session] Could not create upload session', { code: error.code, message: error.message, details: error.details });
+      throw error;
+    }
+    if (typeof data !== 'string' || !data) throw new Error('PHOTO_SESSION_INVALID');
+    return data;
+  },
+
   async uploadVehiclePhoto(dealershipId: string, file: File, draftId: string, photoIndex: number, isCover: boolean): Promise<string> {
     const bucket = 'vehicle-photos';
     const user = await this.getCurrentUser();
