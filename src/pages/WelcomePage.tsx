@@ -9,8 +9,8 @@ const ORANGE = '#FF784F';
 
 const faqs = [
   [`What is ${name}?`, `${name} gives your dealership one professional online showroom link, with tools to manage your vehicle listings and customer enquiries.`],
-  [`How much does ${name} cost?`, `${name} is priced at $3.99 per month after the 3-day free trial.`],
-  ['Is there a free trial?', 'Yes. New dealerships can start with a 3-day free trial.'],
+  [`How much does ${name} cost?`, `${name} includes a Free plan. Pro is $3.99 per month or $32 per year after a 14-day Pro trial.`],
+  ['Do new accounts get a Pro trial?', 'Yes. New accounts get 14 days of Pro, then continue on the Free plan unless they upgrade.'],
   ['How does my online showroom work?', 'Your showroom is a public page with your dealership details and vehicle listings. Share its link on WhatsApp, Instagram or anywhere buyers find you.'],
   ['Can I add multiple vehicles?', 'Yes. You can add and manage multiple vehicle listings from your Garage.'],
   ['Can customers contact me on WhatsApp?', 'Your showroom and vehicle pages can direct interested buyers to contact your dealership.'],
@@ -53,11 +53,11 @@ export const WelcomePage: React.FC = () => {
 
       <section id="top" className="dl-hero dl-section-wrap">
         <div className="dl-hero-copy">
-          <span className="dl-trial-badge"><i/> 3-Day Free Trial</span>
+          <span className="dl-trial-badge"><i/> Free Plan · 14-Day Pro Trial</span>
           <h1>Your entire<br/>dealership.<br/><em>One link.</em></h1>
           <p>Create your online showroom, showcase your inventory and manage customer enquiries — all in one place.</p>
-          <div className="dl-hero-actions"><button className="dl-button" onClick={goStart}>Start Free Trial <ArrowRight size={17}/></button><button className="dl-watch" onClick={()=>scrollTo('how-it-works')}><span><Play size={13} fill="currentColor"/></span> See how it works</button></div>
-          <small className="dl-price-note">$3.99/month after trial. Cancel anytime.</small>
+          <div className="dl-hero-actions"><button className="dl-button" onClick={goStart}>Start Free <ArrowRight size={17}/></button><button className="dl-watch" onClick={()=>scrollTo('how-it-works')}><span><Play size={13} fill="currentColor"/></span> See how it works</button></div>
+          <small className="dl-price-note">Free plan included. Pro is $3.99/month or $32/year.</small>
         </div>
         <div className="dl-hero-visual" aria-label={`${name} showroom and dealer tools preview`}>
           <div className="dl-orb dl-orb-orange"/><div className="dl-orb dl-orb-blue"/>
@@ -81,11 +81,11 @@ export const WelcomePage: React.FC = () => {
         <div className="dl-feature-row reverse"><div className="dl-feature-visual analytics"><FeatureMockup type="analytics"/></div><div className="dl-feature-copy"><span className="dl-feature-icon"><BarChart3/></span><h3>Understand your performance</h3><p>See the activity recorded for your dealership and understand how buyers interact with your showroom.</p><ul><li><Check/> Review available activity metrics</li><li><Check/> See your enquiry activity</li><li><Check/> Monitor your inventory</li></ul></div></div>
       </section>
 
-      <section id="pricing" className="dl-pricing dl-section-wrap"><div><span className="dl-kicker">Straightforward pricing</span><h2>Simple. Affordable.<br/>Built for dealers.</h2><p>Everything you need to bring your dealership online, without complicated plans.</p></div><div className="dl-price-card"><div className="dl-price-card-top"><span className="dl-trial-badge"><i/> 3-Day Free Trial</span><span className="dl-price-tag">One simple plan</span></div><div className="dl-price"><strong>$3.99</strong><span>/ month</span></div><p className="dl-price-sub">After your 3-day free trial.</p><ul><li><Check/> Create your online dealership showroom</li><li><Check/> Manage your vehicle inventory</li><li><Check/> Upload vehicle photographs</li><li><Check/> Receive and manage customer enquiries</li><li><Check/> Track available dealership performance</li><li><Check/> Share your showroom link</li></ul><button className="dl-button w-full" onClick={goStart}>Start Your Free Trial <ArrowRight size={16}/></button><small>Trial and billing details are shown during account setup.</small></div></section>
+      <section id="pricing" className="dl-pricing dl-section-wrap"><div><span className="dl-kicker">Straightforward pricing</span><h2>Simple. Affordable.<br/>Built for dealers.</h2><p>Everything you need to bring your dealership online, without complicated plans.</p></div><div className="dl-price-card"><div className="dl-price-card-top"><span className="dl-trial-badge"><i/> 3-Day Free Trial</span><span className="dl-price-tag">Free + Pro</span></div><div className="dl-price"><strong>$3.99</strong><span>/ month</span></div><p className="dl-price-sub">Pro upgrade · $32 per year also available. Start on Free.</p><ul><li><Check/> Free plan: up to 3 vehicles and 5 photos per vehicle</li><li><Check/> Professional showroom, logo and banner</li><li><Check/> WhatsApp and buyer enquiries</li><li><Check/> Pro: unlimited vehicles and up to 10 photos</li><li><Check/> Pro: 7, 30 and 90-day analytics</li><li><Check/> Pro: no Lotlé footer and priority support</li></ul><button className="dl-button w-full" onClick={goStart}>Start Free <ArrowRight size={16}/></button><small>Your Free plan stays active after the 14-day Pro trial.</small></div></section>
 
       <section id="faq" className="dl-faq dl-section-wrap"><div className="dl-faq-intro"><span className="dl-kicker">Questions, answered</span><h2>Got questions?</h2><p>Find straightforward answers about {name}.</p><div className="dl-faq-help"><HelpCircle/> Still need help? <a href={`mailto:${supportEmail}`}>Contact us</a></div></div><div className="dl-faq-list">{faqs.map(([q,a],i)=><div className="dl-faq-item" key={q}><button aria-expanded={openFaq===i} onClick={()=>setOpenFaq(openFaq===i?null:i)}><span>{q}</span><ChevronDown className={openFaq===i?'rotate-180':''}/></button>{openFaq===i&&<p>{a}</p>}</div>)}</div></section>
 
-      <section className="dl-final-cta dl-section-wrap"><div><span className="dl-kicker">Manage. Sell. Grow.</span><h2>Ready to grow<br/>your dealership?</h2><p>Start your 3-day free trial and give your dealership one professional link.</p></div><button className="dl-button" onClick={goStart}>Get Started <ArrowRight size={17}/></button></section>
+      <section className="dl-final-cta dl-section-wrap"><div><span className="dl-kicker">Manage. Sell. Grow.</span><h2>Ready to grow<br/>your dealership?</h2><p>Start on Free, explore Pro for 14 days and give your dealership one professional link.</p></div><button className="dl-button" onClick={goStart}>Get Started <ArrowRight size={17}/></button></section>
       <footer className="dl-footer dl-section-wrap"><div className="dl-footer-main"><div><a href="#top" className="dl-brand"><Logo variant="dark" size="sm"/></a><p>Manage. Sell. Grow.</p><small>{description}</small><small>{nameAscii.charAt(0).toUpperCase() + nameAscii.slice(1)} is your car showroom, online.</small></div><div className="dl-footer-links"><button onClick={()=>scrollTo('features')}>Features</button><button onClick={()=>scrollTo('pricing')}>Pricing</button><button onClick={()=>scrollTo('faq')}>FAQ</button><button onClick={()=>navigate('/login')}>Log in</button><a href={`mailto:${supportEmail}`}>Contact</a></div><div className="dl-footer-social"><a href={`https://wa.me/${supportWhatsApp}`} aria-label="WhatsApp"><MessageCircle/></a><a href="https://instagram.com/" aria-label="Instagram"><Share2 size={15}/></a></div></div><div className="dl-footer-bottom"><span>© {new Date().getFullYear()} {name}. All rights reserved.</span><div><a href="/privacy">Privacy Policy</a><a href="/terms">Terms of Service</a></div><span>Zimbabwe · South Africa</span></div></footer>
     </main>
   );
