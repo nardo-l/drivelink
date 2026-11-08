@@ -2,7 +2,7 @@ import { name, pageTitle, homeTitle, absoluteUrl } from '../config/brand';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Logo } from '../components/common/Logo';
 import { Select } from '../components/common/Select';
-import { CalendarDays, CarFront, Fuel, Gauge, Heart, MapPin, Phone, Search, Share2, SlidersHorizontal, X, ArrowRight } from 'lucide-react';
+import { CalendarDays, CarFront, Fuel, Gauge, Heart, MapPin, Phone, Search, Share2, SlidersHorizontal, X } from 'lucide-react';
 import { useNavigation } from '../context/NavigationContext';
 import { storageService } from '../services/storage';
 import { supabaseService } from '../services/supabaseService';
@@ -20,41 +20,11 @@ const WhatsAppMark: React.FC<{ size?: number }> = ({ size = 20 }) => (
 );
 
 export const PublicShowroomPage: React.FC<{ slug?: string; previewDealership?: Dealership; previewVehicles?: Vehicle[] }> = ({ slug, previewDealership, previewVehicles }) => {
-  const { navigate, showToast, currentPath } = useNavigation();
+  const { navigate, showToast } = useNavigation();
   const [dealer, setDealer] = useState<Dealership | null>(previewDealership || null);
   const [vehicles, setVehicles] = useState<Vehicle[]>(previewVehicles || []);
   const [showPoweredBy, setShowPoweredBy] = useState(true);
   const [loading, setLoading] = useState(!previewDealership);
-  const sessionKey = 'drivelink:showroom-seen:' + (slug || previewDealership?.slug || 'preview');
-  const [showLanding, setShowLanding] = useState(() => {
-    if (typeof window === 'undefined') return true;
-    if (/(?:\/cars|\/browse)$/.test(window.location.pathname.replace(/\/$/, ''))) return false;
-    try { return window.sessionStorage.getItem(sessionKey) !== '1'; } catch { return true; }
-  });
-  useEffect(() => {
-    const handleBackToLanding = () => {
-      try { window.sessionStorage.setItem(sessionKey + ':back', '1'); } catch { /* session storage may be unavailable */ }
-    };
-    window.addEventListener('popstate', handleBackToLanding);
-    return () => window.removeEventListener('popstate', handleBackToLanding);
-  }, [sessionKey]);
-
-  useEffect(() => {
-    const isBrowseRoute = /(?:\/cars|\/browse)$/.test(currentPath.replace(/\/$/, ''));
-    let seen = false;
-    let returningByBack = false;
-    try {
-      seen = window.sessionStorage.getItem(sessionKey) === '1';
-      returningByBack = window.sessionStorage.getItem(sessionKey + ':back') === '1';
-      if (returningByBack) window.sessionStorage.removeItem(sessionKey + ':back');
-    } catch { /* session storage may be unavailable */ }
-    if (!isBrowseRoute && seen && !returningByBack && slug) {
-      navigate('/' + encodeURIComponent(slug) + '/cars');
-      setShowLanding(false);
-      return;
-    }
-    setShowLanding(!isBrowseRoute);
-  }, [sessionKey, currentPath, slug, navigate]);
 
   useEffect(() => {
     if (!dealer) return;
@@ -65,20 +35,6 @@ export const PublicShowroomPage: React.FC<{ slug?: string; previewDealership?: D
     return () => { active = false; };
   }, [dealer?.id]);
 
-  const [bannerFailed, setBannerFailed] = useState(false);
-  const [fallbackImageFailed, setFallbackImageFailed] = useState(false);
-  const [leavingLanding, setLeavingLanding] = useState(false);
-  useEffect(() => {
-    if (!showLanding) return;
-    const previous = document.body.style.overflow;
-    const previousOverscroll = document.body.style.overscrollBehavior;
-    document.body.style.overflow = 'hidden';
-    document.body.style.overscrollBehavior = 'none';
-    return () => {
-      document.body.style.overflow = previous;
-      document.body.style.overscrollBehavior = previousOverscroll;
-    };
-  }, [showLanding, currentPath]);
 
   const [query, setQuery] = useState('');
   const [make, setMake] = useState('All');
@@ -92,7 +48,6 @@ export const PublicShowroomPage: React.FC<{ slug?: string; previewDealership?: D
   const [transmission, setTransmission] = useState('All');
   const [fuel, setFuel] = useState('All');
   const [fabVisible, setFabVisible] = useState(true);
-  const listingRef = useRef<HTMLElement>(null);
   const footerRef = useRef<HTMLElement>(null);
   const lastScroll = useRef(0);
 
@@ -233,48 +188,12 @@ export const PublicShowroomPage: React.FC<{ slug?: string; previewDealership?: D
     setMinPrice(''); setMaxPrice(''); setYearFrom(''); setYearTo('');
     setTransmission('All'); setFuel('All'); setMake('All'); setSavedOnly(false); setQuery('');
   };
-  const scrollCars = () => {
-    try { window.sessionStorage.setItem(sessionKey, '1'); } catch { /* session storage may be unavailable */ }
-    navigate('/' + encodeURIComponent(dealer.slug) + '/cars');
-  };
   const goVehicle = (vehicle: Vehicle) => navigate('/' + dealer.slug + '/vehicle/' + vehicle.id);
   const countLabel = (count: number) => count + (count === 1 ? ' car' : ' cars');
 
   return (
     <main className="dl-public-showroom">
-      {showLanding && (
-        <section className={'dl-ps-landing ' + (!dealer.coverUrl || bannerFailed ? 'has-no-banner' : '') + (leavingLanding ? ' is-leaving' : '')} aria-label="Showroom welcome">
-          {dealer.coverUrl && !bannerFailed ? (
-            <>
-              <div className="dl-ps-landing-placeholder" />
-              <img className="dl-ps-landing-image" src={dealer.coverUrl} alt="" fetchPriority="high" loading="eager" decoding="async" onError={() => { console.error(`[${name} showroom] Banner failed to load:`, dealer.coverUrl); setBannerFailed(true); }} />
-            </>
-            ) : !fallbackImageFailed && vehicles.find(vehicle => vehicle.photos?.[0]) ? <img className="dl-ps-landing-image" src={vehicles.find(vehicle => vehicle.photos?.[0])?.photos?.[0]} alt="" fetchPriority="high" loading="eager" decoding="async" onError={() => { console.error(`[${name} showroom] First vehicle cover failed to load.`); setFallbackImageFailed(true); }} /> : <div className="dl-ps-landing-fallback" />}
-          <div className="dl-ps-landing-top-shade" />
-          <div className="dl-ps-landing-bottom-shade" />
-          <div className="dl-ps-landing-top">
-            <div className="dl-ps-landing-identity">
-              <div className="dl-ps-logo">{dealer.logoUrl ? <img src={dealer.logoUrl} alt="" /> : <span>{initials}</span>}</div>
-              <div><strong>{dealer.name}</strong><small>{city}</small></div>
-            </div>
-            <button className="dl-ps-round-share" onClick={() => void share()} aria-label="Share showroom"><Share2 size={19} /></button>
-          </div>
-          {(!dealer.coverUrl || bannerFailed) && (
-            <div className="dl-ps-fallback-logo">{dealer.logoUrl ? <img src={dealer.logoUrl} alt={dealer.name} /> : <span>{initials}</span>}</div>
-          )}
-          <div className="dl-ps-landing-copy">
-            <h1>Drive Your Dream Today.</h1>
-            <p>{available.length} {available.length === 1 ? 'car' : 'cars'} available · {dealer.city || dealer.country || 'Harare'}</p>
-            <div className="dl-ps-landing-actions">
-              <button className="dl-ps-explore" onClick={scrollCars}>Explore cars <i><ArrowRight size={18} /></i></button>
-              {waNumber && <a className="dl-ps-landing-wa" href={wa(generalMessage)} target="_blank" rel="noreferrer" aria-label="Contact dealership on WhatsApp"><WhatsAppMark size={22} /></a>}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {!showLanding && <>
-      <section className="dl-ps-listings" ref={listingRef} id="available-cars">
+      <section className="dl-ps-listings" id="available-cars">
         <header className="dl-ps-list-header">
           <div className="dl-ps-list-brand">
             <div className="dl-ps-logo is-light">{dealer.logoUrl ? <img src={dealer.logoUrl} alt="" /> : <span>{initials}</span>}</div>
@@ -282,6 +201,17 @@ export const PublicShowroomPage: React.FC<{ slug?: string; previewDealership?: D
           </div>
           <button className="dl-ps-round-share is-light-share" onClick={() => void share()} aria-label="Share showroom"><Share2 size={18} /></button>
         </header>
+        {dealer.coverUrl && <div className="dl-ps-hero-banner">
+          <img src={dealer.coverUrl} alt="" width="1200" height="675" loading="eager" fetchPriority="high" decoding="async" />
+        </div>}
+        <section className="dl-ps-intro" aria-label={dealer.name + ' showroom'}>
+          <h1>{dealer.tagline?.trim() || 'Find your next car.'}</h1>
+          <p>{available.length} {available.length === 1 ? 'car' : 'cars'} available · {dealer.city || dealer.country || 'Harare'}</p>
+          <div className="dl-ps-intro-actions">
+            {waNumber && <a className="dl-ps-intro-whatsapp" href={wa(generalMessage)} target="_blank" rel="noreferrer"><WhatsAppMark size={18}/> WhatsApp</a>}
+            {dealer.phone && <a className="dl-ps-intro-call" href={'tel:' + dealer.phone}><Phone size={17}/> Call</a>}
+          </div>
+        </section>
 
         <div className="dl-ps-search-row">
           <label><Search size={17} /><input value={query} onChange={e => setQuery(e.target.value)} placeholder="Search cars…" aria-label="Search cars" />{query && <button onClick={() => setQuery('')} aria-label="Clear search"><X size={15} /></button>}</label>
@@ -353,7 +283,6 @@ export const PublicShowroomPage: React.FC<{ slug?: string; previewDealership?: D
           </section>
         </div>
       )}
-      </>}
     </main>
   );
 };
