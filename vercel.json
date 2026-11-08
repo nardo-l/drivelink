@@ -39,11 +39,6 @@
       "source": "/showroom/:dealerSlug/cars",
       "destination": "/showroom/:dealerSlug",
       "permanent": true
-    },
-    {
-      "source": "/:dealerSlug/cars",
-      "destination": "/:dealerSlug",
-      "permanent": true
     }
   ]
 }
