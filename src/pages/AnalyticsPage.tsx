@@ -4,12 +4,16 @@ import { BarChart3, Car, MessageSquare, Eye, TrendingUp, CircleHelp } from 'luci
 import { storageService } from '../services/storage';
 import { supabaseService } from '../services/supabaseService';
 import { BottomNav } from '../components/layout/BottomNav';
+import { planService } from '../services/planService';
+import { useNavigation } from '../context/NavigationContext';
 import type { Dealership, Enquiry, Vehicle } from '../types';
 
 type ViewHistoryRow = { view_date: string; views: number };
 type TrendPoint = { key: string; label: string; views: number; enquiries: number };
 
 export const AnalyticsPage: React.FC = () => {
+  const { navigate } = useNavigation();
+  const [plan, setPlan] = useState<'free' | 'pro'>('free');
   const [dealership, setDealership] = useState<Dealership | null>(null);
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [enquiries, setEnquiries] = useState<Enquiry[]>([]);
@@ -40,7 +44,8 @@ export const AnalyticsPage: React.FC = () => {
     }
   };
 
-  useEffect(() => { void loadAnalytics(); }, [period]);
+  useEffect(() => { void planService.getMyPlan().then(snapshot => setPlan(snapshot.plan)).catch(error => console.error('[Lotle plan] Analytics plan load failed', error)); }, []);
+  useEffect(() => { if (plan === 'pro') void loadAnalytics(); else setLoading(false); }, [period, plan]);
 
   const views = dealership?.storefrontViews ?? 0;
   const availableVehicles = vehicles.filter(v => v.status === 'available').length;
@@ -110,6 +115,17 @@ export const AnalyticsPage: React.FC = () => {
 
         {error && <div role="alert" className="mb-4 rounded-xl border border-rose-200 bg-rose-50 p-3 text-sm text-rose-800">{error}</div>}
 
+        {plan === 'free' ? (
+          <div className="space-y-4">
+            <Metric icon={<Eye className="h-4 w-4" />} label="Store visits" value={loading ? '—' : views.toLocaleString()} note="Lifetime showroom visits" />
+            <section className="rounded-2xl border border-slate-200 bg-slate-100/70 p-5">
+              <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">Lotlé Pro</p>
+              <h2 className="mt-2 text-base font-bold text-slate-800">See how your showroom is performing</h2>
+              <p className="mt-1 text-sm leading-relaxed text-slate-500">Unlock 7, 30 and 90-day trends, enquiry insights and inventory performance.</p>
+              <button type="button" onClick={() => navigate('/app/billing?reason=analytics')} className="mt-4 rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white">Upgrade to see more</button>
+            </section>
+          </div>
+        ) : (
         <div className="grid grid-cols-2 gap-3 mb-6">
           <Metric icon={<Eye className="h-4 w-4" />} label="Total storefront views" value={loading ? '—' : views.toLocaleString()} note="Lifetime recorded views" />
           <Metric icon={<Car className="h-4 w-4" />} label="Available vehicles" value={loading ? '—' : availableVehicles.toLocaleString()} note={`${vehicles.length} total inventory items`} />
@@ -166,6 +182,8 @@ export const AnalyticsPage: React.FC = () => {
         <div className="rounded-xl border border-blue-100 bg-blue-50/70 p-3 flex gap-2 text-xs leading-relaxed text-blue-950">
           <CircleHelp className="h-4 w-4 shrink-0 mt-0.5" /><p>Analytics only uses records saved to your dealership. {name} does not currently track individual vehicle views or WhatsApp clicks, so those metrics are not estimated.</p>
         </div>
+
+        )}
       </main>
       <BottomNav />
     </div>
