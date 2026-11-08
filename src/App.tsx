@@ -15,7 +15,6 @@ import { SettingsPage } from './pages/SettingsPage';
 import { MorePage } from './pages/MorePage';
 import { SupportPage } from './pages/SupportPage';
 import { BillingPage } from './pages/BillingPage';
-import { supabase } from './lib/supabase';
 import { NotificationsPage } from './pages/NotificationsPage';
 import { PublicShowroomPage } from './pages/PublicShowroomPage';
 import { PublicVehicleDetailPage } from './pages/PublicVehicleDetailPage';
@@ -29,7 +28,7 @@ import { ErrorBoundary } from './components/common/ErrorBoundary';
 
 function AppContent() {
   const safeDashboard = () => <ErrorBoundary label="dashboard"><DashboardPage /></ErrorBoundary>;
-  const { currentPath, navigate, toast, showToast } = useNavigation();
+  const { currentPath, toast } = useNavigation();
   React.useEffect(() => {
     const page = currentPath === '/' || currentPath === '' ? homeTitle : currentPath.split('/').filter(Boolean).slice(-1)[0]?.replace(/[-_]/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) || name;
     updateBrandMetadata({ title: currentPath === '/' || currentPath === '' ? homeTitle : pageTitle(page) });
@@ -51,7 +50,6 @@ function AppContent() {
             if (liveDealer) {
               storageService.saveDealership(liveDealer);
             } else {
-              setSubscriptionState('setup');
             }
             storageService.setUserSession({
               isLoggedIn: true,
@@ -66,7 +64,6 @@ function AppContent() {
         } else {
           // No active Supabase session; ensure unauthenticated state
           storageService.clearSession();
-          setSubscriptionState('setup');
         }
         setSessionChecked(true);
       }).catch((err) => {
@@ -97,8 +94,6 @@ function AppContent() {
         } else {
           storageService.clearSession();
           setSubscriptionState('setup');
-          setTrialEndsAt(null);
-          setAccessEndsAt(null);
         }
       });
 
@@ -108,7 +103,7 @@ function AppContent() {
     } else {
       setSessionChecked(true);
     }
-  }, [isConfigured, isDemo, verifySubscription]);
+  }, [isConfigured, isDemo]);
 
   // Route matching logic
   const renderRoute = () => {
@@ -266,7 +261,6 @@ function AppContent() {
   };
 
   const currentSession = storageService.getUserSession();
-  const dealerAppRoute = currentSession.isLoggedIn && !!currentSession.dealershipId && (currentPath.startsWith('/app') || ['/', '/login', '/signup', '/onboarding'].includes(currentPath));
 
   return (
     <DeviceFrame>
