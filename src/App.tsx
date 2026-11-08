@@ -81,6 +81,8 @@ function AppContent() {
             const liveDealer = await supabaseService.getCurrentDealership();
             if (liveDealer) {
               storageService.saveDealership(liveDealer);
+            } else {
+              storageService.clearCachedDealership();
             }
             storageService.setUserSession({
               isLoggedIn: true,
