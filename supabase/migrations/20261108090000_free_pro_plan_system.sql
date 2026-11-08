@@ -630,32 +630,8 @@ using (
 );
 
 drop policy if exists "Subscribed dealers can upload DriveLink assets" on storage.objects;
-create policy "Dealers upload own DriveLink assets"
-on storage.objects for insert to authenticated
-with check (
-  bucket_id='drivelink-assets'
-  and exists(select 1 from public.dealerships d where d.user_id=(select auth.uid()))
-);
-
-drop policy if exists "Subscribed dealers can update DriveLink assets" on storage.objects;
-create policy "Dealers update own DriveLink assets"
-on storage.objects for update to authenticated
-using (
-  bucket_id='drivelink-assets'
-  and exists(select 1 from public.dealerships d where d.user_id=(select auth.uid()))
-)
-with check (
-  bucket_id='drivelink-assets'
-  and exists(select 1 from public.dealerships d where d.user_id=(select auth.uid()))
-);
-
-drop policy if exists "Subscribed dealers can delete DriveLink assets" on storage.objects;
-create policy "Dealers delete own DriveLink assets"
-on storage.objects for delete to authenticated
-using (
-  bucket_id='drivelink-assets'
-  and exists(select 1 from public.dealerships d where d.user_id=(select auth.uid()))
-);
+-- DriveLink's shared static-assets bucket is service-managed; dealership users
+-- do not receive broad write access to other users' or shared asset paths.
 
 -- Pro-trial reminder notifications. Existing notification scheduler delivers these.
 create or replace function public.enqueue_pro_trial_reminders()
