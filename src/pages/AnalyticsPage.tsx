@@ -125,7 +125,7 @@ export const AnalyticsPage: React.FC = () => {
 
         {error && <div role="alert" className="mb-4 rounded-xl border border-rose-200 bg-rose-50 p-3 text-sm text-rose-800">{error}</div>}
 
-        {plan === 'free' ? (
+        {!canSeeAnalytics ? (
           <div className="space-y-4">
             <Metric icon={<Eye className="h-4 w-4" />} label="Store visits" value={loading ? '—' : views.toLocaleString()} note="Lifetime showroom visits" />
             <section className="rounded-2xl border border-slate-200 bg-slate-100/70 p-5">
@@ -136,6 +136,7 @@ export const AnalyticsPage: React.FC = () => {
             </section>
           </div>
         ) : (
+        <>
         <div className="grid grid-cols-2 gap-3 mb-6">
           <Metric icon={<Eye className="h-4 w-4" />} label="Total storefront views" value={loading ? '—' : views.toLocaleString()} note="Lifetime recorded views" />
           <Metric icon={<Car className="h-4 w-4" />} label="Available vehicles" value={loading ? '—' : availableVehicles.toLocaleString()} note={`${vehicles.length} total inventory items`} />
@@ -193,7 +194,7 @@ export const AnalyticsPage: React.FC = () => {
         <div className="rounded-xl border border-blue-100 bg-blue-50/70 p-3 flex gap-2 text-xs leading-relaxed text-blue-950">
           <CircleHelp className="h-4 w-4 shrink-0 mt-0.5" /><p>Analytics only uses records saved to your dealership. {name} does not currently track individual vehicle views or WhatsApp clicks, so those metrics are not estimated.</p>
         </div>
-
+        </>
         )}
       </main>
       <BottomNav />
