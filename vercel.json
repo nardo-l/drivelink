@@ -18,5 +18,12 @@
       "source": "/(.*)",
       "destination": "/index.html"
     }
+  ],
+  "redirects": [
+    {
+      "source": "/:dealerSlug/cars",
+      "destination": "/:dealerSlug",
+      "permanent": true
+    }
   ]
 }
