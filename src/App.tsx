@@ -80,7 +80,6 @@ function AppContent() {
             if (liveDealer) {
               storageService.saveDealership(liveDealer);
             } else {
-              setSubscriptionState('setup');
             }
             storageService.setUserSession({
               isLoggedIn: true,
@@ -93,7 +92,6 @@ function AppContent() {
           }
         } else {
           storageService.clearSession();
-          setSubscriptionState('setup');
         }
       });
 
