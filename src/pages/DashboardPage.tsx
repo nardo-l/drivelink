@@ -176,7 +176,8 @@ export const DashboardPage: React.FC = () => {
           dealershipId={dealership.id || ''}
           period={performancePeriod}
           isLive={isLive}
-          enquiries={isLive ? undefined : enquiries}
+          enquiries={enquiries}
+          vehicles={vehicles}
           showroomUrl={fullPublicUrl}
           onPeriodChange={setPerformancePeriod}
           onData={setPerformance}
