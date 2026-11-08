@@ -15,7 +15,6 @@ import { SettingsPage } from './pages/SettingsPage';
 import { MorePage } from './pages/MorePage';
 import { SupportPage } from './pages/SupportPage';
 import { BillingPage } from './pages/BillingPage';
-import { PaywallPage } from './pages/PaywallPage';
 import { supabase } from './lib/supabase';
 import { NotificationsPage } from './pages/NotificationsPage';
 import { PublicShowroomPage } from './pages/PublicShowroomPage';
@@ -183,7 +182,7 @@ function AppContent() {
     } else {
       setSessionChecked(true);
     }
-  }, [isConfigured, isDemo, verifySubscription, ensureTrialSetupOnLoad]);
+  }, [isConfigured, isDemo, verifySubscription]);
 
   React.useEffect(() => {
     const current = storageService.getUserSession();
