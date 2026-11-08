@@ -88,7 +88,7 @@ export const SettingsPage:React.FC=()=>{
    </section>
 
    <section className="dl-settings-group"><h2>Subscription</h2>
-    <Row icon={CreditCard} label="Plan" value={planStatus} onClick={()=>navigate('/app/billing')}/>
+    <Row icon={CreditCard} label="Plan" value={planStatus} onClick={()=>navigate('/app/upgrade')}/>
     <Row icon={ExternalLink} label="Manage billing" value="Plans and payment history" onClick={()=>navigate('/app/billing')}/>
    </section>
 
