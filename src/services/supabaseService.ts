@@ -638,64 +638,143 @@ export const supabaseService = {
 
   async getFreshVehiclePhotoDealershipId(): Promise<{ userId: string; dealershipId: string }> {
     if (!isSupabaseConfigured()) throw new Error('Supabase Storage is not configured.');
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError) throw authError;
-    if (!user) throw new Error('Authentication required: You must be signed in to upload photos.');
-    const { data, error } = await supabase.from('dealerships').select('id').eq('user_id', user.id).maybeSingle();
+    let { data: { session }, error: sessionError } = await supabase.auth.getSession();
+    if (sessionError) throw sessionError;
+    if (!session) throw new Error('Authentication required: No Supabase session is available for photo upload.');
+
+    const expiresAt = Number(session.expires_at || 0);
+    if (expiresAt && expiresAt <= Math.floor(Date.now() / 1000)) {
+      const refreshed = await supabase.auth.refreshSession();
+      if (refreshed.error) throw refreshed.error;
+      session = refreshed.data.session;
+    }
+    if (!session?.user?.id) throw new Error('Authentication required: The Supabase session could not be refreshed.');
+
+    const { data, error } = await supabase
+      .from('dealerships')
+      .select('id')
+      .eq('user_id', session.user.id)
+      .limit(1)
+      .maybeSingle();
     if (error) throw error;
     if (!data?.id) throw new Error('No dealership is linked to the signed-in account. Complete dealership onboarding first.');
-    return { userId: user.id, dealershipId: data.id };
+    return { userId: session.user.id, dealershipId: data.id };
   },
 
   async createVehiclePhotoSession(dealershipId: string): Promise<string> {
     if (!isSupabaseConfigured()) throw new Error('Supabase Storage is not configured.');
     const { data, error } = await supabase.rpc('create_vehicle_photo_session' as any, { p_dealership_id: dealershipId } as any);
     if (error) {
-      console.error('[Lotlé photo session] Could not create upload session', { code: error.code, message: error.message, details: error.details });
+      console.error('[Lotlé photo session] Could not create upload session', {
+        dealershipId, code: error.code, message: error.message, details: error.details,
+      });
       throw error;
     }
     if (typeof data !== 'string' || !data) throw new Error('PHOTO_SESSION_INVALID');
     return data;
   },
 
-  async uploadVehiclePhoto(dealershipId: string, file: File, uploadSessionId: string, photoIndex: number, isCover: boolean): Promise<string> {
+  async uploadVehiclePhoto(dealershipId: string, file: File, _uploadSessionId: string, photoIndex: number, isCover: boolean): Promise<string> {
     const bucket = 'vehicle-photos';
     if (!isSupabaseConfigured()) throw new Error('Supabase Storage is not configured.');
-    // Resolve ownership from the live auth user on every attempt; never trust a device cache for the path.
-    const { userId, dealershipId: freshDealershipId } = await this.getFreshVehiclePhotoDealershipId();
-    if (!uploadSessionId) throw new Error('Photo upload is not ready: the upload session is missing. Please retry.');
-    let activeSessionId = uploadSessionId;
-    if (dealershipId !== freshDealershipId) {
-      console.warn('[Lotlé vehicle photo upload] Requested dealership differs from fresh owner query; creating a fresh session.', {
-        signedInUserId: userId, requestedDealershipId: dealershipId || null, freshDealershipId, previousSessionId: uploadSessionId,
-      });
-      activeSessionId = await this.createVehiclePhotoSession(freshDealershipId);
+
+    // The caller's dealership and any earlier session are intentionally ignored.
+    // Each individual photo gets a new server-owned dealership lookup, session and path.
+    const initialAuth = await supabase.auth.getSession();
+    if (initialAuth.error) throw initialAuth.error;
+    let session = initialAuth.data.session;
+    if (!session?.user?.id) throw new Error('Authentication required: No Supabase session is available for photo upload.');
+    const initialExpiry = Number(session.expires_at || 0);
+    if (initialExpiry && initialExpiry <= Math.floor(Date.now() / 1000)) {
+      const refreshed = await supabase.auth.refreshSession();
+      if (refreshed.error) throw refreshed.error;
+      session = refreshed.data.session;
     }
+    if (!session?.user?.id) throw new Error('Authentication required: The Supabase session could not be refreshed.');
+    const userId = session.user.id;
+
+    const { data: ownerRow, error: ownerError } = await supabase
+      .from('dealerships')
+      .select('id')
+      .eq('user_id', userId)
+      .limit(1)
+      .maybeSingle();
+    if (ownerError) throw ownerError;
+    if (!ownerRow?.id) throw new Error('No dealership is linked to the signed-in account.');
+    const freshDealershipId = ownerRow.id;
+
+    // New session for every individual file, regardless of cover position.
+    const activeSessionId = await this.createVehiclePhotoSession(freshDealershipId);
     await this.assertCurrentDealershipWriteAccess();
+
     const extension = file.name.split('.').pop()?.toLowerCase();
     const safeExtension = extension && ['jpg', 'jpeg', 'png', 'webp'].includes(extension)
       ? extension : file.type === 'image/png' ? 'png' : file.type === 'image/webp' ? 'webp' : 'jpg';
     const uploadId = typeof crypto !== 'undefined' && 'randomUUID' in crypto
       ? crypto.randomUUID() : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+    // Cover and non-cover photos use exactly the same bucket, first path segment and layout.
     const path = `${freshDealershipId}/vehicles/${activeSessionId}/${uploadId}.${safeExtension}`;
+
+    // Re-read the same singleton client's auth state immediately before Storage upload.
+    const beforeUpload = await supabase.auth.getSession();
+    if (beforeUpload.error) throw beforeUpload.error;
+    const activeAuthSession = beforeUpload.data.session;
+    const authExpired = !activeAuthSession?.expires_at || Number(activeAuthSession.expires_at) <= Math.floor(Date.now() / 1000);
+    if (!activeAuthSession?.user?.id || activeAuthSession.user.id !== userId || authExpired) {
+      throw new Error('Authentication changed or expired before the photo upload. Please retry.');
+    }
+
+    // Fresh owner query immediately before the Storage request, scoped to the session user.
+    const { data: confirmedOwner, error: confirmedOwnerError } = await supabase
+      .from('dealerships')
+      .select('id')
+      .eq('user_id', activeAuthSession.user.id)
+      .limit(1)
+      .maybeSingle();
+    if (confirmedOwnerError) throw confirmedOwnerError;
+    if (!confirmedOwner?.id || confirmedOwner.id !== freshDealershipId) {
+      throw new Error('The signed-in account dealership changed before upload. Please retry.');
+    }
+
     const diagnostic = {
-      bucket, fileName: file?.name || null, signedInUserId: userId,
-      dealershipIdUsedInPath: freshDealershipId, requestedDealershipId: dealershipId || null,
-      freshDealershipId, sessionId: activeSessionId, sessionDealershipId: freshDealershipId,
-      photoIndex, isCover, path, dealershipIdsMatch: dealershipId === freshDealershipId,
-      sessionAndPathDealershipMatch: true,
+      bucket,
+      path,
+      fullObjectPath: `${bucket}/${path}`,
+      authSession: {
+        exists: Boolean(activeAuthSession),
+        expired: authExpired,
+        userId: activeAuthSession.user.id,
+        expiresAt: activeAuthSession.expires_at || null,
+      },
+      userId: activeAuthSession.user.id,
+      dealershipIdUsedInPath: freshDealershipId,
+      freshDealershipId: confirmedOwner.id,
+      sessionId: activeSessionId,
+      photoIndex,
+      isCover,
+      dealershipIdsMatch: freshDealershipId === confirmedOwner.id,
+      authClient: 'shared supabase singleton from src/lib/supabase.ts',
     };
-    console.info('[Lotlé vehicle photo upload] Identity and path check', diagnostic);
-    const { error: uploadError } = await supabase.storage.from(bucket).upload(path, file, { cacheControl: '3600', upsert: false });
+    console.info('[Lotlé vehicle photo upload] Preflight', diagnostic);
+
+    // This is the only Storage write for a vehicle photo. Cover is metadata only.
+    const { error: uploadError } = await supabase.storage
+      .from(bucket)
+      .upload(path, file, { cacheControl: '3600', upsert: false });
+
     if (uploadError) {
-      console.error('[Lotlé vehicle photo upload] Upload failed', {
-        ...diagnostic, statusCode: (uploadError as any).statusCode || (uploadError as any).status || null,
-        error: (uploadError as any).error || null, message: uploadError.message || null,
-        details: (uploadError as any).details || null, fullError: uploadError,
+      console.error('[Lotlé vehicle photo upload] Storage upload failed', {
+        ...diagnostic,
+        statusCode: (uploadError as any).statusCode ?? (uploadError as any).status ?? null,
+        errorName: (uploadError as any).name ?? (uploadError as any).error ?? null,
+        message: uploadError.message ?? null,
+        details: (uploadError as any).details ?? null,
+        fullError: uploadError,
       });
       throw uploadError;
     }
-    console.info('[Lotlé vehicle photo upload] Upload succeeded', diagnostic);
+
+    console.info('[Lotlé vehicle photo upload] Storage upload succeeded', diagnostic);
     const { data } = supabase.storage.from(bucket).getPublicUrl(path);
     if (!data?.publicUrl) throw new Error('Photo uploaded, but its public URL could not be created.');
     return data.publicUrl;
