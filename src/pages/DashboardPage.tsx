@@ -35,7 +35,7 @@ type SubscriptionStatus = {
   grace_until: string | null;
 };
 
-export const DashboardPage: React.FC<{ onEnsureTrialSetup?: () => Promise<void> }> = ({ onEnsureTrialSetup }) => {
+export const DashboardPage: React.FC = () => {
   const { navigate, showToast } = useNavigation();
   const isLive = isSupabaseConfigured() && !storageService.isDemoModeActive();
   const [dealership, setDealership] = useState(() => isLive ? { ...storageService.getDealership(), name: 'Your dealership', slug: '' } : storageService.getDealership());
@@ -49,17 +49,12 @@ export const DashboardPage: React.FC<{ onEnsureTrialSetup?: () => Promise<void> 
   const markPerformanceLoaded = useCallback(() => setPerformanceLoading(false), []);
   const [subscription, setSubscription] = useState<SubscriptionStatus | null>(null);
   const serverClock = useRef({ serverMs: Date.now(), monotonicMs: window.performance.now() });
-  const [subscriptionLoading, setSubscriptionLoading] = useState(false);
   const [brandNoticeVisible, setBrandNoticeVisible] = useState(false);
-  const expiryCheck = useRef(false);
   const load = async () => {
     setLoading(true);
     setLoadError('');
     try {
-      // Reconcile a missing/interrupted trial before the dashboard reads protected data.
-      // The RPC is idempotent and returns expired when an anti-abuse identity has already used its trial.
-      if (onEnsureTrialSetup) await onEnsureTrialSetup();
-      const [d, v, e] = await Promise.all([
+          const [d, v, e] = await Promise.all([
         storageService.getDealershipAsync(),
         storageService.getVehiclesAsync(),
         storageService.getEnquiriesAsync(),
@@ -234,27 +229,7 @@ export const DashboardPage: React.FC<{ onEnsureTrialSetup?: () => Promise<void> 
     };
   }, [isLive]);
 
-  useEffect(() => {
-    if (!isLive || !subscription?.trial_ends_at || subscription.status !== 'trial') return;
-    const checkExpiry = () => {
-      const trialEnd = new Date(subscription.trial_ends_at!).getTime();
-      const serverNow = serverClock.current.serverMs + (window.performance.now() - serverClock.current.monotonicMs);
-      if (serverNow < trialEnd || expiryCheck.current) return;
-      expiryCheck.current = true;
-      setSubscriptionLoading(true);
-      refreshSubscription().then(latest => {
-        if (latest && (latest.status === 'expired' || (latest.status !== 'trial' && latest.status !== 'active' && latest.status !== 'grace_period'))) {
-          navigate('/app/billing');
-        } else {
-          expiryCheck.current = false;
-        }
-      }).catch(() => { expiryCheck.current = false; }).finally(() => setSubscriptionLoading(false));
-    };
-    // Check the same expiry boundary without updating page-level state every second.
-    checkExpiry();
-    const timer = window.setInterval(checkExpiry, 1000);
-    return () => window.clearInterval(timer);
-  }, [isLive, subscription]);
+
 
   const newLeads = enquiries.filter(e => e.stage === 'new').length;
   const soldCount = vehicles.filter(v => v.status === 'sold').length;
