@@ -65,6 +65,10 @@ export const storageService = {
     try { previousUserId = localStorage.getItem('drivelink_active_user_id_v1') || ''; } catch {}
     if (previousUserId !== userId) await this.clearAppUserData(userId);
   },
+  clearCachedDealership(): void {
+    try { localStorage.removeItem(STORAGE_KEYS.DEALERSHIP); } catch {}
+  },
+
   getDealership(): Dealership {
     try {
       const data = localStorage.getItem(STORAGE_KEYS.DEALERSHIP);
