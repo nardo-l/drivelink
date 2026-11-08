@@ -57,7 +57,7 @@ export const VehiclesListPage: React.FC = () => {
     }
   }, []);
 
-  useEffect(() => { void load(); void planService.getMyPlan().then(p => setPlan(p.plan)).catch(e => console.error('[Lotle plan] Garage plan load failed', e)); }, [load]);
+  useEffect(() => { void planService.getMyPlan().then(p => { setPlan(p.plan); return load(); }).catch(e => { console.error('[Lotle plan] Garage plan load failed', e); void load(); }); }, [load]);
 
   const activeVehicleCount = vehicles.filter(v => v.status !== 'hidden').length;
   const hiddenVehicleCount = vehicles.filter(v => v.status === 'hidden').length;
