@@ -23,7 +23,7 @@ export const PublicShowroomPage: React.FC<{ slug?: string; previewDealership?: D
   const { navigate, showToast, currentPath } = useNavigation();
   const [dealer, setDealer] = useState<Dealership | null>(previewDealership || null);
   const [vehicles, setVehicles] = useState<Vehicle[]>(previewVehicles || []);
-  const [isProPlan, setIsProPlan] = useState(false);
+  const [showPoweredBy, setShowPoweredBy] = useState(true);
   const [loading, setLoading] = useState(!previewDealership);
   const sessionKey = 'drivelink:showroom-seen:' + (slug || previewDealership?.slug || 'preview');
   const [showLanding, setShowLanding] = useState(() => {
@@ -60,7 +60,7 @@ export const PublicShowroomPage: React.FC<{ slug?: string; previewDealership?: D
     if (!dealer) return;
     let active = true;
     void planService.getPublicPlan(dealer.id)
-      .then(snapshot => { if (active) setIsProPlan(snapshot.plan === 'pro'); })
+      .then(snapshot => { if (active) setShowPoweredBy(snapshot.config[snapshot.plan].showPoweredBy); })
       .catch(error => console.error('[Lotle plan] Public showroom plan lookup failed', error));
     return () => { active = false; };
   }, [dealer?.id]);
@@ -331,7 +331,7 @@ export const PublicShowroomPage: React.FC<{ slug?: string; previewDealership?: D
         {dealer.phone && <a href={'tel:' + dealer.phone}><Phone size={14} />{dealer.phone}</a>}
         {dealer.address && <p><MapPin size={14} />{dealer.address}</p>}
         {(dealer as Dealership & { hours?: string }).hours && <p>{(dealer as Dealership & { hours?: string }).hours}</p>}
-        {!isProPlan && <a className="dl-ps-powered" href="/"><span>Powered by Lotlé</span><Logo variant="light" size="sm" /></a>}
+        {showPoweredBy && <a className="dl-ps-powered" href="/"><span>Powered by Lotlé</span><Logo variant="light" size="sm" /></a>}
       </footer>
 
       {waNumber && <a className={'dl-ps-floating-wa ' + (!fabVisible ? 'hidden' : '')} href={wa(generalMessage)} target="_blank" rel="noreferrer" aria-label="Message dealership on WhatsApp"><WhatsAppMark size={24} /></a>}
