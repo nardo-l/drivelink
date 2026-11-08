@@ -15,6 +15,7 @@ import { SettingsPage } from './pages/SettingsPage';
 import { MorePage } from './pages/MorePage';
 import { SupportPage } from './pages/SupportPage';
 import { BillingPage } from './pages/BillingPage';
+import { PaywallPage } from './pages/PaywallPage';
 import { NotificationsPage } from './pages/NotificationsPage';
 import { PublicShowroomPage } from './pages/PublicShowroomPage';
 import { PublicVehicleDetailPage } from './pages/PublicVehicleDetailPage';
@@ -194,6 +195,10 @@ function AppContent() {
 
     if (currentPath === '/app/notifications') {
       return <NotificationsPage />;
+    }
+
+    if (currentPath === '/app/upgrade') {
+      return <PaywallPage />;
     }
 
     if (currentPath === '/app/billing') {
