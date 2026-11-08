@@ -76,7 +76,7 @@ export const ShowroomBrandingEditor: React.FC<ShowroomBrandingEditorProps> = ({
       });
       const width = image.naturalWidth, height = image.naturalHeight;
       const tips: string[] = [];
-      if (width > height) tips.push('Tall photos look best on phones. You can still use this one.');
+      if (width > height) tips.push('Wide images work best at the top of your showroom.');
       if (Math.min(width, height) < 800) tips.push('This photo may look blurry. A larger image works better.');
       const scale = Math.min(1, 1600 / Math.max(width, height));
       const canvas = document.createElement('canvas');
@@ -214,7 +214,7 @@ export const ShowroomBrandingEditor: React.FC<ShowroomBrandingEditorProps> = ({
         <span className="sb-upload-icon"><Upload size={17}/></span><span>Upload {kind}</span>
       </button>}
       <input ref={fileInputRefs[kind]} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={e => { const file = e.target.files?.[0]; if (file) openCrop(kind, file); e.currentTarget.value = ''; }} />
-      {kind === 'banner' && <p className="sb-banner-helper">Choose a tall photo with your car in the upper part. We'll fit it to your landing page.</p>}
+      {kind === 'banner' && <p className="sb-banner-helper">This wide image appears at the top of your showroom.</p>}
       {kind === 'banner' && asset.tip && <p className="sb-banner-tip">{asset.tip}</p>}
       {asset.error && <p className="sb-inline-error">{asset.error}</p>}
     </div>;
@@ -222,21 +222,21 @@ export const ShowroomBrandingEditor: React.FC<ShowroomBrandingEditorProps> = ({
 
   return <div className={`sb-editor ${className}`}>
     <div className="sb-preview-card">
-      <div className="sb-preview-banner">
-        {banner.url ? <img src={banner.url} alt="" /> : <div className="sb-banner-empty" />}
-        <div className="sb-preview-shade" />
-        <div className="sb-preview-top">
-          <div className="sb-preview-logo">{logo.url ? <img src={logo.url} alt="" /> : <span>{initials}</span>}</div>
-          <div><strong>{dealershipName || 'Your dealership'}</strong><small>{city || 'Your city'}</small></div>
-        </div>
-        <h3>{tagline.trim() || 'Find your next car.'}</h3>
-        <small className="sb-preview-cta">Explore cars</small>
+      <div className="sb-preview-top">
+        <div className="sb-preview-logo">{logo.url ? <img src={logo.url} alt="" /> : <span>{initials}</span>}</div>
+        <div><strong>{dealershipName || 'Your dealership'}</strong><small>{city || 'Your city'}</small></div>
       </div>
-      <div className="sb-preview-caption">Live landing-page preview</div>
+      {banner.url && <div className="sb-preview-banner"><img src={banner.url} alt="" /></div>}
+      <div className="sb-preview-intro">
+        <h3>{tagline.trim() || 'Find your next car.'}</h3>
+        <p>0 cars available · {city || 'Your city'}</p>
+        <span>WhatsApp</span><span>Call</span>
+      </div>
+      <div className="sb-preview-caption">Live showroom preview</div>
     </div>
     <div className="sb-upload-list">
       {renderUpload('logo', 'Logo', 'Square, at least 400x400px. PNG or JPG.')}
-      {renderUpload('banner', 'Banner', 'Choose a tall photo. JPG, PNG or WebP · max 10 MB.')}
+      {renderUpload('banner', 'Banner', 'This wide image appears at the top of your showroom. JPG, PNG or WebP · max 10 MB.')}
     </div>
     {cropKind && cropImage && <div className="sb-crop-backdrop" role="dialog" aria-modal="true" aria-label={"Crop " + cropKind}>
       <div className="sb-crop-sheet">
