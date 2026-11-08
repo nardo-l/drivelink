@@ -49,6 +49,14 @@ export const planService = {
     };
   },
 
+  async chooseFreeVehicles(vehicleIds: string[]): Promise<void> {
+    const { error } = await supabase.rpc('choose_free_plan_vehicles' as any, { p_vehicle_ids: vehicleIds } as any);
+    if (error) {
+      console.error('[Lotle plan] Could not save Free plan vehicle selection', { code: error.code, message: error.message, details: error.details });
+      throw error;
+    }
+  },
+
   async getPublicPlan(dealershipId: string): Promise<Pick<PlanSnapshot, 'plan' | 'config'>> {
     if (!isSupabaseConfigured()) return { plan: 'free', config: fallbackConfig };
     const { data, error } = await supabase.rpc('get_public_dealership_plan' as any, { p_dealership_id: dealershipId } as any);
