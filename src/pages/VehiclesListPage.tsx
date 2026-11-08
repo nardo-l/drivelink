@@ -6,6 +6,7 @@ import {
 import { useNavigation } from '../context/NavigationContext';
 import { storageService } from '../services/storage';
 import { Vehicle, VehicleStatus } from '../types';
+import { planService } from '../services/planService';
 import './VehiclesListPage.css';
 
 type InventoryFilter = 'all' | 'available' | 'reserved' | 'sold';
@@ -26,6 +27,8 @@ export const VehiclesListPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState('');
+  const [plan, setPlan] = useState<'free' | 'pro'>('free');
+  const [showVehicleLimitSheet, setShowVehicleLimitSheet] = useState(false);
   const [menuId, setMenuId] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Vehicle | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>(() => {
@@ -52,7 +55,13 @@ export const VehiclesListPage: React.FC = () => {
     }
   }, []);
 
-  useEffect(() => { void load(); }, [load]);
+  useEffect(() => { void load(); void planService.getMyPlan().then(p => setPlan(p.plan)).catch(e => console.error('[Lotle plan] Garage plan load failed', e)); }, [load]);
+
+  const activeVehicleCount = vehicles.filter(v => v.status !== 'hidden').length;
+  const requestAddVehicle = () => {
+    if (plan === 'free' && activeVehicleCount >= 3) { setShowVehicleLimitSheet(true); return; }
+    navigate('/app/vehicles/new');
+  };
 
   useEffect(() => {
     const onScroll = () => {
@@ -167,10 +176,10 @@ export const VehiclesListPage: React.FC = () => {
           <div className="min-w-0">
             <p className="garage-eyebrow">INVENTORY</p>
             <h1>Garage</h1>
-            <p className="garage-summary">{loading ? 'Loading your inventory…' : <>{vehicles.length} {vehicles.length === 1 ? 'vehicle' : 'vehicles'} <span>·</span> {counts.available} available</>}</p>
+            <p className="garage-summary">{loading ? 'Loading your inventory…' : <>{plan === 'free' ? `${activeVehicleCount} of 3 vehicles` : `${activeVehicleCount} vehicles`} <span>·</span> {counts.available} available</>}</p>
           </div>
           {vehicles.length > 0 && (
-            <button type="button" onClick={() => navigate('/app/vehicles/new')} aria-label="Add vehicle" className="garage-header-add">
+            <button type="button" onClick={requestAddVehicle} aria-label="Add vehicle" className="garage-header-add">
               <Plus size={22} strokeWidth={2.2}/>
             </button>
           )}
@@ -303,6 +312,16 @@ export const VehiclesListPage: React.FC = () => {
           </section>
         </div>;
       })()}
+
+      {showVehicleLimitSheet && <div className="garage-sheet-backdrop" onClick={() => setShowVehicleLimitSheet(false)}>
+        <section className="garage-action-sheet" role="dialog" aria-modal="true" aria-label="Free vehicle limit" onClick={event => event.stopPropagation()}>
+          <div className="garage-sheet-handle"/>
+          <p className="garage-sheet-title">You've used your 3 free vehicles.</p>
+          <p className="text-sm text-slate-500 px-2">Upgrade to Pro for unlimited vehicles.</p>
+          <button type="button" onClick={() => navigate('/app/billing?reason=vehicle_limit')}>Upgrade</button>
+          <button type="button" className="garage-sheet-cancel" onClick={() => setShowVehicleLimitSheet(false)}>Not now</button>
+        </section>
+      </div>}
 
       {deleteTarget && (
         <div className="garage-delete-backdrop" onClick={() => setDeleteTarget(null)}>
