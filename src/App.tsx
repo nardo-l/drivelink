@@ -75,7 +75,7 @@ const TrialBanner: React.FC<TrialBannerProps> = ({ subscriptionState, trialEndsA
 };
 
 function AppContent() {
-  const safeDashboard = () => <ErrorBoundary label="dashboard"><DashboardPage onEnsureTrialSetup={async () => { const { data: { user } } = await supabase.auth.getUser(); if (user) await ensureTrialSetupOnLoad(user.id); await verifySubscription(); }} /></ErrorBoundary>;
+  const safeDashboard = () => <ErrorBoundary label="dashboard"><DashboardPage /></ErrorBoundary>;
   const { currentPath, navigate, toast, showToast } = useNavigation();
   React.useEffect(() => {
     const page = currentPath === '/' || currentPath === '' ? homeTitle : currentPath.split('/').filter(Boolean).slice(-1)[0]?.replace(/[-_]/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) || name;
@@ -372,14 +372,14 @@ function AppContent() {
 
   const currentSession = storageService.getUserSession();
   const dealerAppRoute = currentSession.isLoggedIn && !!currentSession.dealershipId && (currentPath.startsWith('/app') || ['/', '/login', '/signup', '/onboarding'].includes(currentPath));
-  const forcePaywall = !forceNotificationsPreview && isConfigured && !isDemo && dealerAppRoute && currentSession.isLoggedIn && !!currentSession.dealershipId && subscriptionState === 'expired';
+  const forcePaywall = false; // Free plan always remains accessible; plan limits are enforced separately.
   // Subscription checks never hold the UI hostage. A confirmed expired response
   // still enforces the existing hard paywall; missing/error states render the page.
 
   return (
     <DeviceFrame>
 
-      {!forcePaywall && dealerAppRoute && (
+      {false && !forcePaywall && dealerAppRoute && (
         <ErrorBoundary label="trial banner">
           <TrialBanner
             subscriptionState={subscriptionState}
