@@ -630,6 +630,12 @@ begin
     and (storage.foldername(o.name))[1]=v_dealership_text
     and (storage.foldername(o.name))[2]='vehicles'
     and (storage.foldername(o.name))[3]=v_session_text;
+  if tg_op='UPDATE' and old.bucket_id='vehicle-photos'
+     and (storage.foldername(old.name))[1]=v_dealership_text
+     and (storage.foldername(old.name))[2]='vehicles'
+     and (storage.foldername(old.name))[3]=v_session_text then
+    v_count:=greatest(0,v_count-1);
+  end if;
 
   if v_count >= v_limit then
     raise exception 'PLAN_LIMIT_PHOTOS' using errcode='23514',
@@ -641,7 +647,7 @@ $;
 
 drop trigger if exists vehicle_photo_storage_plan_limit on storage.objects;
 create trigger vehicle_photo_storage_plan_limit
-before insert on storage.objects
+before insert or update of name on storage.objects
 for each row execute function private.enforce_vehicle_photo_storage_limit();
 
 -- Storage writes are ownership-only. The vehicle photo cap is enforced when
