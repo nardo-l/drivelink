@@ -36,6 +36,7 @@ export const DashboardPage: React.FC = () => {
     setLoading(true);
     setLoadError('');
     try {
+      await planService.getMyPlan(); // server-side downgrade reconciliation runs before inventory is loaded
       const [d, v, e] = await Promise.all([
         storageService.getDealershipAsync(),
         storageService.getVehiclesAsync(),
