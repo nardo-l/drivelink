@@ -1,7 +1,7 @@
 export const name = 'Lotlé';
 export const nameAscii = 'lotle';
 export const tagline = 'Your car showroom, online';
-export const description = 'Create a professional online car showroom, manage vehicle inventory and receive buyer enquiries with Lotlé. Built for car dealers in Zimbabwe and South Africa.';
+export const description = 'Start a Free online car showroom with Lotlé, manage up to 3 vehicles and receive buyer enquiries. Explore Lotlé Pro with a 14-day Pro trial, unlimited vehicles and full analytics. Built for car dealers in Zimbabwe and South Africa.';
 export const supportWhatsApp = '263789113734';
 export const supportEmail = 'support@lotle.link';
 export const legacyName = 'DriveLink';
@@ -13,7 +13,7 @@ const runtime = globalThis as typeof globalThis & {
 let denoSiteUrl: string | undefined;
 try { denoSiteUrl = runtime.Deno?.env?.get('SITE_URL'); } catch { denoSiteUrl = undefined; }
 export const siteUrl = (runtime.__SITE_URL__ || runtime.process?.env?.SITE_URL || denoSiteUrl || 'https://drivelink-gilt.vercel.app').trim().replace(/\/+$/, '');
-export const homeTitle = 'Lotlé | Online car showroom for dealers in Zimbabwe';
+export const homeTitle = 'Lotlé | Free online car showroom for dealers in Zimbabwe';
 
 export function pageTitle(page: string): string {
   return page === name || page === homeTitle ? homeTitle : `${page} | ${name}`;
