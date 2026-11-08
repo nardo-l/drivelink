@@ -214,7 +214,7 @@ Deno.serve(async (req: Request) => {
 
   if (body.action === "status") {
     const { data: subscription, error } = await admin.from("dealership_subscriptions")
-      .select("status, amount, currency, plan_code, trial_started_at, trial_ends_at, trial_used, current_period_start, current_period_end, grace_until")
+      .select("status, amount, currency, plan_code, pro_trial_ends_at, trial_started_at, trial_ends_at, trial_used, current_period_start, current_period_end, grace_until")
       .eq("dealership_id", dealership.id).maybeSingle();
     if (error) return json({ error: "Could not load subscription." }, 500);
     if (subscription) {
