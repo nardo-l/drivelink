@@ -86,16 +86,6 @@ function AppContent() {
   const [trialEndsAt, setTrialEndsAt] = React.useState<string | null>(null);
   const [accessEndsAt, setAccessEndsAt] = React.useState<string | null>(null);
   const [subscriptionServerNow, setSubscriptionServerNow] = React.useState(Date.now());
-  const ensureTrialSetupOnLoad = React.useCallback(async (userId: string) => {
-    try {
-      // The server-side function is idempotent: it starts a trial only when the
-      // anti-abuse identity has no prior trial, and preserves every existing trial.
-      const { error } = await supabase.rpc('activate_dealership_trial');
-      if (error) console.error('Background trial setup retry failed; dashboard access will continue:', error);
-    } catch (error) {
-      console.error('Background trial setup retry failed; dashboard access will continue:', error);
-    }
-  }, []);
   const verifySubscription = React.useCallback(async () => {
     setSubscriptionState('checking');
     try {
@@ -133,7 +123,6 @@ function AppContent() {
             const liveDealer = await supabaseService.getCurrentDealership();
             if (liveDealer) {
               storageService.saveDealership(liveDealer);
-              await ensureTrialSetupOnLoad(session.user.id);
               await verifySubscription();
             } else {
               setSubscriptionState('setup');
@@ -167,8 +156,7 @@ function AppContent() {
             const liveDealer = await supabaseService.getCurrentDealership();
             if (liveDealer) {
               storageService.saveDealership(liveDealer);
-              await ensureTrialSetupOnLoad(session.user.id);
-              await verifySubscription();
+                await verifySubscription();
             } else {
               setSubscriptionState('setup');
             }
