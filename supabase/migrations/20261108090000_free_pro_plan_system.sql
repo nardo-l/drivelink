@@ -320,7 +320,7 @@ begin
   if tg_op='INSERT' then
     if v_vehicle_limit is not null then
       select count(*) into v_count from public.vehicles
-      where dealership_id=new.dealership_id and status<>'hidden';
+      where dealership_id=new.dealership_id and plan_hidden_status is null;
       if v_count>=v_vehicle_limit then
         raise exception 'PLAN_LIMIT_VEHICLES' using errcode='23514',detail='Free plan supports up to 3 vehicles.';
       end if;
@@ -416,7 +416,7 @@ using (
       and d.user_id=(select auth.uid()))
 );
 
-drop policy if exists "Subscribed dealers upload DriveLink assets" on storage.objects;
+drop policy if exists "Subscribed dealers can upload DriveLink assets" on storage.objects;
 create policy "Dealers upload own DriveLink assets"
 on storage.objects for insert to authenticated
 with check (
@@ -424,7 +424,7 @@ with check (
   and exists(select 1 from public.dealerships d where d.user_id=(select auth.uid()))
 );
 
-drop policy if exists "Subscribed dealers update DriveLink assets" on storage.objects;
+drop policy if exists "Subscribed dealers can update DriveLink assets" on storage.objects;
 create policy "Dealers update own DriveLink assets"
 on storage.objects for update to authenticated
 using (
@@ -436,7 +436,7 @@ with check (
   and exists(select 1 from public.dealerships d where d.user_id=(select auth.uid()))
 );
 
-drop policy if exists "Subscribed dealers delete DriveLink assets" on storage.objects;
+drop policy if exists "Subscribed dealers can delete DriveLink assets" on storage.objects;
 create policy "Dealers delete own DriveLink assets"
 on storage.objects for delete to authenticated
 using (
