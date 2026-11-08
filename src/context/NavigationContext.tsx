@@ -49,7 +49,7 @@ export const NavigationProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     // Use real paths so public showroom links can be shared without a hash.
     // getPathFromUrl still accepts legacy #/ routes for older saved links.
     window.history.pushState({}, '', path);
-    setCurrentPath(path);
+    setCurrentPath(path.split('?')[0]);
     window.scrollTo(0, 0);
   };
 
