@@ -132,7 +132,7 @@ export const AnalyticsPage: React.FC = () => {
               <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">Lotlé Pro</p>
               <h2 className="mt-2 text-base font-bold text-slate-800">See how your showroom is performing</h2>
               <p className="mt-1 text-sm leading-relaxed text-slate-500">Unlock 7, 30 and 90-day trends, enquiry insights and inventory performance.</p>
-              <button type="button" onClick={() => navigate('/app/billing?reason=analytics')} className="mt-4 rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white">Upgrade to see more</button>
+              <button type="button" onClick={() => navigate('/app/upgrade?reason=analytics')} className="mt-4 rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white">Upgrade to see more</button>
             </section>
           </div>
         ) : (
