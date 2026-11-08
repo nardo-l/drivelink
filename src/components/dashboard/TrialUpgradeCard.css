@@ -17,3 +17,5 @@
 .dl-plan-slim-card>button{height:34px;flex:none;display:flex;align-items:center;gap:7px;padding:0 12px;border:0;border-radius:999px;background:#0A0F1E;color:#fff;font-size:10px;font-weight:750}
 @media(max-width:380px){.dl-trial-upgrade-card{min-height:140px;padding:14px}.dl-trial-content{max-width:76%}.dl-trial-car-image{width:68%;object-position:58% center}.dl-trial-content h2{font-size:22px}.dl-trial-content p{font-size:9px}.dl-trial-image-gradient{background:linear-gradient(90deg,#0A0F1E 0%,#0A0F1E 35%,rgba(10,15,30,.91) 52%,rgba(10,15,30,.3) 100%)}}
 @media(prefers-reduced-motion:reduce){.dl-trial-upgrade-card *{transition:none!important;animation:none!important}}
+
+.dl-plan-slim-card.is-urgent{border-color:#E9B65B;background:#FFFBF2}.dl-plan-slim-card.is-urgent .dl-plan-slim-copy strong{color:#8A5A12}
