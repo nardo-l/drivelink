@@ -125,6 +125,11 @@ export const SettingsPage:React.FC=()=>{
      <button type="button" className="dl-settings-primary" disabled={saving||slugAvailability!=='available'} onClick={()=>void saveSlug()}>{saving?<Loader2 className="spin" size={16}/>:null}Save showroom link</button>
     </div>}
     {sheet==='branding'&&<div className="dl-settings-sheet-body dl-settings-branding">
+     <div className="dl-settings-showroom-preview">
+      <div className="dl-settings-showroom-head">{dealer.logoUrl?<img src={dealer.logoUrl} alt=""/>:<b>{initials}</b>}<span><strong>{dealer.name}</strong><small>{dealer.city||dealer.country}</small></span></div>
+      {dealer.coverUrl&&<div className="dl-settings-showroom-hero"><img src={dealer.coverUrl} alt=""/></div>}
+      <div className="dl-settings-showroom-intro"><strong>{dealer.tagline?.trim()||'Find your next car.'}</strong><small>Cars available · {dealer.city||dealer.country}</small><span>WhatsApp</span>{dealer.phone&&<span>Call</span>}</div>
+     </div>
      <div className="dl-settings-brand-preview"><span>Logo</span>{dealer.logoUrl?<img src={dealer.logoUrl} alt="Dealership logo"/>:<b>{initials}</b>}<button type="button" onClick={()=>logoInput.current?.click()} disabled={!!uploading}>{uploading==='logo'?<Loader2 className="spin" size={15}/>:<Upload size={15}/>} Upload logo</button><input ref={logoInput} hidden type="file" accept="image/png,image/jpeg,image/webp" onChange={e=>void uploadAsset('logo',e.target.files?.[0])}/></div>
      <div className="dl-settings-banner-preview"><span>Banner</span>{dealer.coverUrl?<img src={dealer.coverUrl} alt="Showroom banner preview"/>:<div className="dl-settings-banner-empty">No banner uploaded</div>}<button type="button" onClick={()=>bannerInput.current?.click()} disabled={!!uploading}>{uploading==='banner'?<Loader2 className="spin" size={15}/>:<Upload size={15}/>} Upload banner</button><input ref={bannerInput} hidden type="file" accept="image/png,image/jpeg,image/webp" onChange={e=>void uploadAsset('banner',e.target.files?.[0])}/><small>This wide image appears at the top of your showroom. JPG, PNG or WebP · Max 10 MB · Uploaded as-is, no crop step</small></div>
     </div>}
