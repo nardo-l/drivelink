@@ -647,7 +647,7 @@ export const supabaseService = {
     return data;
   },
 
-  async uploadVehiclePhoto(dealershipId: string, file: File, draftId: string, photoIndex: number, isCover: boolean): Promise<string> {
+  async uploadVehiclePhoto(dealershipId: string, file: File, uploadSessionId: string, photoIndex: number, isCover: boolean): Promise<string> {
     const bucket = 'vehicle-photos';
     const user = await this.getCurrentUser();
     const diagnosticBase = {
@@ -655,7 +655,7 @@ export const supabaseService = {
       fileName: file?.name || null,
       userId: user?.id || null,
       dealershipId: dealershipId || null,
-      draftId: draftId || null,
+      uploadSessionId: uploadSessionId || null,
       photoIndex,
       isCover,
     };
@@ -666,7 +666,7 @@ export const supabaseService = {
     if (!user) {
       throw new Error('Authentication required: You must be signed in to upload photos.');
     }
-    if (!dealershipId || !draftId) {
+    if (!dealershipId || !uploadSessionId) {
       console.error('[DriveLink vehicle photo upload] Blocked: missing upload scope', diagnosticBase);
       throw new Error('Photo upload is not ready: the dealership or vehicle draft is missing. Please go back and try again.');
     }
@@ -691,7 +691,7 @@ export const supabaseService = {
       : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
     // Keep dealershipId as the first path segment for existing dealership-folder Storage RLS.
     // Each attempt gets a new object key; the source filename is diagnostic metadata only.
-    const path = `${dealershipId}/vehicles/${draftId}/${uploadId}.${safeExtension}`;
+    const path = `${dealershipId}/vehicles/${uploadSessionId}/${uploadId}.${safeExtension}`;
     const diagnostic = { ...diagnosticBase, path };
 
     console.info('[DriveLink vehicle photo upload] Starting upload', diagnostic);
