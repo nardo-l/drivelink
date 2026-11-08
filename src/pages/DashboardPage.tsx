@@ -6,7 +6,6 @@ import { StatusBadge } from '../components/common/Badge';
 import { PerformanceSection } from '../components/dashboard/PerformanceSection';
 import { TrialUpgradeCard } from '../components/dashboard/TrialUpgradeCard';
 import { planService } from '../services/planService';
-import { CAR_MERC_BLACK } from '../utils/carVisuals';
 import { Bell, CarFront, ChevronRight, Eye, MessageCircle, Plus, Share2, ArrowUpRight } from 'lucide-react';
 import { absoluteUrl, legacyName, name } from '../config/brand';
 import './DashboardPage.css';
@@ -141,7 +140,6 @@ export const DashboardPage: React.FC<{ onEnsureTrialSetup?: () => Promise<void> 
     { label: 'Enquiries', value: performance.enquiries, icon: MessageCircle, action: () => navigate('/app/enquiries') },
     { label: 'Cars sold', value: soldCount, icon: CarFront },
   ];
-  const isSubscribed = subscription?.status === 'active' || subscription?.status === 'grace_period';
 
   return (
     <div className="dl-workspace dl-dashboard relative min-h-full flex flex-col text-[#0A0F1E]">
