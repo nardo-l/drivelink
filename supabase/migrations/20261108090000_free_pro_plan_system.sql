@@ -270,6 +270,15 @@ begin
   end if;
   if v_phone is not null and pg_catalog.length(v_phone)<7 then v_phone:=null; end if;
 
+  if exists(
+    select 1 from public.dealership_subscriptions sub
+    where sub.dealership_id=p_dealership_id
+      and sub.status='active'
+      and sub.current_period_end>v_now
+  ) then
+    return jsonb_build_object('pro_trial_started',false,'reason','already_paid');
+  end if;
+
   perform pg_catalog.pg_advisory_xact_lock(pg_catalog.hashtextextended('pro-email:'||v_email,0));
   if v_phone is not null then
     perform pg_catalog.pg_advisory_xact_lock(pg_catalog.hashtextextended('pro-phone:'||v_phone,0));
@@ -345,6 +354,62 @@ begin
   return new;
 end;
 $$;
+
+create or replace function private.sync_pro_trial_identity_after_dealership_update()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $
+begin
+  if new.phone is distinct from old.phone or new.whatsapp is distinct from old.whatsapp then
+    perform private.start_pro_trial_for_dealership(new.id);
+  end if;
+  return new;
+end;
+$;
+
+drop trigger if exists dealerships_sync_pro_trial_identity on public.dealerships;
+create trigger dealerships_sync_pro_trial_identity
+after update of phone,whatsapp on public.dealerships
+for each row execute function private.sync_pro_trial_identity_after_dealership_update();
+
+create or replace function private.preserve_pro_trial_on_email_change()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $
+declare
+  v_start timestamptz;
+  v_end timestamptz;
+begin
+  if new.email is distinct from old.email and old.email is not null and new.email is not null then
+    select s.pro_trial_ends_at into v_end
+    from public.dealerships d
+    join public.dealership_subscriptions s on s.dealership_id=d.id
+    where d.user_id=new.id and s.pro_trial_ends_at is not null
+    order by d.created_at desc limit 1;
+    if v_end is not null then
+      v_start:=v_end-interval '14 days';
+      insert into private.subscription_trial_identities
+        (normalized_email,auth_user_id,trial_started_at,trial_ends_at,pro_trial_started_at,pro_trial_ends_at)
+      values
+        (lower(pg_catalog.btrim(new.email)),new.id,pg_catalog.now(),pg_catalog.now()+interval '72 hours',v_start,v_end)
+      on conflict (normalized_email) do update
+        set pro_trial_started_at=coalesce(private.subscription_trial_identities.pro_trial_started_at,excluded.pro_trial_started_at),
+            pro_trial_ends_at=coalesce(private.subscription_trial_identities.pro_trial_ends_at,excluded.pro_trial_ends_at),
+            updated_at=pg_catalog.now();
+    end if;
+  end if;
+  return new;
+end;
+$;
+
+drop trigger if exists auth_users_preserve_pro_trial_email on auth.users;
+create trigger auth_users_preserve_pro_trial_email
+after update of email on auth.users
+for each row execute function private.preserve_pro_trial_on_email_change();
 
 -- Remove both legacy three-day dealership insert triggers and the sign-in retry.
 drop trigger if exists dealerships_start_trial on public.dealerships;
