@@ -50,6 +50,8 @@ function AppContent() {
             const liveDealer = await supabaseService.getCurrentDealership();
             if (liveDealer) {
               storageService.saveDealership(liveDealer);
+            } else {
+              storageService.clearCachedDealership();
             }
             storageService.setUserSession({
               isLoggedIn: true,
@@ -62,8 +64,8 @@ function AppContent() {
             storageService.clearSession();
           }
         } else {
-          // No active Supabase session; ensure unauthenticated state
-          storageService.clearSession();
+          // No active Supabase session; clear all account-scoped device data.
+          await storageService.clearAppUserData();
         }
         setSessionChecked(true);
       }).catch((err) => {
@@ -90,7 +92,8 @@ function AppContent() {
             console.warn('Auth change error:', err);
           }
         } else {
-          storageService.clearSession();
+          // Sign-out must not leave another account's dealership or records on-device.
+          await storageService.clearAppUserData();
         }
       });
 
