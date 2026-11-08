@@ -193,7 +193,6 @@ declare
   v_email text;
   v_phone text;
   v_now timestamptz := pg_catalog.now();
-  v_identity private.subscription_trial_identities%rowtype;
   v_has_prior boolean := false;
   v_start timestamptz;
   v_end timestamptz;
@@ -210,69 +209,71 @@ begin
   if v_user_id is null then
     raise exception 'Dealership owner/email not found' using errcode='P0002';
   end if;
+  if v_email is null or v_email='' then
+    raise exception 'A valid account email is required to claim a Pro trial.' using errcode='22023';
+  end if;
   if v_phone is not null and pg_catalog.length(v_phone)<7 then v_phone:=null; end if;
 
-  perform pg_catalog.pg_advisory_xact_lock(pg_catalog.hashtextextended('pro-email:'||coalesce(v_email,''),0));
+  perform pg_catalog.pg_advisory_xact_lock(pg_catalog.hashtextextended('pro-email:'||v_email,0));
   if v_phone is not null then
     perform pg_catalog.pg_advisory_xact_lock(pg_catalog.hashtextextended('pro-phone:'||v_phone,0));
   end if;
 
-  select * into v_identity
-  from private.subscription_trial_identities t
-  where (v_email is not null and t.normalized_email=v_email)
-     or (v_phone is not null and t.normalized_phone=v_phone)
-  order by t.created_at
-  limit 1
-  for update;
-
   select exists(
     select 1 from private.subscription_trial_identities t
-    where ((v_email is not null and t.normalized_email=v_email)
-        or (v_phone is not null and t.normalized_phone=v_phone))
+    where (t.normalized_email=v_email or (v_phone is not null and t.normalized_phone=v_phone))
       and t.pro_trial_started_at is not null
   ) into v_has_prior;
 
-  if not v_has_prior then
+  if v_has_prior then
+    select t.pro_trial_started_at,t.pro_trial_ends_at
+      into v_start,v_end
+    from private.subscription_trial_identities t
+    where (t.normalized_email=v_email or (v_phone is not null and t.normalized_phone=v_phone))
+      and t.pro_trial_started_at is not null
+    order by t.pro_trial_started_at,t.created_at
+    limit 1
+    for update;
+  else
     v_start:=v_now;
     v_end:=v_now+interval '14 days';
+  end if;
 
-    if v_identity.normalized_email is null and v_identity.normalized_phone is null then
-      insert into private.subscription_trial_identities
-        (normalized_email,auth_user_id,trial_started_at,trial_ends_at,normalized_phone,pro_trial_started_at,pro_trial_ends_at)
-      values (v_email,v_user_id,v_now,v_now+interval '72 hours',v_phone,v_start,v_end)
-      on conflict (normalized_email) do update
-        set pro_trial_started_at=coalesce(private.subscription_trial_identities.pro_trial_started_at,excluded.pro_trial_started_at),
-            pro_trial_ends_at=coalesce(private.subscription_trial_identities.pro_trial_ends_at,excluded.pro_trial_ends_at);
-    else
-      update private.subscription_trial_identities t
-      set pro_trial_started_at=coalesce(t.pro_trial_started_at,v_start),
-          pro_trial_ends_at=coalesce(t.pro_trial_ends_at,v_end),
-          normalized_phone=case
-            when v_phone is not null and (t.normalized_phone is null or t.normalized_phone=v_phone)
-                 and not exists(select 1 from private.subscription_trial_identities other where other.normalized_phone=v_phone and other.normalized_email<>t.normalized_email)
-            then v_phone else t.normalized_phone end,
+  -- Always stamp both identity keys with the same first Pro-trial claim.
+  -- This closes the email-already-seen / phone-already-seen cross-account gap.
+  insert into private.subscription_trial_identities
+    (normalized_email,auth_user_id,trial_started_at,trial_ends_at,pro_trial_started_at,pro_trial_ends_at)
+  values (v_email,v_user_id,v_now,v_now+interval '72 hours',v_start,v_end)
+  on conflict (normalized_email) do update
+    set pro_trial_started_at=coalesce(private.subscription_trial_identities.pro_trial_started_at,excluded.pro_trial_started_at),
+        pro_trial_ends_at=coalesce(private.subscription_trial_identities.pro_trial_ends_at,excluded.pro_trial_ends_at),
+        auth_user_id=coalesce(private.subscription_trial_identities.auth_user_id,excluded.auth_user_id),
+        updated_at=v_now;
+
+  if v_phone is not null then
+    update private.subscription_trial_identities
+      set pro_trial_started_at=coalesce(pro_trial_started_at,v_start),
+          pro_trial_ends_at=coalesce(pro_trial_ends_at,v_end),
           updated_at=v_now
-      where t.normalized_email=v_identity.normalized_email;
-    end if;
+    where normalized_phone=v_phone;
 
-    select t.pro_trial_started_at,t.pro_trial_ends_at into v_start,v_end
-    from private.subscription_trial_identities t
-    where (v_email is not null and t.normalized_email=v_email)
-       or (v_phone is not null and t.normalized_phone=v_phone)
-    order by t.pro_trial_started_at
-    limit 1;
+    if not exists(select 1 from private.subscription_trial_identities where normalized_phone=v_phone) then
+      update private.subscription_trial_identities
+        set normalized_phone=v_phone,updated_at=v_now
+      where normalized_email=v_email and normalized_phone is null;
+    end if;
   end if;
 
   insert into public.dealership_subscriptions
     (dealership_id,user_id,status,pro_trial_ends_at,trial_used,amount,currency,updated_at)
-  values (p_dealership_id,v_user_id,'inactive',case when v_has_prior then null else v_end end,true,3.99,'USD',v_now)
+  values (p_dealership_id,v_user_id,'inactive',v_end,true,3.99,'USD',v_now)
   on conflict (dealership_id) do update
     set pro_trial_ends_at=coalesce(public.dealership_subscriptions.pro_trial_ends_at,excluded.pro_trial_ends_at),
         updated_at=v_now;
 
   return jsonb_build_object(
     'pro_trial_started',not v_has_prior,
-    'pro_trial_ends_at',case when v_has_prior then null else v_end end
+    'pro_trial_ends_at',v_end
   );
 end;
 $$;
