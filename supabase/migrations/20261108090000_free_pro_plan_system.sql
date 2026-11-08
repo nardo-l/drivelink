@@ -155,7 +155,8 @@ begin
   if v_dealership_id is null then
     return jsonb_build_object('plan','free','config',private.plan_config());
   end if;
-  perform private.start_pro_trial_for_dealership(v_dealership_id); -- idempotently repairs legacy dealerships on dashboard load
+  -- Existing accounts are assigned by the explicit repair script; new accounts
+  -- receive Pro automatically from the dealership-insert trigger.
   perform private.reconcile_dealership_plan(v_dealership_id);
   select s.* into v_sub from public.dealership_subscriptions s
   where s.dealership_id = v_dealership_id;
