@@ -27,52 +27,6 @@ import { Check } from 'lucide-react';
 import { BottomNav } from './components/layout/BottomNav';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
 
-type TrialBannerProps = {
-  subscriptionState: 'trial' | 'active' | 'expired' | 'checking' | 'unverified' | 'setup';
-  trialEndsAt: string | null;
-  accessEndsAt: string | null;
-  serverNow: number;
-  onNavigate: (path: string) => void;
-};
-
-const TrialBanner: React.FC<TrialBannerProps> = ({ subscriptionState, trialEndsAt, accessEndsAt, serverNow, onNavigate }) => {
-  const [now, setNow] = React.useState(serverNow);
-
-  // Keep the countdown clock local to this banner so its ticks do not render AppContent or Home.
-  React.useEffect(() => {
-    const startedAt = window.performance.now();
-    const tick = () => setNow(serverNow + (window.performance.now() - startedAt));
-    tick();
-    const timer = window.setInterval(tick, 60_000);
-    return () => window.clearInterval(timer);
-  }, [serverNow]);
-
-  const trialRemainingMs = trialEndsAt ? new Date(trialEndsAt).getTime() - now : null;
-  const trialDaysLeft = trialRemainingMs !== null ? Math.ceil(trialRemainingMs / 86400000) : null;
-  const trialHoursLeft = trialRemainingMs !== null ? Math.max(0, Math.floor(trialRemainingMs / 3600000)) : 0;
-  const trialMinutesLeft = trialRemainingMs !== null ? Math.max(0, Math.floor((trialRemainingMs % 3600000) / 60000)) : 0;
-  const paidDaysLeft = accessEndsAt ? Math.ceil((new Date(accessEndsAt).getTime() - now) / 86400000) : null;
-
-  const showTrial = subscriptionState === 'trial' && trialRemainingMs !== null && trialRemainingMs > 0;
-  const showPaid = subscriptionState === 'active' && paidDaysLeft !== null && paidDaysLeft > 0 && paidDaysLeft <= 5;
-
-  if (!showTrial && !showPaid) return null;
-
-  return (
-    <div className={`sticky top-0 z-30 flex min-h-[40px] items-center justify-center gap-2 border-b border-[#e5e7eb] px-3 py-2 text-center text-[11px] font-medium text-[#0A0F1E] ${subscriptionState === 'trial' && trialRemainingMs !== null && trialRemainingMs <= 6 * 3600000 ? 'bg-[#fff8eb]' : 'bg-[#f3f4f6]'}`} style={{ paddingTop: 'max(8px, env(safe-area-inset-top))' }}>
-      <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${subscriptionState === 'trial' && trialRemainingMs !== null && trialRemainingMs <= 6 * 3600000 ? 'bg-amber-500' : 'bg-[#0A0F1E]'}`} />
-      <span>{subscriptionState === 'trial'
-        ? trialRemainingMs! <= 6 * 3600000
-          ? 'Your free trial ends today'
-          : trialRemainingMs! < 86400000
-            ? `Free trial ends in ${trialHoursLeft}h ${trialMinutesLeft}m`
-            : `${trialDaysLeft} ${trialDaysLeft === 1 ? 'day' : 'days'} left in your free trial`
-        : `Pro renews in ${paidDaysLeft} days ·`}</span>
-      <button onClick={() => onNavigate('/app/billing')} className="shrink-0 font-extrabold underline underline-offset-2">{subscriptionState === 'trial' ? 'View plans' : 'Renew'}</button>
-    </div>
-  );
-};
-
 function AppContent() {
   const safeDashboard = () => <ErrorBoundary label="dashboard"><DashboardPage /></ErrorBoundary>;
   const { currentPath, navigate, toast, showToast } = useNavigation();
@@ -81,32 +35,6 @@ function AppContent() {
     updateBrandMetadata({ title: currentPath === '/' || currentPath === '' ? homeTitle : pageTitle(page) });
   }, [currentPath]);
   const [sessionChecked, setSessionChecked] = React.useState(false);
-  const [subscriptionState, setSubscriptionState] = React.useState<'checking' | 'trial' | 'active' | 'expired' | 'unverified' | 'setup'>('checking');
-  const [trialEndsAt, setTrialEndsAt] = React.useState<string | null>(null);
-  const [accessEndsAt, setAccessEndsAt] = React.useState<string | null>(null);
-  const [subscriptionServerNow, setSubscriptionServerNow] = React.useState(Date.now());
-  const verifySubscription = React.useCallback(async () => {
-    setSubscriptionState('checking');
-    try {
-      const { data, error } = await supabase.functions.invoke('drivelink-payments', { body: { action: 'status' } });
-      if (error) throw error;
-      const subscription = data?.subscription;
-      const now = data?.server_now ? new Date(data.server_now).getTime() : Date.now();
-      setSubscriptionServerNow(now);
-      const trialValid = (subscription?.status === 'trial' || subscription?.status === 'trialing') && subscription?.trial_ends_at && new Date(subscription.trial_ends_at).getTime() > now;
-      const paidValid = subscription?.status === 'active' && subscription?.current_period_end && new Date(subscription.current_period_end).getTime() > now;
-      const hasTrialHistory = !!(subscription?.trial_started_at || subscription?.trial_ends_at);
-      const trialExpired = hasTrialHistory && (!subscription?.trial_ends_at || new Date(subscription.trial_ends_at).getTime() <= now);
-      setTrialEndsAt(subscription?.trial_ends_at || null);
-      setAccessEndsAt(trialValid ? subscription.trial_ends_at : paidValid ? subscription.current_period_end : null);
-      setSubscriptionState(trialValid ? 'trial' : paidValid ? 'active' : trialExpired || subscription?.status === 'expired' || subscription?.status === 'cancelled' ? 'expired' : 'setup');
-    } catch (error) {
-      console.error('Subscription access verification failed; allowing dashboard to render while verification can retry:', error);
-      setTrialEndsAt(null);
-      setAccessEndsAt(null);
-      setSubscriptionState('setup');
-    }
-  }, []);
   const isDemo = storageService.isDemoModeActive();
   const isConfigured = isSupabaseConfigured();
   const previewQuery = typeof window !== 'undefined' ? `${window.location.search}&${window.location.hash.split('?')[1] || ''}` : '';
@@ -122,7 +50,6 @@ function AppContent() {
             const liveDealer = await supabaseService.getCurrentDealership();
             if (liveDealer) {
               storageService.saveDealership(liveDealer);
-              await verifySubscription();
             } else {
               setSubscriptionState('setup');
             }
@@ -155,7 +82,6 @@ function AppContent() {
             const liveDealer = await supabaseService.getCurrentDealership();
             if (liveDealer) {
               storageService.saveDealership(liveDealer);
-                await verifySubscription();
             } else {
               setSubscriptionState('setup');
             }
@@ -183,24 +109,6 @@ function AppContent() {
       setSessionChecked(true);
     }
   }, [isConfigured, isDemo, verifySubscription]);
-
-  React.useEffect(() => {
-    const current = storageService.getUserSession();
-    if (isConfigured && !isDemo && sessionChecked && current.isLoggedIn && current.dealershipId) {
-      void verifySubscription();
-    }
-  }, [currentPath, sessionChecked, isConfigured, isDemo, verifySubscription]);
-
-  React.useEffect(() => {
-    if (!accessEndsAt || !['trial', 'active'].includes(subscriptionState)) return;
-    const delay = new Date(accessEndsAt).getTime() - Date.now() + 1000;
-    if (delay <= 0) {
-      void verifySubscription();
-      return;
-    }
-    const timer = window.setTimeout(() => void verifySubscription(), delay);
-    return () => window.clearTimeout(timer);
-  }, [accessEndsAt, subscriptionState, verifySubscription]);
 
   // Route matching logic
   const renderRoute = () => {
@@ -359,28 +267,12 @@ function AppContent() {
 
   const currentSession = storageService.getUserSession();
   const dealerAppRoute = currentSession.isLoggedIn && !!currentSession.dealershipId && (currentPath.startsWith('/app') || ['/', '/login', '/signup', '/onboarding'].includes(currentPath));
-  const forcePaywall = false; // Free plan always remains accessible; plan limits are enforced separately.
-  // Subscription checks never hold the UI hostage. A confirmed expired response
-  // still enforces the existing hard paywall; missing/error states render the page.
 
   return (
     <DeviceFrame>
 
-      {false && !forcePaywall && dealerAppRoute && (
-        <ErrorBoundary label="trial banner">
-          <TrialBanner
-            subscriptionState={subscriptionState}
-            trialEndsAt={trialEndsAt}
-            accessEndsAt={accessEndsAt}
-            serverNow={subscriptionServerNow}
-            onNavigate={navigate}
-          />
-        </ErrorBoundary>
-      )}
-      {forcePaywall
-        ? <ErrorBoundary label="subscription paywall"><PaywallPage /></ErrorBoundary>
-        : <ErrorBoundary label={`${currentPath || 'home'} page`}>{renderRoute()}</ErrorBoundary>}
-      {!forcePaywall && (['/app', '/app/vehicles', '/app/enquiries', '/app/more'].includes(currentPath) || (currentPath === '/' && storageService.getUserSession().isLoggedIn && !!storageService.getUserSession().dealershipId)) && <BottomNav />}
+      <ErrorBoundary label={`${currentPath || 'home'} page`}>{renderRoute()}</ErrorBoundary>
+      {(['/app', '/app/vehicles', '/app/enquiries', '/app/more'].includes(currentPath) || (currentPath === '/' && storageService.getUserSession().isLoggedIn && !!storageService.getUserSession().dealershipId)) && <BottomNav />}
 
       {/* Global Toast Notification */}
       {toast && (
