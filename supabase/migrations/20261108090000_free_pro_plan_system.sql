@@ -650,6 +650,7 @@ begin
   from public.dealership_subscriptions s
   where s.pro_trial_ends_at > pg_catalog.now()+interval '2 days'
     and s.pro_trial_ends_at <= pg_catalog.now()+interval '3 days'
+    and not (s.status='active' and s.current_period_end>pg_catalog.now())
     and not exists(select 1 from public.notifications n where n.dedupe_key='pro-trial-3-day:'||s.dealership_id::text);
   get diagnostics v_count = row_count;
 
@@ -660,6 +661,7 @@ begin
   from public.dealership_subscriptions s
   where s.pro_trial_ends_at <= pg_catalog.now()
     and s.pro_trial_ends_at > pg_catalog.now()-interval '1 day'
+    and not (s.status='active' and s.current_period_end>pg_catalog.now())
     and not exists(select 1 from public.notifications n where n.dedupe_key='pro-trial-ended:'||s.dealership_id::text);
   get diagnostics v_count = row_count;
   return v_count;
