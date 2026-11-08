@@ -15,9 +15,7 @@ type Subscription = {
   current_period_start: string | null;
   current_period_end: string | null;
   grace_until: string | null;
-  trial_started_at?: string | null;
-  trial_ends_at?: string | null;
-  trial_used?: boolean;
+  pro_trial_ends_at?: string | null;
 };
 
 type Payment = {
@@ -181,32 +179,34 @@ export const BillingPage: React.FC = () => {
   };
 
   const now = Date.now();
-  const periodEnd = subscription?.current_period_end
-    ? new Date(subscription.current_period_end).getTime() : 0;
-  const graceEnd = subscription?.grace_until
-    ? new Date(subscription.grace_until).getTime() : 0;
-  const trialEnd = subscription?.trial_ends_at
-    ? new Date(subscription.trial_ends_at).getTime() : 0;
-  const trialActive = Boolean(subscription?.trial_used && trialEnd && now <= trialEnd && !periodEnd);
-  const active = Boolean(periodEnd && now <= periodEnd);
+  const periodEnd = subscription?.current_period_end ? new Date(subscription.current_period_end).getTime() : 0;
+  const proTrialEnd = subscription?.pro_trial_ends_at ? new Date(subscription.pro_trial_ends_at).getTime() : 0;
+  const proTrialActive = Boolean(proTrialEnd && now < proTrialEnd && !periodEnd);
+  const active = Boolean(subscription?.status === 'active' && periodEnd > now);
   const inGrace = Boolean(periodEnd && now > periodEnd && graceEnd >= now);
-  const accessEnd = trialActive ? trialEnd : inGrace ? graceEnd : periodEnd;
+  const accessEnd = proTrialActive ? proTrialEnd : periodEnd;
   const daysLeft = accessEnd ? Math.max(0, Math.ceil((accessEnd - now) / 86400000)) : 0;
-  const expiringSoon = (active && daysLeft <= 5) || inGrace;
-  const expired = Boolean(subscription && !active && !inGrace && !trialActive &&
-    (subscription.status === 'expired' || (periodEnd > 0 && now > periodEnd)));
-  const hasAccess = active || trialActive || inGrace;
-  const statusLabel = hasAccess ? (expiringSoon ? 'Expiring soon' : 'Active') : expired ? 'Expired' : 'Not active';
+  const expiringSoon = (active && daysLeft <= 5) || (proTrialActive && daysLeft <= 3);
+  const hasAccess = active || proTrialActive;
+  const statusLabel = hasAccess ? (expiringSoon ? 'Expiring soon' : 'Active') : 'Free plan';
   const statusTone = hasAccess
     ? expiringSoon ? 'bg-amber-50 text-amber-700' : 'bg-emerald-50 text-emerald-700'
-    : expired ? 'bg-rose-50 text-rose-700' : 'bg-slate-100 text-slate-600';
+    : 'bg-slate-100 text-slate-600';
   const isRenewal = active || inGrace;
-  const progressStart = trialActive
-    ? (subscription?.trial_started_at ? new Date(subscription.trial_started_at).getTime() : now)
+  const progressStart = proTrialActive
+    ? proTrialEnd - 14 * 86400000
     : (subscription?.current_period_start ? new Date(subscription.current_period_start).getTime() : now);
   const progress = accessEnd > progressStart
     ? Math.min(100, Math.max(0, ((now - progressStart) / (accessEnd - progressStart)) * 100))
     : 0;
+  const upgradeReason = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('reason') : null;
+  const upgradeReasonCopy: Record<string,string> = {
+    vehicle_limit: "You've reached the 3-vehicle Free plan limit. Pro includes unlimited vehicles.",
+    photo_limit: 'Upgrade to Pro for up to 10 photos per vehicle.',
+    analytics: 'Upgrade to Pro to unlock full showroom analytics.',
+  };
+  const visiblePayments = showAllPayments ? payments : payments.slice(0, 5);
+
   const visiblePayments = showAllPayments ? payments : payments.slice(0, 5);
 
   return (
@@ -228,6 +228,7 @@ export const BillingPage: React.FC = () => {
       </header>
 
       <main className="flex flex-1 flex-col gap-5 px-5 pb-[max(32px,env(safe-area-inset-bottom))] pt-2">
+        {upgradeReason && upgradeReasonCopy[upgradeReason] && <aside className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-xs leading-relaxed text-slate-600">{upgradeReasonCopy[upgradeReason]}</aside>}
         <section className="rounded-[20px] bg-white p-5 shadow-[0_5px_22px_rgba(15,23,42,0.055)]">
           <div className="flex items-center justify-between gap-3">
             <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-slate-400">Subscription status</p>
@@ -244,11 +245,9 @@ export const BillingPage: React.FC = () => {
             <>
               <h2 className="mt-4 text-[22px] font-extrabold tracking-[-0.04em]">{name} Pro</h2>
               <p className="mt-1 text-xs leading-5 text-slate-500">
-                {trialActive
-                  ? `Your free trial ends on ${dateLabel(subscription?.trial_ends_at)}`
-                  : inGrace
-                    ? 'Your renewal is overdue. Renew now to keep your workspace protected.'
-                    : `Renews manually on ${dateLabel(subscription?.current_period_end)}`}
+                {proTrialActive
+                  ? `Your Pro trial ends on ${dateLabel(subscription?.pro_trial_ends_at)}`
+                  : `Renews manually on ${dateLabel(subscription?.current_period_end)}`}
               </p>
               <div className="mt-5 flex items-end justify-between">
                 <strong className="text-sm font-bold">{daysLeft} {daysLeft === 1 ? 'day' : 'days'} left</strong>
@@ -263,12 +262,8 @@ export const BillingPage: React.FC = () => {
             </>
           ) : (
             <>
-              <h2 className="mt-4 text-[21px] font-extrabold tracking-[-0.04em]">
-                'Your workspace is locked'
-              </h2>
-              <p className="mt-1 text-xs leading-5 text-slate-500">
-                Subscribe to unlock it. Your data is safe.
-              </p>
+              <h2 className="mt-4 text-[21px] font-extrabold tracking-[-0.04em]">Free plan</h2>
+              <p className="mt-1 text-xs leading-5 text-slate-500">Your showroom, enquiries and WhatsApp stay active. Upgrade to Pro for unlimited vehicles, more photos and full analytics.</p>
             </>
           )}
         </section>
