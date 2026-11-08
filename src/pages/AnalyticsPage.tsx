@@ -13,12 +13,12 @@ type TrendPoint = { key: string; label: string; views: number; enquiries: number
 
 export const AnalyticsPage: React.FC = () => {
   const { navigate } = useNavigation();
-  const [plan, setPlan] = useState<'free' | 'pro'>('free');
+  const [canSeeAnalytics, setCanSeeAnalytics] = useState(false);
   const [dealership, setDealership] = useState<Dealership | null>(null);
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [enquiries, setEnquiries] = useState<Enquiry[]>([]);
   const [viewHistory, setViewHistory] = useState<ViewHistoryRow[]>([]);
-  const [period, setPeriod] = useState<7 | 30>(7);
+  const [period, setPeriod] = useState<7 | 30 | 90>(7);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -44,9 +44,9 @@ export const AnalyticsPage: React.FC = () => {
     }
   };
 
-  useEffect(() => { void planService.getMyPlan().then(snapshot => setPlan(snapshot.plan)).catch(error => console.error('[Lotle plan] Analytics plan load failed', error)); }, []);
+  useEffect(() => { void planService.getMyPlan().then(snapshot => setCanSeeAnalytics(snapshot.config[snapshot.plan].analyticsCharts)).catch(error => console.error('[Lotle plan] Analytics plan load failed', error)); }, []);
   useEffect(() => {
-    if (plan === 'pro') {
+    if (canSeeAnalytics) {
       void loadAnalytics();
     } else {
       setLoading(true);
@@ -55,7 +55,7 @@ export const AnalyticsPage: React.FC = () => {
         .catch(error => { console.error('Could not load visit total for Free plan', error); setError('We could not load your visit total.'); })
         .finally(() => setLoading(false));
     }
-  }, [period, plan]);
+  }, [period, canSeeAnalytics]);
 
   const views = dealership?.storefrontViews ?? 0;
   const availableVehicles = vehicles.filter(v => v.status === 'available').length;
@@ -152,12 +152,13 @@ export const AnalyticsPage: React.FC = () => {
             <div className="flex rounded-xl bg-slate-100 p-1" aria-label="Analytics period">
               <PeriodButton active={period === 7} onClick={() => setPeriod(7)}>7 days</PeriodButton>
               <PeriodButton active={period === 30} onClick={() => setPeriod(30)}>30 days</PeriodButton>
+              <PeriodButton active={period === 90} onClick={() => setPeriod(90)}>90 days</PeriodButton>
             </div>
           </div>
           {loading ? <p className="text-sm text-slate-400 py-6">Loading daily activity…</p> : (
             <>
               <div className="flex flex-wrap gap-4 text-xs text-slate-600 mb-4"><Legend color="bg-slate-800" label="Views" /><Legend color="bg-indigo-400" label="Enquiries" /></div>
-              {period === 30 ? <div className="overflow-x-auto pb-1"><div className="min-w-[620px]"><TrendBars points={trend} max={maxTrend} compact /></div></div> : <TrendBars points={trend} max={maxTrend} />}
+              {period > 7 ? <div className="overflow-x-auto pb-1"><div style={{ minWidth: `${period * 20}px` }}><TrendBars points={trend} max={maxTrend} compact /></div></div> : <TrendBars points={trend} max={maxTrend} />}
               <p className="text-[11px] text-slate-400 mt-3">View history starts when timestamp tracking was enabled. Earlier lifetime views remain in the total but cannot be assigned to past dates.</p>
             </>
           )}
@@ -227,7 +228,7 @@ const Legend: React.FC<{ color: string; label: string }> = ({ color, label }) =>
 );
 
 const TrendBars: React.FC<{ points: TrendPoint[]; max: number; compact?: boolean }> = ({ points, max, compact = false }) => (
-  <div className={`grid gap-2 ${compact ? 'grid-cols-[repeat(30,minmax(0,1fr))]' : 'grid-cols-7'}`}>
+  <div className={`grid gap-2 ${compact ? points.length === 30 ? 'grid-cols-[repeat(30,minmax(0,1fr))]' : 'grid-cols-[repeat(90,minmax(0,1fr))]' : 'grid-cols-7'}`}>
     {points.map(point => <div key={point.key} className="min-w-0 text-center">
       <div className={`h-32 flex items-end justify-center gap-1 border-b border-slate-100 ${compact ? 'px-0.5' : ''}`}>
         <div title={`${point.views} views`} className="w-1/2 max-w-5 rounded-t bg-slate-800" style={{ height: `${point.views ? Math.max(3, point.views / max * 100) : 0}%` }} />
