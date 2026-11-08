@@ -155,6 +155,7 @@ begin
   if v_dealership_id is null then
     return jsonb_build_object('plan','free','config',private.plan_config());
   end if;
+  perform private.start_pro_trial_for_dealership(v_dealership_id); -- idempotently repairs legacy dealerships on dashboard load
   perform private.reconcile_dealership_plan(v_dealership_id);
   select s.* into v_sub from public.dealership_subscriptions s
   where s.dealership_id = v_dealership_id;
@@ -421,6 +422,96 @@ drop trigger if exists dealerships_auto_start_pro_trial on public.dealerships;
 create trigger dealerships_auto_start_pro_trial
 after insert on public.dealerships
 for each row execute function private.start_pro_trial_after_dealership_insert();
+
+-- Replace the legacy onboarding RPC's swallowed three-day trial call.
+-- Pro-trial provisioning is part of this same transaction and failures roll back setup.
+create or replace function public.complete_dealership_onboarding(p_dealership jsonb)
+returns public.dealerships
+language plpgsql
+security definer
+set search_path = ''
+as $
+declare
+  v_user_id uuid := auth.uid();
+  v_existing public.dealerships%rowtype;
+  v_dealer public.dealerships%rowtype;
+  v_base_slug text;
+  v_candidate text;
+  v_suffix integer := 1;
+  v_constraint text;
+  v_now timestamptz := pg_catalog.clock_timestamp();
+begin
+  if v_user_id is null then raise exception 'Authentication required.' using errcode = '42501'; end if;
+  if p_dealership is null or jsonb_typeof(p_dealership) <> 'object' then raise exception 'Dealership details are required.' using errcode = '22023'; end if;
+  perform pg_catalog.pg_advisory_xact_lock(pg_catalog.hashtextextended('dealership-owner:' || v_user_id::text, 0));
+
+  select * into v_existing from public.dealerships where user_id=v_user_id order by created_at asc limit 1 for update;
+  if found then
+    update public.dealerships
+    set name=coalesce(nullif(btrim(p_dealership->>'name'),''),name),
+        country=coalesce(nullif(p_dealership->>'country',''),country),
+        city=nullif(btrim(coalesce(p_dealership->>'city',city)),''),
+        address=nullif(btrim(coalesce(p_dealership->>'address',address)),''),
+        phone=nullif(coalesce(p_dealership->>'phone',phone),''),
+        whatsapp=nullif(coalesce(p_dealership->>'whatsapp',whatsapp),''),
+        email=coalesce(nullif(p_dealership->>'email',''),email),
+        currency=coalesce(nullif(p_dealership->>'currency',''),currency),
+        template=coalesce(nullif(p_dealership->>'template',''),template),
+        dealership_type=coalesce(nullif(p_dealership->>'dealership_type',''),dealership_type),
+        tagline=coalesce(nullif(p_dealership->>'tagline',''),tagline),
+        logo_url=coalesce(nullif(p_dealership->>'logo_url',''),logo_url),
+        cover_url=coalesce(nullif(p_dealership->>'cover_url',''),cover_url),
+        banner_url=coalesce(nullif(p_dealership->>'banner_url',''),banner_url),
+        is_published=coalesce((p_dealership->>'is_published')::boolean,is_published),
+        updated_at=v_now
+    where id=v_existing.id returning * into v_dealer;
+  else
+    v_base_slug:=private.normalize_dealership_slug(coalesce(nullif(p_dealership->>'slug',''),p_dealership->>'name','showroom'));
+    if v_base_slug='' then v_base_slug:='showroom'; end if;
+    if v_base_slug in ('login','signup','dashboard','settings','billing','api','admin','cars','lotle') then v_base_slug:=v_base_slug||'-showroom'; end if;
+    v_base_slug:=left(v_base_slug,63);
+    v_candidate:=v_base_slug;
+    loop
+      perform pg_catalog.pg_advisory_xact_lock(pg_catalog.hashtextextended('dealership-slug:'||v_candidate,0));
+      begin
+        insert into public.dealerships(user_id,name,slug,country,city,address,phone,whatsapp,email,currency,template,dealership_type,tagline,logo_url,cover_url,banner_url,is_published,updated_at)
+        values(v_user_id,coalesce(nullif(btrim(p_dealership->>'name'),''),'My Dealership'),v_candidate,
+          coalesce(nullif(p_dealership->>'country',''),'Zimbabwe'),nullif(btrim(p_dealership->>'city'),''),
+          nullif(btrim(p_dealership->>'address'),''),nullif(p_dealership->>'phone',''),nullif(p_dealership->>'whatsapp',''),
+          coalesce(nullif(p_dealership->>'email',''),(select email from auth.users where id=v_user_id)),
+          coalesce(nullif(p_dealership->>'currency',''),'USD'),coalesce(nullif(p_dealership->>'template',''),'signature'),
+          coalesce(nullif(p_dealership->>'dealership_type',''),'dealership'),nullif(p_dealership->>'tagline',''),
+          nullif(p_dealership->>'logo_url',''),nullif(p_dealership->>'cover_url',''),nullif(p_dealership->>'banner_url',''),
+          coalesce((p_dealership->>'is_published')::boolean,true),v_now)
+        returning * into v_dealer;
+        exit;
+      exception when unique_violation then
+        get stacked diagnostics v_constraint=constraint_name;
+        if v_constraint is distinct from 'dealerships_slug_key' then raise; end if;
+        v_suffix:=v_suffix+1;
+        v_candidate:=left(v_base_slug,63-length('-'||v_suffix::text))||'-'||v_suffix::text;
+      end;
+    end loop;
+  end if;
+
+  perform private.start_pro_trial_for_dealership(v_dealer.id);
+  update public.dealerships
+    set onboarding_completed_at=coalesce(onboarding_completed_at,v_now)
+    where id=v_dealer.id
+    returning * into v_dealer;
+  insert into public.user_onboarding_progress(user_id,onboarding_step,intro_completed,onboarding_completed_at,updated_at)
+  values(v_user_id,7,true,v_now,v_now)
+  on conflict(user_id) do update set
+    onboarding_step=greatest(coalesce(public.user_onboarding_progress.onboarding_step,0),7),
+    intro_completed=true,
+    onboarding_completed_at=coalesce(public.user_onboarding_progress.onboarding_completed_at,v_now),
+    updated_at=v_now;
+  return v_dealer;
+end;
+$;
+
+revoke all on function public.complete_dealership_onboarding(jsonb) from public,anon;
+grant execute on function public.complete_dealership_onboarding(jsonb) to authenticated;
 
 -- Retire the old client-callable three-day activation RPC.
 revoke all on function public.activate_dealership_trial() from public, anon, authenticated;
