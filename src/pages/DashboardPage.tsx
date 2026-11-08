@@ -149,7 +149,7 @@ export const DashboardPage: React.FC = () => {
 
         {brandNoticeVisible && <aside className="mb-4 flex items-start justify-between gap-3 rounded-2xl border border-[#e5e7eb] bg-white px-4 py-3 text-xs text-[#303846]" role="status"><p className="min-w-0 flex-1"><strong>{legacyName} is now {name}.</strong> Same app, same showroom link.</p><button type="button" onClick={() => void dismissBrandNotice()} aria-label="Dismiss brand update notice" className="shrink-0 rounded-full px-2 py-1 font-bold text-[#667085]">Dismiss</button></aside>}
 
-        <TrialUpgradeCard subscription={subscription} vehicleCount={vehicles.length} serverNow={serverClock.current.serverMs + (window.performance.now() - serverClock.current.monotonicMs)} onUpgrade={() => navigate('/app/billing')}/>
+        <TrialUpgradeCard subscription={subscription} vehicleCount={vehicles.filter(vehicle => vehicle.status !== 'hidden').length} serverNow={serverClock.current.serverMs + (window.performance.now() - serverClock.current.monotonicMs)} onUpgrade={() => navigate('/app/billing')}/>
         {loading ? <div className="dl-skeleton-card h-[104px] mb-4"/> : vehicles.length === 0 ? (
           <section className="dl-empty-inventory mb-4">
             <div className="dl-empty-icon"><CarFront size={22}/></div><div className="min-w-0 flex-1"><h2>Add your first vehicle</h2><p>It goes live on your showroom link right away</p></div>
