@@ -13,6 +13,7 @@ type SubscriptionStatus = {
 type Props = {
   subscription: SubscriptionStatus | null;
   vehicleCount: number;
+  maxVehicles: number;
   serverNow: number;
   onUpgrade: () => void;
 };
@@ -20,7 +21,7 @@ type Props = {
 const DAY = 86400000;
 const dateLabel = (value: string) => new Date(value).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
 
-export const TrialUpgradeCard: React.FC<Props> = ({ subscription, vehicleCount, serverNow, onUpgrade }) => {
+export const TrialUpgradeCard: React.FC<Props> = ({ subscription, vehicleCount, maxVehicles, serverNow, onUpgrade }) => {
   const clock = React.useRef({ serverNow, monotonicNow: performance.now() });
   const [now, setNow] = React.useState(serverNow);
 
