@@ -39,7 +39,7 @@ export const SettingsPage:React.FC=()=>{
  const showroomUrl=typeof window!=='undefined'?`${window.location.origin}/showroom/${encodeURIComponent(dealer.slug)}`:'';
 
  useEffect(()=>{let live=true;(async()=>{try{const latest=await storageService.getDealershipAsync();if(live){setDealer(latest);setDraft({name:latest.name,city:latest.city,address:latest.address||'',phone:latest.phone,whatsapp:latest.whatsapp});}}catch(e){console.warn('Settings profile refresh failed',e);}})();return()=>{live=false;};},[]);
- useEffect(()=>{notificationService.isPushEnabled().then(setPushEnabled).catch(()=>setPushEnabled(false));if(isSupabaseConfigured()){supabase.functions.invoke('drivelink-payments',{body:{action:'status'}}).then(({data,error})=>{if(error)throw error;const s=data?.subscription;setPlanStatus(s?.status==='active'?'Active plan':s?.status==='trial'?'Free trial':s?.status?s.status.replace(/_/g,' '):'No active plan');}).catch(()=>setPlanStatus('View subscription details'));}else setPlanStatus('Demo account');},[]);
+ useEffect(()=>{notificationService.isPushEnabled().then(setPushEnabled).catch(()=>setPushEnabled(false));planService.getMyPlan().then(snapshot=>setPlanStatus(snapshot.plan==='pro'?(snapshot.subscription_status==='active'?'Lotlé Pro':'Pro trial'):'Free plan')).catch(()=>setPlanStatus('Plan details unavailable'));},[]);
 
  const saveProfile=async(patch:Partial<DealerDraft>)=>{
   setSaving(true);
@@ -87,7 +87,7 @@ export const SettingsPage:React.FC=()=>{
    </section>
 
    <section className="dl-settings-group"><h2>Subscription</h2>
-    <Row icon={CreditCard} label="Plan status" value={planStatus} onClick={()=>navigate('/app/billing')}/>
+    <Row icon={CreditCard} label="Plan" value={planStatus} onClick={()=>navigate('/app/billing')}/>
     <Row icon={ExternalLink} label="Manage billing" value="Plans and payment history" onClick={()=>navigate('/app/billing')}/>
    </section>
 
