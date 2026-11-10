@@ -189,7 +189,7 @@ async function deliverOne(notification: any, prefs: Record<string, unknown>, sub
       .eq("status", "sent").gte("attempted_at", dayStart)
       .eq("notifications.dealership_id", notification.dealership_id);
     const alreadySent = new Set((recentAttempts || [])
-      .filter((row: any) => !isUrgent(row.notifications))
+      .filter((row: any) => row.notification_id !== notification.id && !isUrgent(row.notifications))
       .map((row: any) => row.notification_id));
     if (alreadySent.size >= NON_URGENT_PUSH_DAILY_LIMIT) return { sent: 0, removed: 0 };
   }
