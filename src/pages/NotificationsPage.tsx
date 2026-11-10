@@ -164,7 +164,15 @@ export const NotificationsPage: React.FC = () => {
     const params = new URLSearchParams(query);
     const ids = (params.get('notificationIds') || params.get('notificationId') || '').split(',').filter(Boolean);
     if (!ids.length || !dealershipId || !items.length || deepLinkHandled.current) return;
-    const item = items.find(row => ids.includes(row.id));
+    let item = items.find(row => ids.includes(row.id));
+    if (!item && ids[0]) void notificationService.getById(ids[0]).then(found => {
+      if (found && !deepLinkHandled.current) {
+        deepLinkHandled.current = true;
+        void notificationService.markRead(found.id).catch(() => undefined);
+        const target = params.get('target') || (typeof found.data?.url === 'string' ? found.data.url : '/app/vehicles/new');
+        navigate(target);
+      }
+    }).catch(() => undefined);
     if (!item) return;
     deepLinkHandled.current = true;
     void (async () => {
@@ -217,7 +225,7 @@ export const NotificationsPage: React.FC = () => {
 
       <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
         <div className="flex items-center gap-2"><Clock3 className="h-4 w-4"/><h2 className="text-sm font-bold">Quiet hours</h2></div>
-        <p className="mt-1 text-xs text-slate-500">Pause timed push reminders during hours you choose. Immediate enquiries and payment updates remain available.</p>
+        <p className="mt-1 text-xs text-slate-500">Pause timed push reminders during hours you choose. In-app notifications remain available while push is paused.</p>
         <div className="mt-3 flex items-center justify-between gap-3">
           <span className="text-xs font-semibold">Enable quiet hours</span>
           <button type="button" role="switch" aria-checked={quietEnabled} onClick={() => setQuietEnabled(value => !value)} className={'relative h-6 w-11 rounded-full ' + (quietEnabled ? 'bg-slate-950' : 'bg-slate-200')}><span className={'absolute top-1 h-4 w-4 rounded-full bg-white shadow ' + (quietEnabled ? 'translate-x-6' : 'translate-x-1')}/></button>
@@ -227,7 +235,7 @@ export const NotificationsPage: React.FC = () => {
       </section>
 
       <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-        <div className="flex items-center justify-between gap-3"><div><h2 className="text-sm font-bold">Test notifications</h2><p className="mt-1 text-xs text-slate-500">Send a real push and add a test item to your Lotlé inbox.</p></div><button type="button" disabled={testBusy || !dealershipId} onClick={() => void sendTest()} className="inline-flex shrink-0 items-center gap-2 rounded-full bg-slate-950 px-3 py-2 text-xs font-bold text-white disabled:opacity-50">{testBusy ? <Loader2 size={15} className="animate-spin"/> : <Send size={15}/>}Send test</button></div>
+        <div className="flex items-center justify-between gap-3"><div><h2 className="text-sm font-bold">Test notifications</h2><p className="mt-1 text-xs text-slate-500">Enable push to send a real test alert and add a test item to your Lotlé inbox.</p></div><button type="button" disabled={testBusy || !dealershipId || !pushEnabled} onClick={() => void sendTest()} className="inline-flex shrink-0 items-center gap-2 rounded-full bg-slate-950 px-3 py-2 text-xs font-bold text-white disabled:opacity-50">{testBusy ? <Loader2 size={15} className="animate-spin"/> : <Send size={15}/>}Send test</button></div>
       </section>
 
       <div className="flex items-center justify-between px-1"><div><h2 className="text-sm font-bold">Recent activity</h2><p className="text-[11px] text-slate-500">{items.filter(item => !item.read_at).length} unread</p></div><button onClick={() => void markAllRead()} disabled={!items.some(item => !item.read_at)} className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 disabled:opacity-40"><CheckCheck className="h-4 w-4" /> Mark all read</button></div>
