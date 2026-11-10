@@ -18,7 +18,7 @@ export interface NotificationEventDefinition {
 export const NOTIFICATION_EVENTS: Record<string, NotificationEventDefinition> = {
   new_enquiry: {
     id: 'new_enquiry', category: 'enquiries', channels: ['push', 'in_app'],
-    plans: ['free', 'pro'], priority: 'urgent', timing: 'immediate',
+    plans: ['free', 'pro_trial', 'pro'], priority: 'urgent', timing: 'immediate',
     dedupe: (id) => 'new_enquiry:' + id,
     title: 'New enquiry',
     body: (v) => String(v.buyer || 'A buyer') + ' asked about your ' + String(v.vehicle || 'vehicle'),
@@ -26,7 +26,7 @@ export const NOTIFICATION_EVENTS: Record<string, NotificationEventDefinition> = 
   },
   unanswered_enquiry: {
     id: 'unanswered_enquiry', category: 'enquiries', channels: ['push', 'in_app'],
-    plans: ['free', 'pro'], priority: 'normal', timing: 'scheduled',
+    plans: ['free', 'pro_trial', 'pro'], priority: 'normal', timing: 'scheduled',
     dedupe: (id) => 'unanswered_enquiry:' + id,
     title: 'Enquiry needs a reply',
     body: (v) => String(v.buyer || 'A buyer') + ' is waiting for a reply about your ' + String(v.vehicle || 'vehicle'),
@@ -66,7 +66,7 @@ export const NOTIFICATION_EVENTS: Record<string, NotificationEventDefinition> = 
   },
   plan_limit_reached: {
     id: 'plan_limit_reached', category: 'reminders', channels: ['in_app'],
-    plans: ['free', 'pro'], priority: 'low', timing: 'immediate',
+    plans: ['free', 'pro_trial', 'pro'], priority: 'low', timing: 'immediate',
     dedupe: (id, occurrence) => 'plan_limit_reached:' + id + ':' + String(occurrence || 'limit'),
     title: 'Plan limit reached',
     body: (v) => String(v.message || 'You have reached the limit on your current plan.'),
