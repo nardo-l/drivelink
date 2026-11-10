@@ -20,9 +20,9 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('push', (event) => {
   let payload = {};
   try { payload = event.data ? event.data.json() : {}; } catch { payload = { body: event.data?.text() || '' }; }
-  const title = payload.title || 'New update';
+  const title = payload.title || 'Lotlé update';
   const options = {
-    body: payload.body || 'You have an update from your dealership.',
+    body: payload.body || 'You have a new update in Lotlé.',
     icon: '/icon.svg?v=lotle-6',
     badge: '/icon.svg?v=lotle-6',
     data: payload.data || { url: '/#/app/notifications' },
@@ -34,8 +34,11 @@ self.addEventListener('push', (event) => {
 
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
-  const path = event.notification.data?.url || '/app/notifications';
-  const target = path.startsWith('/#') ? path : '/#' + path;
+  const data = event.notification.data || {};
+  const notificationId = data.notificationId;
+  const path = data.url || '/app/notifications';
+  const encodedTarget = encodeURIComponent(path);
+  const target = '/#/app/notifications?notificationId=' + encodeURIComponent(notificationId || '') + '&target=' + encodedTarget;
   event.waitUntil((async () => {
     const windows = await clients.matchAll({ type: 'window', includeUncontrolled: true });
     for (const client of windows) {
