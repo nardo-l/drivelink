@@ -67,10 +67,15 @@ function isInsideTimeRange(start: string | null, end: string | null, date = new 
   const a = toMinutes(start), b = toMinutes(end);
   return a <= b ? now >= a && now < b : now >= a || now < b;
 }
-function canSendTimedPush(prefs: Record<string, unknown>, date = new Date()) {
-  const hour = harareHour(date);
-  if (hour < HARARE_TIMED_SEND_START_HOUR || hour >= HARARE_TIMED_SEND_END_HOUR) return false;
-  return !isInsideTimeRange(prefs.quiet_hours_start as string | null, prefs.quiet_hours_end as string | null, date);
+function canSendPushNow(prefs: Record<string, unknown>, notification: any, date = new Date()) {
+  if (isInsideTimeRange(prefs.quiet_hours_start as string | null, prefs.quiet_hours_end as string | null, date)) return false;
+  const eventId = String(notification.data?.eventId || "");
+  const event = NOTIFICATION_EVENTS[eventId];
+  if (event?.timing === "scheduled") {
+    const hour = harareHour(date);
+    if (hour < HARARE_TIMED_SEND_START_HOUR || hour >= HARARE_TIMED_SEND_END_HOUR) return false;
+  }
+  return true;
 }
 function preferenceAllows(prefs: Record<string, unknown>, notification: any) {
   if (prefs.push_enabled === false) return false;
@@ -167,7 +172,7 @@ async function deliverOne(notification: any, prefs: Record<string, unknown>, sub
     return { sent: 0, removed: 0 };
   }
   const urgent = isUrgent(notification);
-  if (!urgent && !canSendTimedPush(prefs)) return { sent: 0, removed: 0 };
+  if (!canSendPushNow(prefs, notification)) return { sent: 0, removed: 0 };
   if (!urgent) {
     const dayStart = harareDayStart();
     const { data: recent } = await db.from("notifications").select("id,data,category")
@@ -210,7 +215,7 @@ async function deliverOne(notification: any, prefs: Record<string, unknown>, sub
       }
     }
   }
-  if (allTerminal || sent > 0) {
+  if (allTerminal) {
     await db.from("notifications").update({ push_sent_at: new Date().toISOString(), push_attempted_at: new Date().toISOString() }).eq("id", notification.id);
   }
   return { sent, removed };
@@ -228,7 +233,7 @@ async function deliverPendingPush() {
     if (notification.data?.eventId === "new_enquiry") {
       const windowStart = new Date(Date.now() - 10 * 60 * 1000).toISOString();
       const group = (pending || []).filter((row: any) => row.dealership_id === notification.dealership_id && row.data?.eventId === "new_enquiry" && row.created_at >= windowStart && !handled.has(row.id));
-      if (group.length >= 3 && preferenceAllows(prefs || {}, notification) && canSendTimedPush(prefs || {})) {
+      if (group.length >= 3 && preferenceAllows(prefs || {}, notification) && canSendPushNow(prefs || {}, notification)) {
         const groupPayload = { ...notification, title: group.length + " new enquiries", body: group.length + " buyers have asked about vehicles in your Lotlé showroom.", data: { eventId: "new_enquiry", priority: "urgent", url: "/app/enquiries", notificationIds: group.map((x: any) => x.id) } };
         const result = await deliverOne(groupPayload, prefs || {}, subscriptions || []);
         sent += result.sent; removed += result.removed; batched++;
