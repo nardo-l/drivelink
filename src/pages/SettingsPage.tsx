@@ -80,7 +80,7 @@ export const SettingsPage:React.FC=()=>{
    </section>
 
    <section className="dl-settings-group"><h2>Showroom</h2>
-    <Row icon={Image} label="Logo and banner" value="Update your showroom images" onClick={()=>openSheet('branding')}/>
+    <Row icon={Image} label="Dealership logo" value="Update your showroom logo" onClick={()=>openSheet('branding')}/>
     <Row icon={Store} label="Dealership name" value={dealer.name} onClick={()=>openSheet('name')}/>
     <Row icon={Phone} label="Phone and WhatsApp number" value={dealer.phone||dealer.whatsapp||'Add contact numbers'} onClick={()=>openSheet('contact')}/>
     <Row icon={MapPin} label="Location" value={[dealer.city,dealer.address].filter(Boolean).join(' · ')||'Add dealership location'} onClick={()=>openSheet('location')}/>
@@ -112,7 +112,7 @@ export const SettingsPage:React.FC=()=>{
   {sheet&&<div className="dl-settings-scrim" role="presentation" onMouseDown={e=>{if(e.target===e.currentTarget&&!saving&&!uploading)setSheet(null);}}>
    <section className="dl-settings-sheet" role="dialog" aria-modal="true" aria-labelledby="dl-settings-sheet-title">
     <div className="dl-settings-sheet-handle"/>
-    <div className="dl-settings-sheet-heading"><h2 id="dl-settings-sheet-title">{({profile:'Edit dealership profile',branding:'Showroom images',name:'Dealership name',slug:'Edit showroom link',contact:'Contact numbers',location:'Dealership location',hours:'Opening hours',terms:'Terms',privacy:'Privacy',logout:'Log out?',delete:'Delete account'} as Record<string,string>)[sheet]}</h2><button type="button" onClick={()=>setSheet(null)} aria-label="Close" disabled={saving||!!uploading}><X size={18}/></button></div>
+    <div className="dl-settings-sheet-heading"><h2 id="dl-settings-sheet-title">{({profile:'Edit dealership profile',branding:'Dealership logo',name:'Dealership name',slug:'Edit showroom link',contact:'Contact numbers',location:'Dealership location',hours:'Opening hours',terms:'Terms',privacy:'Privacy',logout:'Log out?',delete:'Delete account'} as Record<string,string>)[sheet]}</h2><button type="button" onClick={()=>setSheet(null)} aria-label="Close" disabled={saving||!!uploading}><X size={18}/></button></div>
     {(sheet==='profile'||sheet==='name'||sheet==='contact'||sheet==='location')&&<div className="dl-settings-sheet-body">
      {(sheet==='profile'||sheet==='name')&&<label>Dealership name<input value={draft.name} onChange={e=>setDraft(v=>({...v,name:e.target.value}))} maxLength={90}/></label>}
      {(sheet==='profile'||sheet==='contact')&&<><label>Phone number<input type="tel" value={draft.phone} onChange={e=>setDraft(v=>({...v,phone:e.target.value}))} placeholder="+263…"/></label><label>WhatsApp number<input type="tel" value={draft.whatsapp} onChange={e=>setDraft(v=>({...v,whatsapp:e.target.value}))} placeholder="+263…"/></label></>}
@@ -127,11 +127,9 @@ export const SettingsPage:React.FC=()=>{
     {sheet==='branding'&&<div className="dl-settings-sheet-body dl-settings-branding">
      <div className="dl-settings-showroom-preview">
       <div className="dl-settings-showroom-head">{dealer.logoUrl?<img src={dealer.logoUrl} alt=""/>:<b>{initials}</b>}<span><strong>{dealer.name}</strong><small>{dealer.city||dealer.country}</small></span></div>
-      {dealer.coverUrl&&<div className="dl-settings-showroom-hero"><img src={dealer.coverUrl} alt=""/></div>}
       <div className="dl-settings-showroom-intro"><strong>{dealer.tagline?.trim()||'Find your next car.'}</strong><small>Cars available · {dealer.city||dealer.country}</small><span>WhatsApp</span>{dealer.phone&&<span>Call</span>}</div>
      </div>
-     <div className="dl-settings-brand-preview"><span>Logo</span>{dealer.logoUrl?<img src={dealer.logoUrl} alt="Dealership logo"/>:<b>{initials}</b>}<button type="button" onClick={()=>logoInput.current?.click()} disabled={!!uploading}>{uploading==='logo'?<Loader2 className="spin" size={15}/>:<Upload size={15}/>} Upload logo</button><input ref={logoInput} hidden type="file" accept="image/png,image/jpeg,image/webp" onChange={e=>void uploadAsset('logo',e.target.files?.[0])}/></div>
-     <div className="dl-settings-banner-preview"><span>Banner</span>{dealer.coverUrl?<img src={dealer.coverUrl} alt="Showroom banner preview"/>:<div className="dl-settings-banner-empty">No banner uploaded</div>}<button type="button" onClick={()=>bannerInput.current?.click()} disabled={!!uploading}>{uploading==='banner'?<Loader2 className="spin" size={15}/>:<Upload size={15}/>} Upload banner</button><input ref={bannerInput} hidden type="file" accept="image/png,image/jpeg,image/webp" onChange={e=>void uploadAsset('banner',e.target.files?.[0])}/><small>This wide image appears at the top of your showroom. JPG, PNG or WebP · Max 10 MB · Uploaded as-is, no crop step</small></div>
+     <div className="dl-settings-brand-preview"><span>Logo</span>{dealer.logoUrl?<img src={dealer.logoUrl} alt="Dealership logo"/>:<b>{initials}</b>}<button type="button" onClick={()=>logoInput.current?.click()} disabled={!!uploading}>{uploading==='logo'?<Loader2 className="spin" size={15}/>:<Upload size={15}/>} Upload logo</button><input ref={logoInput} hidden type="file" accept="image/png,image/jpeg,image/webp" onChange={e=>void uploadAsset('logo',e.target.files?.[0])}/><small>Upload your dealership logo. Square or circular logos work best. JPG, PNG or WebP · Max 10 MB</small></div>
     </div>}
     {sheet==='branding'&&uploadError&&<p role="alert" className="px-1 text-xs text-[#475467]">{uploadError.replace(/\s*\[([A-Z0-9_]+)\]$/,'')}<small className="mt-1 block text-[10px] text-[#98A2B3]">{uploadError.match(/\[([A-Z0-9_]+)\]$/)?.[1]?`Code: ${uploadError.match(/\[([A-Z0-9_]+)\]$/)?.[1]}`:''}</small></p>}
     {sheet==='hours'&&<div className="dl-settings-sheet-body"><p className="dl-settings-note">Opening hours are not currently stored in the dealership profile, so there is no safe way to save them here yet. This screen leaves your existing dealership data unchanged.</p><button type="button" className="dl-settings-primary" onClick={()=>setSheet(null)}>Got it</button></div>}

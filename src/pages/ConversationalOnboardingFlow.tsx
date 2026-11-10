@@ -517,11 +517,11 @@ export const OnboardingFlow: React.FC<{ forceNewAccount?: boolean }> = ({ forceN
 
       {step === 6 && <section className="sb-onboarding-screen">
         <div className="sb-stage-progress"><span>Step 2 of 3</span><div><i className="is-done"/><i className="is-current"/><i/></div></div>
-        <div className="sb-screen-heading"><h1>Brand your showroom</h1><p>Add your logo and banner so buyers recognise your dealership.</p></div>
+        <div className="sb-screen-heading"><h1>Brand your showroom</h1><p>Add your logo so buyers recognise your dealership.</p></div>
         <ShowroomBrandingEditor dealershipName={data.showroom.businessName} city={data.contact.city} logoUrl={data.branding.logoPreview || null} bannerUrl={data.branding.coverPreview || null} onChange={value => update({ branding: { ...data.branding, logoPreview: value.logoUrl, coverPreview: value.bannerUrl } })} onUploadingChange={setBrandingBusy}/>
         {error && <p role="alert" className="sb-inline-error">{error}</p>}
         <div className="sb-onboarding-actions">
-          <button type="button" disabled={busy || brandingBusy || (!data.branding.logoPreview && !data.branding.coverPreview)} onClick={() => setStep(7)}>{brandingBusy ? <><Loader2 size={17} className="animate-spin"/> Uploading…</> : <>Continue <ArrowRight size={18}/></>}</button>
+          <button type="button" disabled={busy || brandingBusy || !data.branding.logoPreview} onClick={() => setStep(7)}>{brandingBusy ? <><Loader2 size={17} className="animate-spin"/> Uploading…</> : <>Continue <ArrowRight size={18}/></>}</button>
           <button type="button" onClick={() => setStep(7)}>Skip for now</button>
         </div>
       </section>}

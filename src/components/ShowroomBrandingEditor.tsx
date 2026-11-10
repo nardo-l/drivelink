@@ -226,7 +226,6 @@ export const ShowroomBrandingEditor: React.FC<ShowroomBrandingEditorProps> = ({
         <div className="sb-preview-logo">{logo.url ? <img src={logo.url} alt="" /> : <span>{initials}</span>}</div>
         <div><strong>{dealershipName || 'Your dealership'}</strong><small>{city || 'Your city'}</small></div>
       </div>
-      {banner.url && <div className="sb-preview-banner"><img src={banner.url} alt="" /></div>}
       <div className="sb-preview-intro">
         <h3>{tagline.trim() || 'Find your next car.'}</h3>
         <p>0 cars available · {city || 'Your city'}</p>
@@ -236,7 +235,6 @@ export const ShowroomBrandingEditor: React.FC<ShowroomBrandingEditorProps> = ({
     </div>
     <div className="sb-upload-list">
       {renderUpload('logo', 'Logo', 'Square, at least 400x400px. PNG or JPG.')}
-      {renderUpload('banner', 'Banner', 'This wide image appears at the top of your showroom. JPG, PNG or WebP · max 10 MB.')}
     </div>
     {cropKind && cropImage && <div className="sb-crop-backdrop" role="dialog" aria-modal="true" aria-label={"Crop " + cropKind}>
       <div className="sb-crop-sheet">
