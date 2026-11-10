@@ -29,7 +29,7 @@ Supabase pg_cron is the production scheduler. The old GitHub Actions timer is di
 
 Review and run `supabase/NOTIFICATIONS_CRON.sql` only after:
 
-1. The notification migrations `20261110131723_notifications_delivery_pipeline.sql`, `20261110132416_notification_preference_delivery_rules.sql`, `20261110132841_notification_immediate_dispatch_scope.sql`, and `20261110133954_restore_original_notification_capture.sql` are applied.
+1. The notification migrations `20261110131723_notifications_delivery_pipeline.sql`, `20261110132416_notification_preference_delivery_rules.sql`, `20261110132841_notification_immediate_dispatch_scope.sql`, `20261110133954_restore_original_notification_capture.sql`, and `20261110134200_map_reminder_preferences.sql` are applied.
 2. The Edge Function secrets above are configured.
 3. The Vault secret `lotle_notification_cron_secret` is created.
 
