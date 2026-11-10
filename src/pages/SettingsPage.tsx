@@ -93,7 +93,8 @@ export const SettingsPage:React.FC=()=>{
    </section>
 
    <section className="dl-settings-group"><h2>Notifications</h2>
-    <div className="dl-settings-toggle-row"><span className="dl-settings-row-icon"><Bell size={17}/></span><span className="dl-settings-row-copy"><strong>Push notifications</strong><small>{pushEnabled?'Notifications are enabled':'Get alerts about enquiries and activity'}</small></span><button type="button" role="switch" aria-checked={pushEnabled} disabled={pushBusy||!notificationService.isPushSupported()} onClick={togglePush} className={'dl-settings-switch'+(pushEnabled?' active':'')}><span/></button></div>
+    <div className="dl-settings-toggle-row"><span className="dl-settings-row-icon"><Bell size={17}/></span><span className="dl-settings-row-copy"><strong>Push notifications</strong><small>{permission==='denied'?'Blocked':pushEnabled?'On':'Off'} · Manage your Lotlé alerts</small></span><button type="button" role="switch" aria-checked={pushEnabled} disabled={pushBusy||!notificationService.isPushSupported()} onClick={togglePush} className={'dl-settings-switch'+(pushEnabled?' active':'')}><span/></button></div>
+    <button type="button" onClick={()=>navigate('/app/notifications')} className="dl-settings-help flex w-full items-center justify-between text-left">Manage notification categories and quiet hours <ChevronRight size={15}/></button>
     {permission==='denied'&&<p className="dl-settings-help">Notifications are blocked by your browser. Open your browser or device Settings → Site settings → Notifications, allow {name}, then return here and switch notifications on.</p>}
     {!notificationService.isPushSupported()&&<p className="dl-settings-help">This browser does not currently support push notifications. Try installing {name} to your home screen or use a supported browser.</p>}
    </section>
