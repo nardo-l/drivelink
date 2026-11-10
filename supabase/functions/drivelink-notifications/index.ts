@@ -290,7 +290,7 @@ async function createTestNotification(dealershipId: string, userId: string) {
   const { data: prefs } = await db.from("notification_preferences").select("*").eq("dealership_id", dealershipId).maybeSingle();
   const { data: subs } = await db.from("push_subscriptions").select("id,endpoint,p256dh,auth").eq("dealership_id", dealershipId);
   const result = await deliverOne({ id: data.id, dealership_id: dealershipId, category: "system", title: "Lotlé test notification", body: "Your Lotlé push and in-app notifications are connected.", data: { eventId: "test_notification", priority: "urgent", url: "/app/notifications", channels: ["push", "in_app"] } }, prefs || {}, subs || []);
-  return { ok: true, pushSent: result.sent };
+  return { ok: true, pushSent: result.sent, pushReady, deviceCount: subs?.length || 0 };
 }
 
 Deno.serve(async (req: Request) => {
