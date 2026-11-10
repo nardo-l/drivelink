@@ -74,7 +74,7 @@ returns trigger
 language plpgsql
 security definer
 set search_path = ''
-as $function$capture$
+as $function$
 declare
   v_dealership_id uuid;
   v_event_type text;
