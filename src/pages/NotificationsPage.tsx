@@ -1,5 +1,5 @@
 import { name } from '../config/brand';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { ArrowLeft, Bell, BellOff, CheckCheck, ShieldCheck, Clock3, Send, Loader2 } from 'lucide-react';
 import { useNavigation } from '../context/NavigationContext';
 import { storageService } from '../services/storage';
@@ -38,6 +38,7 @@ export const NotificationsPage: React.FC = () => {
   const [busy, setBusy] = useState(false);
   const [testBusy, setTestBusy] = useState(false);
   const [error, setError] = useState('');
+  const deepLinkHandled = useRef(false);
   const iosInstallRequired = notificationService.isIOSInstallRequired();
 
   const load = async () => {
@@ -160,11 +161,20 @@ export const NotificationsPage: React.FC = () => {
 
   useEffect(() => {
     const query = window.location.hash.split('?')[1] || window.location.search.slice(1);
-    const notificationId = new URLSearchParams(query).get('notificationId');
-    if (!notificationId || !dealershipId) return;
-    const item = items.find(row => row.id === notificationId);
-    if (item) void openNotification(item);
-  }, [dealershipId, items]);
+    const params = new URLSearchParams(query);
+    const ids = (params.get('notificationIds') || params.get('notificationId') || '').split(',').filter(Boolean);
+    if (!ids.length || !dealershipId || !items.length || deepLinkHandled.current) return;
+    const item = items.find(row => ids.includes(row.id));
+    if (!item) return;
+    deepLinkHandled.current = true;
+    void (async () => {
+      await Promise.all(ids.map(id => notificationService.markRead(id).catch(() => undefined)));
+      setItems(current => current.map(row => ids.includes(row.id) ? { ...row, read_at: row.read_at || new Date().toISOString() } : row));
+      window.dispatchEvent(new Event('lotle:notifications-updated'));
+      const target = params.get('target') || (typeof item.data?.url === 'string' ? item.data.url : '/app/enquiries');
+      navigate(target);
+    })();
+  }, [dealershipId, items, navigate]);
 
   const permissionLabel = permission === 'granted' && pushEnabled ? 'On' : permission === 'denied' ? 'Blocked' : 'Off';
 
