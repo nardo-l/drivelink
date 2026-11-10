@@ -208,7 +208,7 @@ async function deliverOne(notification: any, prefs: Record<string, unknown>, sub
       await webpush.sendNotification({ endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } }, JSON.stringify({
         title: notification.title, body: notification.body,
         data: { ...notification.data, notificationId: notification.id, url: notification.data?.url || "/app/notifications" },
-        tag: notification.data?.eventId || notification.category, renotify: false,
+        tag: notification.data?.eventId === "new_enquiry" ? "lotle-enquiries-" + notification.dealership_id : (notification.data?.eventId || notification.category), renotify: false,
       }));
       await recordAttempt(notification.id, sub.id, attemptNumber, "sent", 201, null, null);
       await db.from("push_subscriptions").update({ last_success_at: new Date().toISOString(), last_error: null }).eq("id", sub.id);
@@ -243,21 +243,26 @@ async function deliverPendingPush() {
     if (handled.has(notification.id)) continue;
     const { data: prefs } = await db.from("notification_preferences").select("*").eq("dealership_id", notification.dealership_id).maybeSingle();
     const { data: subscriptions } = await db.from("push_subscriptions").select("id,endpoint,p256dh,auth").eq("dealership_id", notification.dealership_id);
+    let pushNotification = notification;
     if (notification.data?.eventId === "new_enquiry") {
       const windowStart = new Date(Date.now() - 10 * 60 * 1000).toISOString();
-      const group = (pending || []).filter((row: any) => row.dealership_id === notification.dealership_id && row.data?.eventId === "new_enquiry" && row.created_at >= windowStart && !handled.has(row.id));
-      if (group.length >= 3 && preferenceAllows(prefs || {}, notification) && canSendPushNow(prefs || {}, notification)) {
-        const groupPayload = { ...notification, title: group.length + " new enquiries", body: group.length + " buyers have asked about vehicles in your Lotlé showroom.", data: { eventId: "new_enquiry", priority: "urgent", url: "/app/enquiries", notificationIds: group.map((x: any) => x.id) } };
-        const result = await deliverOne(groupPayload, prefs || {}, subscriptions || []);
-        sent += result.sent; removed += result.removed; batched++;
-        for (const row of group) {
-          handled.add(row.id);
-          await db.from("notifications").update({ push_sent_at: new Date().toISOString(), push_attempted_at: new Date().toISOString() }).eq("id", row.id);
-        }
-        continue;
+      const { data: recentEnquiries } = await db.from("notifications").select("id")
+        .eq("dealership_id", notification.dealership_id)
+        .contains("data", { eventId: "new_enquiry" })
+        .gte("created_at", windowStart)
+        .order("created_at", { ascending: true });
+      if ((recentEnquiries || []).length >= 3) {
+        const ids = (recentEnquiries || []).map((row: any) => row.id);
+        pushNotification = {
+          ...notification,
+          title: ids.length + " new enquiries",
+          body: ids.length + " buyers have asked about vehicles in your Lotlé showroom.",
+          data: { ...notification.data, url: "/app/enquiries", notificationIds: ids },
+        };
+        batched++;
       }
     }
-    const result = await deliverOne(notification, prefs || {}, subscriptions || []);
+    const result = await deliverOne(pushNotification, prefs || {}, subscriptions || []);
     sent += result.sent; removed += result.removed; handled.add(notification.id);
   }
   return { pending: pending?.length || 0, sent, removed, batched };
@@ -275,7 +280,7 @@ async function authenticateRequest(req: Request) {
 async function createTestNotification(dealershipId: string, userId: string) {
   const { data: dealer } = await db.from("dealerships").select("id,user_id").eq("id", dealershipId).maybeSingle();
   if (!dealer || dealer.user_id !== userId) return { error: "You do not have access to this dealership." };
-  const key = "test_notification:" + new Date().toISOString().slice(0, 16);
+  const key = "test_notification:" + new Date().toISOString();
   const { data, error } = await db.from("notifications").insert({
     dealership_id: dealershipId, category: "system", title: "Lotlé test notification",
     body: "Your Lotlé push and in-app notifications are connected.",
