@@ -1,4 +1,4 @@
-export type VehicleStatus = 'available' | 'reserved' | 'sold' | 'draft';
+export type VehicleStatus = 'available' | 'reserved' | 'sold' | 'draft' | 'hidden';
 export type TransmissionType = 'Automatic' | 'Manual';
 export type FuelType = 'Hybrid' | 'Petrol' | 'Diesel' | 'Electric';
 export type StorefrontTemplate = 'signature' | 'inventory_first' | 'independent';
