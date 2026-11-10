@@ -17,6 +17,8 @@ export interface NotificationPreferences {
   showroom_activity: boolean;
   subscription_reminders: boolean;
   push_enabled: boolean;
+  quiet_hours_start: string | null;
+  quiet_hours_end: string | null;
 }
 
 const vapidPublicKey = (import.meta.env.VITE_VAPID_PUBLIC_KEY as string | undefined)?.trim();
@@ -41,12 +43,20 @@ export const notificationService = {
       vehicle_reminders: data?.vehicle_reminders ?? true, share_reminders: data?.share_reminders ?? true,
       showroom_activity: data?.showroom_activity ?? true, subscription_reminders: data?.subscription_reminders ?? true,
       push_enabled: data?.push_enabled ?? true,
+      quiet_hours_start: data?.quiet_hours_start ?? null,
+      quiet_hours_end: data?.quiet_hours_end ?? null,
     };
   },
   async updatePreferences(dealershipId: string, updates: Partial<NotificationPreferences>): Promise<void> {
     const { error } = await (supabase as any).from('notification_preferences')
       .upsert({ dealership_id: dealershipId, ...updates, updated_at: new Date().toISOString() }, { onConflict: 'dealership_id' });
     if (error) throw error;
+  },
+  async sendTestNotification(dealershipId: string): Promise<{ pushSent: number }> {
+    const { data, error } = await supabase.functions.invoke('drivelink-notifications', { body: { action: 'test', dealershipId } });
+    if (error) throw error;
+    if (data?.error) throw new Error(String(data.error));
+    return { pushSent: Number(data?.pushSent || 0) };
   },
   async unreadCount(dealershipId: string): Promise<number> {
     const { count, error } = await (supabase as any).from('notifications').select('id', { count: 'exact', head: true })
@@ -69,11 +79,18 @@ export const notificationService = {
     });
     if (error) throw error;
   },
-  isPushSupported(): boolean {
-    if (typeof window === 'undefined' || !('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window)) return false;
+  isIOSInstallRequired(): boolean {
+    if (typeof window === 'undefined') return false;
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
     const installed = (window.matchMedia?.('(display-mode: standalone)').matches ?? false) || (navigator as any).standalone === true;
-    return !(isIOS && !installed);
+    return isIOS && !installed;
+  },
+  getPermissionState(): NotificationPermission | 'unsupported' {
+    return typeof Notification === 'undefined' ? 'unsupported' : Notification.permission;
+  },
+  isPushSupported(): boolean {
+    if (typeof window === 'undefined' || !('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window)) return false;
+    return !this.isIOSInstallRequired();
   },
   async enablePush(dealershipId: string, requestPermission = true): Promise<void> {
     if (!this.isPushSupported()) throw new Error('This browser does not support Web Push in its current mode.');
