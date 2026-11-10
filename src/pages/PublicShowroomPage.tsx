@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   CalendarDays, Camera, CarFront, Fuel, Gauge, Heart, Home, MapPin, Phone,
   Search, Share2, SlidersHorizontal, X, Menu, MessageCircle, ChevronRight,
-  Clock3, Settings2, Check, ArrowUpRight
+  Clock3, ArrowUpRight
 } from 'lucide-react';
 import { useNavigation } from '../context/NavigationContext';
 import { storageService } from '../services/storage';
@@ -179,7 +179,39 @@ export const PublicShowroomPage: React.FC<PublicShowroomPageProps> = ({ slug, pr
     if (!canonical) canonical = document.head.appendChild(document.createElement('link'));
     canonical.rel = 'canonical';
     canonical.href = absoluteUrl('/' + encodeURIComponent(dealer.slug));
-    return () => { document.title = homeTitle; };
+    const jsonLd = {
+      '@context': 'https://schema.org',
+      '@type': 'AutoDealer',
+      name: dealer.name,
+      url: canonical.href,
+      image: shareImage ? [shareImage] : undefined,
+      telephone: dealer.phone || undefined,
+      address: {
+        '@type': 'PostalAddress',
+        streetAddress: dealer.address || undefined,
+        addressLocality: dealer.city || undefined,
+        addressCountry: dealer.country || undefined,
+      },
+      makesOffer: vehicles.filter(vehicle => vehicle.status === 'available').map(vehicle => ({
+        '@type': 'Offer',
+        itemOffered: { '@type': 'Car', name: [vehicle.year, vehicle.make, vehicle.model].filter(Boolean).join(' ') },
+        price: vehicle.price,
+        priceCurrency: vehicle.currency || dealer.currency,
+        url: absoluteUrl('/' + encodeURIComponent(dealer.slug) + '/vehicle/' + vehicle.id),
+      })),
+    };
+    let structuredData = document.querySelector('#dl-public-showroom-jsonld') as HTMLScriptElement | null;
+    if (!structuredData) {
+      structuredData = document.createElement('script');
+      structuredData.id = 'dl-public-showroom-jsonld';
+      structuredData.type = 'application/ld+json';
+      document.head.appendChild(structuredData);
+    }
+    structuredData.textContent = JSON.stringify(jsonLd);
+    return () => {
+      document.title = homeTitle;
+      document.querySelector('#dl-public-showroom-jsonld')?.remove();
+    };
   }, [dealer, vehicles]);
 
   if (loading) return <main className="dl-public-showroom"><div className="dl-ps-loading"><span /></div></main>;
