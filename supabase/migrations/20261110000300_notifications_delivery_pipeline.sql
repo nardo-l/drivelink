@@ -53,7 +53,7 @@ begin
       'subscription',
       'Payment confirmed',
       'Your Lotlé payment of ' || payment_amount || ' ' || coalesce(new.currency, 'USD') || ' was confirmed.',
-      jsonb_build_object('url', '/app/billing', 'eventId', 'payment_confirmed', 'paymentId', new.id),
+      jsonb_build_object('url', '/app/billing', 'eventId', 'payment_confirmed', 'paymentId', new.id, 'priority', 'urgent', 'channels', jsonb_build_array('push', 'in_app')),
       'payment_confirmed:' || new.id::text
     )
     on conflict (dealership_id, dedupe_key) do nothing;
@@ -103,7 +103,8 @@ begin
       'eventId', 'new_enquiry',
       'entityId', v_entity_id,
       'url', '/app/enquiries?enquiry=' || v_entity_id,
-      'priority', 'urgent'
+      'priority', 'urgent',
+      'channels', jsonb_build_array('push', 'in_app')
     );
   elsif tg_table_name = 'vehicles' then
     v_dealership_id := new.dealership_id;
