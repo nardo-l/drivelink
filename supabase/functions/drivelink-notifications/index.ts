@@ -47,7 +47,7 @@ async function insertEventNotification(dealershipId: string, eventId: string, en
     category: categoryForDb(event.category),
     title: event.title,
     body: event.body(values),
-    data: { eventId, entityId, url: event.link({ ...values, id: entityId }), priority: event.priority },
+    data: { eventId, entityId, url: event.link({ ...values, id: entityId }), priority: event.priority, channels: event.channels },
     dedupe_key: key,
   };
   const { data, error } = await db.from("notifications").upsert(row, {
@@ -175,10 +175,14 @@ async function deliverOne(notification: any, prefs: Record<string, unknown>, sub
   if (!canSendPushNow(prefs, notification)) return { sent: 0, removed: 0 };
   if (!urgent) {
     const dayStart = harareDayStart();
-    const { data: recent } = await db.from("notifications").select("id,data,category")
-      .eq("dealership_id", notification.dealership_id).not("push_sent_at", "is", null).gte("push_sent_at", dayStart);
-    const count = (recent || []).filter((row: any) => !isUrgent(row)).length;
-    if (count >= NON_URGENT_PUSH_DAILY_LIMIT) return { sent: 0, removed: 0 };
+    const { data: recentAttempts } = await db.from("notification_attempts")
+      .select("notification_id,notifications!inner(id,data,category,dealership_id)")
+      .eq("status", "sent").gte("attempted_at", dayStart)
+      .eq("notifications.dealership_id", notification.dealership_id);
+    const alreadySent = new Set((recentAttempts || [])
+      .filter((row: any) => !isUrgent(row.notifications))
+      .map((row: any) => row.notification_id));
+    if (alreadySent.size >= NON_URGENT_PUSH_DAILY_LIMIT) return { sent: 0, removed: 0 };
   }
   if (!pushReady || !subscriptions.length) return { sent: 0, removed: 0 };
   let sent = 0, removed = 0, allTerminal = true;
@@ -266,12 +270,12 @@ async function createTestNotification(dealershipId: string, userId: string) {
   const { data, error } = await db.from("notifications").insert({
     dealership_id: dealershipId, category: "system", title: "Lotlé test notification",
     body: "Your Lotlé push and in-app notifications are connected.",
-    data: { eventId: "test_notification", priority: "urgent", url: "/app/notifications" }, dedupe_key: key,
+    data: { eventId: "test_notification", priority: "urgent", url: "/app/notifications", channels: ["push", "in_app"] }, dedupe_key: key,
   }).select("id").single();
   if (error) return { error: error.message };
   const { data: prefs } = await db.from("notification_preferences").select("*").eq("dealership_id", dealershipId).maybeSingle();
   const { data: subs } = await db.from("push_subscriptions").select("id,endpoint,p256dh,auth").eq("dealership_id", dealershipId);
-  const result = await deliverOne({ id: data.id, dealership_id: dealershipId, category: "system", title: "Lotlé test notification", body: "Your Lotlé push and in-app notifications are connected.", data: { eventId: "test_notification", priority: "urgent", url: "/app/notifications" } }, prefs || {}, subs || []);
+  const result = await deliverOne({ id: data.id, dealership_id: dealershipId, category: "system", title: "Lotlé test notification", body: "Your Lotlé push and in-app notifications are connected.", data: { eventId: "test_notification", priority: "urgent", url: "/app/notifications", channels: ["push", "in_app"] } }, prefs || {}, subs || []);
   return { ok: true, pushSent: result.sent };
 }
 
