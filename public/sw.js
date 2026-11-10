@@ -35,10 +35,9 @@ self.addEventListener('push', (event) => {
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
   const data = event.notification.data || {};
-  const notificationId = data.notificationId;
+  const notificationIds = Array.isArray(data.notificationIds) ? data.notificationIds.join(',') : (data.notificationId || '');
   const path = data.url || '/app/notifications';
-  const encodedTarget = encodeURIComponent(path);
-  const target = '/#/app/notifications?notificationId=' + encodeURIComponent(notificationId || '') + '&target=' + encodedTarget;
+  const target = '/#/app/notifications?notificationIds=' + encodeURIComponent(notificationIds) + '&target=' + encodeURIComponent(path);
   event.waitUntil((async () => {
     const windows = await clients.matchAll({ type: 'window', includeUncontrolled: true });
     for (const client of windows) {
