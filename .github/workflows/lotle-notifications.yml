@@ -22,4 +22,6 @@ jobs:
           curl --fail-with-body --silent --show-error \
             -X POST \
             -H "x-notification-secret: $NOTIFICATION_CRON_SECRET" \
+            -H "Content-Type: application/json" \
+            --data '{"action":"scheduled"}' \
             "https://cimyerrelscqjiwqvnnn.supabase.co/functions/v1/drivelink-notifications"
