@@ -91,7 +91,9 @@ function preferenceAllows(prefs: Record<string, unknown>, notification: any) {
 }
 function isUrgent(notification: any) {
   const eventId = String(notification.data?.eventId || "");
-  return ["new_enquiry", "payment_confirmed", "pro_trial_ending", "pro_renewal_due"].includes(eventId)
+  const event = NOTIFICATION_EVENTS[eventId];
+  return event?.priority === "urgent" || eventId === "test_notification"
+    || ["new_enquiry", "payment_confirmed", "pro_trial_ending", "pro_renewal_due"].includes(eventId)
     || (notification.category === "enquiry" && !String(notification.title).toLowerCase().includes("waiting"));
 }
 
