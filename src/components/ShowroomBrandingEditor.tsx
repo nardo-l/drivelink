@@ -226,15 +226,16 @@ export const ShowroomBrandingEditor: React.FC<ShowroomBrandingEditorProps> = ({
         <div className="sb-preview-logo">{logo.url ? <img src={logo.url} alt="" /> : <span>{initials}</span>}</div>
         <div><strong>{dealershipName || 'Your dealership'}</strong><small>{city || 'Your city'}</small></div>
       </div>
-      <div className="sb-preview-intro">
+      <div className="sb-preview-hero" style={banner.url ? { backgroundImage: 'linear-gradient(90deg,#fff 0%,#fff 34%,rgba(255,255,255,.88) 58%,rgba(255,255,255,0) 82%),linear-gradient(0deg,#fff,transparent 38%),url("' + banner.url + '")' } : undefined}>
         <h3>{tagline.trim() || 'Find your next car.'}</h3>
         <p>0 cars available · {city || 'Your city'}</p>
-        <span>WhatsApp</span><span>Call</span>
+        <span>Browse inventory</span>
       </div>
       <div className="sb-preview-caption">Live showroom preview</div>
     </div>
     <div className="sb-upload-list">
       {renderUpload('logo', 'Logo', 'Square, at least 400x400px. PNG or JPG.')}
+      {renderUpload('banner', 'Showroom banner', 'This wide image appears at the top of your showroom.')}
     </div>
     {cropKind && cropImage && <div className="sb-crop-backdrop" role="dialog" aria-modal="true" aria-label={"Crop " + cropKind}>
       <div className="sb-crop-sheet">
