@@ -177,7 +177,7 @@ export const VehiclesListPage: React.FC = () => {
   };
 
   const statusLabel: Record<string, string> = { available: 'Available', reserved: 'Reserved', sold: 'Sold', draft: 'Draft', hidden: 'Hidden' };
-  const imageSource = (url: string) => { try { const parsed = new URL(url); if (!parsed.pathname.includes('/storage/v1/object/public/')) return url; parsed.pathname = parsed.pathname.replace('/storage/v1/object/public/', '/storage/v1/render/image/public/'); parsed.searchParams.set('width', '800'); parsed.searchParams.set('height', '1000'); parsed.searchParams.set('resize', 'cover'); parsed.searchParams.set('quality', '78'); parsed.searchParams.set('format', 'webp'); return parsed.toString(); } catch { return url; } };
+  const imageSource = (url: string) => url;
 
   return (
     <div className="dl-workspace garage-page min-h-full flex flex-col" onClick={() => menuId && setMenuId(null)}>
