@@ -33,7 +33,7 @@ export const notificationService = {
     const { data, error } = await (supabase as any).from('notifications').select('id,category,title,body,data,read_at,created_at')
       .eq('dealership_id', dealershipId).order('created_at', { ascending: false }).limit(limit);
     if (error) throw error;
-    return (data || []) as LotleNotification[];
+    return ((data || []) as LotleNotification[]).filter(row => !Array.isArray(row.data?.channels) || row.data.channels.includes('in_app'));
   },
   async getPreferences(dealershipId: string): Promise<NotificationPreferences> {
     const { data, error } = await (supabase as any).from('notification_preferences').select('*').eq('dealership_id', dealershipId).maybeSingle();
@@ -64,10 +64,15 @@ export const notificationService = {
     return { pushSent: Number(data?.pushSent || 0) };
   },
   async unreadCount(dealershipId: string): Promise<number> {
-    const { count, error } = await (supabase as any).from('notifications').select('id', { count: 'exact', head: true })
+    const { data, error } = await (supabase as any).from('notifications').select('id,data')
       .eq('dealership_id', dealershipId).is('read_at', null);
     if (error) throw error;
-    return count || 0;
+    return (data || []).filter((row: any) => !Array.isArray(row.data?.channels) || row.data.channels.includes('in_app')).length;
+  },
+  async getById(id: string): Promise<LotleNotification | null> {
+    const { data, error } = await (supabase as any).from('notifications').select('id,category,title,body,data,read_at,created_at').eq('id', id).maybeSingle();
+    if (error) throw error;
+    return data as LotleNotification | null;
   },
   async unreadEnquiryCount(dealershipId: string): Promise<number> {
     const { count, error } = await (supabase as any).from('notifications').select('id', { count: 'exact', head: true })
