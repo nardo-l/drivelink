@@ -675,7 +675,7 @@ export const supabaseService = {
     return data;
   },
 
-  async uploadVehiclePhoto(dealershipId: string, file: File, _uploadSessionId: string, photoIndex: number, isCover: boolean): Promise<string> {
+  async uploadVehiclePhoto(dealershipId: string, file: File, photoIndex: number, isCover: boolean): Promise<string> {
     const bucket = 'vehicle-photos';
     if (!isSupabaseConfigured()) throw new Error('Supabase Storage is not configured.');
 
