@@ -37,7 +37,7 @@ export const SettingsPage:React.FC=()=>{
  const [slugAvailability,setSlugAvailability]=useState<'idle'|'checking'|'available'|'taken'>('idle');
  const logoInput=useRef<HTMLInputElement>(null),bannerInput=useRef<HTMLInputElement>(null);
  const initials=useMemo(()=>dealer.name.trim().split(/\\s+/).filter(Boolean).slice(0,2).map(x=>x[0]).join('').toUpperCase()||'DL',[dealer.name]);
- const showroomUrl=typeof window!=='undefined'?`${window.location.origin}/showroom/${encodeURIComponent(dealer.slug)}`:'';
+ const showroomUrl=typeof window!=='undefined'?`${window.location.origin}/${encodeURIComponent(dealer.slug)}`:'';
 
  useEffect(()=>{let live=true;(async()=>{try{const latest=await storageService.getDealershipAsync();if(live){setDealer(latest);setDraft({name:latest.name,city:latest.city,address:latest.address||'',phone:latest.phone,whatsapp:latest.whatsapp});}}catch(e){console.warn('Settings profile refresh failed',e);}})();return()=>{live=false;};},[]);
  useEffect(()=>{notificationService.isPushEnabled().then(setPushEnabled).catch(()=>setPushEnabled(false));planService.getMyPlan().then(snapshot=>setPlanStatus(snapshot.plan==='pro'?(snapshot.subscription_status==='active'?'Lotlé Pro':'Pro trial'):'Free plan')).catch(()=>setPlanStatus('Plan details unavailable'));},[]);
