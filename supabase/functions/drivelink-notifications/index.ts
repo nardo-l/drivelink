@@ -282,6 +282,15 @@ Deno.serve(async (req: Request) => {
   if (!auth) return json({ error: "Unauthorized" }, 401);
   let body: Record<string, unknown> = {};
   try { body = await req.json(); } catch { return json({ error: "Invalid request body" }, 400); }
+  if (body.action === "plan_limit_reached") {
+    if (auth.kind !== "user" || typeof body.dealershipId !== "string") return json({ error: "Authentication required" }, 401);
+    const { data: dealer } = await db.from("dealerships").select("id,user_id").eq("id", body.dealershipId).maybeSingle();
+    if (!dealer || dealer.user_id !== auth.userId) return json({ error: "You do not have access to this dealership." }, 403);
+    try {
+      const id = await insertEventNotification(dealer.id, "plan_limit_reached", String(body.limitKey || "limit"), { message: String(body.message || "You have reached your current plan limit.") }, String(body.limitKey || "limit"));
+      return json({ ok: true, created: Boolean(id) });
+    } catch (error) { console.error("Lotlé plan limit notification failed", error); return json({ error: "Could not create notification" }, 500); }
+  }
   if (body.action === "test") {
     if (auth.kind !== "user" || typeof body.dealershipId !== "string") return json({ error: "Authentication required" }, 401);
     const result = await createTestNotification(body.dealershipId, auth.userId!);
