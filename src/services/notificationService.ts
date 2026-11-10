@@ -57,11 +57,11 @@ export const notificationService = {
     if (error) throw error;
     if (data?.error) throw new Error(String(data.error));
   },
-  async sendTestNotification(dealershipId: string): Promise<{ pushSent: number }> {
+  async sendTestNotification(dealershipId: string): Promise<{ pushSent: number; pushReady: boolean; deviceCount: number }> {
     const { data, error } = await supabase.functions.invoke('drivelink-notifications', { body: { action: 'test', dealershipId } });
     if (error) throw error;
     if (data?.error) throw new Error(String(data.error));
-    return { pushSent: Number(data?.pushSent || 0) };
+    return { pushSent: Number(data?.pushSent || 0), pushReady: Boolean(data?.pushReady), deviceCount: Number(data?.deviceCount || 0) };
   },
   async unreadCount(dealershipId: string): Promise<number> {
     const { data, error } = await (supabase as any).from('notifications').select('id,data')
