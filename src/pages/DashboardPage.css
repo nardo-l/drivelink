@@ -6,7 +6,7 @@
 .dl-share-pill{height:38px;padding:0 14px;border:0;border-radius:999px;background:#0A0F1E;color:#fff;display:inline-flex;align-items:center;justify-content:center;gap:7px;font-size:11px;font-weight:750;transition:transform .15s}
 .dl-share-pill:active{transform:scale(.96)}
 .dl-bell-button{position:relative;width:39px;height:39px;border:1px solid #e8ebef;border-radius:50%;background:#fff;color:#0A0F1E;display:grid;place-items:center}
-.dl-notification-dot{position:absolute;right:8px;top:7px;width:7px;height:7px;border:1.5px solid white;border-radius:50%;background:#0A0F1E}
+.dl-notification-dot{position:absolute;right:-5px;top:-5px;min-width:16px;height:16px;padding:0 4px;border:1.5px solid white;border-radius:999px;background:#0A0F1E;color:#fff;display:grid;place-items:center;font-size:9px;line-height:1;font-weight:800}
 .dl-inventory-card{width:100%;display:flex;align-items:center;gap:13px;background:#fff;border:1px solid #e9edf1;border-radius:20px;padding:13px;box-shadow:0 5px 18px rgba(15,23,42,.035);text-align:left;animation:dl-card-in .4s ease both}
 .dl-inventory-photo{width:82px;height:72px;flex-shrink:0;border-radius:14px;overflow:hidden;background:#f0f2f5;color:#9aa2ad;display:grid;place-items:center}
 .dl-inventory-photo img{width:100%;height:100%;object-fit:cover;object-position:center}
