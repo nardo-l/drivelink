@@ -80,7 +80,7 @@ export const SettingsPage:React.FC=()=>{
    </section>
 
    <section className="dl-settings-group"><h2>Showroom</h2>
-    <Row icon={Image} label="Dealership logo" value="Update your showroom logo" onClick={()=>openSheet('branding')}/>
+    <Row icon={Image} label="Dealership branding" value="Update your logo and showroom banner" onClick={()=>openSheet('branding')}/>
     <Row icon={Store} label="Dealership name" value={dealer.name} onClick={()=>openSheet('name')}/>
     <Row icon={Phone} label="Phone and WhatsApp number" value={dealer.phone||dealer.whatsapp||'Add contact numbers'} onClick={()=>openSheet('contact')}/>
     <Row icon={MapPin} label="Location" value={[dealer.city,dealer.address].filter(Boolean).join(' · ')||'Add dealership location'} onClick={()=>openSheet('location')}/>
@@ -112,7 +112,7 @@ export const SettingsPage:React.FC=()=>{
   {sheet&&<div className="dl-settings-scrim" role="presentation" onMouseDown={e=>{if(e.target===e.currentTarget&&!saving&&!uploading)setSheet(null);}}>
    <section className="dl-settings-sheet" role="dialog" aria-modal="true" aria-labelledby="dl-settings-sheet-title">
     <div className="dl-settings-sheet-handle"/>
-    <div className="dl-settings-sheet-heading"><h2 id="dl-settings-sheet-title">{({profile:'Edit dealership profile',branding:'Dealership logo',name:'Dealership name',slug:'Edit showroom link',contact:'Contact numbers',location:'Dealership location',hours:'Opening hours',terms:'Terms',privacy:'Privacy',logout:'Log out?',delete:'Delete account'} as Record<string,string>)[sheet]}</h2><button type="button" onClick={()=>setSheet(null)} aria-label="Close" disabled={saving||!!uploading}><X size={18}/></button></div>
+    <div className="dl-settings-sheet-heading"><h2 id="dl-settings-sheet-title">{({profile:'Edit dealership profile',branding:'Dealership branding',name:'Dealership name',slug:'Edit showroom link',contact:'Contact numbers',location:'Dealership location',hours:'Opening hours',terms:'Terms',privacy:'Privacy',logout:'Log out?',delete:'Delete account'} as Record<string,string>)[sheet]}</h2><button type="button" onClick={()=>setSheet(null)} aria-label="Close" disabled={saving||!!uploading}><X size={18}/></button></div>
     {(sheet==='profile'||sheet==='name'||sheet==='contact'||sheet==='location')&&<div className="dl-settings-sheet-body">
      {(sheet==='profile'||sheet==='name')&&<label>Dealership name<input value={draft.name} onChange={e=>setDraft(v=>({...v,name:e.target.value}))} maxLength={90}/></label>}
      {(sheet==='profile'||sheet==='contact')&&<><label>Phone number<input type="tel" value={draft.phone} onChange={e=>setDraft(v=>({...v,phone:e.target.value}))} placeholder="+263…"/></label><label>WhatsApp number<input type="tel" value={draft.whatsapp} onChange={e=>setDraft(v=>({...v,whatsapp:e.target.value}))} placeholder="+263…"/></label></>}
