@@ -76,7 +76,8 @@ function canSendPushNow(prefs: Record<string, unknown>, notification: any, date 
   if (isInsideTimeRange(prefs.quiet_hours_start as string | null, prefs.quiet_hours_end as string | null, date)) return false;
   const eventId = String(notification.data?.eventId || "");
   const event = NOTIFICATION_EVENTS[eventId];
-  if (event?.timing === "scheduled") {
+  const immediate = event?.timing === "immediate" || eventId === "new_enquiry" || eventId === "payment_confirmed";
+  if (!immediate) {
     const hour = harareHour(date);
     if (hour < HARARE_TIMED_SEND_START_HOUR || hour >= HARARE_TIMED_SEND_END_HOUR) return false;
   }
