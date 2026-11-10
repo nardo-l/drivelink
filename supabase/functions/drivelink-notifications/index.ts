@@ -41,6 +41,11 @@ const categoryForDb = (category: string) => ({
 async function insertEventNotification(dealershipId: string, eventId: string, entityId: string, values: Record<string, string | number>, occurrence = "") {
   const event = NOTIFICATION_EVENTS[eventId];
   if (!event) throw new Error("Unknown notification event: " + eventId);
+  if (eventId !== "payment_confirmed") {
+    const { data: prefs } = await db.from("notification_preferences").select("*").eq("dealership_id", dealershipId).maybeSingle();
+    const preferenceFields = NOTIFICATION_PREFERENCE_COLUMNS[event.category] || [];
+    if (preferenceFields.some((field) => prefs?.[field] === false)) return null;
+  }
   const key = event.dedupe(entityId, occurrence || undefined);
   const row = {
     dealership_id: dealershipId,
@@ -100,6 +105,7 @@ function isUrgent(notification: any) {
 async function createScheduledNotifications() {
   const now = new Date();
   const nowIso = now.toISOString();
+  const timedWindow = harareHour(now) >= HARARE_TIMED_SEND_START_HOUR && harareHour(now) < HARARE_TIMED_SEND_END_HOUR;
   const { data: dealers, error } = await db.from("dealerships").select("id,created_at");
   if (error) throw error;
   let created = 0;
@@ -113,10 +119,10 @@ async function createScheduledNotifications() {
     ]);
     const preferences = prefs || {};
     const activeVehicles = vehicles || [];
-    if (!activeVehicles.length && now.getTime() - new Date(dealer.created_at).getTime() >= 24 * 60 * 60 * 1000) {
+    if (timedWindow && !activeVehicles.length && now.getTime() - new Date(dealer.created_at).getTime() >= 24 * 60 * 60 * 1000) {
       if (await insertEventNotification(dealer.id, "add_first_car", dealer.id, {})) created++;
     }
-    for (const enquiry of enquiries || []) {
+    for (const enquiry of (timedWindow ? enquiries : []) || []) {
       let vehicleLabel = "vehicle";
       if (enquiry.vehicle_id) {
         const { data: vehicle } = await db.from("vehicles").select("year,make,model").eq("id", enquiry.vehicle_id).maybeSingle();
@@ -124,7 +130,7 @@ async function createScheduledNotifications() {
       }
       if (await insertEventNotification(dealer.id, "unanswered_enquiry", enquiry.id, { buyer: enquiry.buyer_name || "A buyer", vehicle: vehicleLabel, id: enquiry.id })) created++;
     }
-    if (subscription?.status === "trial" && subscription.trial_ends_at) {
+    if (timedWindow && subscription?.status === "trial" && subscription.trial_ends_at) {
       const remaining = new Date(subscription.trial_ends_at).getTime() - now.getTime();
       if (remaining <= 72 * 60 * 60 * 1000 && remaining > 48 * 60 * 60 * 1000) {
         if (await insertEventNotification(dealer.id, "pro_trial_ending", dealer.id, { when: "Your Pro trial ends in 3 days" }, "3d")) created++;
@@ -133,7 +139,7 @@ async function createScheduledNotifications() {
         if (await insertEventNotification(dealer.id, "pro_trial_ending", dealer.id, { when: "Your Pro trial ends today" }, "last_day")) created++;
       }
     }
-    if (subscription?.status === "active" && subscription.current_period_end) {
+    if (timedWindow && subscription?.status === "active" && subscription.current_period_end) {
       const end = new Date(subscription.current_period_end);
       const remaining = end.getTime() - now.getTime();
       if (remaining <= 5 * 24 * 60 * 60 * 1000 && remaining > 4 * 24 * 60 * 60 * 1000) {
@@ -143,7 +149,7 @@ async function createScheduledNotifications() {
         if (await insertEventNotification(dealer.id, "pro_renewal_due", dealer.id, { when: "Your Pro renewal is due today" }, "due_day")) created++;
       }
     }
-    for (const payment of payments || []) {
+    for (const payment of (timedWindow ? payments : []) || []) {
       if (await insertEventNotification(dealer.id, "payment_pending", payment.id, { amount: payment.amount, currency: payment.currency }, "15m")) created++;
     }
     if (harareWeekday(now) === "Mon" && harareHour(now) === 8 && harareMinute(now) === 0) {
