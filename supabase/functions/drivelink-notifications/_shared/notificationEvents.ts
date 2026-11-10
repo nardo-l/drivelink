@@ -92,7 +92,7 @@ export const NOTIFICATION_EVENTS: Record<string, NotificationEventDefinition> = 
 
 export const NOTIFICATION_PREFERENCE_COLUMNS: Record<NotificationCategory, string[]> = {
   enquiries: ['new_enquiries'],
-  reminders: ['vehicle_reminders', 'share_reminders'],
+  reminders: ['vehicle_reminders', 'share_reminders', 'showroom_activity'],
   summaries: ['daily_summary'],
   account_billing: ['subscription_reminders'],
 };
