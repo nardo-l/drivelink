@@ -168,7 +168,8 @@ async function recordAttempt(notificationId: string, subscriptionId: string, att
 }
 async function deliverOne(notification: any, prefs: Record<string, unknown>, subscriptions: any[]) {
   if (!preferenceAllows(prefs, notification)) {
-    await db.from("notifications").update({ push_attempted_at: new Date().toISOString() }).eq("id", notification.id);
+    const now = new Date().toISOString();
+    await db.from("notifications").update({ push_sent_at: now, push_attempted_at: now }).eq("id", notification.id);
     return { sent: 0, removed: 0 };
   }
   const urgent = isUrgent(notification);
