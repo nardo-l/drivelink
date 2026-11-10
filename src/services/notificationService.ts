@@ -64,6 +64,12 @@ export const notificationService = {
     if (error) throw error;
     return count || 0;
   },
+  async unreadEnquiryCount(dealershipId: string): Promise<number> {
+    const { count, error } = await (supabase as any).from('notifications').select('id', { count: 'exact', head: true })
+      .eq('dealership_id', dealershipId).eq('category', 'enquiry').is('read_at', null);
+    if (error) throw error;
+    return count || 0;
+  },
   async markRead(id: string): Promise<void> {
     const { error } = await (supabase as any).from('notifications').update({ read_at: new Date().toISOString() }).eq('id', id);
     if (error) throw error;
