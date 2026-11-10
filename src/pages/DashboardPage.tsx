@@ -46,10 +46,7 @@ export const DashboardPage: React.FC = () => {
         storageService.getEnquiriesAsync(),
       ]);
       setDealership(d); setVehicles(v); setEnquiries(e);
-      if (isLive) {
-        const unread = await notificationService.unreadCount(d.id);
-        setUnreadNotifications(unread);
-      }
+      if (isLive) void notificationService.unreadCount(d.id).then(setUnreadNotifications).catch(() => setUnreadNotifications(0));
     } catch (error: any) {
       setLoadError(error?.message || 'We could not load your dealership data.');
       if (isLive) { setVehicles([]); setEnquiries([]); }
