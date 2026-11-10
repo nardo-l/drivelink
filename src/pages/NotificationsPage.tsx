@@ -14,7 +14,7 @@ const categoryLabel: Record<string, string> = {
 };
 const categorySettings: { key: CategoryKey; label: string; description: string; fields: (keyof NotificationPreferences)[] }[] = [
   { key: 'enquiries', label: 'Enquiries', description: 'New buyer enquiries and unanswered-enquiry reminders.', fields: ['new_enquiries'] },
-  { key: 'reminders', label: 'Reminders', description: 'Inventory and showroom reminders.', fields: ['vehicle_reminders', 'share_reminders'] },
+  { key: 'reminders', label: 'Reminders', description: 'Inventory, sharing and showroom reminders.', fields: ['vehicle_reminders', 'share_reminders', 'showroom_activity'] },
   { key: 'summaries', label: 'Summaries', description: 'Your weekly showroom activity summary.', fields: ['daily_summary'] },
   { key: 'account_billing', label: 'Account and billing', description: 'Trial and renewal reminders. Payment confirmations always remain enabled.', fields: ['subscription_reminders'] },
 ];
