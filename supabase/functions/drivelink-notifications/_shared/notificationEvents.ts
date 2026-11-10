@@ -74,7 +74,7 @@ export const NOTIFICATION_EVENTS: Record<string, NotificationEventDefinition> = 
   },
   add_first_car: {
     id: 'add_first_car', category: 'reminders', channels: ['push'],
-    plans: ['free', 'pro'], priority: 'low', timing: 'scheduled',
+    plans: ['free', 'pro_trial', 'pro'], priority: 'low', timing: 'scheduled',
     dedupe: (id) => 'add_first_car:' + id,
     title: 'Add your first vehicle',
     body: () => 'Your Lotlé showroom is ready. Add your first vehicle so buyers can browse your stock.',
@@ -82,7 +82,7 @@ export const NOTIFICATION_EVENTS: Record<string, NotificationEventDefinition> = 
   },
   weekly_summary: {
     id: 'weekly_summary', category: 'summaries', channels: ['push', 'in_app'],
-    plans: ['free', 'pro'], priority: 'low', timing: 'scheduled',
+    plans: ['free', 'pro_trial', 'pro'], priority: 'low', timing: 'scheduled',
     dedupe: (id, occurrence) => 'weekly_summary:' + id + ':' + String(occurrence || 'week'),
     title: 'Your weekly showroom summary',
     body: (v) => 'Your showroom had ' + String(v.visits || 0) + ' visits and ' + String(v.enquiries || 0) + ' enquiries this week.',
