@@ -74,3 +74,9 @@
 .dl-settings-showroom-intro small{display:block;margin:5px 0 9px;color:#929aa5;font-size:9px}
 .dl-settings-showroom-intro span{display:inline-flex;margin-right:6px;padding:7px 11px;border-radius:999px;background:#10151d;color:#fff;font-size:8px;font-weight:800}
 .dl-settings-showroom-intro span+span{border:1px solid #e5e8ed;background:#fff;color:#10151d}
+
+.dl-settings-showroom-hero{position:relative;display:flex;min-height:124px;flex-direction:column;align-items:flex-start;justify-content:center;gap:6px;margin-top:10px;padding:12px;overflow:hidden;border-radius:12px;background-color:#f3f4f6;background-position:center;background-size:cover;background-repeat:no-repeat}
+.dl-settings-showroom-hero strong{max-width:60%;color:#0A0F1E;font-size:16px;line-height:1.08;letter-spacing:-.04em;font-weight:900}
+.dl-settings-showroom-hero small{max-width:60%;color:#737987;font-size:9px}
+.dl-settings-showroom-hero span{display:inline-flex;margin-top:3px;padding:7px 11px;border-radius:999px;background:#0A0F1E;color:#fff;font-size:8px;font-weight:800}
+.dl-settings-preview-caption{display:block;padding:8px 0 0;color:#89919d;font-size:9px;text-align:center}
