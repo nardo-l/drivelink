@@ -128,7 +128,7 @@ export const SettingsPage:React.FC=()=>{
      <div className="dl-settings-showroom-preview">
       <div className="dl-settings-showroom-head">{dealer.logoUrl?<img src={dealer.logoUrl} alt=""/>:<b>{initials}</b>}<span><strong>{dealer.name}</strong><small>{dealer.city||dealer.country}</small></span></div>
       <div className="dl-settings-showroom-hero" style={dealer.coverUrl?{backgroundImage:'linear-gradient(90deg,#fff 0%,#fff 34%,rgba(255,255,255,.88) 58%,rgba(255,255,255,0) 82%),linear-gradient(0deg,#fff,transparent 38%),url("'+dealer.coverUrl+'")'}:undefined}>
-       <strong>{dealer.tagline?.trim()||'Find your next car.'}</strong><small>0 cars available · {dealer.city||dealer.country}</small><span>Browse inventory</span>
+       <strong>{dealer.tagline?.trim() && dealer.tagline.trim() !== 'Quality vehicles. Fair prices.' ? dealer.tagline.trim() : 'Find your next car.'}</strong><small>0 cars available · {dealer.city||dealer.country}</small><span>Browse inventory</span>
       </div>
       <small className="dl-settings-preview-caption">Live showroom preview</small>
      </div>
