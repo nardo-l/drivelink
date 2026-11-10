@@ -230,13 +230,10 @@ export const PublicShowroomPage: React.FC<PublicShowroomPageProps> = ({ slug, pr
   const money = (v: Vehicle) => new Intl.NumberFormat('en-US', {
     style: 'currency', currency: v.currency || dealer.currency, maximumFractionDigits: 0,
   }).format(v.price);
-  const imageUrl = (source: string, width = 900, height = 1125) => {
-    if (!source) return '';
-    const clean = source.split('?')[0];
-    return clean.includes('/storage/v1/object/public/')
-      ? clean.replace('/storage/v1/object/public/', '/storage/v1/render/image/public/') + '?width=' + width + '&height=' + height + '&resize=cover&quality=82&format=webp'
-      : source;
-  };
+  // Use the exact public Storage URL saved with the vehicle. Rewriting it to
+  // /render/image/public can fail when image transformations are unavailable
+  // or the bucket does not support them, leaving both the hero and cards blank.
+  const imageUrl = (source: string, ..._dimensions: number[]) => source || '';
   const toggleSave = (id: string, event: React.MouseEvent) => {
     event.stopPropagation();
     setSaved(current => {
