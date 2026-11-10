@@ -52,6 +52,7 @@ export const EnquiriesPage: React.FC = () => {
   const [pullDistance, setPullDistance] = useState(0);
   const touchStart = useRef<{ x: number; y: number } | null>(null);
   const pullStartY = useRef<number | null>(null);
+  const openedDeepLink = useRef<string | null>(null);
 
   const load = useCallback(async (quiet = false) => {
     if (quiet) setRefreshing(true); else setLoading(true);
@@ -101,6 +102,14 @@ export const EnquiriesPage: React.FC = () => {
     setNotes(enquiry.notes || '');
     setSwipedId(null);
   };
+  useEffect(() => {
+    const enquiryId = new URLSearchParams(window.location.search).get('enquiry');
+    if (loading || !enquiryId || openedDeepLink.current === enquiryId) return;
+    const enquiry = leads.find(item => item.id === enquiryId);
+    if (!enquiry) return;
+    openedDeepLink.current = enquiryId;
+    open(enquiry);
+  }, [loading, leads]);
 
   const save = async (nextStage = stage) => {
     if (!active) return;
