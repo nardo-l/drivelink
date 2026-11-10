@@ -148,3 +148,7 @@
 @media (prefers-reduced-motion:reduce) {
  .dl-public-showroom *, .dl-public-showroom *:before, .dl-public-showroom *:after {scroll-behavior:auto!important;animation-duration:.01ms!important;transition-duration:.01ms!important;}
 }
+
+.dl-ps-filter-select{display:flex;min-width:0;flex-direction:column;gap:7px;color:#596170;font-size:11px;font-weight:650}
+.dl-ps-filter-select>span{font-size:11px}
+.dl-ps-filter-select>div{min-width:0}
