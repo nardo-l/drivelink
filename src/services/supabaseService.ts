@@ -39,6 +39,7 @@ export function mapDealershipFromRow(row: DealershipRow): Dealership {
     template: (row.template || 'signature') as StorefrontTemplate,
     logoUrl: row.logo_url || undefined,
     coverUrl: row.banner_url || row.cover_url || undefined,
+    bannerVideoUrl: (row as typeof row & { banner_video_url?: string | null }).banner_video_url || undefined,
     isVerified: row.is_verified,
     isPublished: row.is_published,
     storefrontViews: row.storefront_views || 0,
