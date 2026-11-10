@@ -132,7 +132,7 @@ export const NotificationsPage: React.FC = () => {
     try {
       const result = await notificationService.sendTestNotification(dealershipId);
       await load();
-      showToast(result.pushSent > 0 ? 'Test notification sent to your device' : 'In-app test saved. No active push device received it.');
+      showToast(result.pushSent > 0 ? 'Test notification sent to your device' : !result.pushReady ? 'In-app test saved. Server VAPID keys are not configured.' : result.deviceCount === 0 ? 'In-app test saved. This browser has no registered push device.' : 'In-app test saved. Check the notification delivery attempts for the push result.');
     } catch (err) {
       showToast(err instanceof Error ? err.message : 'Could not send test notification');
     } finally { setTestBusy(false); }
