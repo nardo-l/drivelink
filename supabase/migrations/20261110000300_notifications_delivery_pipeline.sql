@@ -74,7 +74,7 @@ returns trigger
 language plpgsql
 security definer
 set search_path = ''
-as $capture$
+as $function$capture$
 declare
   v_dealership_id uuid;
   v_event_type text;
@@ -143,7 +143,7 @@ begin
   end if;
   return new;
 end;
-$;
+$function$;
 revoke all on function public.capture_notification_event() from public, anon, authenticated;
 
 alter table public.notification_preferences
