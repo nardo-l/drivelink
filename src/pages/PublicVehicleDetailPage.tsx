@@ -1,6 +1,6 @@
 import { pageTitle, absoluteUrl } from '../config/brand';
 import React,{useEffect,useRef,useState} from 'react';
-import {ArrowLeft,ChevronLeft,ChevronRight,MapPin,Phone,Share2,X,CheckCircle2,CalendarDays,Gauge,Settings2,Fuel,Palette,BadgeCheck} from 'lucide-react';
+import {ArrowLeft,ChevronLeft,ChevronRight,MapPin,Phone,Share2,X,CalendarDays,Gauge,Settings2,Fuel,Palette,BadgeCheck,MessageCircle} from 'lucide-react';
 import {useNavigation} from '../context/NavigationContext';
 import {supabaseService} from '../services/supabaseService';
 import {storageService} from '../services/storage';
@@ -38,8 +38,8 @@ export const PublicVehicleDetailPage:React.FC<PublicVehicleDetailPageProps>=({ve
  return <main className="dl-public-showroom dl-public-detail">
   <section className="dl-pd-gallery" onTouchStart={e=>{touch.current=e.touches[0].clientX;}} onTouchEnd={e=>{if(touch.current===null)return;const dx=e.changedTouches[0].clientX-touch.current;if(Math.abs(dx)>45&&photos.length>1)(dx<0?next:prev)();touch.current=null;}}>
    {photos[photoIndex]?<img src={photos[photoIndex]} alt={title+' photo '+(photoIndex+1)} onClick={()=>setFullscreen(true)} draggable={false}/>:<div className="dl-pd-no-photo"><span>Vehicle photo unavailable</span></div>}
-   <div className="dl-pd-top-actions"><button onClick={()=>navigate('/'+dealer.slug)} aria-label="Back to showroom"><ArrowLeft/></button><button onClick={share} aria-label="Share vehicle"><Share2/></button></div>
-   {photos.length>1&&<><button className="dl-pd-prev" onClick={prev} aria-label="Previous photo"><ChevronLeft/></button><button className="dl-pd-next" onClick={next} aria-label="Next photo"><ChevronRight/></button></>}
+   <div className="dl-pd-top-actions"><button onClick={()=>navigate('/'+dealer.slug)} aria-label="Back to showroom"><ArrowLeft size={20}/></button><button onClick={share} aria-label="Share vehicle"><Share2 size={20}/></button></div>
+   {photos.length>1&&<><button className="dl-pd-prev" onClick={prev} aria-label="Previous photo"><ChevronLeft size={20}/></button><button className="dl-pd-next" onClick={next} aria-label="Next photo"><ChevronRight size={20}/></button></>}
    <span className="dl-pd-counter">{photos.length?photoIndex+1:0}/{photos.length}</span>
   </section>
   <section className="dl-pd-content">
@@ -48,21 +48,25 @@ export const PublicVehicleDetailPage:React.FC<PublicVehicleDetailPageProps>=({ve
     <strong className="dl-pd-price">{money}</strong>
     <span className={'dl-pd-status '+vehicle.status}>{sold?'Sold':vehicle.status==='reserved'?'Reserved':vehicle.status==='available'?'Available':'Unavailable'}</span>
    </div>
-   {!!specs.length&&<section className="dl-pd-section"><h2>Vehicle overview</h2><div className="dl-pd-specs">{specs.map(({label,value,Icon})=><div key={label}><Icon size={16}/><small>{label}</small><strong>{value}</strong></div>)}</div></section>}
+   {!!specs.length&&<section className="dl-pd-section"><h2>Vehicle overview</h2><div className="dl-pd-specs">{specs.map(({label,value,Icon})=><div key={label}><Icon size={20}/><small>{label}</small><strong>{value}</strong></div>)}</div></section>}
    {vehicle.description&&<section className="dl-pd-section"><h2>About this vehicle</h2><p className={'dl-pd-description'+(expanded?' expanded':'')}>{vehicle.description}</p>{vehicle.description.length>150&&<button className="dl-pd-readmore" onClick={()=>setExpanded(v=>!v)}>{expanded?'Read less':'Read more'}</button>}</section>}
    {!!vehicle.features?.length&&<section className="dl-pd-section"><h2>Features</h2><div className="dl-pd-features">{vehicle.features.map(x=><span key={x}>{x}</span>)}</div></section>}
    <section className="dl-pd-dealer">
     {dealer.logoUrl?<img src={dealer.logoUrl} alt={dealer.name+' logo'}/>:<span className="dl-pd-dealer-initials">{dealerInitials}</span>}
-    <div className="dl-pd-dealer-info"><strong>{dealer.name}</strong><small><MapPin size={12}/>{[dealer.city,dealer.country].filter(Boolean).join(', ')||'Location not specified'}</small></div>
-    <button onClick={()=>navigate('/'+dealer.slug)}>View showroom <ChevronRight size={15}/></button>
+    <div className="dl-pd-dealer-info"><strong>{dealer.name}</strong><small><MapPin size={14}/>{[dealer.city,dealer.country].filter(Boolean).join(', ')||'Location not specified'}</small></div>
+    <button onClick={()=>navigate('/'+dealer.slug)}>View showroom <ChevronRight size={16}/></button>
    </section>
+   <div className="dl-pd-dealer-actions">
+    {wa&&<a href={wa} target="_blank" rel="noreferrer"><MessageCircle size={20}/>WhatsApp</a>}
+    {dealer.phone&&<a href={"tel:"+dealer.phone}><Phone size={20}/>Call</a>}
+   </div>
   </section>
   <div className="dl-pd-actions">
    {sold?<button className="dl-pd-similar" onClick={()=>navigate('/'+dealer.slug)}>See similar cars</button>:<>
-    {wa&&<a className="dl-pd-whatsapp" href={wa} target="_blank" rel="noreferrer"><svg className="dl-pd-whatsapp-icon" viewBox="0 0 32 32" aria-hidden="true"><path fill="currentColor" d="M16 3.2A12.7 12.7 0 0 0 5.1 22.4L3.5 28.8l6.6-1.7A12.8 12.8 0 1 0 16 3.2Zm0 23.2c-1.9 0-3.8-.5-5.4-1.5l-.4-.2-3.9 1 1-3.8-.3-.4A10.5 10.5 0 1 1 16 26.4Zm5.8-7.9c-.3-.2-1.8-.9-2.1-1s-.5-.2-.7.2-.8 1-1 1.2-.4.2-.7.1a8.6 8.6 0 0 1-2.5-1.5 9.4 9.4 0 0 1-1.7-2.1c-.2-.3 0-.5.1-.7l.5-.6c.2-.2.2-.4.3-.6s0-.4 0-.6-.7-1.7-1-2.3c-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.6.1-.9.4s-1.2 1.2-1.2 2.8 1.2 3.2 1.4 3.4 2.4 3.7 5.8 5.1c.8.3 1.4.5 1.9.6.8.2 1.5.2 2.1.1.7-.1 1.8-.7 2-1.4.3-.7.3-1.3.2-1.4s-.3-.2-.6-.4Z"/></svg>WhatsApp</a>}
-    {dealer.phone&&<a className="dl-pd-call" href={'tel:'+dealer.phone} aria-label="Call dealer"><Phone size={18}/></a>}
+    {wa&&<a className="dl-pd-whatsapp" href={wa} target="_blank" rel="noreferrer"><MessageCircle size={20}/>WhatsApp</a>}
+    {dealer.phone&&<a className="dl-pd-call" href={'tel:'+dealer.phone} aria-label="Call dealer"><Phone size={20}/></a>}
    </>}
   </div>
-  {fullscreen&&<div className="dl-pd-fullscreen" onClick={()=>setFullscreen(false)}><button onClick={()=>setFullscreen(false)} aria-label="Close photo"><X/></button><span className="dl-pd-fullscreen-counter">{photos.length?photoIndex+1:0}/{photos.length}</span>{photos[photoIndex]&&<img src={photos[photoIndex]} alt="Fullscreen vehicle"/>}{photos.length>1&&<><button className="prev" onClick={e=>{e.stopPropagation();prev();}} aria-label="Previous photo"><ChevronLeft/></button><button className="next" onClick={e=>{e.stopPropagation();next();}} aria-label="Next photo"><ChevronRight/></button></>}</div>}
+  {fullscreen&&<div className="dl-pd-fullscreen" onClick={()=>setFullscreen(false)}><button onClick={()=>setFullscreen(false)} aria-label="Close photo"><X size={20}/></button><span className="dl-pd-fullscreen-counter">{photos.length?photoIndex+1:0}/{photos.length}</span>{photos[photoIndex]&&<img src={photos[photoIndex]} alt="Fullscreen vehicle"/>}{photos.length>1&&<><button className="prev" onClick={e=>{e.stopPropagation();prev();}} aria-label="Previous photo"><ChevronLeft size={20}/></button><button className="next" onClick={e=>{e.stopPropagation();next();}} aria-label="Next photo"><ChevronRight size={20}/></button></>}</div>}
  </main>;
 };
