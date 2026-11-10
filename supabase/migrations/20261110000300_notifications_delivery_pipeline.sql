@@ -146,6 +146,9 @@ end;
 $;
 revoke all on function public.capture_notification_event() from public, anon, authenticated;
 
+alter table public.notification_preferences
+  add column if not exists contextual_notifications_prompted_at timestamptz;
+
 -- A new inbox row wakes the server worker immediately. The shared secret is read from Vault,
 -- never from a browser request or a table exposed through the Data API.
 create or replace function public.dispatch_lotle_notification_push()
