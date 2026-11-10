@@ -27,6 +27,12 @@ import { Check } from 'lucide-react';
 import { BottomNav } from './components/layout/BottomNav';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
 
+function LegacyStorefrontRedirect({ slug }: { slug: string }) {
+  const { navigate } = useNavigation();
+  React.useEffect(() => { navigate('/' + encodeURIComponent(slug)); }, [navigate, slug]);
+  return null;
+}
+
 function AppContent() {
   const safeDashboard = () => <ErrorBoundary label="dashboard"><DashboardPage /></ErrorBoundary>;
   const { currentPath, toast } = useNavigation();
