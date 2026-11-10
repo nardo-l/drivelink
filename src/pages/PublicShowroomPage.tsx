@@ -312,7 +312,7 @@ export const PublicShowroomPage: React.FC<PublicShowroomPageProps> = ({ slug, pr
         </header>
         <div className="dl-ps-hero-content">
           {city && <span className="dl-ps-location-pill"><MapPin size={13} />{city}</span>}
-          <h1>{dealer.tagline?.trim() || 'Find your next car.'}</h1>
+          <h1>{dealer.tagline?.trim() && dealer.tagline.trim() !== 'Quality vehicles. Fair prices.' ? dealer.tagline.trim() : 'Find your next car.'}</h1>
           <p>{countLabel(availableCount)} available</p>
           <button type="button" className="dl-ps-browse-button" onClick={browse}>Browse inventory <ChevronRight size={17} /></button>
         </div>
