@@ -9,7 +9,7 @@ import {useNavigation} from '../context/NavigationContext';
 import {storageService} from '../services/storage';
 import {supabaseService} from '../services/supabaseService';
 import {notificationService} from '../services/notificationService';
-import {supabase} from '../lib/supabase';
+import {isSupabaseConfigured, supabase} from '../lib/supabase';
 import {planService} from '../services/planService';
 import type {Dealership} from '../types';
 import './SettingsPage.css';
