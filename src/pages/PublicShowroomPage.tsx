@@ -257,15 +257,17 @@ export const PublicShowroomPage: React.FC<PublicShowroomPageProps> = ({ slug, pr
   };
   const card = (vehicle: Vehicle) => (
     <article className="dl-ps-car" key={vehicle.id}>
-      <button className="dl-ps-card-image-button" onClick={() => navigate(vehicleUrl(vehicle))} aria-label={'View ' + vehicle.year + ' ' + vehicle.make + ' ' + vehicle.model}>
-        {vehicle.photos?.[0]
-          ? <img className="dl-ps-card-image" src={imageUrl(vehicle.photos[0])} alt={vehicle.year + ' ' + vehicle.make + ' ' + vehicle.model} loading="lazy" decoding="async" />
-          : <span className="dl-ps-no-photo"><CarFront size={32} /></span>}
-        <span className="dl-ps-image-count">{(vehicle.photos || []).length} {(vehicle.photos || []).length === 1 ? 'PHOTO' : 'PHOTOS'}</span>
-        <span className="dl-ps-card-heart" onClick={event => { event.stopPropagation(); toggleSave(vehicle.id); }} role="button" tabIndex={0} aria-label={saved.includes(vehicle.id) ? 'Remove saved vehicle' : 'Save vehicle'} onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); event.stopPropagation(); toggleSave(vehicle.id); } }}>
+      <div className="dl-ps-card-image-wrap">
+        <button className="dl-ps-card-image-button" onClick={() => navigate(vehicleUrl(vehicle))} aria-label={'View ' + vehicle.year + ' ' + vehicle.make + ' ' + vehicle.model}>
+          {vehicle.photos?.[0]
+            ? <img className="dl-ps-card-image" src={imageUrl(vehicle.photos[0])} alt={vehicle.year + ' ' + vehicle.make + ' ' + vehicle.model} loading="lazy" decoding="async" />
+            : <span className="dl-ps-no-photo"><CarFront size={32} /></span>}
+          <span className="dl-ps-image-count">{(vehicle.photos || []).length} {(vehicle.photos || []).length === 1 ? 'PHOTO' : 'PHOTOS'}</span>
+        </button>
+        <button className="dl-ps-card-heart" type="button" onClick={() => toggleSave(vehicle.id)} aria-label={saved.includes(vehicle.id) ? 'Remove saved vehicle' : 'Save vehicle'} aria-pressed={saved.includes(vehicle.id)}>
           <Heart size={17} fill={saved.includes(vehicle.id) ? 'currentColor' : 'none'} />
-        </span>
-      </button>
+        </button>
+      </div>
       <div className="dl-ps-car-info">
         <button className="dl-ps-car-title" onClick={() => navigate(vehicleUrl(vehicle))}>{(vehicle.make + ' ' + vehicle.model).toUpperCase()}</button>
         <strong className="dl-ps-car-price">{money(vehicle)}</strong>
