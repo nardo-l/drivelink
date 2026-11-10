@@ -25,6 +25,7 @@ import { supabaseService } from './services/supabaseService';
 import { storageService } from './services/storage';
 import { Check } from 'lucide-react';
 import { BottomNav } from './components/layout/BottomNav';
+import { NotificationPermissionPrompt } from './components/layout/NotificationPermissionPrompt';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
 
 function LegacyStorefrontRedirect({ slug }: { slug: string }) {
@@ -281,6 +282,7 @@ function AppContent() {
     <DeviceFrame>
 
       <ErrorBoundary label={`${currentPath || 'home'} page`}>{renderRoute()}</ErrorBoundary>
+      <NotificationPermissionPrompt />
       {(['/app', '/app/vehicles', '/app/enquiries', '/app/more'].includes(currentPath) || (currentPath === '/' && storageService.getUserSession().isLoggedIn && !!storageService.getUserSession().dealershipId)) && <BottomNav />}
 
       {/* Global Toast Notification */}
