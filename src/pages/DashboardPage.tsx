@@ -6,6 +6,7 @@ import { StatusBadge } from '../components/common/Badge';
 import { PerformanceSection } from '../components/dashboard/PerformanceSection';
 import { TrialUpgradeCard } from '../components/dashboard/TrialUpgradeCard';
 import { planService } from '../services/planService';
+import { notificationService } from '../services/notificationService';
 import { Bell, CarFront, ChevronRight, Eye, MessageCircle, Plus, Share2, ArrowUpRight } from 'lucide-react';
 import { absoluteUrl, legacyName, name } from '../config/brand';
 import './DashboardPage.css';
@@ -33,6 +34,7 @@ export const DashboardPage: React.FC = () => {
   const [subscription, setSubscription] = useState<SubscriptionStatus | null>(null);
   const serverClock = useRef({ serverMs: Date.now(), monotonicMs: window.performance.now() });
   const [brandNoticeVisible, setBrandNoticeVisible] = useState(false);
+  const [unreadNotifications, setUnreadNotifications] = useState(0);
   const load = async () => {
     setLoading(true);
     setLoadError('');
@@ -44,12 +46,26 @@ export const DashboardPage: React.FC = () => {
         storageService.getEnquiriesAsync(),
       ]);
       setDealership(d); setVehicles(v); setEnquiries(e);
+      if (isLive) {
+        const unread = await notificationService.unreadCount(d.id);
+        setUnreadNotifications(unread);
+      }
     } catch (error: any) {
       setLoadError(error?.message || 'We could not load your dealership data.');
       if (isLive) { setVehicles([]); setEnquiries([]); }
     } finally { setLoading(false); }
   };
   useEffect(() => { void load(); }, []);
+
+  useEffect(() => {
+    const refresh = () => {
+      const id = storageService.getDealership().id;
+      if (id) void notificationService.unreadCount(id).then(setUnreadNotifications).catch(() => setUnreadNotifications(0));
+    };
+    window.addEventListener('lotle:notifications-updated', refresh);
+    window.addEventListener('focus', refresh);
+    return () => { window.removeEventListener('lotle:notifications-updated', refresh); window.removeEventListener('focus', refresh); };
+  }, []);
 
   useEffect(() => {
     if (!isLive) return;
@@ -145,7 +161,7 @@ export const DashboardPage: React.FC = () => {
               try { await navigator.clipboard.writeText(fullPublicUrl); showToast('Showroom link copied'); }
               catch { showToast('Unable to copy showroom link'); }
             }} className="dl-share-pill"><Share2 size={15}/><span>Share</span></button>
-            <button onClick={() => navigate('/app/notifications')} aria-label="Notifications" className="dl-bell-button"><Bell size={19}/>{newLeads > 0 && <span className="dl-notification-dot"/>}</button>
+            <button onClick={() => navigate('/app/notifications')} aria-label={unreadNotifications > 0 ? `Notifications, ${unreadNotifications} unread` : 'Notifications'} className="dl-bell-button"><Bell size={19}/>{unreadNotifications > 0 && <span className="dl-notification-dot">{unreadNotifications > 99 ? '99+' : unreadNotifications}</span>}</button>
           </div>
         </header>
 
