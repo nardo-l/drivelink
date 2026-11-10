@@ -168,7 +168,7 @@ export const NotificationsPage: React.FC = () => {
     if (!item && ids[0]) void notificationService.getById(ids[0]).then(found => {
       if (found && !deepLinkHandled.current) {
         deepLinkHandled.current = true;
-        void notificationService.markRead(found.id).catch(() => undefined);
+        void notificationService.markRead(found.id).then(() => window.dispatchEvent(new Event('lotle:notifications-updated'))).catch(() => undefined);
         const target = params.get('target') || (typeof found.data?.url === 'string' ? found.data.url : '/app/vehicles/new');
         navigate(target);
       }
