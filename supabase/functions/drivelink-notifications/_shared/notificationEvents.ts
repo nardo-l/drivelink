@@ -98,6 +98,6 @@ export const NOTIFICATION_PREFERENCE_COLUMNS: Record<NotificationCategory, strin
 };
 
 export const NON_URGENT_PUSH_DAILY_LIMIT = 1;
-export const PUSH_RETRY_DELAYS_MINUTES = [1, 5, 15] as const;
+export const PUSH_RETRY_DELAYS_MINUTES = [1, 5] as const;
 export const HARARE_TIMED_SEND_START_HOUR = 7;
 export const HARARE_TIMED_SEND_END_HOUR = 20;
