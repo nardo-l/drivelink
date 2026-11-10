@@ -108,7 +108,10 @@ export const EnquiriesPage: React.FC = () => {
     const enquiry = leads.find(item => item.id === enquiryId);
     if (!enquiry) return;
     openedDeepLink.current = enquiryId;
-    open(enquiry);
+    setActive(enquiry);
+    setStage(enquiry.stage);
+    setNotes(enquiry.notes || '');
+    setSwipedId(null);
   }, [loading, leads]);
 
   const save = async (nextStage = stage) => {
