@@ -52,6 +52,11 @@ export const notificationService = {
       .upsert({ dealership_id: dealershipId, ...updates, updated_at: new Date().toISOString() }, { onConflict: 'dealership_id' });
     if (error) throw error;
   },
+  async notifyPlanLimitReached(dealershipId: string, message: string, limitKey = 'vehicle_limit'): Promise<void> {
+    const { data, error } = await supabase.functions.invoke('drivelink-notifications', { body: { action: 'plan_limit_reached', dealershipId, message, limitKey } });
+    if (error) throw error;
+    if (data?.error) throw new Error(String(data.error));
+  },
   async sendTestNotification(dealershipId: string): Promise<{ pushSent: number }> {
     const { data, error } = await supabase.functions.invoke('drivelink-notifications', { body: { action: 'test', dealershipId } });
     if (error) throw error;
