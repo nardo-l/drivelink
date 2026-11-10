@@ -28,7 +28,8 @@ export const BottomNav: React.FC = () => {
     const onFocus = () => void refresh();
     window.addEventListener('focus', onFocus);
     window.addEventListener('lotle:notifications-updated', onFocus);
-    return () => { active = false; window.removeEventListener('focus', onFocus); window.removeEventListener('lotle:notifications-updated', onFocus); };
+    const interval = window.setInterval(onFocus, 30000);
+    return () => { active = false; window.clearInterval(interval); window.removeEventListener('focus', onFocus); window.removeEventListener('lotle:notifications-updated', onFocus); };
   }, []);
   useEffect(() => {
     const update = (event: Event) => {
