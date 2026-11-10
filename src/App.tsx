@@ -234,7 +234,7 @@ function AppContent() {
     // Public dealership inventory browsing and contact routes
     const showroomBrowseMatch = currentPath.match(/^\/showroom\/([^/]+)\/(?:cars|browse)\/?$/);
     if (showroomBrowseMatch) {
-      return <PublicShowroomPage slug={decodeURIComponent(showroomBrowseMatch[1])} />;
+      return <LegacyStorefrontRedirect slug={decodeURIComponent(showroomBrowseMatch[1])} />;
     }
 
     const showroomContactMatch = currentPath.match(/^\/showroom\/([^/]+)\/contact\/?$/);
@@ -251,7 +251,7 @@ function AppContent() {
     // 12. Public Showroom: /showroom/:slug / Screen 05
     const showroomMatch = currentPath.match(/^\/showroom\/([^/]+)/);
     if (showroomMatch) {
-      return <PublicShowroomPage slug={showroomMatch[1]} />;
+      return <LegacyStorefrontRedirect slug={decodeURIComponent(showroomMatch[1])} />;
     }
 
     // Vanity public showroom URLs: /dealership-slug, /dealership-slug/browse, /dealership-slug/contact
@@ -261,7 +261,7 @@ function AppContent() {
     }
     const vanityBrowseMatch = currentPath.match(/^\/([^/]+)\/(?:cars|browse)\/?$/);
     if (vanityBrowseMatch) {
-      return <PublicShowroomPage slug={decodeURIComponent(vanityBrowseMatch[1])} />;
+      return <LegacyStorefrontRedirect slug={decodeURIComponent(vanityBrowseMatch[1])} />;
     }
     const vanityContactMatch = currentPath.match(/^\/([^/]+)\/contact\/?$/);
     if (vanityContactMatch) {
