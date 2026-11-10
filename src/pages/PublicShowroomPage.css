@@ -130,7 +130,7 @@
 .dl-ps-sheet-actions {display:flex;gap:10px;margin-top:20px;}
 .dl-ps-sheet-actions button {flex:1;height:48px;border:0;border-radius:999px;background:var(--ps-ink);color:#fff;font-size:12px;font-weight:750;}
 .dl-ps-sheet-actions button.is-secondary {background:#f0f1f3;color:var(--ps-ink);}
-@media (min-width:600px) {
+@media (min-width:768px) {
  .dl-ps-hero {height:420px;}
  .dl-ps-hero-content {margin-top:76px;}
  .dl-ps-grid {grid-template-columns:repeat(2,minmax(0,1fr));}
