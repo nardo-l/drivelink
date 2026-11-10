@@ -1,1 +1,1 @@
-export * from '../../supabase/functions/_shared/notificationEvents';
+export * from '../../supabase/functions/drivelink-notifications/_shared/notificationEvents';
