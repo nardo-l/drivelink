@@ -1,57 +1,49 @@
-# Lotlé notifications setup
+# Lotlé notifications
 
-The notification inbox and notification worker are deployed. Browser push delivery stays disabled until the VAPID and scheduler secrets below are configured.
+The existing inbox, event capture, onboarding permission screen, browser subscriptions and push service worker are retained. The delivery worker is deployed as the `drivelink-notifications` Supabase Edge Function.
 
-## Generate VAPID keys
+## Server-side secrets
 
-Generate a VAPID key pair once (do not regenerate it after users subscribe):
+In Supabase Project Settings → Edge Functions → Secrets, configure these names:
 
-```bash
-npx web-push generate-vapid-keys
-```
+- `VAPID_PUBLIC_KEY`
+- `VAPID_PRIVATE_KEY`
+- `VAPID_SUBJECT`
+- `NOTIFICATION_CRON_SECRET`
 
-Keep the private key secret. Never commit either key to GitHub.
+Supabase supplies `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`. Never expose the service-role key or VAPID private key to the browser.
 
-## Supabase Edge Function secrets
+In Vercel Production (and Preview if used), configure:
 
-In Supabase Dashboard → Project Settings → Edge Functions → Secrets, add:
+- `VITE_VAPID_PUBLIC_KEY` — the public VAPID key only.
 
-- `VAPID_PUBLIC_KEY` — the generated public key
-- `VAPID_PRIVATE_KEY` — the generated private key
-- `VAPID_SUBJECT` — a valid contact URI, e.g. `mailto:YOUR_SUPPORT_EMAIL`
-- `NOTIFICATION_CRON_SECRET` — a long random secret (at least 32 characters)
+In Supabase Vault, create a secret named `lotle_notification_cron_secret` with exactly the same value as `NOTIFICATION_CRON_SECRET`. The notification trigger and pg_cron worker read it from Vault. Do not commit its value to GitHub.
 
-Supabase provides `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` to Edge Functions automatically. Do not add the service-role key to Vercel or the browser.
+## Browser permission
 
-## Vercel environment variable
+The onboarding Get notified screen remains. If the dealer skips it, Lotlé can show one contextual bottom sheet after a later first enquiry or vehicle-created event. If browser permission is denied, the contextual prompt is not shown again. On iPhone Safari outside the installed app, the screen explains how to add Lotlé to the Home Screen. The in-app inbox remains available.
 
-Add this public key to the Vercel project for Production (and Preview if you test there):
+## Scheduling
 
-- `VITE_VAPID_PUBLIC_KEY` — same value as `VAPID_PUBLIC_KEY`
+Supabase pg_cron is the production scheduler. The old GitHub Actions timer is disabled; its manual workflow_dispatch remains available as a fallback.
 
-Redeploy the Vercel app after adding the variable. This is the public VAPID key only.
+Review and run `supabase/NOTIFICATIONS_CRON.sql` only after:
 
-## GitHub Actions secret
+1. The migration `20261110000300_notifications_delivery_pipeline.sql` is applied.
+2. The Edge Function secrets above are configured.
+3. The Vault secret `lotle_notification_cron_secret` is created.
 
-In GitHub → nardo-l/drivelink → Settings → Secrets and variables → Actions, add:
+The SQL schedules the worker every minute. The worker evaluates unanswered enquiries, trial and renewal reminders, first-vehicle reminders, payment-pending notices and the Monday 08:00 Africa/Harare weekly summary. Immediate enquiry and confirmed-payment notifications wake the worker from the database trigger.
 
-- `NOTIFICATION_CRON_SECRET` — exactly the same value configured in Supabase
+## Event and delivery behavior
 
-The workflow `.github/workflows/lotle-notifications.yml` invokes the worker every 15 minutes. It creates the daily summary during the 19:00 hour in Africa/Harare and processes queued push notifications.
+- The event definitions live in `supabase/functions/drivelink-notifications/_shared/notificationEvents.ts` and are re-exported to the app from `src/config/notificationEvents.ts`.
+- In-app and push channels, category mapping, priority, copy and dedupe keys are defined centrally.
+- The worker enforces dealer quiet hours, the 07:00–20:00 Africa/Harare window for scheduled pushes, one non-urgent push per dealer per Harare day, and three total delivery attempts with backoff.
+- HTTP 404 and 410 subscriptions are removed. Multiple devices per dealership are supported.
+- Payment confirmations remain in the in-app inbox regardless of category preferences.
+- The push-subscription Edge Function validates the caller's user token and dealership ownership. The notification worker accepts either the private worker secret or an authenticated owner request for test and plan-limit actions.
 
-## Enable browser push
+## Operational verification
 
-After the Vercel redeployment and secrets are configured, sign into Lotlé, open the dashboard bell → Notifications, and choose **Enable**. Accept the browser permission prompt. Each browser/device must subscribe separately.
-
-## Current behaviour
-
-- New buyer enquiries and vehicle additions create in-app notifications from database events.
-- Vehicle-sold changes are recorded and create an in-app notification.
-- Showroom copy / WhatsApp / open actions are tracked as share-start events; they stop the share-link reminder campaign. This records the action, not proof that a message was sent.
-- The worker creates a daily summary at 19:00 Harare time, inventory reminders, share reminders, enquiry follow-ups, and trial/renewal reminders.
-- Push delivery respects per-category preferences and caps non-urgent notifications at two per dealership per rolling 24 hours. New enquiry alerts are treated as urgent.
-- Notifications are stored in Supabase and shown in the in-app centre even when browser push is disabled.
-
-## Operational note
-
-The scheduled workflow requires the GitHub Actions secret above. Until it is configured, event-triggered in-app notifications can still be created, but scheduled summaries/reminders and Web Push delivery will not run automatically.
+Use the notification inbox to verify in-app delivery and the Settings → Notifications screen to send a test. Check Supabase Edge Function logs and the `notification_attempts` table for push delivery attempts and retries. Browser push still requires a granted permission and a registered device subscription.
