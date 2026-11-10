@@ -68,6 +68,84 @@ create trigger lotle_payment_notification
   for each row execute function public.capture_lotle_payment_notification();
 revoke all on function public.capture_lotle_payment_notification() from public, anon, authenticated;
 
+-- Preserve the existing event trigger while enriching enquiry notifications for deep links and push copy.
+create or replace function public.capture_notification_event()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $
+declare
+  v_dealership_id uuid;
+  v_event_type text;
+  v_entity_id text;
+  v_title text;
+  v_body text;
+  v_category text;
+  v_key text;
+  v_data jsonb := '{}'::jsonb;
+  v_vehicle_label text := 'vehicle';
+begin
+  if tg_table_name = 'enquiries' then
+    v_dealership_id := new.dealership_id;
+    v_entity_id := new.id::text;
+    v_event_type := 'enquiry_created';
+    v_category := 'enquiry';
+    if new.vehicle_id is not null then
+      select concat_ws(' ', year, make, model) into v_vehicle_label
+      from public.vehicles where id = new.vehicle_id;
+      v_vehicle_label := coalesce(nullif(v_vehicle_label, ''), 'vehicle');
+    end if;
+    v_title := 'New enquiry';
+    v_body := coalesce(nullif(new.buyer_name, ''), 'A buyer') || ' asked about your ' || v_vehicle_label;
+    v_key := 'new_enquiry:' || new.id::text;
+    v_data := jsonb_build_object(
+      'eventId', 'new_enquiry',
+      'entityId', v_entity_id,
+      'url', '/app/enquiries?enquiry=' || v_entity_id,
+      'priority', 'urgent'
+    );
+  elsif tg_table_name = 'vehicles' then
+    v_dealership_id := new.dealership_id;
+    v_entity_id := new.id::text;
+    if tg_op = 'INSERT' then
+      v_event_type := 'vehicle_created';
+      v_category := 'inventory';
+      v_title := 'Vehicle added';
+      v_body := concat_ws(' ', new.year, new.make, new.model) || ' was added to your inventory.';
+      v_key := 'vehicle-created:' || new.id::text;
+      v_data := jsonb_build_object('entity_id', v_entity_id, 'url', '/app/vehicles');
+    elsif new.status = 'sold' and old.status is distinct from 'sold' then
+      v_event_type := 'vehicle_sold';
+      v_category := 'showroom';
+      v_title := 'Vehicle marked as sold';
+      v_body := concat_ws(' ', new.year, new.make, new.model) || ' was marked as sold.';
+      v_key := 'vehicle-sold:' || new.id::text;
+      v_data := jsonb_build_object('entity_id', v_entity_id, 'url', '/app/vehicles');
+    else
+      v_event_type := 'vehicle_updated';
+      v_category := null;
+    end if;
+  elsif tg_table_name = 'storefront_view_events' then
+    v_dealership_id := new.dealership_id;
+    v_entity_id := new.id::text;
+    v_event_type := 'showroom_view';
+    v_category := null;
+  end if;
+
+  insert into public.notification_events(dealership_id, event_type, entity_id, metadata)
+  values (v_dealership_id, v_event_type, v_entity_id, jsonb_build_object('table', tg_table_name));
+
+  if v_category is not null then
+    insert into public.notifications(dealership_id, category, title, body, data, dedupe_key)
+    values (v_dealership_id, v_category, v_title, v_body, v_data, v_key)
+    on conflict (dealership_id, dedupe_key) do nothing;
+  end if;
+  return new;
+end;
+$;
+revoke all on function public.capture_notification_event() from public, anon, authenticated;
+
 -- A new inbox row wakes the server worker immediately. The shared secret is read from Vault,
 -- never from a browser request or a table exposed through the Data API.
 create or replace function public.dispatch_lotle_notification_push()
@@ -84,7 +162,7 @@ begin
   where name = 'lotle_notification_cron_secret'
   limit 1;
 
-  if worker_secret is not null and length(worker_secret) >= 32 then
+  if new.data->>'eventId' <> 'test_notification' and worker_secret is not null and length(worker_secret) >= 32 then
     perform net.http_post(
       url := 'https://cimyerrelscqjiwqvnnn.supabase.co/functions/v1/drivelink-notifications',
       headers := jsonb_build_object(
