@@ -63,6 +63,7 @@ export interface Dealership {
   template: StorefrontTemplate;
   logoUrl?: string;
   coverUrl?: string;
+  bannerVideoUrl?: string;
   isVerified: boolean;
   isPublished?: boolean;
   storefrontViews: number;
