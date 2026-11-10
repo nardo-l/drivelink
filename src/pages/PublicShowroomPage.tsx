@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { Select } from '../components/common/Select';
 import {
   CalendarDays, Camera, CarFront, Fuel, Gauge, Heart, Home, MapPin, Phone,
   Search, Share2, SlidersHorizontal, X, Menu, MessageCircle, ChevronRight,
@@ -445,8 +446,8 @@ export const PublicShowroomPage: React.FC<PublicShowroomPageProps> = ({ slug, pr
                   <label>Maximum price<input type="number" min="0" value={maxPrice} onChange={event => setMaxPrice(event.target.value)} placeholder="Any" /></label>
                   <label>Year from<input type="number" min="1950" value={yearFrom} onChange={event => setYearFrom(event.target.value)} placeholder="Any" /></label>
                   <label>Year to<input type="number" min="1950" value={yearTo} onChange={event => setYearTo(event.target.value)} placeholder="Any" /></label>
-                  <label>Transmission<select value={transmission} onChange={event => setTransmission(event.target.value)}><option>All</option><option>Automatic</option><option>Manual</option></select></label>
-                  <label>Fuel<select value={fuel} onChange={event => setFuel(event.target.value)}><option>All</option>{Array.from(new Set(available.map(v => v.fuel).filter(Boolean))).map(value => <option key={value}>{value}</option>)}</select></label>
+                  <div className="dl-ps-filter-select"><span>Transmission</span><Select title="Transmission" value={transmission} options={[{ value: 'All', label: 'All transmissions' }, { value: 'Automatic', label: 'Automatic' }, { value: 'Manual', label: 'Manual' }]} onChange={setTransmission} /></div>
+                  <div className="dl-ps-filter-select"><span>Fuel</span><Select title="Fuel" value={fuel} options={[{ value: 'All', label: 'All fuel types' }, ...Array.from(new Set(available.map(v => v.fuel).filter(Boolean))).map(value => ({ value, label: value }))]} onChange={setFuel} /></div>
                 </div>
                 <div className="dl-ps-sheet-actions"><button type="button" className="is-secondary" onClick={clearFilters}>Clear filters</button><button type="button" onClick={() => setSheet(null)}>Show {countLabel(filtered.length)}</button></div>
               </>
