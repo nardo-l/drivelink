@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Home, Car, MessageCircle, MoreVertical } from 'lucide-react';
 import { useNavigation } from '../../context/NavigationContext';
 import { storageService } from '../../services/storage';
+import { notificationService } from '../../services/notificationService';
 
 type Tab = { label: string; path: string; icon: React.ComponentType<{ size?: number; strokeWidth?: number }> };
 
@@ -13,12 +14,27 @@ const tabs: Tab[] = [
 
 export const BottomNav: React.FC = () => {
   const { currentPath, navigate } = useNavigation();
-  const [unreadEnquiries, setUnreadEnquiries] = useState(() => storageService.getEnquiries().filter(item => item.stage === 'new').length);
+  const [unreadEnquiries, setUnreadEnquiries] = useState(0);
+  useEffect(() => {
+    let active = true;
+    const refresh = async () => {
+      try {
+        const dealer = await storageService.getDealershipAsync();
+        const count = await notificationService.unreadEnquiryCount(dealer.id);
+        if (active) setUnreadEnquiries(count);
+      } catch { if (active) setUnreadEnquiries(0); }
+    };
+    void refresh();
+    const onFocus = () => void refresh();
+    window.addEventListener('focus', onFocus);
+    window.addEventListener('lotle:notifications-updated', onFocus);
+    return () => { active = false; window.removeEventListener('focus', onFocus); window.removeEventListener('lotle:notifications-updated', onFocus); };
+  }, []);
   useEffect(() => {
     const update = (event: Event) => {
       const detail = (event as CustomEvent<{ unread?: number }>).detail;
       if (typeof detail?.unread === 'number') setUnreadEnquiries(detail.unread);
-      else setUnreadEnquiries(storageService.getEnquiries().filter(item => item.stage === 'new').length);
+      else void notificationService.unreadEnquiryCount(storageService.getDealership().id).then(setUnreadEnquiries).catch(() => setUnreadEnquiries(0));
     };
     window.addEventListener('drivelink:enquiries-updated', update);
     return () => window.removeEventListener('drivelink:enquiries-updated', update);
