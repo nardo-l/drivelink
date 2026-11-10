@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Bell, X } from 'lucide-react';
-import { supabase } from '../../lib/supabase';
+import { supabase, isSupabaseConfigured } from '../../lib/supabase';
 import { storageService } from '../../services/storage';
 import { notificationService } from '../../services/notificationService';
 
@@ -10,7 +10,7 @@ export const NotificationPermissionPrompt: React.FC = () => {
   const [dealershipId, setDealershipId] = useState('');
 
   useEffect(() => {
-    if (typeof window === 'undefined' || !('Notification' in window)) return;
+    if (typeof window === 'undefined' || !('Notification' in window) || !isSupabaseConfigured()) return;
     const session = storageService.getUserSession();
     if (!session.isLoggedIn || !session.dealershipId || !notificationService.isPushSupported()) return;
     setDealershipId(session.dealershipId);
