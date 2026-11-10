@@ -1,7 +1,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 import webpush from "npm:web-push@3.6.7";
-import { NOTIFICATION_EVENTS, NOTIFICATION_PREFERENCE_COLUMNS, NON_URGENT_PUSH_DAILY_LIMIT, PUSH_RETRY_DELAYS_MINUTES, HARARE_TIMED_SEND_START_HOUR, HARARE_TIMED_SEND_END_HOUR } from "../../../src/config/notificationEvents.ts";
+import { NOTIFICATION_EVENTS, NOTIFICATION_PREFERENCE_COLUMNS, NON_URGENT_PUSH_DAILY_LIMIT, PUSH_RETRY_DELAYS_MINUTES, HARARE_TIMED_SEND_START_HOUR, HARARE_TIMED_SEND_END_HOUR } from "../_shared/notificationEvents.ts";
 
 const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
 const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
