@@ -85,7 +85,7 @@ function canSendPushNow(prefs: Record<string, unknown>, notification: any, date 
 function preferenceAllows(prefs: Record<string, unknown>, notification: any) {
   if (prefs.push_enabled === false) return false;
   const eventId = String(notification.data?.eventId || "");
-  if (eventId === "payment_confirmed") return true;
+  if (eventId === "payment_confirmed" || eventId === "test_notification") return true;
   const event = NOTIFICATION_EVENTS[eventId];
   if (event && !event.channels.includes("push")) return false;
   const category = event?.category || ({
@@ -181,7 +181,7 @@ async function deliverOne(notification: any, prefs: Record<string, unknown>, sub
     return { sent: 0, removed: 0 };
   }
   const urgent = isUrgent(notification);
-  if (!canSendPushNow(prefs, notification)) return { sent: 0, removed: 0 };
+  if (notification.data?.eventId !== "test_notification" && !canSendPushNow(prefs, notification)) return { sent: 0, removed: 0 };
   if (!urgent) {
     const dayStart = harareDayStart();
     const { data: recentAttempts } = await db.from("notification_attempts")
