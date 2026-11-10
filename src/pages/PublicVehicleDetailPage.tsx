@@ -55,11 +55,11 @@ export const PublicVehicleDetailPage:React.FC<PublicVehicleDetailPageProps>=({ve
     {dealer.logoUrl?<img src={dealer.logoUrl} alt={dealer.name+' logo'}/>:<span className="dl-pd-dealer-initials">{dealerInitials}</span>}
     <div className="dl-pd-dealer-info"><strong>{dealer.name}</strong><small><MapPin size={14}/>{[dealer.city,dealer.country].filter(Boolean).join(', ')||'Location not specified'}</small></div>
     <button onClick={()=>navigate('/'+dealer.slug)}>View showroom <ChevronRight size={16}/></button>
+    <div className="dl-pd-dealer-actions">
+     {wa&&<a href={wa} target="_blank" rel="noreferrer"><MessageCircle size={20}/>WhatsApp</a>}
+     {dealer.phone&&<a href={"tel:"+dealer.phone}><Phone size={20}/>Call</a>}
+    </div>
    </section>
-   <div className="dl-pd-dealer-actions">
-    {wa&&<a href={wa} target="_blank" rel="noreferrer"><MessageCircle size={20}/>WhatsApp</a>}
-    {dealer.phone&&<a href={"tel:"+dealer.phone}><Phone size={20}/>Call</a>}
-   </div>
   </section>
   <div className="dl-pd-actions">
    {sold?<button className="dl-pd-similar" onClick={()=>navigate('/'+dealer.slug)}>See similar cars</button>:<>
