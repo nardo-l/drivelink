@@ -61,7 +61,8 @@ export const DashboardPage: React.FC = () => {
     };
     window.addEventListener('lotle:notifications-updated', refresh);
     window.addEventListener('focus', refresh);
-    return () => { window.removeEventListener('lotle:notifications-updated', refresh); window.removeEventListener('focus', refresh); };
+    const interval = window.setInterval(refresh, 30000);
+    return () => { window.clearInterval(interval); window.removeEventListener('lotle:notifications-updated', refresh); window.removeEventListener('focus', refresh); };
   }, []);
 
   useEffect(() => {
