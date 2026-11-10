@@ -1,61 +1,58 @@
-import { name, pageTitle, homeTitle, absoluteUrl } from '../config/brand';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Logo } from '../components/common/Logo';
+import { CalendarDays, CarFront, Gauge, Heart, MapPin, Pause, Play, Search, Share2, SlidersHorizontal, X } from 'lucide-react';
 import { Select } from '../components/common/Select';
-import { CalendarDays, CarFront, Fuel, Gauge, Heart, MapPin, Phone, Search, Share2, SlidersHorizontal, X } from 'lucide-react';
 import { useNavigation } from '../context/NavigationContext';
 import { storageService } from '../services/storage';
 import { supabaseService } from '../services/supabaseService';
 import { planService } from '../services/planService';
 import { isSupabaseConfigured } from '../lib/supabase';
+import { absoluteUrl, homeTitle, pageTitle } from '../config/brand';
 import type { Dealership, Vehicle } from '../types';
 import './PublicShowroomPage.css';
 
-const CARD_STYLE: string = 'overlay';
+interface PublicShowroomPageProps {
+  slug?: string;
+  previewDealership?: Dealership;
+  previewVehicles?: Vehicle[];
+}
 
-const WhatsAppMark: React.FC<{ size?: number }> = ({ size = 20 }) => (
-  <svg width={size} height={size} viewBox="0 0 32 32" fill="currentColor" aria-hidden="true">
-    <path d="M16.02 3.2A12.55 12.55 0 0 0 5.24 22.2L3.5 28.55l6.5-1.7a12.7 12.7 0 0 0 6.02 1.52h.01c6.96 0 12.62-5.66 12.62-12.62 0-3.37-1.31-6.54-3.69-8.92a12.53 12.53 0 0 0-8.94-3.63Zm0 22.99h-.01a10.5 10.5 0 0 1-5.35-1.46l-.38-.23-3.86 1.01 1.03-3.76-.25-.39a10.43 10.43 0 1 1 8.82 4.83Zm5.73-7.82c-.31-.16-1.82-.9-2.1-1-.28-.1-.49-.16-.7.16-.2.31-.8 1- .98 1.2-.18.2-.36.23-.67.08-.31-.16-1.3-.48-2.47-1.52-.91-.81-1.53-1.82-1.71-2.13-.18-.31-.02-.48.14-.64.14-.14.31-.36.46-.54.15-.18.2-.31.31-.52.1-.2.05-.39-.03-.54-.08-.15-.7-1.68-.96-2.3-.25-.6-.51-.52-.7-.53h-.6c-.2 0-.54.08-.82.39-.28.31-1.08 1.05-1.08 2.57s1.1 2.98 1.25 3.19c.15.2 2.16 3.3 5.23 4.63.73.31 1.3.5 1.74.64.73.23 1.4.2 1.93.12.59-.09 1.82-.74 2.08-1.46.26-.72.26-1.33.18-1.46-.08-.13-.28-.2-.59-.36Z" />
-  </svg>
-);
-
-export const PublicShowroomPage: React.FC<{ slug?: string; previewDealership?: Dealership; previewVehicles?: Vehicle[] }> = ({ slug, previewDealership, previewVehicles }) => {
+export const PublicShowroomPage: React.FC<PublicShowroomPageProps> = ({ slug, previewDealership, previewVehicles }) => {
   const { navigate, showToast } = useNavigation();
   const [dealer, setDealer] = useState<Dealership | null>(previewDealership || null);
   const [vehicles, setVehicles] = useState<Vehicle[]>(previewVehicles || []);
-  const [showPoweredBy, setShowPoweredBy] = useState(true);
   const [loading, setLoading] = useState(!previewDealership);
-
-  useEffect(() => {
-    if (!dealer) return;
-    let active = true;
-    void planService.getPublicPlan(dealer.id)
-      .then(snapshot => { if (active) setShowPoweredBy(snapshot.config[snapshot.plan].showPoweredBy); })
-      .catch(error => console.error('[Lotle plan] Public showroom plan lookup failed', error));
-    return () => { active = false; };
-  }, [dealer?.id]);
-
-
+  const [showPoweredBy, setShowPoweredBy] = useState(true);
+  const [videoAllowed, setVideoAllowed] = useState(false);
+  const [videoPlaying, setVideoPlaying] = useState(true);
+  const [videoFailed, setVideoFailed] = useState(false);
   const [query, setQuery] = useState('');
   const [make, setMake] = useState('All');
-  const [savedOnly, setSavedOnly] = useState(false);
-  const [saved, setSaved] = useState<string[]>([]);
-  const [filterOpen, setFilterOpen] = useState(false);
   const [minPrice, setMinPrice] = useState('');
   const [maxPrice, setMaxPrice] = useState('');
   const [yearFrom, setYearFrom] = useState('');
   const [yearTo, setYearTo] = useState('');
   const [transmission, setTransmission] = useState('All');
   const [fuel, setFuel] = useState('All');
-  const [fabVisible, setFabVisible] = useState(true);
-  const footerRef = useRef<HTMLElement>(null);
-  const lastScroll = useRef(0);
+  const [filterOpen, setFilterOpen] = useState(false);
+  const [saved, setSaved] = useState<string[]>([]);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
-    try { setSaved(JSON.parse(localStorage.getItem('drivelink:saved-vehicles') || '[]')); } catch { setSaved([]); }
+    try {
+      setSaved(JSON.parse(localStorage.getItem('drivelink:saved-vehicles') || '[]'));
+    } catch {
+      setSaved([]);
+    }
   }, []);
 
-  // Keep the existing showroom data-loading and view-count behaviour unchanged.
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const connection = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection;
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    setVideoAllowed(!reducedMotion && !connection?.saveData);
+  }, []);
+
+  // Preserve the existing public dealership and inventory fetches and view analytics.
   useEffect(() => {
     let active = true;
     const load = async () => {
@@ -83,10 +80,15 @@ export const PublicShowroomPage: React.FC<{ slug?: string; previewDealership?: D
           }
         } else {
           const local = storageService.getDealership();
-          if (local.slug === slug) { setDealer(local); setVehicles(storageService.getVehicles()); }
-          else setDealer(null);
+          if (local.slug === slug) {
+            setDealer(local);
+            setVehicles(storageService.getVehicles());
+          } else {
+            setDealer(null);
+          }
         }
-      } catch {
+      } catch (error) {
+        console.error('Public showroom load failed:', error);
         if (active) setDealer(null);
       } finally {
         if (active) setLoading(false);
@@ -97,206 +99,302 @@ export const PublicShowroomPage: React.FC<{ slug?: string; previewDealership?: D
   }, [slug, previewDealership, previewVehicles]);
 
   useEffect(() => {
-    const handler = () => {
-      const y = window.scrollY;
-      const footerVisible = (footerRef.current?.getBoundingClientRect().top ?? Number.POSITIVE_INFINITY) < window.innerHeight;
-      setFabVisible(!footerVisible && (y < 40 || y < lastScroll.current));
-      lastScroll.current = y;
-    };
-    window.addEventListener('scroll', handler, { passive: true });
-    return () => window.removeEventListener('scroll', handler);
-  }, []);
-
-  useEffect(() => {
-    const footer = footerRef.current;
-    if (!footer || typeof IntersectionObserver === 'undefined') return;
-    const observer = new IntersectionObserver(entries => {
-      if (entries[0]?.isIntersecting) setFabVisible(false);
-    }, { threshold: 0.05 });
-    observer.observe(footer);
-    return () => observer.disconnect();
-  }, [loading, dealer]);
-
-
+    if (!dealer) return;
+    let active = true;
+    void planService.getPublicPlan(dealer.id)
+      .then(snapshot => {
+        if (active) setShowPoweredBy(snapshot.config[snapshot.plan].showPoweredBy);
+      })
+      .catch(error => console.error('[DriveLink plan] Public showroom plan lookup failed:', error));
+    return () => { active = false; };
+  }, [dealer?.id]);
 
   useEffect(() => {
     if (!dealer) return;
-    const city = dealer.city || dealer.country;
-    const count = vehicles.filter(v => v.status === 'available').length;
-    document.title = pageTitle(`${dealer.name} cars`);
+    const availableCount = vehicles.filter(vehicle => vehicle.status === 'available').length;
+    document.title = pageTitle(dealer.name + ' cars');
     const setMeta = (key: string, value: string, property = false) => {
-      let el = document.querySelector('meta[' + (property ? 'property' : 'name') + '="' + key + '"]') as HTMLMetaElement | null;
-      if (!el) { el = document.createElement('meta'); el.setAttribute(property ? 'property' : 'name', key); document.head.appendChild(el); }
-      el.content = value;
+      let element = document.querySelector('meta[' + (property ? 'property' : 'name') + '="' + key + '"]') as HTMLMetaElement | null;
+      if (!element) {
+        element = document.createElement('meta');
+        element.setAttribute(property ? 'property' : 'name', key);
+        document.head.appendChild(element);
+      }
+      element.content = value;
     };
     setMeta('og:title', dealer.name, true);
-    setMeta('og:description', count + (count === 1 ? ' car available in ' : ' cars available in ') + city, true);
-    const firstCarImage = vehicles.find(vehicle => vehicle.photos?.[0])?.photos?.[0];
-    const shareImage = dealer.coverUrl || firstCarImage;
-    if (shareImage) {
-      const originalBanner = shareImage.split('?')[0];
-      const ogImage = originalBanner.includes('/storage/v1/object/public/')
-        ? originalBanner.replace('/storage/v1/object/public/', '/storage/v1/render/image/public/') + '?width=1200&height=630&resize=cover&quality=80'
-        : originalBanner;
-      setMeta('og:image', ogImage, true);
-      setMeta('og:image:width', '1200', true);
-      setMeta('og:image:height', '630', true);
+    setMeta('og:description', availableCount + (availableCount === 1 ? ' car available' : ' cars available') + ' at ' + dealer.name, true);
+    const poster = dealer.coverUrl;
+    if (poster) {
+      const clean = poster.split('?')[0];
+      const image = clean.includes('/storage/v1/object/public/')
+        ? clean.replace('/storage/v1/object/public/', '/storage/v1/render/image/public/') + '?width=1200&height=630&resize=cover&quality=80'
+        : clean;
+      setMeta('og:image', image, true);
+      setMeta('twitter:image', image);
     }
-    const description = count + (count === 1 ? ' car available in ' : ' cars available in ') + city + '. ' + (dealer.tagline?.trim() || 'Find your next car.') + ' Browse the showroom at ' + dealer.name + '.';
+    const description = availableCount + (availableCount === 1 ? ' car' : ' cars') + ' available at ' + dealer.name + '. Browse the latest vehicles in the showroom.';
     setMeta('description', description);
     setMeta('twitter:card', 'summary_large_image');
     setMeta('twitter:title', dealer.name + ' cars');
     setMeta('twitter:description', description);
-    if (shareImage) {
-      const original = shareImage.split('?')[0];
-      const twitterImage = original.includes('/storage/v1/object/public/')
-        ? original.replace('/storage/v1/object/public/', '/storage/v1/render/image/public/') + '?width=1200&height=630&resize=cover&quality=80'
-        : original;
-      setMeta('twitter:image', twitterImage);
-    }
-    const canonicalUrl = absoluteUrl('/' + encodeURIComponent(dealer.slug));
-    let canonical = document.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
-    if (!canonical) { canonical = document.createElement('link'); canonical.rel = 'canonical'; document.head.appendChild(canonical); }
-    canonical.href = canonicalUrl;
+    const canonical = document.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
+    const canonicalElement = canonical || document.head.appendChild(document.createElement('link'));
+    canonicalElement.rel = 'canonical';
+    canonicalElement.href = absoluteUrl('/' + encodeURIComponent(dealer.slug));
     return () => { document.title = homeTitle; };
   }, [dealer, vehicles]);
 
-  const available = useMemo(() => vehicles.filter(v => v.status === 'available'), [vehicles]);
-  const makes = useMemo(() => Array.from(new Set(vehicles.filter(v => v.status !== 'draft').map(v => v.make).filter(Boolean))).sort(), [available]);
-  const filtered = useMemo(() => vehicles.filter(v => {
-    const hay = [v.year, v.make, v.model, v.fuel, v.colour, v.description].join(' ').toLowerCase();
-    if (v.status === 'draft') return false;
-    if (query && !hay.includes(query.toLowerCase())) return false;
-    if (make !== 'All' && v.make !== make) return false;
-    if (savedOnly && !saved.includes(v.id)) return false;
-    if (minPrice && v.price < Number(minPrice)) return false;
-    if (maxPrice && v.price > Number(maxPrice)) return false;
-    if (yearFrom && v.year < Number(yearFrom)) return false;
-    if (yearTo && v.year > Number(yearTo)) return false;
-    if (transmission !== 'All' && v.transmission !== transmission) return false;
-    if (fuel !== 'All' && v.fuel !== fuel) return false;
+  const publicVehicles = useMemo(
+    () => vehicles.filter(vehicle => vehicle.status !== 'draft'),
+    [vehicles]
+  );
+  const available = useMemo(
+    () => publicVehicles.filter(vehicle => vehicle.status === 'available'),
+    [publicVehicles]
+  );
+  const makes = useMemo(
+    () => Array.from(new Set(available.map(vehicle => vehicle.make).filter(Boolean))).sort(),
+    [available]
+  );
+  const newArrivals = useMemo(
+    () => [...available].sort((a, b) => Date.parse(b.createdAt || '') - Date.parse(a.createdAt || '')).slice(0, 4),
+    [available]
+  );
+  const filtered = useMemo(() => available.filter(vehicle => {
+    const haystack = [vehicle.year, vehicle.make, vehicle.model, vehicle.fuel, vehicle.colour, vehicle.description].join(' ').toLowerCase();
+    if (query && !haystack.includes(query.toLowerCase())) return false;
+    if (make !== 'All' && vehicle.make !== make) return false;
+    if (minPrice && vehicle.price < Number(minPrice)) return false;
+    if (maxPrice && vehicle.price > Number(maxPrice)) return false;
+    if (yearFrom && vehicle.year < Number(yearFrom)) return false;
+    if (yearTo && vehicle.year > Number(yearTo)) return false;
+    if (transmission !== 'All' && vehicle.transmission !== transmission) return false;
+    if (fuel !== 'All' && vehicle.fuel !== fuel) return false;
     return true;
-  }).sort((a, b) => (a.status === 'sold' ? 1 : 0) - (b.status === 'sold' ? 1 : 0)), [vehicles, query, make, savedOnly, saved, minPrice, maxPrice, yearFrom, yearTo, transmission, fuel]);
+  }), [available, query, make, minPrice, maxPrice, yearFrom, yearTo, transmission, fuel]);
 
   if (loading) return <main className="dl-public-showroom"><div className="dl-ps-loading">Loading showroom…</div></main>;
   if (!dealer) return <main className="dl-public-showroom dl-ps-unavailable"><h1>Showroom unavailable</h1><p>This dealership link may be incorrect or unpublished.</p></main>;
 
-  const initials = dealer.name.trim().split(/\s+/).slice(0, 2).map(x => x[0]).join('').toUpperCase() || 'DL';
-  const city = [dealer.city, dealer.country].filter(Boolean).join(', ');
+  const bannerVideoUrl = dealer.bannerVideoUrl || '';
+  const posterUrl = dealer.coverUrl || '';
+  const canPlayVideo = Boolean(bannerVideoUrl && videoAllowed && !videoFailed);
   const waNumber = (dealer.whatsapp || dealer.phone || '').replace(/\D/g, '');
-  const wa = (message: string) => waNumber ? 'https://wa.me/' + waNumber + '?text=' + encodeURIComponent(message) : '';
-  const generalMessage = 'Hi, I am interested in a car from your showroom';
-  const money = (v: Vehicle) => new Intl.NumberFormat('en-US', { style: 'currency', currency: v.currency || dealer.currency, maximumFractionDigits: 0 }).format(v.price);
-  const toggleSave = (id: string) => setSaved(old => {
-    const next = old.includes(id) ? old.filter(x => x !== id) : [...old, id];
-    localStorage.setItem('drivelink:saved-vehicles', JSON.stringify(next));
+  const money = (vehicle: Vehicle) => new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: vehicle.currency || dealer.currency,
+    maximumFractionDigits: 0,
+  }).format(vehicle.price);
+  const vehicleUrl = (vehicle: Vehicle) => '/' + dealer.slug + '/vehicle/' + vehicle.id;
+  const imageUrl = (source?: string) => {
+    if (!source) return '';
+    const clean = source.split('?')[0];
+    return clean.includes('/storage/v1/object/public/')
+      ? clean.replace('/storage/v1/object/public/', '/storage/v1/render/image/public/') + '?width=900&height=675&resize=cover&quality=82&format=webp'
+      : source;
+  };
+  const whatsappUrl = (vehicle: Vehicle) => {
+    if (!waNumber) return '';
+    const message = 'Hi ' + dealer.name + ', I am interested in the ' + vehicle.year + ' ' + vehicle.make + ' ' + vehicle.model + ' listed at ' + money(vehicle) + '. Is it still available?';
+    return 'https://wa.me/' + waNumber + '?text=' + encodeURIComponent(message);
+  };
+  const recordWhatsAppEnquiry = (vehicle: Vehicle) => {
+    const message = 'Hi ' + dealer.name + ', I am interested in the ' + vehicle.year + ' ' + vehicle.make + ' ' + vehicle.model + ' listed at ' + money(vehicle) + '. Is it still available?';
+    const enquiry = {
+      dealershipId: dealer.id,
+      vehicleId: vehicle.id,
+      buyerName: 'WhatsApp Buyer',
+      buyerPhone: 'WhatsApp Link Click',
+      message,
+      stage: 'new' as const,
+      source: 'whatsapp' as const,
+      notes: 'Buyer clicked WhatsApp contact link from storefront.',
+    };
+    if (isSupabaseConfigured()) {
+      void supabaseService.createEnquiry(enquiry).catch(error => {
+        console.error('Could not record public WhatsApp enquiry:', error);
+      });
+    } else {
+      try {
+        storageService.saveDealership(dealer);
+        void storageService.createEnquiryAsync(enquiry).catch(error => {
+          console.error('Could not record local WhatsApp enquiry:', error);
+        });
+      } catch (error) {
+        console.error('Could not record local WhatsApp enquiry:', error);
+      }
+    }
+  };
+  const toggleSave = (id: string) => setSaved(current => {
+    const next = current.includes(id) ? current.filter(item => item !== id) : [...current, id];
+    try { localStorage.setItem('drivelink:saved-vehicles', JSON.stringify(next)); } catch {}
     return next;
   });
+  const scrollToCars = (id: string) => {
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+  const clearFilters = () => {
+    setQuery('');
+    setMake('All');
+    setMinPrice('');
+    setMaxPrice('');
+    setYearFrom('');
+    setYearTo('');
+    setTransmission('All');
+    setFuel('All');
+  };
   const share = async () => {
     const url = absoluteUrl('/' + encodeURIComponent(dealer.slug));
     if (navigator.share) {
-      try { await navigator.share({ title: dealer.name, text: available.length + ' cars available in ' + (dealer.city || dealer.country), url }); } catch { /* share dismissed */ }
+      try {
+        await navigator.share({ title: dealer.name, text: 'Browse vehicles at ' + dealer.name, url });
+      } catch { /* share sheet dismissed */ }
     } else {
       await navigator.clipboard?.writeText(url);
       showToast('Showroom link copied');
     }
   };
-  const clear = () => {
-    setMinPrice(''); setMaxPrice(''); setYearFrom(''); setYearTo('');
-    setTransmission('All'); setFuel('All'); setMake('All'); setSavedOnly(false); setQuery('');
-  };
-  const goVehicle = (vehicle: Vehicle) => navigate('/' + dealer.slug + '/vehicle/' + vehicle.id);
-  const countLabel = (count: number) => count + (count === 1 ? ' car' : ' cars');
+  const card = (vehicle: Vehicle) => (
+    <article className="dl-ps-car" key={vehicle.id}>
+      <button className="dl-ps-card-image-button" onClick={() => navigate(vehicleUrl(vehicle))} aria-label={'View ' + vehicle.year + ' ' + vehicle.make + ' ' + vehicle.model}>
+        {vehicle.photos?.[0]
+          ? <img className="dl-ps-card-image" src={imageUrl(vehicle.photos[0])} alt={vehicle.year + ' ' + vehicle.make + ' ' + vehicle.model} loading="lazy" decoding="async" />
+          : <span className="dl-ps-no-photo"><CarFront size={32} /></span>}
+        <span className="dl-ps-image-count">{(vehicle.photos || []).length} {(vehicle.photos || []).length === 1 ? 'PHOTO' : 'PHOTOS'}</span>
+        <span className="dl-ps-card-heart" onClick={event => { event.stopPropagation(); toggleSave(vehicle.id); }} role="button" tabIndex={0} aria-label={saved.includes(vehicle.id) ? 'Remove saved vehicle' : 'Save vehicle'} onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); event.stopPropagation(); toggleSave(vehicle.id); } }}>
+          <Heart size={17} fill={saved.includes(vehicle.id) ? 'currentColor' : 'none'} />
+        </span>
+      </button>
+      <div className="dl-ps-car-info">
+        <button className="dl-ps-car-title" onClick={() => navigate(vehicleUrl(vehicle))}>{(vehicle.make + ' ' + vehicle.model).toUpperCase()}</button>
+        <strong className="dl-ps-car-price">{money(vehicle)}</strong>
+        <div className="dl-ps-car-chips">
+          <span><CalendarDays size={12} />{vehicle.year}</span>
+          <span><Gauge size={12} />{Number(vehicle.mileageKm || 0).toLocaleString()} KM</span>
+        </div>
+        {waNumber ? (
+          <a className="dl-ps-enquiry-button" href={whatsappUrl(vehicle)} target="_blank" rel="noreferrer" onClick={() => recordWhatsAppEnquiry(vehicle)}>
+            <span>WHATSAPP ENQUIRY</span>
+          </a>
+        ) : (
+          <button className="dl-ps-enquiry-button is-disabled" type="button" disabled>WHATSAPP UNAVAILABLE</button>
+        )}
+      </div>
+    </article>
+  );
 
   return (
     <main className="dl-public-showroom">
-      <section className="dl-ps-listings" id="available-cars">
-        <header className="dl-ps-list-header">
-          <div className="dl-ps-list-brand">
-            <div className="dl-ps-logo is-light">{dealer.logoUrl ? <img src={dealer.logoUrl} alt="" /> : <span>{initials}</span>}</div>
-            <div><strong>{dealer.name}</strong><small><MapPin size={12} />{city}</small></div>
-          </div>
-          <button className="dl-ps-round-share is-light-share" onClick={() => void share()} aria-label="Share showroom"><Share2 size={18} /></button>
-        </header>
-        {dealer.coverUrl && <div className="dl-ps-hero-banner">
-          <img src={dealer.coverUrl} alt="" width="1200" height="675" loading="eager" fetchPriority="high" decoding="async" />
-        </div>}
-        <section className="dl-ps-intro" aria-label={dealer.name + ' showroom'}>
-          <h1>{dealer.tagline?.trim() || 'Find your next car.'}</h1>
-          <p>{available.length} {available.length === 1 ? 'car' : 'cars'} available · {dealer.city || dealer.country || 'Harare'}</p>
-          <div className="dl-ps-intro-actions">
-            {waNumber && <a className="dl-ps-intro-whatsapp" href={wa(generalMessage)} target="_blank" rel="noreferrer"><WhatsAppMark size={18}/> WhatsApp</a>}
-            {dealer.phone && <a className="dl-ps-intro-call" href={'tel:' + dealer.phone}><Phone size={17}/> Call</a>}
-          </div>
-        </section>
-
-        <div className="dl-ps-search-row">
-          <label><Search size={17} /><input value={query} onChange={e => setQuery(e.target.value)} placeholder="Search cars…" aria-label="Search cars" />{query && <button onClick={() => setQuery('')} aria-label="Clear search"><X size={15} /></button>}</label>
-          <button className="dl-ps-filter-trigger" onClick={() => setFilterOpen(true)} aria-label="Filters"><SlidersHorizontal size={19} /></button>
-        </div>
-
-        {makes.length > 1 && (
-          <div className="dl-ps-chips">
-            <button className={make === 'All' && !savedOnly ? 'active' : ''} onClick={() => { setMake('All'); setSavedOnly(false); }}>All</button>
-            {makes.map(item => <button key={item} className={make === item && !savedOnly ? 'active' : ''} onClick={() => { setMake(item); setSavedOnly(false); }}>{item}</button>)}
-          </div>
-        )}
-
-        <div className="dl-ps-section-title"><h1>Available cars</h1><span>{countLabel(filtered.length)}</span></div>
-
-        {filtered.length ? (
-          <div className="dl-ps-grid">
-            {filtered.map(vehicle => (
-              <article className={'dl-ps-car ' + (CARD_STYLE === 'overlay' ? 'is-overlay' : 'is-below') + (vehicle.status === 'sold' ? ' is-sold' : '')} key={vehicle.id} role="link" tabIndex={0} onClick={() => goVehicle(vehicle)} onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); goVehicle(vehicle); } }}>
-                <div className="dl-ps-photo">
-                  {vehicle.photos?.[0] ? <img className="dl-ps-photo-image" loading="lazy" decoding="async" src={(() => { const source = vehicle.photos[0]; const clean = source.split('?')[0]; return clean.includes('/storage/v1/object/public/') ? clean.replace('/storage/v1/object/public/', '/storage/v1/render/image/public/') + '?width=900&height=1125&resize=cover&quality=78&format=webp' : source; })()} alt={vehicle.make + ' ' + vehicle.model} onLoad={e => e.currentTarget.classList.add('is-loaded')} /> : <span className="dl-ps-no-photo"><CarFront size={36} /></span>}
-                  {CARD_STYLE === 'overlay' && <span className="dl-ps-photo-shade" aria-hidden="true" />}
-                  {vehicle.status !== 'available' && <span className={'dl-ps-status ' + vehicle.status}>{vehicle.status === 'reserved' ? 'Reserved' : 'Sold'}</span>}
-                  <span className="dl-ps-photo-count">{(vehicle.photos || []).length} {(vehicle.photos || []).length === 1 ? 'photo' : 'photos'}</span>
-                  <button className={'dl-ps-heart ' + (saved.includes(vehicle.id) ? 'saved' : '')} onClick={e => { e.stopPropagation(); toggleSave(vehicle.id); }} onKeyDown={e => e.stopPropagation()} aria-label={saved.includes(vehicle.id) ? 'Remove saved car' : 'Save car'}><Heart fill={saved.includes(vehicle.id) ? 'currentColor' : 'none'} size={18} /></button>
-                  {CARD_STYLE === 'overlay' && <div className="dl-ps-overlay-copy">
-                    <div className="dl-ps-overlay-details"><h2>{vehicle.make} {vehicle.model}</h2><div className="dl-ps-specs"><span><CalendarDays size={13} />{vehicle.year}</span><span><Gauge size={13} />{Number(vehicle.mileageKm || 0).toLocaleString()} km</span><span><Fuel size={13} />{vehicle.fuel}</span></div></div>
-                    <strong className="dl-ps-overlay-price">{money(vehicle)}</strong>
-                  </div>}
-                </div>
-                {CARD_STYLE === 'below' && <div className="dl-ps-car-info">
-                  <div className="dl-ps-car-heading"><h2>{vehicle.make} {vehicle.model}</h2><strong>{money(vehicle)}</strong></div>
-                  <div className="dl-ps-specs"><span><CalendarDays size={14} />{vehicle.year}</span><span><Gauge size={14} />{Number(vehicle.mileageKm || 0).toLocaleString()} km</span><span><Fuel size={14} />{vehicle.fuel}</span><span><CarFront size={14} />{vehicle.transmission}</span></div>
-                </div>}
-              </article>
-            ))}
-          </div>
-        ) : vehicles.length === 0 ? (
-          <div className="dl-ps-empty"><CarFront size={32} /><h2>No cars listed yet</h2><p>Check back soon or contact the dealership.</p>{waNumber && <a href={wa(generalMessage)} target="_blank" rel="noreferrer">Message us on WhatsApp</a>}</div>
+      <section className="dl-ps-hero" aria-label={dealer.name + ' showroom'}>
+        {canPlayVideo ? (
+          <video
+            ref={videoRef}
+            className="dl-ps-hero-media"
+            src={bannerVideoUrl}
+            poster={posterUrl || undefined}
+            muted
+            loop
+            autoPlay
+            playsInline
+            preload="metadata"
+            onError={() => setVideoFailed(true)}
+            onPlay={() => setVideoPlaying(true)}
+            onPause={() => setVideoPlaying(false)}
+          />
+        ) : posterUrl ? (
+          <img className="dl-ps-hero-media" src={posterUrl} alt="" fetchPriority="high" decoding="async" />
         ) : (
-          <div className="dl-ps-empty"><Search size={30} /><h2>No cars match your search</h2><button onClick={clear}>Clear filters</button></div>
+          <div className="dl-ps-hero-media dl-ps-hero-empty" />
+        )}
+        <div className="dl-ps-hero-overlay" />
+        <div className="dl-ps-hero-content">
+          <h1>{dealer.name.toUpperCase()}</h1>
+          <button className="dl-ps-view-cars" onClick={() => scrollToCars('dl-ps-new-arrivals')}>VIEW CARS</button>
+        </div>
+        {canPlayVideo && (
+          <button
+            className="dl-ps-video-toggle"
+            type="button"
+            onClick={() => {
+              const video = videoRef.current;
+              if (!video) return;
+              if (video.paused) void video.play().catch(() => setVideoPlaying(false));
+              else video.pause();
+            }}
+            aria-label={videoPlaying ? 'Pause banner video' : 'Play banner video'}
+          >
+            {videoPlaying ? <Pause size={17} /> : <Play size={17} />}
+          </button>
         )}
       </section>
 
-      <footer className="dl-ps-footer" ref={footerRef}>
+      <div className="dl-ps-content">
+        <section className="dl-ps-section" id="dl-ps-new-arrivals">
+          <div className="dl-ps-section-heading">
+            <h2>NEW ARRIVALS</h2>
+            <button type="button" onClick={() => scrollToCars('dl-ps-all-cars')}>VIEW ALL</button>
+          </div>
+          {newArrivals.length ? (
+            <div className="dl-ps-grid">{newArrivals.map(card)}</div>
+          ) : (
+            <div className="dl-ps-empty"><CarFront size={28} /><p>New vehicles will appear here when listed.</p></div>
+          )}
+        </section>
+
+        <section className="dl-ps-section dl-ps-all-section" id="dl-ps-all-cars">
+          <div className="dl-ps-section-heading">
+            <h2>ALL CARS</h2>
+            <span>{filtered.length} {filtered.length === 1 ? 'VEHICLE' : 'VEHICLES'}</span>
+          </div>
+          <div className="dl-ps-tools">
+            <label className="dl-ps-search">
+              <Search size={17} />
+              <input value={query} onChange={event => setQuery(event.target.value)} placeholder="Search vehicles" aria-label="Search vehicles" />
+              {query && <button type="button" onClick={() => setQuery('')} aria-label="Clear search"><X size={15} /></button>}
+            </label>
+            <button className="dl-ps-filter-button" type="button" onClick={() => setFilterOpen(true)} aria-label="Open filters"><SlidersHorizontal size={18} /></button>
+            <button className="dl-ps-share-button" type="button" onClick={() => void share()} aria-label="Share showroom"><Share2 size={18} /></button>
+          </div>
+          {makes.length > 1 && (
+            <div className="dl-ps-make-chips">
+              <button className={make === 'All' ? 'active' : ''} onClick={() => setMake('All')}>ALL</button>
+              {makes.map(item => <button key={item} className={make === item ? 'active' : ''} onClick={() => setMake(item)}>{item.toUpperCase()}</button>)}
+            </div>
+          )}
+          {filtered.length ? (
+            <div className="dl-ps-grid">{filtered.map(card)}</div>
+          ) : (
+            <div className="dl-ps-empty"><Search size={28} /><h3>{available.length ? 'No matching vehicles' : 'No cars listed yet'}</h3><p>{available.length ? 'Try changing your search or filters.' : 'Check back soon for new arrivals.'}</p>{available.length > 0 && <button onClick={clearFilters}>CLEAR FILTERS</button>}</div>
+          )}
+        </section>
+      </div>
+
+      <footer className="dl-ps-footer">
         <strong>{dealer.name}</strong>
-        {dealer.phone && <a href={'tel:' + dealer.phone}><Phone size={14} />{dealer.phone}</a>}
-        {dealer.address && <p><MapPin size={14} />{dealer.address}</p>}
-        {(dealer as Dealership & { hours?: string }).hours && <p>{(dealer as Dealership & { hours?: string }).hours}</p>}
-        {showPoweredBy && <a className="dl-ps-powered" href="/"><span>Powered by Lotlé</span><Logo variant="light" size="sm" /></a>}
+        <span>{[dealer.city, dealer.country].filter(Boolean).join(', ')}</span>
+        {dealer.phone && <a href={'tel:' + dealer.phone}>{dealer.phone}</a>}
+        {showPoweredBy && <span className="dl-ps-powered">POWERED BY DRIVELINK</span>}
       </footer>
 
-      {waNumber && <a className={'dl-ps-floating-wa ' + (!fabVisible ? 'hidden' : '')} href={wa(generalMessage)} target="_blank" rel="noreferrer" aria-label="Message dealership on WhatsApp"><WhatsAppMark size={24} /></a>}
-
       {filterOpen && (
-        <div className="dl-ps-backdrop" onClick={() => setFilterOpen(false)}>
-          <section className="dl-ps-filter-sheet" onClick={e => e.stopPropagation()}>
-            <div className="dl-ps-handle" />
-            <header><h2>Filters</h2><button onClick={() => setFilterOpen(false)} aria-label="Close filters"><X /></button></header>
-            <div className="dl-ps-filter-grid">
-              <label>Minimum price<input type="number" value={minPrice} onChange={e => setMinPrice(e.target.value)} placeholder="Any" /></label>
-              <label>Maximum price<input type="number" value={maxPrice} onChange={e => setMaxPrice(e.target.value)} placeholder="Any" /></label>
-              <label>Year from<input type="number" value={yearFrom} onChange={e => setYearFrom(e.target.value)} placeholder="Any" /></label>
-              <label>Year to<input type="number" value={yearTo} onChange={e => setYearTo(e.target.value)} placeholder="Any" /></label>
+        <div className="dl-ps-filter-backdrop" onClick={() => setFilterOpen(false)}>
+          <section className="dl-ps-filter-sheet" onClick={event => event.stopPropagation()} aria-label="Vehicle filters">
+            <div className="dl-ps-filter-handle" />
+            <header><h2>FILTER CARS</h2><button type="button" onClick={() => setFilterOpen(false)} aria-label="Close filters"><X size={20} /></button></header>
+            <div className="dl-ps-filter-fields">
+              <div className="dl-ps-filter-field"><span>MAKE</span><Select title="Make" value={make} options={[{ value: 'All', label: 'All makes' }, ...makes.map(item => ({ value: item, label: item }))]} onChange={setMake} /></div>
+              <label>MINIMUM PRICE<input type="number" min="0" value={minPrice} onChange={event => setMinPrice(event.target.value)} placeholder="Any" /></label>
+              <label>MAXIMUM PRICE<input type="number" min="0" value={maxPrice} onChange={event => setMaxPrice(event.target.value)} placeholder="Any" /></label>
+              <label>YEAR FROM<input type="number" min="1950" value={yearFrom} onChange={event => setYearFrom(event.target.value)} placeholder="Any" /></label>
+              <label>YEAR TO<input type="number" min="1950" value={yearTo} onChange={event => setYearTo(event.target.value)} placeholder="Any" /></label>
+              <div className="dl-ps-filter-field"><span>TRANSMISSION</span><Select title="Transmission" value={transmission} options={[{ value: 'All', label: 'All' }, { value: 'Automatic', label: 'Automatic' }, { value: 'Manual', label: 'Manual' }]} onChange={setTransmission} /></div>
+              <div className="dl-ps-filter-field"><span>FUEL TYPE</span><Select title="Fuel type" value={fuel} options={[{ value: 'All', label: 'All' }, ...Array.from(new Set(available.map(vehicle => vehicle.fuel))).map(item => ({ value: item, label: item }))]} onChange={setFuel} /></div>
             </div>
-            <div className="dl-ps-filter-select"><span>Transmission</span><Select value={transmission} title="Transmission" options={[{ value: 'All', label: 'All' }, { value: 'Automatic', label: 'Automatic' }, { value: 'Manual', label: 'Manual' }]} onChange={setTransmission} /></div>
-            <div className="dl-ps-filter-select"><span>Fuel type</span><Select value={fuel} title="Fuel type" options={[{ value: 'All', label: 'All' }, ...Array.from(new Set(vehicles.map(v => v.fuel))).map(item => ({ value: item, label: item }))]} onChange={setFuel} /></div>
-            <div className="dl-ps-sheet-actions"><button onClick={clear}>Clear all</button><button onClick={() => setFilterOpen(false)}>Show {filtered.length} cars</button></div>
+            <div className="dl-ps-filter-actions">
+              <button type="button" onClick={clearFilters}>CLEAR ALL</button>
+              <button type="button" onClick={() => setFilterOpen(false)}>SHOW {filtered.length} CARS</button>
+            </div>
           </section>
         </div>
       )}
