@@ -35,7 +35,10 @@ export const WelcomePage: React.FC = () => {
   const goStart = () => navigate('/onboarding');
   const scrollTo = (id: string) => {
     setMenuOpen(false);
-    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    const target = document.getElementById(id);
+    if (!target) return;
+    const prefersReduced = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    target.scrollIntoView({ behavior: prefersReduced ? 'auto' : 'smooth', block: 'start' });
   };
 
   return (
