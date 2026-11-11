@@ -1,7 +1,7 @@
 // Push-only service worker. Existing home-screen installs keep the old app label until reinstall.
 // It intentionally does not cache fetch responses,
 // authenticated API calls, or user-specific application pages.
-const LOTLE_CACHE_VERSION = 'lotle-runtime-v6';
+const LOTLE_CACHE_VERSION = 'lotle-runtime-v7';
 
 self.addEventListener('install', (event) => {
   event.waitUntil(self.skipWaiting());
@@ -11,7 +11,7 @@ self.addEventListener('activate', (event) => {
   event.waitUntil((async () => {
     const names = await caches.keys();
     await Promise.all(names
-      .filter(name => /^(drivelink|lotle)-runtime-/i.test(name) && name !== LOTLE_CACHE_VERSION)
+      .filter(name => /^(drivelink|lotle)-/i.test(name) && name !== LOTLE_CACHE_VERSION)
       .map(name => caches.delete(name)));
     await self.clients.claim();
   })());
@@ -45,4 +45,39 @@ self.addEventListener('notificationclick', (event) => {
     }
     if (clients.openWindow) await clients.openWindow(target);
   })());
+});
+
+
+// Keep the dealer app installable while preserving the push handlers above.
+self.addEventListener('fetch', (event) => {
+  const request = event.request;
+  if (request.method !== 'GET') return;
+  const url = new URL(request.url);
+  if (url.origin !== self.location.origin) return;
+  if (/^\/(api|auth|functions|rest|storage)\//i.test(url.pathname) || /supabase|token|session|oauth/i.test(url.pathname)) return;
+  if (request.mode === 'navigate') {
+    event.respondWith((async () => {
+      try {
+        const response = await fetch(request);
+        if (response && response.ok && response.type === 'basic') {
+          const cache = await caches.open(LOTLE_CACHE_VERSION);
+          await cache.put('/index.html', response.clone());
+        }
+        return response;
+      } catch {
+        return (await caches.match('/index.html')) || (await caches.match('/')) || Response.error();
+      }
+    })());
+    return;
+  }
+  if (url.pathname.startsWith('/assets/') || url.pathname.startsWith('/icons/')) {
+    event.respondWith((async () => {
+      const cache = await caches.open(LOTLE_CACHE_VERSION);
+      const cached = await cache.match(request);
+      if (cached) return cached;
+      const response = await fetch(request);
+      if (response && response.ok && response.type === 'basic') await cache.put(request, response.clone());
+      return response;
+    })());
+  }
 });
