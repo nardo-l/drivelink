@@ -4,6 +4,7 @@ import { ArrowLeft, MapPin, Phone, MessageCircle, Send, Share2, Grid2x2 } from '
 import { useNavigation } from '../context/NavigationContext';
 import { storageService } from '../services/storage';
 import { supabaseService } from '../services/supabaseService';
+import { verifyEmailAddress } from '../services/emailVerificationService';
 import { isSupabaseConfigured } from '../lib/supabase';
 import type { Dealership, Vehicle } from '../types';
 
@@ -13,6 +14,7 @@ export const PublicStorefrontContactPage: React.FC<{ slug: string }> = ({ slug }
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
+  const [email, setEmail] = useState('');
   const [vehicleId, setVehicleId] = useState('');
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(true);
@@ -44,7 +46,14 @@ export const PublicStorefrontContactPage: React.FC<{ slug: string }> = ({ slug }
     if (!dealer || !name.trim() || !phone.trim() || !message.trim()) { setError('Please complete your name, phone number and message.'); return; }
     setSending(true); setError('');
     try {
-      const payload = { dealershipId: dealer.id, vehicleId: vehicleId || null, buyerName: name.trim(), buyerPhone: phone.trim(), message: message.trim(), stage: 'new' as const, source: 'form' as const, notes: 'Public dealership contact form.' };
+      if (email.trim()) {
+        const emailCheck = await verifyEmailAddress(email.trim());
+        if (!emailCheck.valid) {
+          setError(emailCheck.message || 'Please enter a valid email address.');
+          return;
+        }
+      }
+      const payload = { dealershipId: dealer.id, vehicleId: vehicleId || null, buyerName: name.trim(), buyerPhone: phone.trim(), buyerEmail: email.trim() || undefined, message: message.trim(), stage: 'new' as const, source: 'form' as const, notes: 'Public dealership contact form.' };
       if (isSupabaseConfigured()) await supabaseService.createEnquiry(payload);
       else await storageService.createEnquiryAsync(payload);
       setSent(true);
@@ -75,6 +84,7 @@ export const PublicStorefrontContactPage: React.FC<{ slug: string }> = ({ slug }
       {sent ? <div className="dl-contact-success"><strong>Enquiry sent.</strong><span>Thank you. Your message has been delivered to the dealership.</span></div> : <>
         <label>Your name<input value={name} onChange={e => setName(e.target.value)} required placeholder="Full name"/></label>
         <label>Phone / WhatsApp number<input type="tel" value={phone} onChange={e => setPhone(e.target.value)} required placeholder="+263… or +27…"/></label>
+        <label>Email address (optional)<input type="email" autoComplete="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@example.com"/></label>
         <div className="dl-contact-select"><span>Vehicle of interest (optional)</span><Select name="vehicleId" aria-label="Vehicle of interest" value={vehicleId} title="Vehicle of interest" placeholder="General enquiry" options={[{value:'',label:'General enquiry'},...vehicles.map(v=>({value:v.id,label:`${v.year} ${v.make} ${v.model}`}))]} onChange={setVehicleId}/></div>
         <label>Message<textarea rows={4} value={message} onChange={e => setMessage(e.target.value)} required placeholder="How can the dealership help?"/></label>
         {error && <p className="dl-contact-error">{error}</p>}
