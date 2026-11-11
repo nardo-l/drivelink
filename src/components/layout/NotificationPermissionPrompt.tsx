@@ -3,8 +3,10 @@ import { Bell, X } from 'lucide-react';
 import { supabase, isSupabaseConfigured } from '../../lib/supabase';
 import { storageService } from '../../services/storage';
 import { notificationService } from '../../services/notificationService';
+import { usePwaInstall } from '../../context/PwaInstallContext';
 
 export const NotificationPermissionPrompt: React.FC = () => {
+  const { openInstall } = usePwaInstall();
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [dealershipId, setDealershipId] = useState('');
@@ -69,6 +71,7 @@ export const NotificationPermissionPrompt: React.FC = () => {
       <div className="mb-4 flex items-center justify-between"><span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-100"><Bell size={21}/></span><button type="button" onClick={dismiss} aria-label="Close notification prompt" className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-100"><X size={17}/></button></div>
       <h2 id="lotle-notification-prompt-title" className="text-lg font-extrabold text-slate-950">Stay on top of new activity</h2>
       <p className="mt-2 text-sm leading-relaxed text-slate-600">Get a notification when a buyer contacts you or your showroom needs attention.</p>
+      <button type="button" onClick={openInstall} className="mt-3 w-full text-center text-xs font-bold text-slate-700 underline">Install Lotlé</button>
       <button type="button" disabled={busy} onClick={() => void enable()} className="mt-5 flex h-12 w-full items-center justify-center rounded-full bg-slate-950 text-sm font-bold text-white disabled:opacity-50">{busy ? 'Enabling…' : 'Turn on notifications'}</button>
       <button type="button" onClick={dismiss} className="mt-2 h-10 w-full text-sm font-semibold text-slate-500">Not now</button>
     </section>
