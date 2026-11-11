@@ -1,6 +1,4 @@
-// Push-only service worker. Existing home-screen installs keep the old app label until reinstall.
-// It intentionally does not cache fetch responses,
-// authenticated API calls, or user-specific application pages.
+// Lotlé service worker: preserve push delivery and cache only safe app shell assets.
 const LOTLE_CACHE_VERSION = 'lotle-runtime-v7';
 
 self.addEventListener('install', (event) => {
