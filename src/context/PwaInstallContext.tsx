@@ -35,6 +35,7 @@ export const PwaInstallProvider: React.FC<React.PropsWithChildren> = ({ children
   const [userChoiceDismissed,setUserChoiceDismissed] = useState(false);
   const [currentPath,setCurrentPath] = useState(window.location.pathname);
   const successShown = useRef(false);
+  const visitCounted = useRef(false);
   const canInstall = !!deferredPrompt;
   const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent) && !(window as any).MSStream;
   const isInstalled = installed || window.matchMedia('(display-mode: standalone)').matches || (navigator as any).standalone === true;
@@ -83,7 +84,9 @@ export const PwaInstallProvider: React.FC<React.PropsWithChildren> = ({ children
   },[isInstalled,sheet,accountKey,closeInstall]);
   useEffect(() => {
     if (manual || sheet || !accountId || !session.isLoggedIn || !session.dealershipId || !isSupabaseConfigured() || isInstalled) return;
-    if (!(currentPath === '/app' || currentPath === '/app/')) return;
+    if (!(currentPath === '/app' || currentPath === '/app/')) { visitCounted.current = false; return; }
+    if (visitCounted.current) return;
+    visitCounted.current = true;
     const excluded = /\/app\/(onboarding|upgrade|billing)(\/|$)/.test(currentPath);
     if (excluded) return;
     const shownKey = accountKey + '_shown_session';
@@ -144,7 +147,7 @@ const PwaInstallSheet: React.FC<{onDismiss:()=>void;onClose:()=>void}> = ({onDis
       <div className={'lotle-pwa-badge'+(success?' is-success':'')}><span className="lotle-pwa-mark">L</span>{success&&<span className="lotle-pwa-check">✓</span>}</div>
       <h2 id="lotle-pwa-title">{success?'Lotlé is installed':ios?'Add Lotlé to your Home Screen':'Install Lotlé'}</h2>
       {success?<p>Find it on your home screen.</p>:ios?<div className="lotle-pwa-steps"><div><span>1</span>Tap the Share icon <b>↥</b></div><div><span>2</span>Choose “Add to Home Screen”</div><div><span>3</span>Tap “Add”</div></div>:!canInstall?<p>Open the browser menu and choose Install app or Add to Home screen.</p>:<p>Open your showroom in one tap, get enquiry alerts, and use it like a normal app.</p>}
-      <button className="lotle-pwa-primary" type="button" disabled={busy} onClick={()=>{if(success)onClose();else if(ios)onClose();else if(canInstall)void promptInstall();else setHelp(true);}}>{busy?<span className="lotle-pwa-spinner"/>:success?'Done':ios?'Got it':canInstall?'Install':'Got it'}</button>
+      <button className="lotle-pwa-primary" type="button" disabled={busy} onClick={()=>{if(success)onClose();else if(ios)onDismiss();else if(canInstall)void promptInstall();else setHelp(true);}}>{busy?<span className="lotle-pwa-spinner"/>:success?'Done':ios?'Got it':canInstall?'Install':'Got it'}</button>
       {!success&&!ios&&<button className="lotle-pwa-later" type="button" onClick={onDismiss}>Not now</button>}
       {help&&<p className="lotle-pwa-help">Open the browser menu and choose Install app or Add to Home screen.</p>}
     </section>
