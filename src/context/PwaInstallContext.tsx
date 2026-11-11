@@ -1,4 +1,4 @@
-import './PwaInstallSheet.css';
+import '../components/layout/PwaInstallSheet.css';
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { Check, Share, Smartphone, Plus } from 'lucide-react';
 import { storageService } from '../services/storage';
