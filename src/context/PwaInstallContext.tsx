@@ -48,7 +48,7 @@ export const PwaInstallProvider: React.FC<React.PropsWithChildren> = ({ children
   const accountId = session.userId || session.dealershipId;
   const accountKey = accountId ? 'lotle_pwa_' + accountId : '';
   const canInstall = !!deferredPrompt;
-  const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent) && /safari/i.test(navigator.userAgent) && !/(crios|fxios|edgios)/i.test(navigator.userAgent) && !(window as any).MSStream;
+  const isIos = (/iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)) && /safari/i.test(navigator.userAgent) && !/(crios|fxios|edgios)/i.test(navigator.userAgent) && !(window as any).MSStream;
   const isInstalled = installed || window.matchMedia('(display-mode: standalone)').matches || (navigator as any).standalone === true;
   const successShown = useRef(false);
   const installedSeen = useRef(isInstalled);
@@ -65,14 +65,26 @@ export const PwaInstallProvider: React.FC<React.PropsWithChildren> = ({ children
 
   useEffect(() => {
     const update = () => setRevision(v => v + 1);
+    const countEvent = (event:Event) => {
+      const name = (event as CustomEvent<{event?:string}>).detail?.event;
+      if (!name || !accountKey) return;
+      try {
+        const key = accountKey + '_analytics';
+        const counts = JSON.parse(localStorage.getItem(key) || '{}');
+        counts[name] = Number(counts[name] || 0) + 1;
+        localStorage.setItem(key,JSON.stringify(counts));
+      } catch {}
+    };
     const markMoment = () => { if (accountKey) localStorage.setItem(accountKey + '_value_moment','1'); update(); };
     listeners.add(update);
     window.addEventListener('lotle:session-updated',update);
+    window.addEventListener('lotle:pwa-analytics',countEvent);
     window.addEventListener('lotle:vehicle-published',markMoment);
     window.addEventListener('lotle:enquiry-arrived',markMoment);
     return () => {
       listeners.delete(update);
       window.removeEventListener('lotle:session-updated',update);
+      window.removeEventListener('lotle:pwa-analytics',countEvent);
       window.removeEventListener('lotle:vehicle-published',markMoment);
       window.removeEventListener('lotle:enquiry-arrived',markMoment);
     };
@@ -249,6 +261,7 @@ const PwaInstallSheet: React.FC<{onDismiss:()=>void;onClose:()=>void}> = ({onDis
         if (success) onClose();
         else if (ios) onDismiss();
         else if (canInstall) void promptInstall();
+        else onClose();
       }}>
         {busy ? <span className="lotle-pwa-spinner"/> : success?'Done':ios?'Got it':canInstall?'Install':'Got it'}
       </button>
