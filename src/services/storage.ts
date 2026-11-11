@@ -343,13 +343,18 @@ export const storageService = {
     if (isSupabaseConfigured()) {
       const dealer = await this.getDealershipAsync();
       const liveVehicle = await supabaseService.createVehicle(vehicleData, dealer.id);
+      if (liveVehicle.status === 'available') window.dispatchEvent(new CustomEvent('lotle:vehicle-published'));
       return liveVehicle;
     }
-    return this.createVehicle(vehicleData);
+    const vehicle = this.createVehicle(vehicleData);
+    if (vehicle.status === 'available') window.dispatchEvent(new CustomEvent('lotle:vehicle-published'));
+    return vehicle;
   },
 
   async updateVehicleAsync(id: string, updates: Partial<Vehicle>): Promise<Vehicle | undefined> {
+    const previous = this.getVehicleById(id);
     const localUpdated = this.updateVehicle(id, updates);
+    if (previous && previous.status !== 'available' && updates.status === 'available') window.dispatchEvent(new CustomEvent('lotle:vehicle-published'));
     if (isSupabaseConfigured()) {
       try {
         const liveUpdated = await supabaseService.updateVehicle(id, updates);
@@ -390,11 +395,13 @@ export const storageService = {
     if (isSupabaseConfigured()) {
       try {
         const liveEnquiry = await supabaseService.createEnquiry(enquiryData);
+        window.dispatchEvent(new CustomEvent('lotle:enquiry-arrived'));
         return liveEnquiry;
       } catch (err) {
         console.error('Failed to submit enquiry to Supabase:', err);
       }
     }
+    window.dispatchEvent(new CustomEvent('lotle:enquiry-arrived'));
     return localEnquiry;
   },
 
