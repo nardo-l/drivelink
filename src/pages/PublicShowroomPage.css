@@ -356,7 +356,7 @@
 .dl-ps-card-specs { min-width:0; display:flex; flex-wrap:nowrap; align-items:center; gap:6px; overflow:hidden; margin-bottom:7px; color:rgba(255,255,255,.92); font-size:13px; line-height:1.25; white-space:nowrap; }
 .dl-ps-card-specs > span:not(.dl-ps-spec-separator) { overflow:hidden; text-overflow:ellipsis; }
 .dl-ps-spec-separator { flex:none; color:rgba(255,255,255,.75); }
-.dl-ps-card-price { display:block; font-size:24px; line-height:1.05; letter-spacing:-.04em; }
+.dl-ps-card-price { display:block; max-width:100%; overflow:hidden; text-overflow:ellipsis; font-size:24px; line-height:1.05; letter-spacing:-.04em; }
 .dl-ps-card-details { width:93px; height:33px; flex:none; display:inline-flex; align-items:center; justify-content:space-between; gap:5px; padding:4px 5px 4px 10px; border:0; border-radius:999px; background:#fff; color:#0A0F1E; font-size:10px; font-weight:750; white-space:nowrap; }
 .dl-ps-card-details i { width:23px; height:23px; flex:none; display:grid; place-items:center; border-radius:50%; background:#0A0F1E; color:#fff; font-style:normal; }
 .dl-ps-no-photo-view { background:#eef0f2; color:#444d5b; }
@@ -364,8 +364,6 @@
 .dl-ps-no-photo .dl-ps-card-overlay h3,.dl-ps-no-photo .dl-ps-card-price { color:#0A0F1E; }
 .dl-ps-no-photo .dl-ps-card-specs { color:#4d5664; }
 .dl-ps-no-photo .dl-ps-spec-separator { color:#8a909a; }
-.dl-ps-no-photo .dl-ps-card-details { background:#0A0F1E; color:#fff; }
-.dl-ps-no-photo .dl-ps-card-details i { background:#fff; color:#0A0F1E; }
 @media (min-width:768px) {
   .dl-ps-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
 }
