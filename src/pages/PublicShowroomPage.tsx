@@ -1,9 +1,9 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Select } from '../components/common/Select';
 import {
-  CarFront, Fuel, Heart, Home, MapPin, Phone,
+  CarFront, Heart, Home, MapPin, Phone,
   Search, Share2, SlidersHorizontal, X, Menu, MessageCircle, ChevronRight,
-  Clock3, ArrowUpRight
+  Clock3, ArrowRight, ArrowUpRight
 } from 'lucide-react';
 import { useNavigation } from '../context/NavigationContext';
 import { storageService } from '../services/storage';
@@ -386,7 +386,7 @@ export const PublicShowroomPage: React.FC<PublicShowroomPageProps> = ({ slug, pr
                           <strong className="dl-ps-card-price">{money(vehicle)}</strong>
                         </div>
                         <button type="button" className="dl-ps-card-details" onClick={event => { event.stopPropagation(); navigate(vehicleUrl); }}>
-                          <span>View details</span><i><ArrowUpRight size={13} /></i>
+                          <span>View details</span><i><ArrowRight size={13} /></i>
                         </button>
                       </div>
                     </div>
