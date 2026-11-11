@@ -128,7 +128,7 @@ export const PwaInstallProvider: React.FC<React.PropsWithChildren> = ({ children
 
   useEffect(() => {
     if (manual || sheet || !accountId || !session.isLoggedIn || !session.dealershipId || !isSupabaseConfigured() || isInstalled) return;
-    if (!currentPath.startsWith('/app') || /\/app\/(onboarding|upgrade|billing|pay)(\/|$)/.test(currentPath)) {
+    if (!/^\/app(?:\/(?:analytics|vehicles|enquiries|more|settings|storefront|notifications))?\/?$/.test(currentPath)) {
       visitCounted.current = false;
       return;
     }
