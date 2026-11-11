@@ -86,13 +86,11 @@ export const PwaInstallProvider: React.FC<React.PropsWithChildren> = ({ children
   useEffect(() => {
     if (manual || sheet || !accountId || !session.isLoggedIn || !session.dealershipId || !isSupabaseConfigured() || isInstalled) return;
     if (!currentPath.startsWith('/app') || /\/app\/(onboarding|upgrade|billing)(\/|$)/.test(currentPath)) { visitCounted.current = false; return; }
-    if (visitCounted.current) return;
-    visitCounted.current = true;
     const shownKey = accountKey + '_shown_session';
-    if (sessionStorage.getItem(shownKey)) return;
     const visitsKey = accountKey + '_visits';
-    const visits = Number(localStorage.getItem(visitsKey) || 0) + 1;
-    localStorage.setItem(visitsKey,String(visits));
+    let visits = Number(localStorage.getItem(visitsKey) || 0);
+    if (!visitCounted.current) { visitCounted.current = true; visits += 1; localStorage.setItem(visitsKey,String(visits)); }
+    if (sessionStorage.getItem(shownKey)) return;
     let active = true;
     const checkMoment = async () => {
       try {
