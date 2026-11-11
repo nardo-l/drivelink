@@ -43,6 +43,7 @@ function AppContent() {
     updateBrandMetadata({ title: currentPath === '/' || currentPath === '' ? homeTitle : pageTitle(page) });
   }, [currentPath]);
   const [sessionChecked, setSessionChecked] = React.useState(false);
+  React.useEffect(() => { if (sessionChecked) window.dispatchEvent(new Event('lotle:session-updated')); }, [sessionChecked]);
   const isDemo = storageService.isDemoModeActive();
   const isConfigured = isSupabaseConfigured();
   const previewQuery = typeof window !== 'undefined' ? `${window.location.search}&${window.location.hash.split('?')[1] || ''}` : '';
