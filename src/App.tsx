@@ -27,6 +27,7 @@ import { Check } from 'lucide-react';
 import { BottomNav } from './components/layout/BottomNav';
 import { NotificationPermissionPrompt } from './components/layout/NotificationPermissionPrompt';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
+import { PwaInstallProvider } from './context/PwaInstallContext';
 
 function LegacyStorefrontRedirect({ slug }: { slug: string }) {
   const { navigate } = useNavigation();
@@ -299,9 +300,11 @@ function AppContent() {
 export default function App() {
   return (
     <ErrorBoundary label="application">
-      <NavigationProvider>
-        <AppContent />
-      </NavigationProvider>
+      <PwaInstallProvider>
+        <NavigationProvider>
+          <AppContent />
+        </NavigationProvider>
+      </PwaInstallProvider>
     </ErrorBoundary>
   );
 }
