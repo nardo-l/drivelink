@@ -15,9 +15,9 @@ export default function handler(_request: { method?: string }, response: {
     background_color: '#FFFFFF',
     theme_color: '#0A0F1E',
     icons: [
-      { src: absoluteUrl('/icons/lotle-192.png'), sizes: '192x192', type: 'image/png', purpose: 'any' },
-      { src: absoluteUrl('/icons/lotle-512.png'), sizes: '512x512', type: 'image/png', purpose: 'any' },
-      { src: absoluteUrl('/icons/lotle-maskable-512.png'), sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+      { src: absoluteUrl('/api/icon?size=192'), sizes: '192x192', type: 'image/png', purpose: 'any' },
+      { src: absoluteUrl('/api/icon?size=512'), sizes: '512x512', type: 'image/png', purpose: 'any' },
+      { src: absoluteUrl('/api/icon?size=512&maskable=1'), sizes: '512x512', type: 'image/png', purpose: 'maskable' },
     ],
   };
   response.setHeader('Content-Type', 'application/manifest+json; charset=utf-8');
