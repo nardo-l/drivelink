@@ -19,7 +19,7 @@ export function capturePwaInstallEvents() {
     deferredPrompt = event as InstallPromptEvent;
     notify();
   });
-  window.addEventListener('appinstalled', () => { installed = true; deferredPrompt = null; notify(); });
+  window.addEventListener('appinstalled', () => { installed = true; deferredPrompt = null; window.dispatchEvent(new CustomEvent('lotle:pwa-analytics',{detail:{event:'installed'}})); notify(); });
   window.matchMedia('(display-mode: standalone)').addEventListener?.('change', event => { if (event.matches) { installed = true; notify(); } });
 }
 export const usePwaInstall = () => {
@@ -32,7 +32,6 @@ export const PwaInstallProvider: React.FC<React.PropsWithChildren> = ({ children
   const [sheet,setSheet] = useState<'install'|'success'|null>(null);
   const [busy,setBusy] = useState(false);
   const [manual,setManual] = useState(false);
-  const [userChoiceDismissed,setUserChoiceDismissed] = useState(false);
   const [currentPath,setCurrentPath] = useState(window.location.pathname);
   const successShown = useRef(false);
   const visitCounted = useRef(false);
@@ -51,10 +50,11 @@ export const PwaInstallProvider: React.FC<React.PropsWithChildren> = ({ children
   const accountId = session.userId || session.dealershipId;
   const accountKey = accountId ? 'lotle_pwa_' + accountId : '';
   const closeInstall = useCallback(() => { setSheet(null); setBusy(false); setManual(false); },[]);
-  const openInstall = useCallback(() => { setManual(true); setSheet('install'); },[]);
+  const openInstall = useCallback(() => { setManual(true); if(accountKey) sessionStorage.setItem(accountKey + '_shown_session','1'); setSheet('install'); },[accountKey]);
   const promptInstall = useCallback(async () => {
     if (!deferredPrompt || busy) return;
     const event = deferredPrompt;
+    window.dispatchEvent(new CustomEvent('lotle:pwa-analytics',{detail:{event:'install_tapped'}}));
     setBusy(true);
     try {
       await event.prompt();
@@ -68,7 +68,8 @@ export const PwaInstallProvider: React.FC<React.PropsWithChildren> = ({ children
         if (accountKey) localStorage.setItem(accountKey + '_success','1');
         window.dispatchEvent(new CustomEvent('lotle:pwa-analytics',{detail:{event:'accepted'}}));
       } else {
-        setUserChoiceDismissed(true);
+        if (accountKey) { const count = Number(localStorage.getItem(accountKey + '_dismissals') || 0) + 1; localStorage.setItem(accountKey + '_dismissals',String(count)); localStorage.setItem(accountKey + '_until',String(Date.now() + 14*24*60*60*1000)); }
+        window.dispatchEvent(new CustomEvent('lotle:pwa-analytics',{detail:{event:'dismissed'}}));
         closeInstall();
       }
     } catch { closeInstall(); }
@@ -84,11 +85,9 @@ export const PwaInstallProvider: React.FC<React.PropsWithChildren> = ({ children
   },[isInstalled,sheet,accountKey,closeInstall]);
   useEffect(() => {
     if (manual || sheet || !accountId || !session.isLoggedIn || !session.dealershipId || !isSupabaseConfigured() || isInstalled) return;
-    if (!(currentPath === '/app' || currentPath === '/app/')) { visitCounted.current = false; return; }
+    if (!currentPath.startsWith('/app') || /\/app\/(onboarding|upgrade|billing)(\/|$)/.test(currentPath)) { visitCounted.current = false; return; }
     if (visitCounted.current) return;
     visitCounted.current = true;
-    const excluded = /\/app\/(onboarding|upgrade|billing)(\/|$)/.test(currentPath);
-    if (excluded) return;
     const shownKey = accountKey + '_shown_session';
     if (sessionStorage.getItem(shownKey)) return;
     const visitsKey = accountKey + '_visits';
@@ -104,6 +103,7 @@ export const PwaInstallProvider: React.FC<React.PropsWithChildren> = ({ children
         const dismissals = Number(localStorage.getItem(accountKey + '_dismissals') || 0);
         const until = Number(localStorage.getItem(accountKey + '_until') || 0);
         if (!active || !hasMoment || (!canInstall && !isIos) || dismissals >= 3 || Date.now() < until) return;
+        if (document.querySelector('[role="dialog"][aria-modal="true"]')) return;
         if (sessionStorage.getItem(shownKey)) return;
         sessionStorage.setItem(shownKey,'1');
         window.dispatchEvent(new CustomEvent('lotle:pwa-analytics',{detail:{event:'shown'}}));
