@@ -21,6 +21,7 @@ export const PublicStorefrontContactPage: React.FC<{ slug: string }> = ({ slug }
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
   const [error, setError] = useState('');
+  const [emailNotice, setEmailNotice] = useState('');
 
   useEffect(() => {
     let active = true;
@@ -41,18 +42,19 @@ export const PublicStorefrontContactPage: React.FC<{ slug: string }> = ({ slug }
     return () => { active = false; };
   }, [slug]);
 
+  // Advisory only: runs when the field loses focus and never gates the enquiry.
+  const checkEmailHint = async () => {
+    const value = email.trim();
+    if (!value) { setEmailNotice(''); return; }
+    const result = await verifyEmailAddress(value);
+    setEmailNotice(result.message || (result.suggestion ? `Did you mean ${value.split('@')[0]}@${result.suggestion}?` : ''));
+  };
+
   const submit = async (event: React.FormEvent) => {
     event.preventDefault();
     if (!dealer || !name.trim() || !phone.trim() || !message.trim()) { setError('Please complete your name, phone number and message.'); return; }
     setSending(true); setError('');
     try {
-      if (email.trim()) {
-        const emailCheck = await verifyEmailAddress(email.trim());
-        if (!emailCheck.valid) {
-          setError(emailCheck.message || 'Please enter a valid email address.');
-          return;
-        }
-      }
       const payload = { dealershipId: dealer.id, vehicleId: vehicleId || null, buyerName: name.trim(), buyerPhone: phone.trim(), buyerEmail: email.trim() || undefined, message: message.trim(), stage: 'new' as const, source: 'form' as const, notes: 'Public dealership contact form.' };
       if (isSupabaseConfigured()) await supabaseService.createEnquiry(payload);
       else await storageService.createEnquiryAsync(payload);
@@ -84,7 +86,7 @@ export const PublicStorefrontContactPage: React.FC<{ slug: string }> = ({ slug }
       {sent ? <div className="dl-contact-success"><strong>Enquiry sent.</strong><span>Thank you. Your message has been delivered to the dealership.</span></div> : <>
         <label>Your name<input value={name} onChange={e => setName(e.target.value)} required placeholder="Full name"/></label>
         <label>Phone / WhatsApp number<input type="tel" value={phone} onChange={e => setPhone(e.target.value)} required placeholder="+263… or +27…"/></label>
-        <label>Email address (optional)<input type="email" autoComplete="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@example.com"/></label>
+        <label>Email address (optional)<input type="text" inputMode="email" autoComplete="email" value={email} onChange={e => { setEmail(e.target.value); setEmailNotice(''); }} onBlur={checkEmailHint} placeholder="you@example.com"/>{emailNotice && <small className="dl-contact-email-hint">{emailNotice}</small>}</label>
         <div className="dl-contact-select"><span>Vehicle of interest (optional)</span><Select name="vehicleId" aria-label="Vehicle of interest" value={vehicleId} title="Vehicle of interest" placeholder="General enquiry" options={[{value:'',label:'General enquiry'},...vehicles.map(v=>({value:v.id,label:`${v.year} ${v.make} ${v.model}`}))]} onChange={setVehicleId}/></div>
         <label>Message<textarea rows={4} value={message} onChange={e => setMessage(e.target.value)} required placeholder="How can the dealership help?"/></label>
         {error && <p className="dl-contact-error">{error}</p>}
