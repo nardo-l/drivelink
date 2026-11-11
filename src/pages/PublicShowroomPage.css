@@ -349,6 +349,7 @@
 .dl-ps-card.is-sold .dl-ps-card-img { filter:grayscale(.65) brightness(.72); opacity:.78; }
 .dl-ps-card.is-sold .dl-ps-card-gradient { background:linear-gradient(0deg,rgba(10,15,30,.9) 0%,rgba(10,15,30,.55) 55%,rgba(10,15,30,.04) 100%); }
 .dl-ps-status-pill { top:12px; left:12px; }
+.dl-ps-status-pill.is-reserved { background:#fff0d6; color:#925d0b; }
 .dl-ps-heart-btn { width:35px; height:35px; top:12px; right:12px; }
 .dl-ps-card-overlay { left:16px; right:16px; bottom:16px; display:flex; align-items:flex-end; gap:10px; }
 .dl-ps-card-copy { flex:1 1 auto; min-width:0; }
