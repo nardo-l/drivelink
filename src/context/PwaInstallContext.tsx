@@ -11,6 +11,10 @@ let deferredPrompt: InstallPromptEvent | null = null;
 let installed = false;
 const listeners = new Set<() => void>();
 const notify = () => listeners.forEach(listener => listener());
+const getPwaPath = () => {
+  const hash = window.location.hash;
+  return hash.startsWith('#/') ? hash.slice(1).split('?')[0] : window.location.pathname;
+};
 
 export function capturePwaInstallEvents() {
   if (typeof window === 'undefined' || (window as any).__lotlePwaEventsCaptured) return;
@@ -43,7 +47,7 @@ export const PwaInstallProvider: React.FC<React.PropsWithChildren> = ({ children
   const [sheet,setSheet] = useState<'install'|'success'|null>(null);
   const [busy,setBusy] = useState(false);
   const [manual,setManual] = useState(false);
-  const [currentPath,setCurrentPath] = useState(window.location.pathname);
+  const [currentPath,setCurrentPath] = useState(getPwaPath);
   const session = storageService.getUserSession();
   const accountId = session.userId || session.dealershipId;
   const accountKey = accountId ? 'lotle_pwa_' + accountId : '';
@@ -91,7 +95,7 @@ export const PwaInstallProvider: React.FC<React.PropsWithChildren> = ({ children
   },[accountKey]);
 
   useEffect(() => {
-    const onPath = () => setCurrentPath(window.location.pathname);
+    const onPath = () => setCurrentPath(getPwaPath());
     window.addEventListener('popstate',onPath);
     const originalPush = history.pushState;
     history.pushState = function(...args) { originalPush.apply(this,args); onPath(); };
