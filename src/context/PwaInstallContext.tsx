@@ -35,11 +35,12 @@ export const PwaInstallProvider: React.FC<React.PropsWithChildren> = ({ children
   const [manual,setManual] = useState(false);
   const [currentPath,setCurrentPath] = useState(window.location.pathname);
   const successShown = useRef(false);
+  const installedSeen = useRef(false);
   const visitCounted = useRef(false);
   const canInstall = !!deferredPrompt;
   const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent) && /safari/i.test(navigator.userAgent) && !/(crios|fxios|edgios)/i.test(navigator.userAgent) && !(window as any).MSStream;
   const isInstalled = installed || window.matchMedia('(display-mode: standalone)').matches || (navigator as any).standalone === true;
-  useEffect(() => { const update = () => refresh(v => v + 1); listeners.add(update); const moment = () => { if (accountKey) localStorage.setItem(accountKey + '_value_moment','1'); update(); }; window.addEventListener('lotle:vehicle-published',moment); window.addEventListener('lotle:enquiry-arrived',moment); return () => { listeners.delete(update); window.removeEventListener('lotle:vehicle-published',moment); window.removeEventListener('lotle:enquiry-arrived',moment); }; }, [accountKey]);
+  useEffect(() => { const update = () => refresh(v => v + 1); listeners.add(update); window.addEventListener('lotle:session-updated',update); const moment = () => { if (accountKey) localStorage.setItem(accountKey + '_value_moment','1'); update(); }; window.addEventListener('lotle:vehicle-published',moment); window.addEventListener('lotle:enquiry-arrived',moment); return () => { listeners.delete(update); window.removeEventListener('lotle:session-updated',update); window.removeEventListener('lotle:vehicle-published',moment); window.removeEventListener('lotle:enquiry-arrived',moment); }; }, [accountKey]);
   useEffect(() => {
     const onPath = () => setCurrentPath(window.location.pathname);
     window.addEventListener('popstate',onPath);
