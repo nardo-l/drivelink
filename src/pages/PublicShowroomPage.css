@@ -338,3 +338,41 @@
   .dl-pd-dealer > img,.dl-pd-dealer-initials {width:42px;height:42px}
   .dl-pd-dealer > button {grid-column:2;justify-self:start;padding:0}
 }
+
+
+/* Public showroom listing cards */
+.dl-ps-grid { grid-template-columns:minmax(0,1fr); gap:16px; }
+.dl-ps-card { aspect-ratio:4/3; border:0; box-shadow:0 2px 10px rgba(10,15,30,.045); }
+.dl-ps-card-media { overflow:hidden; }
+.dl-ps-card-img { object-position:center; }
+.dl-ps-card-gradient { inset:55% 0 0; background:linear-gradient(0deg,rgba(10,15,30,.85) 0%,rgba(10,15,30,.48) 52%,rgba(10,15,30,0) 100%); }
+.dl-ps-card.is-sold .dl-ps-card-img { filter:grayscale(.65) brightness(.72); opacity:.78; }
+.dl-ps-card.is-sold .dl-ps-card-gradient { background:linear-gradient(0deg,rgba(10,15,30,.9) 0%,rgba(10,15,30,.55) 55%,rgba(10,15,30,.04) 100%); }
+.dl-ps-status-pill { top:12px; left:12px; }
+.dl-ps-heart-btn { width:35px; height:35px; top:12px; right:12px; }
+.dl-ps-card-overlay { left:16px; right:16px; bottom:16px; display:flex; align-items:flex-end; gap:10px; }
+.dl-ps-card-copy { flex:1 1 auto; min-width:0; }
+.dl-ps-card-overlay h3 { overflow:hidden; margin:0 0 5px; font-size:17px; line-height:1.2; white-space:nowrap; text-overflow:ellipsis; }
+.dl-ps-card-specs { min-width:0; display:flex; flex-wrap:nowrap; align-items:center; gap:6px; overflow:hidden; margin-bottom:7px; color:rgba(255,255,255,.92); font-size:13px; line-height:1.25; white-space:nowrap; }
+.dl-ps-card-specs > span:not(.dl-ps-spec-separator) { overflow:hidden; text-overflow:ellipsis; }
+.dl-ps-spec-separator { flex:none; color:rgba(255,255,255,.75); }
+.dl-ps-card-price { display:block; font-size:24px; line-height:1.05; letter-spacing:-.04em; }
+.dl-ps-card-details { width:93px; height:33px; flex:none; display:inline-flex; align-items:center; justify-content:space-between; gap:5px; padding:4px 5px 4px 10px; border:0; border-radius:999px; background:#fff; color:#0A0F1E; font-size:10px; font-weight:750; white-space:nowrap; }
+.dl-ps-card-details i { width:23px; height:23px; flex:none; display:grid; place-items:center; border-radius:50%; background:#0A0F1E; color:#fff; font-style:normal; }
+.dl-ps-no-photo-view { background:#eef0f2; color:#444d5b; }
+.dl-ps-no-photo .dl-ps-card-overlay { color:#0A0F1E; }
+.dl-ps-no-photo .dl-ps-card-overlay h3,.dl-ps-no-photo .dl-ps-card-price { color:#0A0F1E; }
+.dl-ps-no-photo .dl-ps-card-specs { color:#4d5664; }
+.dl-ps-no-photo .dl-ps-spec-separator { color:#8a909a; }
+.dl-ps-no-photo .dl-ps-card-details { background:#0A0F1E; color:#fff; }
+.dl-ps-no-photo .dl-ps-card-details i { background:#fff; color:#0A0F1E; }
+@media (min-width:768px) {
+  .dl-ps-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+}
+@media (max-width:390px) {
+  .dl-ps-card-overlay { left:16px; right:16px; bottom:16px; }
+  .dl-ps-card-overlay h3 { font-size:16px; }
+  .dl-ps-card-specs { gap:5px; font-size:11px; }
+  .dl-ps-card-price { font-size:21px; }
+  .dl-ps-card-details { width:88px; }
+}
