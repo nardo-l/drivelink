@@ -1,4 +1,5 @@
 import './PwaInstallSheet.css';
+import { Check, Share, Smartphone, Plus } from 'lucide-react';
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { storageService } from '../services/storage';
 import { isSupabaseConfigured } from '../lib/supabase';
@@ -28,7 +29,7 @@ export const usePwaInstall = () => {
   return value;
 };
 export const PwaInstallProvider: React.FC<React.PropsWithChildren> = ({ children }) => {
-  const [, refresh] = useState(0);
+  const [revision, refresh] = useState(0);
   const [sheet,setSheet] = useState<'install'|'success'|null>(null);
   const [busy,setBusy] = useState(false);
   const [manual,setManual] = useState(false);
@@ -36,9 +37,9 @@ export const PwaInstallProvider: React.FC<React.PropsWithChildren> = ({ children
   const successShown = useRef(false);
   const visitCounted = useRef(false);
   const canInstall = !!deferredPrompt;
-  const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent) && !(window as any).MSStream;
+  const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent) && /safari/i.test(navigator.userAgent) && !/(crios|fxios|edgios)/i.test(navigator.userAgent) && !(window as any).MSStream;
   const isInstalled = installed || window.matchMedia('(display-mode: standalone)').matches || (navigator as any).standalone === true;
-  useEffect(() => { const update = () => refresh(v => v + 1); listeners.add(update); return () => { listeners.delete(update); }; }, []);
+  useEffect(() => { const update = () => refresh(v => v + 1); listeners.add(update); const moment = () => { if (accountKey) localStorage.setItem(accountKey + '_value_moment','1'); update(); }; window.addEventListener('lotle:vehicle-published',moment); window.addEventListener('lotle:enquiry-arrived',moment); return () => { listeners.delete(update); window.removeEventListener('lotle:vehicle-published',moment); window.removeEventListener('lotle:enquiry-arrived',moment); }; }, [accountKey]);
   useEffect(() => {
     const onPath = () => setCurrentPath(window.location.pathname);
     window.addEventListener('popstate',onPath);
@@ -96,7 +97,7 @@ export const PwaInstallProvider: React.FC<React.PropsWithChildren> = ({ children
       try {
         const [vehicles,enquiries] = await Promise.all([storageService.getVehiclesAsync(),storageService.getEnquiriesAsync()]);
         const momentKey = accountKey + '_value_moment';
-        if (vehicles.some(v => v.status === 'available') || enquiries.length > 0) localStorage.setItem(momentKey,'1');
+        const snapshot = { vehicles: vehicles.filter(v => v.status === 'available').length, enquiries: enquiries.length };\n        const baselineKey = accountKey + '_baseline';\n        const baseline = localStorage.getItem(baselineKey);\n        if (!baseline) localStorage.setItem(baselineKey,JSON.stringify(snapshot));\n        else { try { const previous = JSON.parse(baseline); if (snapshot.vehicles > previous.vehicles || snapshot.enquiries > previous.enquiries) localStorage.setItem(momentKey,'1'); localStorage.setItem(baselineKey,JSON.stringify({vehicles:Math.max(snapshot.vehicles,previous.vehicles||0),enquiries:Math.max(snapshot.enquiries,previous.enquiries||0)})); } catch { localStorage.setItem(baselineKey,JSON.stringify(snapshot)); } }
         const hasMoment = localStorage.getItem(momentKey) === '1' || visits >= 3;
         const dismissals = Number(localStorage.getItem(accountKey + '_dismissals') || 0);
         const until = Number(localStorage.getItem(accountKey + '_until') || 0);
@@ -110,7 +111,7 @@ export const PwaInstallProvider: React.FC<React.PropsWithChildren> = ({ children
     };
     void checkMoment();
     return () => { active = false; };
-  },[currentPath,accountId,session.isLoggedIn,session.dealershipId,accountKey,canInstall,isIos,isInstalled,manual,sheet]);
+  },[currentPath,accountId,session.isLoggedIn,session.dealershipId,accountKey,canInstall,isIos,isInstalled,manual,sheet,revision]);
   const dismiss = useCallback(() => {
     if (accountKey) {
       const count = Number(localStorage.getItem(accountKey + '_dismissals') || 0) + 1;
@@ -142,9 +143,9 @@ const PwaInstallSheet: React.FC<{onDismiss:()=>void;onClose:()=>void}> = ({onDis
   return <div className="lotle-pwa-overlay" onMouseDown={e=>{if(e.target===e.currentTarget)onDismiss();}}>
     <section ref={panel} className="lotle-pwa-sheet" role="dialog" aria-modal="true" aria-labelledby="lotle-pwa-title" onTouchStart={e=>{touchY.current=e.touches[0]?.clientY??null;}} onTouchEnd={e=>{if(touchY.current!==null&&(e.changedTouches[0]?.clientY??0)-touchY.current>70)onDismiss();touchY.current=null;}}>
       <div className="lotle-pwa-handle"/>
-      <div className={'lotle-pwa-badge'+(success?' is-success':'')}><span className="lotle-pwa-mark">L</span>{success&&<span className="lotle-pwa-check">✓</span>}</div>
+      <div className={'lotle-pwa-badge'+(success?' is-success':'')}><img className="lotle-pwa-app-icon" src="/icon.svg" alt="Lotlé app icon"/>{success&&<span className="lotle-pwa-check"><Check size={15}/></span>}</div>
       <h2 id="lotle-pwa-title">{success?'Lotlé is installed':ios?'Add Lotlé to your Home Screen':'Install Lotlé'}</h2>
-      {success?<p>Find it on your home screen.</p>:ios?<div className="lotle-pwa-steps"><div><span>1</span>Tap the Share icon <b>↥</b></div><div><span>2</span>Choose “Add to Home Screen”</div><div><span>3</span>Tap “Add”</div></div>:!canInstall?<p>Open the browser menu and choose Install app or Add to Home screen.</p>:<p>Open your showroom in one tap, get enquiry alerts, and use it like a normal app.</p>}
+      {success?<p>Find it on your home screen.</p>:ios?<div className="lotle-pwa-steps"><div><span>1</span><Share size={17}/>Tap the Share icon</div><div><span>2</span><Smartphone size={17}/>Choose “Add to Home Screen”</div><div><span>3</span><Plus size={17}/>Tap “Add”</div></div>:!canInstall?<p>Open the browser menu and choose Install app or Add to Home screen.</p>:<p>Open your showroom in one tap, get enquiry alerts, and use it like a normal app.</p>}
       <button className="lotle-pwa-primary" type="button" disabled={busy} onClick={()=>{if(success)onClose();else if(ios)onDismiss();else if(canInstall)void promptInstall();else setHelp(true);}}>{busy?<span className="lotle-pwa-spinner"/>:success?'Done':ios?'Got it':canInstall?'Install':'Got it'}</button>
       {!success&&!ios&&<button className="lotle-pwa-later" type="button" onClick={onDismiss}>Not now</button>}
       {help&&<p className="lotle-pwa-help">Open the browser menu and choose Install app or Add to Home screen.</p>}
