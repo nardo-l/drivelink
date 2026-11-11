@@ -1,3 +1,4 @@
+import './PwaInstallSheet.css';
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { storageService } from '../services/storage';
 import { isSupabaseConfigured } from '../lib/supabase';
