@@ -158,8 +158,11 @@ export const PwaInstallProvider: React.FC<React.PropsWithChildren> = ({ children
     }
     if (sessionStorage.getItem(shownKey)) return;
     let active = true;
+    let checking = false;
     let retryTimer: number | undefined;
     const checkMoment = async () => {
+      if (checking) return;
+      checking = true;
       try {
         const [vehicles,enquiries] = await Promise.all([storageService.getVehiclesAsync(),storageService.getEnquiriesAsync()]);
         const momentKey = accountKey + '_value_moment';
@@ -193,10 +196,11 @@ export const PwaInstallProvider: React.FC<React.PropsWithChildren> = ({ children
         sessionStorage.setItem(shownKey,'1');
         window.dispatchEvent(new CustomEvent('lotle:pwa-analytics',{detail:{event:'shown'}}));
         setSheet('install');
-      } catch {}
+      } catch {} finally { checking = false; }
     };
     void checkMoment();
-    return () => { active = false; if (retryTimer) window.clearTimeout(retryTimer); };
+    const poll = window.setInterval(() => { if (localStorage.getItem(accountKey + '_value_moment') !== '1') void checkMoment(); },30000);
+    return () => { active = false; window.clearInterval(poll); if (retryTimer) window.clearTimeout(retryTimer); };
   },[currentPath,accountId,session.isLoggedIn,session.dealershipId,accountKey,canInstall,isIos,isInstalled,manual,sheet,revision]);
 
   const dismiss = useCallback(() => {
