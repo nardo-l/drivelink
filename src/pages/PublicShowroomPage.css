@@ -351,15 +351,16 @@
 .dl-ps-status-pill { top:12px; left:12px; }
 .dl-ps-status-pill.is-reserved { background:#fff0d6; color:#925d0b; }
 .dl-ps-heart-btn { width:35px; height:35px; top:12px; right:12px; }
-.dl-ps-card-overlay { left:16px; right:16px; bottom:16px; display:flex; align-items:flex-end; gap:10px; }
-.dl-ps-card-copy { flex:1 1 auto; min-width:0; }
+.dl-ps-card-link { position:absolute; inset:0; display:block; color:inherit; text-decoration:none; border-radius:inherit; }
+.dl-ps-card-link:focus-visible { z-index:2; outline:3px solid #f28a32; outline-offset:-4px; }
+.dl-ps-card-link:active { transform:scale(.99); opacity:.94; transition:transform 120ms ease,opacity 120ms ease; }
+.dl-ps-card-overlay { left:16px; right:16px; bottom:16px; display:block; }
+.dl-ps-card-copy { width:100%; min-width:0; }
 .dl-ps-card-overlay h3 { overflow:hidden; margin:0 0 5px; font-size:17px; line-height:1.2; white-space:nowrap; text-overflow:ellipsis; }
 .dl-ps-card-specs { min-width:0; display:flex; flex-wrap:nowrap; align-items:center; gap:6px; overflow:hidden; margin-bottom:7px; color:rgba(255,255,255,.92); font-size:13px; line-height:1.25; white-space:nowrap; }
 .dl-ps-card-specs > span:not(.dl-ps-spec-separator) { overflow:hidden; text-overflow:ellipsis; }
 .dl-ps-spec-separator { flex:none; color:rgba(255,255,255,.75); }
-.dl-ps-card-price { display:block; max-width:100%; overflow:hidden; text-overflow:ellipsis; font-size:24px; line-height:1.05; letter-spacing:-.04em; }
-.dl-ps-card-details { width:93px; height:33px; flex:none; display:inline-flex; align-items:center; justify-content:space-between; gap:5px; padding:4px 5px 4px 10px; border:0; border-radius:999px; background:#fff; color:#0A0F1E; font-size:10px; font-weight:750; white-space:nowrap; }
-.dl-ps-card-details i { width:23px; height:23px; flex:none; display:grid; place-items:center; border-radius:50%; background:#0A0F1E; color:#fff; font-style:normal; }
+.dl-ps-card-price { display:block; width:100%; max-width:100%; overflow:hidden; text-align:right; text-overflow:ellipsis; font-size:24px; line-height:1.05; letter-spacing:-.04em; }
 .dl-ps-no-photo-view { background:#eef0f2; color:#444d5b; }
 .dl-ps-no-photo .dl-ps-card-overlay { color:#0A0F1E; }
 .dl-ps-no-photo .dl-ps-card-overlay h3,.dl-ps-no-photo .dl-ps-card-price { color:#0A0F1E; }
@@ -373,5 +374,8 @@
   .dl-ps-card-overlay h3 { font-size:16px; }
   .dl-ps-card-specs { gap:5px; font-size:11px; }
   .dl-ps-card-price { font-size:21px; }
-  .dl-ps-card-details { width:88px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dl-ps-card-link:active { transform:none; opacity:1; transition:none; }
 }
