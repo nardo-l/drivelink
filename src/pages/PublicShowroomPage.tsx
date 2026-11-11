@@ -3,7 +3,7 @@ import { Select } from '../components/common/Select';
 import {
   CarFront, Heart, Home, MapPin, Phone,
   Search, Share2, SlidersHorizontal, X, Menu, MessageCircle, ChevronRight,
-  Clock3, ArrowRight, ArrowUpRight
+  Clock3, ArrowUpRight
 } from 'lucide-react';
 import { useNavigation } from '../context/NavigationContext';
 import { storageService } from '../services/storage';
@@ -361,35 +361,32 @@ export const PublicShowroomPage: React.FC<PublicShowroomPageProps> = ({ slug, pr
                 ].filter(Boolean);
                 const vehicleUrl = '/' + dealer.slug + '/vehicle/' + vehicle.id;
                 return (
-                  <article key={vehicle.id} className={'dl-ps-card ' + (isSold ? 'is-sold' : '') + (!hasPhoto ? ' no-photo' : '')}
-                    onClick={() => navigate(vehicleUrl)} role="link" tabIndex={0}
-                    onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); navigate(vehicleUrl); } }}>
-                    <div className="dl-ps-card-media">
-                      {hasPhoto ? (
-                        <>
-                          {!loadedImages.includes(vehicle.id) && <div className="dl-ps-image-skeleton" />}
-                          <img src={imageUrl(vehicle.photos[0])} alt={title} className={'dl-ps-card-img ' + (loadedImages.includes(vehicle.id) ? 'is-loaded' : '')}
-                            loading={index === 0 ? 'eager' : 'lazy'} fetchPriority={index === 0 ? 'high' : 'auto'} decoding="async"
-                            width={1200} height={900} onLoad={() => setLoadedImages(current => current.includes(vehicle.id) ? current : [...current, vehicle.id])}
-                            onError={() => setLoadedImages(current => current.includes(vehicle.id) ? current : [...current, vehicle.id])} />
-                        </>
-                      ) : <div className="dl-ps-no-photo-view"><CarFront size={58} /><span>Photo coming soon</span></div>}
-                      {hasPhoto && <div className="dl-ps-card-gradient" />}
-                      {(isReserved || isSold) && <span className={'dl-ps-status-pill ' + (isSold ? 'is-sold' : 'is-reserved')}>{isSold ? 'Sold' : 'Reserved'}</span>}
-                      <button type="button" className={'dl-ps-heart-btn ' + (isSaved ? 'is-saved' : '')} onClick={event => toggleSave(vehicle.id, event)} aria-label={isSaved ? 'Remove from saved' : 'Save car'}>
-                        <Heart size={18} fill={isSaved ? 'currentColor' : 'none'} />
-                      </button>
-                      <div className="dl-ps-card-overlay">
-                        <div className="dl-ps-card-copy">
-                          <h3 title={title}>{title}</h3>
-                          {specs.length > 0 && <div className="dl-ps-card-specs">{specs.map((spec, specIndex) => <React.Fragment key={spec}>{specIndex > 0 && <span className="dl-ps-spec-separator">•</span>}<span>{spec}</span></React.Fragment>)}</div>}
-                          <strong className="dl-ps-card-price">{money(vehicle)}</strong>
+                  <article key={vehicle.id} className={'dl-ps-card ' + (isSold ? 'is-sold' : '') + (!hasPhoto ? ' no-photo' : '')}>
+                    <a className="dl-ps-card-link" href={vehicleUrl} aria-label={'View ' + title}>
+                      <div className="dl-ps-card-media">
+                        {hasPhoto ? (
+                          <>
+                            {!loadedImages.includes(vehicle.id) && <div className="dl-ps-image-skeleton" />}
+                            <img src={imageUrl(vehicle.photos[0])} alt={title} className={'dl-ps-card-img ' + (loadedImages.includes(vehicle.id) ? 'is-loaded' : '')}
+                              loading={index === 0 ? 'eager' : 'lazy'} fetchPriority={index === 0 ? 'high' : 'auto'} decoding="async"
+                              width={1200} height={900} onLoad={() => setLoadedImages(current => current.includes(vehicle.id) ? current : [...current, vehicle.id])}
+                              onError={() => setLoadedImages(current => current.includes(vehicle.id) ? current : [...current, vehicle.id])} />
+                          </>
+                        ) : <div className="dl-ps-no-photo-view"><CarFront size={58} /><span>Photo coming soon</span></div>}
+                        {hasPhoto && <div className="dl-ps-card-gradient" />}
+                        {(isReserved || isSold) && <span className={'dl-ps-status-pill ' + (isSold ? 'is-sold' : 'is-reserved')}>{isSold ? 'Sold' : 'Reserved'}</span>}
+                        <div className="dl-ps-card-overlay">
+                          <div className="dl-ps-card-copy">
+                            <h3 title={title}>{title}</h3>
+                            {specs.length > 0 && <div className="dl-ps-card-specs">{specs.map((spec, specIndex) => <React.Fragment key={spec}>{specIndex > 0 && <span className="dl-ps-spec-separator">•</span>}<span>{spec}</span></React.Fragment>)}</div>}
+                            <strong className="dl-ps-card-price">{money(vehicle)}</strong>
+                          </div>
                         </div>
-                        <button type="button" className="dl-ps-card-details" onClick={event => { event.stopPropagation(); navigate(vehicleUrl); }}>
-                          <span>View details</span><i><ArrowRight size={13} /></i>
-                        </button>
                       </div>
-                    </div>
+                    </a>
+                    <button type="button" className={'dl-ps-heart-btn ' + (isSaved ? 'is-saved' : '')} onClick={event => toggleSave(vehicle.id, event)} aria-label={isSaved ? 'Remove from saved' : 'Save car'}>
+                      <Heart size={18} fill={isSaved ? 'currentColor' : 'none'} />
+                    </button>
                   </article>
                 );
               })}
