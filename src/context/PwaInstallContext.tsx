@@ -51,7 +51,7 @@ export const PwaInstallProvider: React.FC<React.PropsWithChildren> = ({ children
   const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent) && /safari/i.test(navigator.userAgent) && !/(crios|fxios|edgios)/i.test(navigator.userAgent) && !(window as any).MSStream;
   const isInstalled = installed || window.matchMedia('(display-mode: standalone)').matches || (navigator as any).standalone === true;
   const successShown = useRef(false);
-  const installedSeen = useRef(false);
+  const installedSeen = useRef(isInstalled);
   const visitCounted = useRef(false);
 
   const closeInstall = useCallback(() => { setSheet(null); setBusy(false); setManual(false); },[]);
