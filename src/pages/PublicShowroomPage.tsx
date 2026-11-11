@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Select } from '../components/common/Select';
 import {
-  CalendarDays, Camera, CarFront, Fuel, Gauge, Heart, Home, MapPin, Phone,
+  CarFront, Fuel, Heart, Home, MapPin, Phone,
   Search, Share2, SlidersHorizontal, X, Menu, MessageCircle, ChevronRight,
   Clock3, ArrowUpRight
 } from 'lucide-react';
@@ -354,17 +354,23 @@ export const PublicShowroomPage: React.FC<PublicShowroomPageProps> = ({ slug, pr
                 const isSaved = saved.includes(vehicle.id);
                 const hasPhoto = Boolean(vehicle.photos?.[0]);
                 const title = [vehicle.year, vehicle.make, vehicle.model].filter(Boolean).join(' ');
+                const specs = [
+                  vehicle.mileageKm != null && Number(vehicle.mileageKm) > 0 ? Number(vehicle.mileageKm).toLocaleString() + ' km' : '',
+                  vehicle.fuel || '',
+                  vehicle.transmission || '',
+                ].filter(Boolean);
+                const vehicleUrl = '/' + dealer.slug + '/vehicle/' + vehicle.id;
                 return (
                   <article key={vehicle.id} className={'dl-ps-card ' + (isSold ? 'is-sold' : '') + (!hasPhoto ? ' no-photo' : '')}
-                    onClick={() => navigate('/' + dealer.slug + '/vehicle/' + vehicle.id)} role="link" tabIndex={0}
-                    onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); navigate('/' + dealer.slug + '/vehicle/' + vehicle.id); } }}>
+                    onClick={() => navigate(vehicleUrl)} role="link" tabIndex={0}
+                    onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); navigate(vehicleUrl); } }}>
                     <div className="dl-ps-card-media">
                       {hasPhoto ? (
                         <>
                           {!loadedImages.includes(vehicle.id) && <div className="dl-ps-image-skeleton" />}
                           <img src={imageUrl(vehicle.photos[0])} alt={title} className={'dl-ps-card-img ' + (loadedImages.includes(vehicle.id) ? 'is-loaded' : '')}
                             loading={index === 0 ? 'eager' : 'lazy'} fetchPriority={index === 0 ? 'high' : 'auto'} decoding="async"
-                            width={900} height={1125} onLoad={() => setLoadedImages(current => current.includes(vehicle.id) ? current : [...current, vehicle.id])}
+                            width={1200} height={900} onLoad={() => setLoadedImages(current => current.includes(vehicle.id) ? current : [...current, vehicle.id])}
                             onError={() => setLoadedImages(current => current.includes(vehicle.id) ? current : [...current, vehicle.id])} />
                         </>
                       ) : <div className="dl-ps-no-photo-view"><CarFront size={58} /><span>Photo coming soon</span></div>}
@@ -374,16 +380,14 @@ export const PublicShowroomPage: React.FC<PublicShowroomPageProps> = ({ slug, pr
                         <Heart size={18} fill={isSaved ? 'currentColor' : 'none'} />
                       </button>
                       <div className="dl-ps-card-overlay">
-                        {hasPhoto && <div className="dl-ps-photo-badge"><Camera size={11} /><span>{vehicle.photos.length} {vehicle.photos.length === 1 ? 'photo' : 'photos'}</span></div>}
-                        <h3>{title}</h3>
-                        <div className="dl-ps-card-bottom-row">
-                          <div className="dl-ps-card-specs">
-                            <span><CalendarDays size={12} />{vehicle.year}</span><i />
-                            <span><Gauge size={12} />{Number(vehicle.mileageKm || 0).toLocaleString()} km</span><i />
-                            <span><Fuel size={12} />{vehicle.fuel}</span>
-                          </div>
+                        <div className="dl-ps-card-copy">
+                          <h3 title={title}>{title}</h3>
+                          {specs.length > 0 && <div className="dl-ps-card-specs">{specs.map((spec, specIndex) => <React.Fragment key={spec}>{specIndex > 0 && <span className="dl-ps-spec-separator">•</span>}<span>{spec}</span></React.Fragment>)}</div>}
                           <strong className="dl-ps-card-price">{money(vehicle)}</strong>
                         </div>
+                        <button type="button" className="dl-ps-card-details" onClick={event => { event.stopPropagation(); navigate(vehicleUrl); }}>
+                          <span>View details</span><i><ArrowUpRight size={13} /></i>
+                        </button>
                       </div>
                     </div>
                   </article>
