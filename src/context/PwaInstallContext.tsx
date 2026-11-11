@@ -56,10 +56,12 @@ export const PwaInstallProvider: React.FC<React.PropsWithChildren> = ({ children
 
   const closeInstall = useCallback(() => { setSheet(null); setBusy(false); setManual(false); },[]);
   const openInstall = useCallback(() => {
+    if (!/^\/app(?:\/(?:analytics|vehicles|enquiries|more|settings|storefront|notifications))?\/?$/.test(currentPath)) return;
+    if (document.querySelector('[role="dialog"][aria-modal="true"]')) return;
     setManual(true);
     if (accountKey) sessionStorage.setItem(accountKey + '_shown_session','1');
     setSheet('install');
-  },[accountKey]);
+  },[accountKey,currentPath]);
 
   useEffect(() => {
     const update = () => setRevision(v => v + 1);
