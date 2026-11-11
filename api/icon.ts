@@ -36,7 +36,7 @@ function render(size:number,maskable:boolean):Buffer {
   const pixels=Buffer.alloc(size*size*4);
   const bg=[10,15,30,255];
   for(let i=0;i<pixels.length;i+=4){pixels[i]=bg[0];pixels[i+1]=bg[1];pixels[i+2]=bg[2];pixels[i+3]=bg[3];}
-  const fit=maskable?.72:1;
+  const fit=maskable ? 0.72 : 1;
   const p=(x:number,y:number):[number,number]=>[256+(x-256)*fit,256+(y-256)*fit];
   const segments:[[number,number],[number,number],number][]=[
     [[78,270],[112,234],18],[[112,234],[160,227],18],[[160,227],[208,227],18],
