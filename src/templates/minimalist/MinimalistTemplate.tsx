@@ -173,7 +173,7 @@ export const MinimalistTemplate: React.FC<TemplateShowroomProps> = ({
             <div className="mn-stat-box">
               <Car size={18} />
               <div>
-                <strong>{availableVehicles.length}+</strong>
+                <strong>{availableVehicles.length}</strong>
                 <small>Cars Available</small>
               </div>
             </div>
