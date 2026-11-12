@@ -10,8 +10,6 @@ import {
   Phone,
   Search,
   Share2,
-  Shield,
-  SlidersHorizontal,
   X,
 } from 'lucide-react';
 import type { TemplateShowroomProps } from '../types';
@@ -22,8 +20,9 @@ export const PrestigeTemplate: React.FC<TemplateShowroomProps> = ({
   vehicles,
   showPoweredBy,
   onVehicleClick,
-  onContactClick,
+  onWhatsAppClick,
   onShare,
+  isPreview = false,
   initialTab = 'home',
 }) => {
   const [tab, setTab] = useState<'home' | 'inventory' | 'saved' | 'contact'>(initialTab);
@@ -34,18 +33,16 @@ export const PrestigeTemplate: React.FC<TemplateShowroomProps> = ({
   const inventoryRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    try {
-      setSaved(JSON.parse(localStorage.getItem('drivelink:saved-vehicles') || '[]'));
-    } catch {
-      setSaved([]);
-    }
-  }, []);
+    if (isPreview) return;
+    try { setSaved(JSON.parse(localStorage.getItem('drivelink:saved-vehicles') || '[]')); }
+    catch { setSaved([]); }
+  }, [isPreview]);
 
   const toggleSave = (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
     const next = saved.includes(id) ? saved.filter(x => x !== id) : [...saved, id];
     setSaved(next);
-    localStorage.setItem('drivelink:saved-vehicles', JSON.stringify(next));
+    if (!isPreview) { try { localStorage.setItem('drivelink:saved-vehicles', JSON.stringify(next)); } catch {} }
   };
 
   const availableVehicles = useMemo(
@@ -86,11 +83,6 @@ export const PrestigeTemplate: React.FC<TemplateShowroomProps> = ({
   };
 
   const waNumber = (dealer.whatsapp || dealer.phone || '').replace(/\D/g, '');
-  const waUrl = waNumber
-    ? `https://wa.me/${waNumber}?text=${encodeURIComponent(
-        `Hi, I'm visiting the ${dealer.name} showroom on Lotlé and have an enquiry.`
-      )}`
-    : '';
 
   return (
     <div className="dl-tpl-prestige">
@@ -105,6 +97,7 @@ export const PrestigeTemplate: React.FC<TemplateShowroomProps> = ({
             </span>
           )}
           <span className="truncate max-w-[200px]">{dealer.name}</span>
+          {dealer.isVerified && <span className="pt-verified-badge">Verified</span>}
         </div>
         <div className="pt-header-actions">
           <button
@@ -135,7 +128,7 @@ export const PrestigeTemplate: React.FC<TemplateShowroomProps> = ({
               Drive <em>Your Dream</em>
             </h1>
             <p className="pt-hero-sub">
-              {dealer.tagline || 'Premium vehicles. Exceptional quality. Verified stock.'}
+              {dealer.tagline || 'Browse our available vehicles.'}
             </p>
             <button
               type="button"
@@ -162,16 +155,11 @@ export const PrestigeTemplate: React.FC<TemplateShowroomProps> = ({
                   </div>
                 )}
                 <div className="pt-hero-showcase-overlay">
-                  <span className="pt-hero-showcase-badge">Featured</span>
                   <strong className="text-white text-base font-bold">
                     {heroVehicle.year} {heroVehicle.make} {heroVehicle.model}
                   </strong>
                   <span className="text-[#A78BFA] text-sm font-black">
-                    {new Intl.NumberFormat('en-US', {
-                      style: 'currency',
-                      currency: heroVehicle.currency || dealer.currency,
-                      maximumFractionDigits: 0,
-                    }).format(heroVehicle.price)}
+                    {!heroVehicle.price || Number(heroVehicle.price) <= 0 ? 'Price on request' : new Intl.NumberFormat('en-US', { style: 'currency', currency: heroVehicle.currency || dealer.currency, maximumFractionDigits: 0 }).format(heroVehicle.price)}
                   </span>
                 </div>
               </div>
@@ -185,13 +173,6 @@ export const PrestigeTemplate: React.FC<TemplateShowroomProps> = ({
               <div>
                 <strong>{availableVehicles.length}+</strong>
                 <small>Cars In Stock</small>
-              </div>
-            </div>
-            <div className="pt-stat-chip">
-              <Shield size={20} />
-              <div>
-                <strong>Verified</strong>
-                <small>Trusted Dealer</small>
               </div>
             </div>
           </div>
@@ -275,17 +256,16 @@ export const PrestigeTemplate: React.FC<TemplateShowroomProps> = ({
           ) : (
             <div className="pt-vehicle-grid">
               {displayedVehicles.map(vehicle => {
-                const formattedPrice = new Intl.NumberFormat('en-US', {
-                  style: 'currency',
-                  currency: vehicle.currency || dealer.currency,
-                  maximumFractionDigits: 0,
-                }).format(vehicle.price);
+                const formattedPrice = !vehicle.price || Number(vehicle.price) <= 0 ? 'Price on request' : new Intl.NumberFormat('en-US', { style: 'currency', currency: vehicle.currency || dealer.currency, maximumFractionDigits: 0 }).format(vehicle.price);
                 const isFav = saved.includes(vehicle.id);
 
                 return (
                   <div
                     key={vehicle.id}
                     className="pt-vehicle-card"
+                    role="link"
+                    tabIndex={0}
+                    onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); onVehicleClick(vehicle.id); } }}
                     onClick={() => onVehicleClick(vehicle.id)}
                   >
                     <div className="pt-card-media">
@@ -356,23 +336,11 @@ export const PrestigeTemplate: React.FC<TemplateShowroomProps> = ({
               </div>
             )}
             <h2 className="text-xl font-extrabold text-white">{dealer.name}</h2>
-            <p className="text-xs text-[#8E95A5] mt-1 flex items-center justify-center gap-1">
-              <MapPin size={13} />
-              {[dealer.city, dealer.country].filter(Boolean).join(', ') || 'Harare, Zimbabwe'}
-            </p>
+            {[dealer.city, dealer.country].filter(Boolean).length > 0 && <p className="text-xs text-[#8E95A5] mt-1 flex items-center justify-center gap-1"><MapPin size={13} />{[dealer.city, dealer.country].filter(Boolean).join(', ')}</p>}
           </div>
 
           <div className="space-y-3 pt-2">
-            {waUrl && (
-              <a
-                href={waUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="flex items-center justify-center gap-2 w-full min-h-[48px] rounded-full bg-[#10B981] text-white font-bold text-sm shadow-lg hover:brightness-105 transition"
-              >
-                <MessageCircle size={18} /> Chat on WhatsApp
-              </a>
-            )}
+            {waNumber && <button type="button" onClick={onWhatsAppClick} className="flex items-center justify-center gap-2 w-full min-h-[48px] rounded-full bg-[#10B981] text-white font-bold text-sm"><MessageCircle size={18} /> Contact via WhatsApp</button>}
             {dealer.phone && (
               <a
                 href={`tel:${dealer.phone}`}
