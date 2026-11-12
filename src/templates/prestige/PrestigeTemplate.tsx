@@ -265,7 +265,7 @@ export const PrestigeTemplate: React.FC<TemplateShowroomProps> = ({
                     className="pt-vehicle-card"
                     role="link"
                     tabIndex={0}
-                    onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); onVehicleClick(vehicle.id); } }}
+                    onKeyDown={event => { if (event.target !== event.currentTarget) return; if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); onVehicleClick(vehicle.id); } }}
                     onClick={() => onVehicleClick(vehicle.id)}
                   >
                     <div className="pt-card-media">
