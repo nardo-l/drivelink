@@ -63,8 +63,8 @@
 }
 
 .dl-tp-close {
-  width: 34px;
-  height: 34px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   background: #F1F5F9;
   border: 0;
@@ -217,3 +217,7 @@
   font-size: 11px;
   font-weight: 750;
 }
+
+.dl-tp-preview-btn, .dl-tp-select-btn { min-height: 44px; }
+.dl-tp-error { margin: 0; padding: 10px 12px; border-radius: 10px; background: #FEF2F2; color: #B91C1C; font-size: 12px; }
+.dl-tp-close:focus-visible, .dl-tp-preview-btn:focus-visible, .dl-tp-select-btn:focus-visible { outline: 3px solid #64748B; outline-offset: 2px; }
