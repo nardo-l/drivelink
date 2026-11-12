@@ -12,6 +12,8 @@ import { planService } from '../services/planService';
 import { isSupabaseConfigured } from '../lib/supabase';
 import { absoluteUrl, homeTitle, pageTitle } from '../config/brand';
 import type { Dealership, Vehicle } from '../types';
+import { resolveTemplate } from '../templates/registry';
+import { TemplateSkeleton } from '../templates/common/TemplateSkeleton';
 import './PublicShowroomPage.css';
 
 interface PublicShowroomPageProps {
@@ -290,6 +292,24 @@ export const PublicShowroomPage: React.FC<PublicShowroomPageProps> = ({ slug, pr
     searchInputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
   };
   const savedCount = publicVehicles.filter(v => saved.includes(v.id)).length;
+
+  const activeTemplate = resolveTemplate(dealer.template);
+  if (activeTemplate) {
+    const Component = activeTemplate.Component;
+    return (
+      <React.Suspense fallback={<TemplateSkeleton isDark={activeTemplate.theme.isDark} />}>
+        <Component
+          dealer={dealer}
+          vehicles={publicVehicles}
+          showPoweredBy={showPoweredBy}
+          onVehicleClick={(vehicleId) => navigate('/' + encodeURIComponent(dealer.slug) + '/vehicle/' + encodeURIComponent(vehicleId))}
+          onContactClick={openContact}
+          onShare={share}
+          initialTab={activeTab}
+        />
+      </React.Suspense>
+    );
+  }
 
   return (
     <main className="dl-public-showroom">

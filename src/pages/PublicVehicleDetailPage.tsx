@@ -6,6 +6,8 @@ import {supabaseService} from '../services/supabaseService';
 import {storageService} from '../services/storage';
 import {isSupabaseConfigured} from '../lib/supabase';
 import type {Dealership,Vehicle} from '../types';
+import { resolveTemplate } from '../templates/registry';
+import { TemplateSkeleton } from '../templates/common/TemplateSkeleton';
 import './PublicShowroomPage.css';
 
 interface PublicVehicleDetailPageProps{vehicleId:string;slug?:string;}
@@ -35,6 +37,23 @@ export const PublicVehicleDetailPage:React.FC<PublicVehicleDetailPageProps>=({ve
   {label:'Condition',value:vehicle.condition||'',Icon:BadgeCheck}
  ].filter(x=>Boolean(x.value));
  const sold=vehicle.status==='sold';
+
+ const activeTemplate = resolveTemplate(dealer.template);
+ if (activeTemplate) {
+   const DetailComponent = activeTemplate.DetailComponent;
+   return (
+     <React.Suspense fallback={<TemplateSkeleton isDark={activeTemplate.theme.isDark} />}>
+       <DetailComponent
+         dealer={dealer}
+         vehicle={vehicle}
+         onBack={() => navigate('/' + encodeURIComponent(dealer.slug))}
+         onShare={share}
+         onVehicleClick={id => navigate('/' + encodeURIComponent(dealer.slug) + '/vehicle/' + encodeURIComponent(id))}
+       />
+     </React.Suspense>
+   );
+ }
+
  return <main className="dl-public-showroom dl-public-detail">
   <section className="dl-pd-gallery" onTouchStart={e=>{touch.current=e.touches[0].clientX;}} onTouchEnd={e=>{if(touch.current===null)return;const dx=e.changedTouches[0].clientX-touch.current;if(Math.abs(dx)>45&&photos.length>1)(dx<0?next:prev)();touch.current=null;}}>
    {photos[photoIndex]?<img src={photos[photoIndex]} alt={title+' photo '+(photoIndex+1)} onClick={()=>setFullscreen(true)} draggable={false}/>:<div className="dl-pd-no-photo"><span>Vehicle photo unavailable</span></div>}

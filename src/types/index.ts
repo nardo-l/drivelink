@@ -1,7 +1,18 @@
 export type VehicleStatus = 'available' | 'reserved' | 'sold' | 'draft' | 'hidden';
 export type TransmissionType = 'Automatic' | 'Manual';
 export type FuelType = 'Hybrid' | 'Petrol' | 'Diesel' | 'Electric';
-export type StorefrontTemplate = 'signature' | 'inventory_first' | 'independent';
+export type StorefrontTemplate =
+  | 'signature'
+  | 'inventory_first'
+  | 'independent'
+  | 'prestige'
+  | 'minimalist'
+  | 'street'
+  | 'luxury'
+  | 'adventure'
+  | 'tech'
+  | 'lifestyle'
+  | 'gallery';
 export type CurrencyCode = 'USD' | 'ZAR' | 'ZWG';
 
 export interface Vehicle {
