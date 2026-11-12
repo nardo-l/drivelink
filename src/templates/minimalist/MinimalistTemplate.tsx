@@ -252,11 +252,13 @@ export const MinimalistTemplate: React.FC<TemplateShowroomProps> = ({
                   <div
                     key={vehicle.id}
                     className="mn-card"
-                    role="link"
-                    tabIndex={0}
-                    onKeyDown={event => { if (event.target !== event.currentTarget) return; if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); onVehicleClick(vehicle.id); } }}
-                    onClick={() => onVehicleClick(vehicle.id)}
                   >
+                    <a
+                      className="mn-card-link-overlay"
+                      href={'/' + encodeURIComponent(dealer.slug) + '/vehicle/' + encodeURIComponent(vehicle.id)}
+                      aria-label={'View ' + [vehicle.year, vehicle.make, vehicle.model].filter(Boolean).join(' ')}
+                      onClick={event => { if (event.button === 0 && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey) { event.preventDefault(); onVehicleClick(vehicle.id); } }}
+                    />
                     <div className="mn-card-img">
                       {vehicle.photos?.[0] ? (
                         <img
@@ -281,7 +283,7 @@ export const MinimalistTemplate: React.FC<TemplateShowroomProps> = ({
                         </h3>
                         <button
                           type="button"
-                          className={`p-1 text-gray-400 hover:text-red-500 ${
+                          className={`relative z-10 p-1 text-gray-400 hover:text-red-500 ${
                             isFav ? 'text-red-500 fill-red-500' : ''
                           }`}
                           onClick={e => toggleSave(vehicle.id, e)}
