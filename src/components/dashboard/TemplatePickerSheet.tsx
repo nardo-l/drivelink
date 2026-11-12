@@ -81,6 +81,7 @@ export const TemplatePickerSheet: React.FC<TemplatePickerSheetProps> = ({
                 currentTemplate === template.id ||
                 (!currentTemplate && template.id === 'prestige');
               const isAvailable = template.isAvailable;
+              const isSaving = savingId === template.id;
 
               return (
                 <div
