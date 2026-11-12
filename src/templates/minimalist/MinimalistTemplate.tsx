@@ -254,7 +254,7 @@ export const MinimalistTemplate: React.FC<TemplateShowroomProps> = ({
                     className="mn-card"
                     role="link"
                     tabIndex={0}
-                    onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); onVehicleClick(vehicle.id); } }}
+                    onKeyDown={event => { if (event.target !== event.currentTarget) return; if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); onVehicleClick(vehicle.id); } }}
                     onClick={() => onVehicleClick(vehicle.id)}
                   >
                     <div className="mn-card-img">
