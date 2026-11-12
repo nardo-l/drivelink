@@ -304,6 +304,7 @@ export const PublicShowroomPage: React.FC<PublicShowroomPageProps> = ({ slug, pr
           showPoweredBy={showPoweredBy}
           onVehicleClick={(vehicleId) => navigate('/' + encodeURIComponent(dealer.slug) + '/vehicle/' + encodeURIComponent(vehicleId))}
           onContactClick={openContact}
+          onWhatsAppClick={openWhatsApp}
           onShare={share}
           initialTab={activeTab}
         />
