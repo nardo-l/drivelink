@@ -226,10 +226,7 @@ export const MinimalistVehicleDetail: React.FC<TemplateVehicleDetailProps> = ({
               <strong className="block text-sm font-bold text-gray-900">
                 {dealer.name}
               </strong>
-              <small className="flex items-center gap-1 text-[11px] text-gray-500">
-                <MapPin size={12} />
-                {[dealer.city, dealer.country].filter(Boolean).join(', ') || 'Showroom'}
-              </small>
+              {[dealer.city, dealer.country].filter(Boolean).length > 0 && <small className="flex items-center gap-1 text-[11px] text-gray-500"><MapPin size={12} />{[dealer.city, dealer.country].filter(Boolean).join(', ')}</small>}
             </div>
           </div>
           <button
