@@ -24,6 +24,7 @@ export const PrestigeVehicleDetail: React.FC<TemplateVehicleDetailProps> = ({
   vehicle,
   onBack,
   onShare,
+  onWhatsAppClick,
   onVehicleClick,
 }) => {
   const [photoIndex, setPhotoIndex] = useState(0);
@@ -33,15 +34,9 @@ export const PrestigeVehicleDetail: React.FC<TemplateVehicleDetailProps> = ({
 
   const photos = vehicle.photos || [];
   const title = [vehicle.year, vehicle.make, vehicle.model].filter(Boolean).join(' ');
-  const money = new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: vehicle.currency || dealer.currency,
-    maximumFractionDigits: 0,
-  }).format(vehicle.price);
+  const money = !vehicle.price || Number(vehicle.price) <= 0 ? 'Price on request' : new Intl.NumberFormat('en-US', { style: 'currency', currency: vehicle.currency || dealer.currency, maximumFractionDigits: 0 }).format(vehicle.price);
 
-  const message = `Hi, I'm interested in the ${title} listed at ${money}. Is it still available?`;
   const waNumber = (dealer.whatsapp || dealer.phone || '').replace(/\D/g, '');
-  const waUrl = waNumber ? `https://wa.me/${waNumber}?text=${encodeURIComponent(message)}` : '';
 
   const prev = () => setPhotoIndex(i => (i - 1 + photos.length) % photos.length);
   const next = () => setPhotoIndex(i => (i + 1) % photos.length);
@@ -259,17 +254,7 @@ export const PrestigeVehicleDetail: React.FC<TemplateVehicleDetailProps> = ({
           </button>
         ) : (
           <>
-            {waUrl && (
-              <a
-                href={waUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="flex-1 min-h-[48px] rounded-full bg-[#10B981] text-white font-bold text-sm flex items-center justify-center gap-2 shadow-lg"
-              >
-                <MessageCircle size={18} />
-                WhatsApp Enquiry
-              </a>
-            )}
+            {waNumber && <button type="button" onClick={onWhatsAppClick} className="flex-1 min-h-[48px] rounded-full bg-[#10B981] text-white font-bold text-sm flex items-center justify-center gap-2 shadow"><MessageCircle size={18} /> WhatsApp Enquiry</button>}
             {dealer.phone && (
               <a
                 href={`tel:${dealer.phone}`}
