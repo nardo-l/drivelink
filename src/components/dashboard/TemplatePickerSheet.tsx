@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Check, Eye, Lock, Sparkles, X } from 'lucide-react';
 import { TEMPLATES_LIST } from '../../templates/registry';
 import type { TemplateDefinition } from '../../templates/types';
@@ -23,15 +23,22 @@ export const TemplatePickerSheet: React.FC<TemplatePickerSheetProps> = ({
 }) => {
   const [previewTemplate, setPreviewTemplate] = useState<TemplateDefinition | null>(null);
   const [savingId, setSavingId] = useState<string | null>(null);
+  const [saveError, setSaveError] = useState('');
+  const sheetRef = useRef<HTMLElement>(null);
+  const previousFocus = useRef<HTMLElement | null>(null);
+  useEffect(() => {
+    previousFocus.current = document.activeElement as HTMLElement | null;
+    sheetRef.current?.querySelector<HTMLElement>('button')?.focus();
+    const onKeyDown = (event: KeyboardEvent) => { if (event.key === 'Escape' && !savingId && !previewTemplate) onClose(); };
+    document.addEventListener('keydown', onKeyDown);
+    return () => { document.removeEventListener('keydown', onKeyDown); previousFocus.current?.focus(); };
+  }, [onClose, savingId, previewTemplate]);
 
-  const handleSelect = async (templateId: string) => {
-    setSavingId(templateId);
-    try {
-      await onSelect(templateId as StorefrontTemplate);
-      onClose();
-    } finally {
-      setSavingId(null);
-    }
+  const handleSelect = async (templateId: string): Promise<boolean> => {
+    setSavingId(templateId); setSaveError('');
+    try { await onSelect(templateId as StorefrontTemplate); onClose(); return true; }
+    catch (error) { console.error('Could not save showroom template:', error); setSaveError('Could not save this template. Your current template has not changed. Please try again.'); return false; }
+    finally { setSavingId(null); }
   };
 
   return (
@@ -48,6 +55,7 @@ export const TemplatePickerSheet: React.FC<TemplatePickerSheetProps> = ({
           role="dialog"
           aria-modal="true"
           aria-labelledby="dl-tp-title"
+          ref={sheetRef}
         >
           <div className="dl-tp-handle" />
 
@@ -67,12 +75,12 @@ export const TemplatePickerSheet: React.FC<TemplatePickerSheetProps> = ({
           </header>
 
           <div className="dl-tp-content">
+            {saveError && <p className="dl-tp-error" role="alert">{saveError}</p>}
             {TEMPLATES_LIST.map(template => {
               const isActive =
                 currentTemplate === template.id ||
                 (!currentTemplate && template.id === 'prestige');
               const isAvailable = template.isAvailable;
-              const isSaving = savingId === template.id;
 
               return (
                 <div
@@ -132,8 +140,8 @@ export const TemplatePickerSheet: React.FC<TemplatePickerSheetProps> = ({
                             <button
                               type="button"
                               className="dl-tp-select-btn"
-                              disabled={isSaving}
-                              onClick={() => handleSelect(template.id)}
+                              disabled={Boolean(savingId)}
+                              onClick={() => void handleSelect(template.id)}
                             >
                               {isSaving ? 'Applying…' : 'Select'}
                             </button>
@@ -162,10 +170,7 @@ export const TemplatePickerSheet: React.FC<TemplatePickerSheetProps> = ({
           template={previewTemplate}
           dealer={{ ...dealer, template: previewTemplate.id }}
           vehicles={vehicles}
-          onApply={() => {
-            handleSelect(previewTemplate.id);
-            setPreviewTemplate(null);
-          }}
+          onApply={() => { void handleSelect(previewTemplate.id).then(saved => { if (saved) setPreviewTemplate(null); }); }}
           onClose={() => setPreviewTemplate(null)}
         />
       )}
