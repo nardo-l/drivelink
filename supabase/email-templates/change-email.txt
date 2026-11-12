@@ -1,0 +1,18 @@
+Lotlé
+Your car showroom, online
+
+Confirm your new email
+
+You asked to change the email address on your Lotlé account to:
+
+{{ .NewEmail }}
+
+Confirm the change using this link:
+
+{{ .ConfirmationURL }}
+
+If you didn't request this, you can ignore this email. Your email address will not change unless you confirm.
+
+Need help?
+support@lotle.link
+WhatsApp: +263 789 113 734

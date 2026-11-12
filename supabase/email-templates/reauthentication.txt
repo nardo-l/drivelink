@@ -1,0 +1,18 @@
+Lotlé
+Your car showroom, online
+
+Confirm it's you
+
+Enter this code in Lotlé to confirm your identity:
+
+{{ .Token }}
+
+This code expires shortly.
+
+Do not share this code with anyone.
+
+If you didn't request this, you can ignore this email.
+
+Need help?
+support@lotle.link
+WhatsApp: +263 789 113 734

@@ -5,6 +5,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"regexp"
 	"strings"
 
 	emailverifier "github.com/AfterShip/email-verifier"
@@ -60,17 +61,18 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	email := strings.TrimSpace(input.Email)
-	if len(email) == 0 || len(email) > 254 {
-		http.Error(w, `{"error":"Enter an email address"}`, http.StatusBadRequest)
+	if len(email) == 0 || len(email) > 254 || !regexp.MustCompile(`^[^\s@]+@[^\s@]+\.[^\s@]+$`).MatchString(email) {
+		http.Error(w, `{"error":"Enter a valid email address","reason":"syntax"}`, http.StatusBadRequest)
 		return
 	}
 
 	// SMTP mailbox probing is deliberately disabled: it is unreliable on
 	// serverless networks and is not proof that a person owns the mailbox.
+	// Domain/MX validation is still required for signup-quality validation.
 	verifier := emailverifier.NewVerifier().EnableDomainSuggest().DisableSMTPCheck()
 	result, verifyErr := verifier.Verify(email)
-	if result == nil {
-		http.Error(w, `{"error":"Email verification unavailable"}`, http.StatusServiceUnavailable)
+	if result == nil || verifyErr != nil {
+		http.Error(w, `{"error":"Email domain verification unavailable"}`, http.StatusServiceUnavailable)
 		return
 	}
 
@@ -78,7 +80,7 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 		Valid:        result.Syntax.Valid && !result.Disposable,
 		SyntaxValid:  result.Syntax.Valid,
 		HasMXRecords: result.HasMxRecords,
-		MXChecked:    verifyErr == nil,
+		MXChecked:    true,
 		Disposable:   result.Disposable,
 		Free:         result.Free,
 		RoleAccount:  result.RoleAccount,
@@ -92,7 +94,7 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 	case result.Disposable:
 		response.Valid = false
 		response.Reason = "disposable"
-	case verifyErr == nil && !result.HasMxRecords:
+	case !result.HasMxRecords:
 		response.Valid = false
 		response.Reason = "mx"
 	}

@@ -142,6 +142,8 @@ export const LoginPage: React.FC = () => {
               </button>
             </div>
 
+            <button type="button" onClick={() => navigate('/forgot-password')} className="mt-3 self-end border-0 bg-transparent text-xs font-semibold text-slate-400 hover:text-white">Forgot password?</button>
+
             <button type="submit" disabled={loading} className="dl-login-submit">
               <span>{loading ? 'Signing in...' : 'Sign in to Dealership'}</span>
               {loading ? <Loader2 size={23} className="animate-spin" /> : <ArrowRight size={27} />}
