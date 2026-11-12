@@ -1,4 +1,4 @@
-import type { Dealership, Vehicle, StorefrontTemplate } from '../types';
+import type { Dealership, Vehicle } from '../types';
 
 export type TemplateId =
   | 'prestige'
@@ -16,7 +16,9 @@ export interface TemplateShowroomProps {
   showPoweredBy: boolean;
   onVehicleClick: (vehicleId: string) => void;
   onContactClick: () => void;
+  onWhatsAppClick: () => void;
   onShare: () => void;
+  isPreview?: boolean;
   initialTab?: 'home' | 'inventory' | 'saved' | 'contact';
 }
 
@@ -27,6 +29,7 @@ export interface TemplateVehicleDetailProps {
   showPoweredBy?: boolean;
   onBack: () => void;
   onShare: () => void;
+  onWhatsAppClick: () => void;
   onVehicleClick: (vehicleId: string) => void;
 }
 
