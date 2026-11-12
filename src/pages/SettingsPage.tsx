@@ -11,7 +11,7 @@ import {supabaseService} from '../services/supabaseService';
 import {notificationService} from '../services/notificationService';
 import {isSupabaseConfigured, supabase} from '../lib/supabase';
 import {planService} from '../services/planService';
-import type {Dealership, StorefrontTemplate, Vehicle} from '../types';
+import type {Dealership, Vehicle} from '../types';
 import { TemplatePickerSheet } from '../components/dashboard/TemplatePickerSheet';
 import './SettingsPage.css';
 import { usePwaInstall } from '../context/PwaInstallContext';
