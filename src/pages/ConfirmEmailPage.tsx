@@ -3,6 +3,7 @@ import { AlertCircle, ArrowRight, CheckCircle2, Loader2, Mail, RefreshCw } from 
 import { useNavigation } from '../context/NavigationContext';
 import { supabaseService } from '../services/supabaseService';
 import { isSupabaseConfigured } from '../lib/supabase';
+import { name } from '../config/brand';
 
 const PENDING_EMAIL_KEY = 'drivelink_pending_confirmation_email_v1';
 const RESEND_COOLDOWN_SECONDS = 60;
@@ -74,7 +75,7 @@ export const ConfirmEmailPage: React.FC = () => {
       <div className="mb-8 grid h-14 w-14 place-items-center rounded-2xl bg-slate-100 text-slate-800"><Mail size={25} /></div>
       <p className="mb-2 text-xs font-bold uppercase tracking-[0.18em] text-slate-400">Confirm your email</p>
       <h1 className="text-3xl font-extrabold tracking-tight">Check your inbox</h1>
-      <p className="mt-3 text-sm leading-6 text-slate-500">Enter the 6-digit code we sent to finish creating your DriveLink account.</p>
+      <p className="mt-3 text-sm leading-6 text-slate-500">Enter the 6-digit code we sent to finish creating your {name} account.</p>
       <form onSubmit={submit} className="mt-8 space-y-4">
         <label className="block text-xs font-bold text-slate-700">Email address<input className="mt-2 h-12 w-full rounded-xl border border-slate-200 px-4 text-sm outline-none focus:border-slate-900" type="email" value={email} onChange={event => { setEmail(event.target.value); try { localStorage.setItem(PENDING_EMAIL_KEY, event.target.value); } catch {} }} autoComplete="email" required /></label>
         <label className="block text-xs font-bold text-slate-700">6-digit code<input className="mt-2 h-14 w-full rounded-xl border border-slate-200 px-4 text-center text-2xl font-bold tracking-[0.4em] outline-none focus:border-slate-900" inputMode="numeric" autoComplete="one-time-code" maxLength={6} value={token} onChange={event => setToken(event.target.value.replace(/\D/g, '').slice(0, 6))} placeholder="000000" required /></label>

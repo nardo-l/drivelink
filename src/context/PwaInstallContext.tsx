@@ -184,7 +184,9 @@ export const PwaInstallProvider: React.FC<React.PropsWithChildren> = ({ children
             }));
           } catch { localStorage.setItem(baselineKey,JSON.stringify(snapshot)); }
         }
-        const hasMoment = localStorage.getItem(momentKey) === '1' || visits >= 3;
+        // Offer the install sheet as soon as a signed-in dealer lands on the dashboard.
+        // Dismissal limits, the 14-day snooze and once-per-session still apply.
+        const hasMoment = true;
         const dismissals = Number(localStorage.getItem(accountKey + '_dismissals') || 0);
         const until = Number(localStorage.getItem(accountKey + '_until') || 0);
         if (!active || !hasMoment || (!canInstall && !isIos) || dismissals >= 3 || Date.now() < until) return;

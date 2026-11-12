@@ -233,7 +233,7 @@ export const PerformanceSection = memo(function PerformanceSection({
       <div
         ref={carouselRef}
         onScroll={handleScroll}
-        className="flex overflow-x-auto snap-x snap-mandatory scrollbar-none scroll-smooth gap-4 touch-pan-x"
+        className="flex overflow-x-auto snap-x snap-mandatory scrollbar-none scroll-smooth gap-4"
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       >
         <div className="w-full shrink-0 snap-start min-w-0">
