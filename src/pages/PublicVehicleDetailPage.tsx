@@ -23,7 +23,7 @@ export const PublicVehicleDetailPage:React.FC<PublicVehicleDetailPageProps>=({ve
  const photos=vehicle.photos||[],money=!vehicle.price||Number(vehicle.price)<=0?'Price on request':new Intl.NumberFormat('en-US',{style:'currency',currency:vehicle.currency||dealer.currency,maximumFractionDigits:0}).format(vehicle.price);
  const title=[vehicle.year,vehicle.make,vehicle.model].filter(Boolean).join(' ');
  const message="Hi, I'm interested in the "+title+' listed at '+money+'. Is it still available?';
- const waNumber=(dealer.whatsapp||dealer.phone||'').replace(/\\D/g,'');
+ const waNumber=(dealer.whatsapp||dealer.phone||'').replace(/\D/g,'');
  const openWhatsApp=()=>{if(!waNumber)return;const enquiry={dealershipId:dealer.id,buyerName:'WhatsApp Buyer',buyerPhone:'WhatsApp Link Click',message,stage:'new' as const,source:'whatsapp' as const,notes:'Buyer clicked vehicle WhatsApp contact link.'};if(isSupabaseConfigured()){void supabaseService.createEnquiry(enquiry).catch(err=>console.error('Could not record WhatsApp enquiry:',err));}else{try{storageService.saveDealership(dealer);void storageService.createEnquiryAsync(enquiry).catch(err=>console.error('Could not record WhatsApp enquiry:',err));}catch(err){console.error('Could not record WhatsApp enquiry:',err);}}window.open('https://wa.me/'+waNumber+'?text='+encodeURIComponent(message),'_blank','noopener,noreferrer');};
  const prev=()=>setPhotoIndex(i=>(i-1+photos.length)%photos.length),next=()=>setPhotoIndex(i=>(i+1)%photos.length);
  const share=async()=>{const url=absoluteUrl(window.location.pathname+window.location.search+window.location.hash);if(navigator.share){try{await navigator.share({title,text:money,url});}catch{}}else{await navigator.clipboard?.writeText(url);showToast('Vehicle link copied');}};
