@@ -263,11 +263,13 @@ export const PrestigeTemplate: React.FC<TemplateShowroomProps> = ({
                   <div
                     key={vehicle.id}
                     className="pt-vehicle-card"
-                    role="link"
-                    tabIndex={0}
-                    onKeyDown={event => { if (event.target !== event.currentTarget) return; if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); onVehicleClick(vehicle.id); } }}
-                    onClick={() => onVehicleClick(vehicle.id)}
                   >
+                    <a
+                      className="pt-vehicle-card-link-overlay"
+                      href={'/' + encodeURIComponent(dealer.slug) + '/vehicle/' + encodeURIComponent(vehicle.id)}
+                      aria-label={'View ' + [vehicle.year, vehicle.make, vehicle.model].filter(Boolean).join(' ')}
+                      onClick={event => { if (event.button === 0 && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey) { event.preventDefault(); onVehicleClick(vehicle.id); } }}
+                    />
                     <div className="pt-card-media">
                       {vehicle.photos?.[0] ? (
                         <img
