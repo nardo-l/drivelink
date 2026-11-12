@@ -1,0 +1,211 @@
+--- a/src/services/supabaseService.ts
++++ b/src/services/supabaseService.ts
+@@ -172,6 +172,7 @@
+     const { error } = await supabase.auth.resend({
+       type: 'signup',
+       email,
++      options: { emailRedirectTo: `${window.location.origin}/onboarding` },
+     });
+     if (error) throw error;
+   },
+--- a/src/context/PwaInstallContext.tsx
++++ b/src/context/PwaInstallContext.tsx
+@@ -60,7 +60,7 @@
+ 
+   const closeInstall = useCallback(() => { setSheet(null); setBusy(false); setManual(false); },[]);
+   const openInstall = useCallback(() => {
++    if (!currentPath || currentPath === '/confirm-email' || currentPath === '/reset-password') return;
+-    if (!/^\/app(?:\/(?:analytics|vehicles|enquiries|more|settings|storefront|notifications))?\/?$/.test(currentPath)) return;
+     if (document.querySelector('[role="dialog"][aria-modal="true"]')) return;
+     setManual(true);
+     if (accountKey) sessionStorage.setItem(accountKey + '_shown_session','1');
+--- a/src/pages/ConfirmEmailPage.tsx
++++ b/src/pages/ConfirmEmailPage.tsx
+@@ -1,9 +1,8 @@
+ import React, { useEffect, useState } from 'react';
++import { AlertCircle, CheckCircle2, Loader2, Mail, RefreshCw } from 'lucide-react';
+-import { AlertCircle, ArrowRight, CheckCircle2, Loader2, Mail, RefreshCw } from 'lucide-react';
+ import { useNavigation } from '../context/NavigationContext';
+ import { supabaseService } from '../services/supabaseService';
+ import { isSupabaseConfigured } from '../lib/supabase';
+-import { name } from '../config/brand';
+ 
+ const PENDING_EMAIL_KEY = 'drivelink_pending_confirmation_email_v1';
+ const RESEND_COOLDOWN_SECONDS = 60;
+@@ -15,7 +14,6 @@
+ export const ConfirmEmailPage: React.FC = () => {
+   const { navigate } = useNavigation();
+   const [email, setEmail] = useState(readPendingEmail);
+-  const [token, setToken] = useState('');
+   const [loading, setLoading] = useState(false);
+   const [resending, setResending] = useState(false);
+   const [cooldown, setCooldown] = useState(0);
+@@ -39,23 +37,6 @@
+     return () => window.clearInterval(timer);
+   }, [cooldown]);
+ 
+-  const submit = async (event: React.FormEvent) => {
+-    event.preventDefault();
+-    setError(''); setSuccess('');
+-    if (!isSupabaseConfigured()) { setError('Email confirmation is temporarily unavailable. Please try again later.'); return; }
+-    if (!email.trim() || !/^\d{6}$/.test(token.trim())) { setError('Enter the 6-digit code from your confirmation email.'); return; }
+-    setLoading(true);
+-    try {
+-      await supabaseService.verifySignupOtp(email.trim(), token.trim());
+-      try { localStorage.removeItem(PENDING_EMAIL_KEY); } catch {}
+-      setSuccess('Email confirmed. Taking you to your dealership setup…');
+-      window.setTimeout(() => navigate('/onboarding'), 350);
+-    } catch (err: any) {
+-      const message = String(err?.message || '').toLowerCase();
+-      setError(message.includes('expired') ? 'That code has expired. Request a new code and try again.' : 'That code is incorrect. Check the email and enter the latest 6-digit code.');
+-    } finally { setLoading(false); }
+-  };
+-
+   const resend = async () => {
+     setError(''); setSuccess('');
+     if (!email.trim()) { setError('Enter the email address used to create your account first.'); return; }
+@@ -64,7 +45,7 @@
+     try {
+       await supabaseService.resendConfirmationEmail(email.trim());
+       setCooldown(RESEND_COOLDOWN_SECONDS);
++      setSuccess('A new confirmation link was sent. Check your inbox and spam folder.');
+-      setSuccess('A new confirmation code was sent. Check your inbox and spam folder.');
+     } catch (err: any) {
+       setError(err?.message || 'We could not resend the code. Please wait a moment and try again.');
+     } finally { setResending(false); }
+@@ -75,15 +56,11 @@
+       <div className="mb-8 grid h-14 w-14 place-items-center rounded-2xl bg-slate-100 text-slate-800"><Mail size={25} /></div>
+       <p className="mb-2 text-xs font-bold uppercase tracking-[0.18em] text-slate-400">Confirm your email</p>
+       <h1 className="text-3xl font-extrabold tracking-tight">Check your inbox</h1>
++      <p className="mt-3 text-sm leading-6 text-slate-500">Open the confirmation link we sent to <strong className="font-semibold text-slate-700">{email || 'your email address'}</strong>. You’ll return here automatically after confirming.</p>
++      {error && <div role="alert" className="mt-6 flex gap-2 rounded-xl bg-red-50 p-3 text-xs leading-5 text-red-700"><AlertCircle size={16} className="mt-0.5 shrink-0" />{error}</div>}
++      {success && <div role="status" className="mt-6 flex gap-2 rounded-xl bg-emerald-50 p-3 text-xs leading-5 text-emerald-700"><CheckCircle2 size={16} className="mt-0.5 shrink-0" />{success}</div>}
++      <div className="mt-8 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm leading-6 text-slate-600">If you don’t see the email, check your spam folder or resend the link below.</div>
++      <button type="button" onClick={resend} disabled={resending || cooldown > 0} className="mt-5 flex w-full items-center justify-center gap-2 text-sm font-bold text-slate-700 disabled:text-slate-400">{resending ? <Loader2 size={16} className="animate-spin" /> : <RefreshCw size={16} />} {cooldown > 0 ? `Resend link in ${cooldown}s` : 'Resend confirmation link'}</button>
+-      <p className="mt-3 text-sm leading-6 text-slate-500">Enter the 6-digit code we sent to finish creating your {name} account.</p>
+-      <form onSubmit={submit} className="mt-8 space-y-4">
+-        <label className="block text-xs font-bold text-slate-700">Email address<input className="mt-2 h-12 w-full rounded-xl border border-slate-200 px-4 text-sm outline-none focus:border-slate-900" type="email" value={email} onChange={event => { setEmail(event.target.value); try { localStorage.setItem(PENDING_EMAIL_KEY, event.target.value); } catch {} }} autoComplete="email" required /></label>
+-        <label className="block text-xs font-bold text-slate-700">6-digit code<input className="mt-2 h-14 w-full rounded-xl border border-slate-200 px-4 text-center text-2xl font-bold tracking-[0.4em] outline-none focus:border-slate-900" inputMode="numeric" autoComplete="one-time-code" maxLength={6} value={token} onChange={event => setToken(event.target.value.replace(/\D/g, '').slice(0, 6))} placeholder="000000" required /></label>
+-        {error && <div role="alert" className="flex gap-2 rounded-xl bg-red-50 p-3 text-xs leading-5 text-red-700"><AlertCircle size={16} className="mt-0.5 shrink-0" />{error}</div>}
+-        {success && <div role="status" className="flex gap-2 rounded-xl bg-emerald-50 p-3 text-xs leading-5 text-emerald-700"><CheckCircle2 size={16} className="mt-0.5 shrink-0" />{success}</div>}
+-        <button type="submit" disabled={loading} className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-slate-950 text-sm font-bold text-white disabled:opacity-60">{loading ? <><Loader2 size={17} className="animate-spin" /> Verifying…</> : <>Verify email <ArrowRight size={17} /></>}</button>
+-      </form>
+-      <button type="button" onClick={resend} disabled={resending || cooldown > 0} className="mt-5 flex w-full items-center justify-center gap-2 text-sm font-bold text-slate-700 disabled:text-slate-400">{resending ? <Loader2 size={16} className="animate-spin" /> : <RefreshCw size={16} />} {cooldown > 0 ? `Resend code in ${cooldown}s` : 'Resend code'}</button>
+       <button type="button" onClick={() => navigate('/login')} className="mt-6 text-center text-xs font-semibold text-slate-400 hover:text-slate-700">Back to sign in</button>
+     </section>
+   </main>;
+--- a/src/pages/WelcomePage.tsx
++++ b/src/pages/WelcomePage.tsx
+@@ -1,9 +1,10 @@
+ import { name, nameAscii, description, siteUrl, supportEmail, supportWhatsApp } from '../config/brand';
+ import React, { useState } from 'react';
+ import { useNavigation } from '../context/NavigationContext';
++import { usePwaInstall } from '../context/PwaInstallContext';
+ import { MARKETING_CAR_IMAGES } from '../utils/marketingCarImages';
+ import { Logo } from '../components/common/Logo';
++import { ArrowRight, ArrowUpRight, CarFront, Check, ChevronDown, Link2, Menu, MessageCircle, Play, Share2, Users, X, BarChart3, ClipboardList, HelpCircle, Download } from 'lucide-react';
+-import { ArrowRight, ArrowUpRight, CarFront, Check, ChevronDown, Link2, Menu, MessageCircle, Play, Share2, Users, X, BarChart3, ClipboardList, HelpCircle } from 'lucide-react';
+ 
+ const ORANGE = '#FF784F';
+ 
+@@ -30,6 +31,7 @@
+ 
+ export const WelcomePage: React.FC = () => {
+   const { navigate } = useNavigation();
++  const { openInstall, isInstalled } = usePwaInstall();
+   const [menuOpen, setMenuOpen] = useState(false);
+   const [openFaq, setOpenFaq] = useState<number | null>(0);
+   const goStart = () => navigate('/onboarding');
+@@ -49,10 +51,10 @@
+         <nav className="hidden md:flex items-center gap-8">
+           <button onClick={()=>scrollTo('features')}>Features</button><button onClick={()=>scrollTo('how-it-works')}>How it works</button><button onClick={()=>scrollTo('pricing')}>Pricing</button><button onClick={()=>scrollTo('faq')}>FAQ</button>
+         </nav>
++        <div className="hidden md:flex items-center gap-5"><button className="dl-login-link" onClick={()=>navigate('/login')}>Log in</button>{!isInstalled && <button className="dl-login-link dl-install-link" onClick={openInstall}><Download size={15}/> Install app</button>}<button className="dl-button dl-button-small" onClick={goStart}>Get Started <ArrowRight size={15}/></button></div>
+-        <div className="hidden md:flex items-center gap-5"><button className="dl-login-link" onClick={()=>navigate('/login')}>Log in</button><button className="dl-button dl-button-small" onClick={goStart}>Get Started <ArrowRight size={15}/></button></div>
+         <button className="md:hidden dl-menu-toggle" aria-label={menuOpen?'Close menu':'Open menu'} onClick={()=>setMenuOpen(v=>!v)}>{menuOpen?<X/>:<Menu/>}</button>
+       </header>
++      {menuOpen && <div className="dl-mobile-menu"><button onClick={()=>scrollTo('features')}>Features</button><button onClick={()=>scrollTo('how-it-works')}>How it works</button><button onClick={()=>scrollTo('pricing')}>Pricing</button><button onClick={()=>scrollTo('faq')}>FAQ</button><button onClick={()=>{setMenuOpen(false);navigate('/login')}}>Log in</button>{!isInstalled && <button onClick={()=>{setMenuOpen(false);openInstall()}}>Install app</button>}<button className="dl-button" onClick={goStart}>Get Started <ArrowRight size={15}/></button></div>}
+-      {menuOpen && <div className="dl-mobile-menu"><button onClick={()=>scrollTo('features')}>Features</button><button onClick={()=>scrollTo('how-it-works')}>How it works</button><button onClick={()=>scrollTo('pricing')}>Pricing</button><button onClick={()=>scrollTo('faq')}>FAQ</button><button onClick={()=>{setMenuOpen(false);navigate('/login')}}>Log in</button><button className="dl-button" onClick={goStart}>Get Started <ArrowRight size={15}/></button></div>}
+ 
+       <section id="top" className="dl-hero dl-section-wrap">
+         <div className="dl-hero-copy">
+--- a/src/components/layout/PwaInstallSheet.css
++++ b/src/components/layout/PwaInstallSheet.css
+@@ -1,1 +1,3 @@
+ .lotle-pwa-overlay{position:fixed;inset:0;z-index:160;display:flex;align-items:flex-end;justify-content:center;background:rgba(10,15,30,.58);padding:0 0 env(safe-area-inset-bottom);animation:lotle-pwa-fade .2s ease both}.lotle-pwa-sheet{width:100%;max-width:560px;min-height:310px;padding:10px 24px calc(20px + env(safe-area-inset-bottom));border-radius:28px 28px 0 0;background:#fff;color:#0A0F1E;text-align:center;box-shadow:0 -8px 36px rgba(0,0,0,.12);transform:translateY(0);animation:lotle-pwa-rise .2s ease both;font-family:Inter,system-ui,sans-serif}.lotle-pwa-handle{width:38px;height:4px;margin:0 auto 24px;border-radius:8px;background:#d8dce2}.lotle-pwa-badge{position:relative;width:76px;height:76px;margin:0 auto 18px;display:grid;place-items:center;border-radius:50%;background:#f0f1f3;outline:7px dotted #f0f1f3;outline-offset:-3px}.lotle-pwa-app-icon{width:58px;height:58px;display:block;border-radius:17px;object-fit:cover}.lotle-pwa-badge.is-success{background:#e6f2eb;outline-color:#e6f2eb}.lotle-pwa-badge.is-success .lotle-pwa-app-icon{opacity:.12;filter:grayscale(1)}.lotle-pwa-check{position:absolute;right:0;bottom:0;width:25px;height:25px;display:grid;place-items:center;border:2px solid #fff;border-radius:50%;background:#176b45;color:#fff;font-weight:900}.lotle-pwa-sheet h2{margin:0;color:#0A0F1E;font-size:23px;font-weight:800;letter-spacing:-.7px}.lotle-pwa-sheet>p{max-width:390px;margin:10px auto 23px;color:#657080;font-size:13px;line-height:1.55}.lotle-pwa-primary{width:100%;height:56px;display:flex;align-items:center;justify-content:center;gap:9px;margin-top:24px;border:0;border-radius:999px;background:#0A0F1E;color:#fff;font-size:14px;font-weight:750}.lotle-pwa-primary:disabled{opacity:.7}.lotle-pwa-later{width:100%;height:42px;margin-top:7px;border:0;background:transparent;color:#657080;font-size:13px;font-weight:650}.lotle-pwa-spinner{width:18px;height:18px;border:2px solid #ffffff66;border-top-color:#fff;border-radius:50%;animation:lotle-pwa-spin .7s linear infinite}.lotle-pwa-steps{display:grid;gap:9px;margin:15px auto 20px;text-align:left;font-size:13px;color:#4d5868}.lotle-pwa-steps>div{display:flex;align-items:center;gap:10px}.lotle-pwa-steps>div>svg{flex:0 0 auto;color:#0A0F1E}.lotle-pwa-steps span{width:23px;height:23px;display:grid;place-items:center;border-radius:50%;background:#f0f1f3;color:#0A0F1E;font-size:11px;font-weight:800}.lotle-pwa-help{margin:10px auto 0!important;font-size:11px!important}@keyframes lotle-pwa-rise{from{transform:translateY(100%);opacity:0}to{transform:translateY(0);opacity:1}}@keyframes lotle-pwa-fade{from{opacity:0}to{opacity:1}}@keyframes lotle-pwa-spin{to{transform:rotate(360deg)}}@media(prefers-reduced-motion:reduce){.lotle-pwa-overlay,.lotle-pwa-sheet{animation:none!important;transition:none!important}}
++
++@media(min-width:640px){.lotle-pwa-overlay{align-items:center;padding:24px}.lotle-pwa-sheet{width:min(100%,480px);min-height:0;padding:22px 32px 28px;border-radius:28px;box-shadow:0 24px 80px rgba(0,0,0,.22)}.lotle-pwa-handle{display:none}}
+--- a/src/index.css
++++ b/src/index.css
+@@ -1643,3 +1643,5 @@
+ 
+ /* Keep the app shell from becoming a nested vertical scroll container. */
+ .dl-frame-inner { overflow-x: clip; overflow-y: visible; }
++
++.dl-install-link{display:inline-flex;align-items:center;gap:6px}
+--- a/supabase/email-templates/confirm-signup.html
++++ b/supabase/email-templates/confirm-signup.html
+@@ -16,14 +16,15 @@
+         </td></tr>
+         <tr><td style="padding:24px 32px 8px;text-align:center;">
+           <h1 style="margin:0;font-family:Inter,Arial,Helvetica,sans-serif;font-size:25px;line-height:1.25;font-weight:700;color:#171717;">Confirm your email</h1>
++          <p style="margin:14px 0 0;font-size:15px;line-height:1.6;color:#454545;">Confirm your email address to finish creating your Lotlé account.</p>
+-          <p style="margin:14px 0 0;font-size:15px;line-height:1.6;color:#454545;">Enter this code in Lotlé to confirm your email address.</p>
+         </td></tr>
+         <tr><td align="center" style="padding:24px 24px 16px;">
++          <a href="{{ .ConfirmationURL }}" style="display:inline-block;padding:15px 28px;border-radius:999px;background-color:#0A0F1E;color:#FFFFFF;font-size:15px;font-weight:700;text-decoration:none;">Confirm email</a>
++          <p style="margin:16px 0 0;font-size:13px;line-height:1.5;color:#626262;">If the button does not work, copy this link into your browser:</p>
++          <p style="margin:8px 0 0;word-break:break-all;font-size:12px;line-height:1.5;"><a href="{{ .ConfirmationURL }}" style="color:#9E4F2E;text-decoration:underline;">{{ .ConfirmationURL }}</a></p>
+-          <div style="display:inline-block;padding:18px 22px;border:1px solid #D9D6CF;border-radius:12px;background-color:#FAF9F6;color:#171717;font-family:'Courier New',Courier,monospace;font-size:36px;line-height:1.2;font-weight:700;letter-spacing:10px;">{{ .Token }}</div>
+-          <p style="margin:16px 0 0;font-size:13px;line-height:1.5;color:#626262;">This code expires shortly.</p>
+         </td></tr>
+         <tr><td style="padding:12px 32px 28px;text-align:center;">
++          <p style="margin:0;font-size:14px;line-height:1.6;color:#454545;">This link is unique to your account. Do not forward it or share it with anyone.</p>
+-          <p style="margin:0;font-size:14px;line-height:1.6;color:#454545;">This code is only for confirming your email. Do not share it with anyone, including anyone claiming to be from Lotlé.</p>
+           <p style="margin:18px 0 0;font-size:13px;line-height:1.6;color:#626262;">If you didn't request this, you can ignore this email.</p>
+         </td></tr>
+         <tr><td style="padding:18px 24px;border-top:1px solid #D9D6CF;text-align:center;">
+--- a/supabase/email-templates/confirm-signup.txt
++++ b/supabase/email-templates/confirm-signup.txt
+@@ -3,13 +3,13 @@
+ 
+ Confirm your email
+ 
++Confirm your email address by opening this link:
+-Enter this code in Lotlé to confirm your email address:
+ 
++{{ .ConfirmationURL }}
+-{{ .Token }}
+ 
++This link can only be used once and expires after a limited time.
+-This code expires shortly.
+ 
++This link is unique to your account. Do not forward it or share it with anyone.
+-This code is only for confirming your email. Do not share it with anyone, including anyone claiming to be from Lotlé.
+ 
+ If you didn't request this, you can ignore this email.
+ 
+--- a/supabase/email-templates/README.md
++++ b/supabase/email-templates/README.md
+@@ -1,6 +1,6 @@
+ # Lotlé Supabase Auth email templates
+ 
++These files are ready to paste into the matching Supabase Auth email templates. **Custom SMTP must be enabled for this project before Supabase allows custom email templates to be edited.** Supabase email delivery also needs a working SMTP provider and an allowed redirect URL for the deployed app. These files do not change hosted project settings.
+-These files are ready to paste into the matching Supabase Auth email templates. **Custom SMTP must be enabled for this project before Supabase allows custom email templates to be edited.** This README does not change SMTP or any project setting.
+ 
+ ## Paste the templates
+ 
+@@ -18,11 +18,11 @@
+ | Change email address | `change-email.html` | `change-email.txt` | **Confirm your new Lotlé email** |
+ | Reauthentication | `reauthentication.html` | `reauthentication.txt` | **Your Lotlé verification code** |
+ 
++The suggested subjects are also collected in [subjects.md](./subjects.md). The Confirm signup HTML and text files must be pasted into Supabase Dashboard → Authentication → Emails → Templates → Confirm signup. Add the production site URL and any preview URLs used for testing to Authentication → URL Configuration → Redirect URLs.
+-The suggested subjects are also collected in [subjects.md](./subjects.md).
+ 
+ ## Template notes
+ 
++- Signup confirmation uses `{{ .ConfirmationURL }}` so the user confirms with one click and returns to `/onboarding`. The app requests this redirect URL at signup and when resending.
+-- Signup confirmation and reauthentication use the six-digit `{{ .Token }}` as the primary action. The user enters the code in Lotlé; these templates do not use a link-only confirmation flow.
+ - Password reset uses `{{ .ConfirmationURL }}` for both the button and the visible fallback link.
+ - Email change uses `{{ .ConfirmationURL }}` and displays the target address with `{{ .NewEmail }}`.
+ - No code expiry duration is assumed. Token emails say: “This code expires shortly.”
