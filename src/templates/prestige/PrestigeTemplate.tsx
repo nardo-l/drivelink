@@ -171,7 +171,7 @@ export const PrestigeTemplate: React.FC<TemplateShowroomProps> = ({
             <div className="pt-stat-chip">
               <Car size={20} />
               <div>
-                <strong>{availableVehicles.length}+</strong>
+                <strong>{availableVehicles.length}</strong>
                 <small>Cars In Stock</small>
               </div>
             </div>
