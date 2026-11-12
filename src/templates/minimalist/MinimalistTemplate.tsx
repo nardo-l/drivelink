@@ -9,7 +9,6 @@ import {
   Phone,
   Search,
   Share2,
-  ShieldCheck,
   X,
 } from 'lucide-react';
 import type { TemplateShowroomProps } from '../types';
@@ -20,8 +19,9 @@ export const MinimalistTemplate: React.FC<TemplateShowroomProps> = ({
   vehicles,
   showPoweredBy,
   onVehicleClick,
-  onContactClick,
+  onWhatsAppClick,
   onShare,
+  isPreview = false,
   initialTab = 'home',
 }) => {
   const [tab, setTab] = useState<'home' | 'inventory' | 'saved' | 'contact'>(initialTab);
@@ -31,18 +31,16 @@ export const MinimalistTemplate: React.FC<TemplateShowroomProps> = ({
   const inventoryRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    try {
-      setSaved(JSON.parse(localStorage.getItem('drivelink:saved-vehicles') || '[]'));
-    } catch {
-      setSaved([]);
-    }
-  }, []);
+    if (isPreview) return;
+    try { setSaved(JSON.parse(localStorage.getItem('drivelink:saved-vehicles') || '[]')); }
+    catch { setSaved([]); }
+  }, [isPreview]);
 
   const toggleSave = (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
     const next = saved.includes(id) ? saved.filter(x => x !== id) : [...saved, id];
     setSaved(next);
-    localStorage.setItem('drivelink:saved-vehicles', JSON.stringify(next));
+    if (!isPreview) { try { localStorage.setItem('drivelink:saved-vehicles', JSON.stringify(next)); } catch {} }
   };
 
   const availableVehicles = useMemo(
@@ -83,11 +81,6 @@ export const MinimalistTemplate: React.FC<TemplateShowroomProps> = ({
   };
 
   const waNumber = (dealer.whatsapp || dealer.phone || '').replace(/\D/g, '');
-  const waUrl = waNumber
-    ? `https://wa.me/${waNumber}?text=${encodeURIComponent(
-        `Hi, I'm viewing your showroom ${dealer.name} on Lotlé.`
-      )}`
-    : '';
 
   return (
     <div className="dl-tpl-minimalist">
@@ -102,6 +95,7 @@ export const MinimalistTemplate: React.FC<TemplateShowroomProps> = ({
             </span>
           )}
           <span className="truncate max-w-[210px]">{dealer.name}</span>
+          {dealer.isVerified && <span className="mn-verified-badge">Verified</span>}
         </div>
         <div className="mn-header-actions">
           <button
@@ -127,12 +121,11 @@ export const MinimalistTemplate: React.FC<TemplateShowroomProps> = ({
       {tab === 'home' && (
         <>
           <section className="mn-hero">
-            <span className="mn-eyebrow">Premium Dealership</span>
             <h1 className="mn-hero-title">
               Quality Cars. <br />Better Journeys.
             </h1>
             <p className="mn-hero-sub">
-              {dealer.tagline || 'Find your next quality vehicle today with transparent pricing.'}
+              {dealer.tagline || 'Browse our available vehicles.'}
             </p>
             <button
               type="button"
@@ -168,11 +161,7 @@ export const MinimalistTemplate: React.FC<TemplateShowroomProps> = ({
                     </span>
                   </div>
                   <strong className="text-base font-black text-gray-900">
-                    {new Intl.NumberFormat('en-US', {
-                      style: 'currency',
-                      currency: heroVehicle.currency || dealer.currency,
-                      maximumFractionDigits: 0,
-                    }).format(heroVehicle.price)}
+                    {!heroVehicle.price || Number(heroVehicle.price) <= 0 ? 'Price on request' : new Intl.NumberFormat('en-US', { style: 'currency', currency: heroVehicle.currency || dealer.currency, maximumFractionDigits: 0 }).format(heroVehicle.price)}
                   </strong>
                 </div>
               </div>
@@ -186,13 +175,6 @@ export const MinimalistTemplate: React.FC<TemplateShowroomProps> = ({
               <div>
                 <strong>{availableVehicles.length}+</strong>
                 <small>Cars Available</small>
-              </div>
-            </div>
-            <div className="mn-stat-box">
-              <ShieldCheck size={18} />
-              <div>
-                <strong>Verified</strong>
-                <small>Trusted Dealer</small>
               </div>
             </div>
           </div>
@@ -263,17 +245,16 @@ export const MinimalistTemplate: React.FC<TemplateShowroomProps> = ({
           ) : (
             <div className="mn-cards-grid">
               {displayedVehicles.map(vehicle => {
-                const formattedPrice = new Intl.NumberFormat('en-US', {
-                  style: 'currency',
-                  currency: vehicle.currency || dealer.currency,
-                  maximumFractionDigits: 0,
-                }).format(vehicle.price);
+                const formattedPrice = !vehicle.price || Number(vehicle.price) <= 0 ? 'Price on request' : new Intl.NumberFormat('en-US', { style: 'currency', currency: vehicle.currency || dealer.currency, maximumFractionDigits: 0 }).format(vehicle.price);
                 const isFav = saved.includes(vehicle.id);
 
                 return (
                   <div
                     key={vehicle.id}
                     className="mn-card"
+                    role="link"
+                    tabIndex={0}
+                    onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); onVehicleClick(vehicle.id); } }}
                     onClick={() => onVehicleClick(vehicle.id)}
                   >
                     <div className="mn-card-img">
@@ -350,23 +331,11 @@ export const MinimalistTemplate: React.FC<TemplateShowroomProps> = ({
               </div>
             )}
             <h2 className="text-xl font-extrabold text-gray-900">{dealer.name}</h2>
-            <p className="text-xs text-gray-500 mt-1 flex items-center justify-center gap-1">
-              <MapPin size={13} />
-              {[dealer.city, dealer.country].filter(Boolean).join(', ') || 'Showroom'}
-            </p>
+            {[dealer.city, dealer.country].filter(Boolean).length > 0 && <p className="text-xs text-gray-500 mt-1 flex items-center justify-center gap-1"><MapPin size={13} />{[dealer.city, dealer.country].filter(Boolean).join(', ')}</p>}
           </div>
 
           <div className="space-y-3 pt-2">
-            {waUrl && (
-              <a
-                href={waUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="flex items-center justify-center gap-2 w-full min-h-[48px] rounded-full bg-[#10B981] text-white font-bold text-sm shadow hover:brightness-105 transition"
-              >
-                <MessageCircle size={18} /> Contact via WhatsApp
-              </a>
-            )}
+            {waNumber && <button type="button" onClick={onWhatsAppClick} className="flex items-center justify-center gap-2 w-full min-h-[48px] rounded-full bg-[#10B981] text-white font-bold text-sm"><MessageCircle size={18} /> Contact via WhatsApp</button>}
             {dealer.phone && (
               <a
                 href={`tel:${dealer.phone}`}
