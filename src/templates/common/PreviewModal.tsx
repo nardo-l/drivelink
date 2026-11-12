@@ -1,4 +1,4 @@
-import React, { Suspense } from 'react';
+import React, { Suspense, useEffect, useRef } from 'react';
 import { Check, Eye, X } from 'lucide-react';
 import type { Dealership, Vehicle } from '../../types';
 import type { TemplateDefinition } from '../types';
@@ -21,6 +21,15 @@ export const PreviewModal: React.FC<PreviewModalProps> = ({
 }) => {
   const Component = template.Component;
   const isDark = template.theme.isDark;
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const previousFocus = useRef<HTMLElement | null>(null);
+  useEffect(() => {
+    previousFocus.current = document.activeElement as HTMLElement | null;
+    dialogRef.current?.querySelector<HTMLElement>('button')?.focus();
+    const onKeyDown = (event: KeyboardEvent) => { if (event.key === 'Escape') onClose(); };
+    document.addEventListener('keydown', onKeyDown);
+    return () => { document.removeEventListener('keydown', onKeyDown); previousFocus.current?.focus(); };
+  }, [onClose]);
 
   return (
     <div
@@ -28,6 +37,7 @@ export const PreviewModal: React.FC<PreviewModalProps> = ({
       role="dialog"
       aria-modal="true"
       aria-labelledby="preview-title"
+      ref={dialogRef}
     >
       {/* Top Controls Bar */}
       <div className="flex items-center justify-between px-4 py-3 bg-[#0A0F1E] border-b border-white/10 text-white z-20 shrink-0">
@@ -72,7 +82,9 @@ export const PreviewModal: React.FC<PreviewModalProps> = ({
             showPoweredBy={true}
             onVehicleClick={() => {}}
             onContactClick={() => {}}
+            onWhatsAppClick={() => {}}
             onShare={() => {}}
+            isPreview
           />
         </Suspense>
       </div>
