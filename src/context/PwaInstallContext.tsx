@@ -53,6 +53,7 @@ export const PwaInstallProvider: React.FC<React.PropsWithChildren> = ({ children
   const accountKey = accountId ? 'lotle_pwa_' + accountId : '';
   const canInstall = !!deferredPrompt;
   const isIos = (/iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)) && /safari/i.test(navigator.userAgent) && !/(crios|fxios|edgios)/i.test(navigator.userAgent) && !(window as any).MSStream;
+  const isMobileDevice = /android|iphone|ipad|ipod|mobile/i.test(navigator.userAgent);
   const isInstalled = installed || window.matchMedia('(display-mode: standalone)').matches || (navigator as any).standalone === true;
   const successShown = useRef(false);
   const installedSeen = useRef(isInstalled);
@@ -189,7 +190,7 @@ export const PwaInstallProvider: React.FC<React.PropsWithChildren> = ({ children
         const hasMoment = true;
         const dismissals = Number(localStorage.getItem(accountKey + '_dismissals') || 0);
         const until = Number(localStorage.getItem(accountKey + '_until') || 0);
-        if (!active || !hasMoment || (!canInstall && !isIos) || dismissals >= 3 || Date.now() < until) return;
+        if (!active || !hasMoment || (!canInstall && !isIos && !isMobileDevice) || dismissals >= 3 || Date.now() < until) return;
         if (document.querySelector('[role="dialog"][aria-modal="true"]')) {
           retryTimer = window.setTimeout(() => { void checkMoment(); },700);
           return;
@@ -203,7 +204,7 @@ export const PwaInstallProvider: React.FC<React.PropsWithChildren> = ({ children
     void checkMoment();
     const poll = window.setInterval(() => { if (localStorage.getItem(accountKey + '_value_moment') !== '1') void checkMoment(); },30000);
     return () => { active = false; window.clearInterval(poll); if (retryTimer) window.clearTimeout(retryTimer); };
-  },[currentPath,accountId,session.isLoggedIn,session.dealershipId,accountKey,canInstall,isIos,isInstalled,manual,sheet,revision]);
+  },[currentPath,accountId,session.isLoggedIn,session.dealershipId,accountKey,canInstall,isIos,isMobileDevice,isInstalled,manual,sheet,revision]);
 
   const dismiss = useCallback(() => {
     if (accountKey) {
