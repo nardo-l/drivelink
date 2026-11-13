@@ -4,7 +4,6 @@ import { NavigationProvider, useNavigation } from './context/NavigationContext';
 import { DeviceFrame } from './components/layout/DeviceFrame';
 import { WelcomePage } from './pages/WelcomePage';
 import { LoginPage } from './pages/LoginPage';
-import { ConfirmEmailPage } from './pages/ConfirmEmailPage';
 import { ForgotPasswordPage, ResetPasswordPage } from './pages/PasswordRecoveryPages';
 import { OnboardingFlow } from './pages/ConversationalOnboardingFlow';
 import { DashboardPage } from './pages/DashboardPage';
@@ -45,8 +44,6 @@ function AppContent() {
     updateBrandMetadata({ title: currentPath === '/' || currentPath === '' ? homeTitle : pageTitle(page) });
   }, [currentPath]);
   const [sessionChecked, setSessionChecked] = React.useState(false);
-  const [emailConfirmationRequired, setEmailConfirmationRequired] = React.useState(false);
-  const isEmailConfirmed = (user: any) => Boolean(user?.email_confirmed_at || user?.confirmed_at || user?.app_metadata?.provider === 'google' || user?.identities?.some((identity: any) => identity.provider === 'google'));
   React.useEffect(() => { if (sessionChecked) window.dispatchEvent(new Event('lotle:session-updated')); }, [sessionChecked]);
   const isDemo = storageService.isDemoModeActive();
   const isConfigured = isSupabaseConfigured();
@@ -58,13 +55,6 @@ function AppContent() {
     if (isConfigured && !isDemo) {
       supabaseService.getSession().then(async (session) => {
         if (session?.user) {
-          if (!isEmailConfirmed(session.user)) {
-            setEmailConfirmationRequired(true);
-            storageService.setUserSession({ isLoggedIn: true, email: session.user.email || '', dealershipId: '', userId: session.user.id });
-            setSessionChecked(true);
-            return;
-          }
-          setEmailConfirmationRequired(false);
           try {
             await storageService.syncUserScope(session.user.id);
             const liveDealer = await supabaseService.getCurrentDealership();
@@ -98,13 +88,6 @@ function AppContent() {
         // Gate protected screens while account-scoped data and in-memory page state are replaced.
         setSessionChecked(false);
         if (session?.user) {
-          if (!isEmailConfirmed(session.user)) {
-            setEmailConfirmationRequired(true);
-            storageService.setUserSession({ isLoggedIn: true, email: session.user.email || '', dealershipId: '', userId: session.user.id });
-            setSessionChecked(true);
-            return;
-          }
-          setEmailConfirmationRequired(false);
           try {
             await storageService.syncUserScope(session.user.id);
             const liveDealer = await supabaseService.getCurrentDealership();
@@ -124,7 +107,6 @@ function AppContent() {
           }
           setSessionChecked(true);
         } else {
-          setEmailConfirmationRequired(false);
           // Sign-out must not leave another account's dealership or records on-device.
           await storageService.clearAppUserData();
           setSessionChecked(true);
@@ -145,7 +127,6 @@ function AppContent() {
     const isLive = isConfigured && !isDemo;
     const session = storageService.getUserSession();
     const isProtectedRoute = currentPath.startsWith('/app');
-    if (emailConfirmationRequired && !['/confirm-email', '/login', '/forgot-password', '/reset-password'].includes(currentPath)) return <ConfirmEmailPage />;
     if (forceNotificationsPreview) return <OnboardingFlow />;
     if (isLive && !sessionChecked) {
       return <div className="min-h-[100dvh] bg-[#f4f4f3] px-5 py-8" aria-label="Loading account">
@@ -179,7 +160,6 @@ function AppContent() {
       return <OnboardingFlow />;
     }
 
-    if (currentPath === '/confirm-email') return <ConfirmEmailPage />;
     if (currentPath === '/forgot-password') return <ForgotPasswordPage />;
     if (currentPath === '/reset-password') return <ResetPasswordPage />;
 

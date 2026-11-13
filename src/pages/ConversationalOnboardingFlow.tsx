@@ -7,7 +7,6 @@ import { useNavigation } from '../context/NavigationContext';
 import { storageService } from '../services/storage';
 import { supabaseService } from '../services/supabaseService';
 import { verifyEmailAddress } from '../services/emailVerificationService';
-import { PENDING_EMAIL_KEY } from './ConfirmEmailPage';
 import { isSupabaseConfigured, supabase } from '../lib/supabase';
 import { OnboardingState, SellerType } from '../types';
 import type { Json } from '../types/database';
@@ -19,17 +18,6 @@ import { ShowroomBrandingEditor } from '../components/ShowroomBrandingEditor';
 import { Bell, MessageSquare, Eye as EyeIcon, CreditCard as CreditCardIcon } from 'lucide-react';
 
 const TOTAL = 8;
-const PENDING_DRAFT_KEY = 'lotle_pending_signup_draft_v1';
-type PendingDraft = { email: string; introDone: boolean; draft: Partial<OnboardingState> };
-const readPendingDraft = (email: string): PendingDraft | null => {
-  try {
-    const raw = localStorage.getItem(PENDING_DRAFT_KEY);
-    if (!raw) return null;
-    const parsed = JSON.parse(raw) as PendingDraft;
-    return parsed?.email && parsed.email.trim().toLowerCase() === email.trim().toLowerCase() ? parsed : null;
-  } catch { return null; }
-};
-const clearPendingDraft = () => { try { localStorage.removeItem(PENDING_DRAFT_KEY); } catch { /* storage unavailable */ } };
 const initialState = (): OnboardingState => ({
   currentStep: 1,
   account: { businessName: '', email: '', password: '', handle: '' },
@@ -128,30 +116,8 @@ export const OnboardingFlow: React.FC<{ forceNewAccount?: boolean }> = ({ forceN
           setNotificationsDismissedAt(progress.notifications_prompt_dismissed_at || ((progress.onboarding_step ?? 0) >= 6 && !progress.notifications_enabled ? new Date().toISOString() : null));
           setNotificationsEnabled(Boolean(progress.notifications_enabled));
         } else {
-          const pending = readPendingDraft(user.email || '');
-          if (pending) {
-            setData({
-              ...initialState(),
-              ...pending.draft,
-              currentStep: 2,
-              account: { ...initialState().account, email: user.email || '' },
-              branding: { ...initialState().branding, ...(pending.draft.branding || {}) },
-            });
-            setIntroDone(pending.introDone);
-            void supabase.from('user_onboarding_progress').upsert({
-              user_id: user.id,
-              onboarding_step: 0,
-              draft: pending.draft as unknown as Json,
-              intro_completed: pending.introDone,
-              notifications_prompt_dismissed_at: null,
-              notifications_enabled: false,
-              updated_at: new Date().toISOString(),
-            }, { onConflict: 'user_id' }).then(({ error: saveError }) => { if (saveError) console.warn('Could not save the restored setup draft:', saveError.message); });
-            clearPendingDraft();
-          } else {
-            setData({ ...initialState(), currentStep: 2, account: { ...initialState().account, email: user.email || '' } });
-            setIntroDone(false);
-          }
+          setData({ ...initialState(), currentStep: 2, account: { ...initialState().account, email: user.email || '' } });
+          setIntroDone(false);
           setNotificationsDismissedAt(null);
           setNotificationsEnabled(false);
         }
@@ -268,28 +234,17 @@ export const OnboardingFlow: React.FC<{ forceNewAccount?: boolean }> = ({ forceN
         setError(emailCheck.message || 'Please enter a valid, non-disposable email address.');
         return;
       }
-      if (!emailCheck.checked) console.info('Email domain verification was unavailable; continuing with Supabase email confirmation.');
+      if (!emailCheck.checked) console.info('Email domain verification was unavailable; continuing with account creation.');
       const auth = await supabaseService.signUp(data.account.email.trim(), data.account.password);
       if (!auth.user) throw new Error('Account creation did not return a user. Please try again.');
       const user = auth.user;
-      // With email confirmation on, Supabase answers a signup for an existing address with an empty identities list.
+      // Supabase returns an empty identities list when the email already belongs to an account.
       if (Array.isArray(user.identities) && user.identities.length === 0) {
         setError('An account with this email already exists. Sign in instead, or use Forgot password.');
         return;
       }
-      try { localStorage.setItem(PENDING_EMAIL_KEY, user.email || data.account.email.trim()); } catch {}
       if (!auth.session) {
-        // Keep the setup answers (never the password) so the dealer does not start over after confirming.
-        const pendingDraft: PendingDraft = {
-          email: user.email || data.account.email.trim(),
-          introDone,
-          draft: { sellerType: data.sellerType, showroom: data.showroom, contact: data.contact, branding: data.branding, template: data.template, firstVehicle: { ...data.firstVehicle, photos: [] } },
-        };
-        try { localStorage.setItem(PENDING_DRAFT_KEY, JSON.stringify(pendingDraft)); }
-        catch {
-          try { localStorage.setItem(PENDING_DRAFT_KEY, JSON.stringify({ ...pendingDraft, draft: { ...pendingDraft.draft, branding: { logoPreview: null, coverPreview: null } } })); } catch { /* storage full or unavailable */ }
-        }
-        window.location.assign('/confirm-email');
+        setError('Account created but sign-in is unavailable. Please sign in.');
         return;
       }
       await storageService.syncUserScope(user.id);

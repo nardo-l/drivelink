@@ -158,24 +158,6 @@ export const supabaseService = {
     return data;
   },
 
-  async verifySignupOtp(email: string, token: string) {
-    if (!isSupabaseConfigured()) throw new Error('Supabase is not configured.');
-    const { data, error } = await supabase.auth.verifyOtp({ email, token, type: 'signup' });
-    if (error) throw error;
-    return data;
-  },
-
-  async resendConfirmationEmail(email: string) {
-    if (!isSupabaseConfigured()) {
-      throw new Error('Supabase is not configured.');
-    }
-    const { error } = await supabase.auth.resend({
-      type: 'signup',
-      email,
-    });
-    if (error) throw error;
-  },
-
   async requestPasswordReset(email: string) {
     if (!isSupabaseConfigured()) throw new Error('Supabase is not configured.');
     const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: `${window.location.origin}/reset-password` });
