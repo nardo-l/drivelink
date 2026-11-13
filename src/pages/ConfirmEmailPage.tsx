@@ -5,7 +5,8 @@ import { supabaseService } from '../services/supabaseService';
 import { isSupabaseConfigured } from '../lib/supabase';
 import { name } from '../config/brand';
 
-const PENDING_EMAIL_KEY = 'drivelink_pending_confirmation_email_v1';
+// Keep this key outside the drivelink_* prefix: App.tsx calls storageService.clearAppUserData on startup when a new unconfirmed signup has no session, and that cleanup removes every drivelink_* key.
+const PENDING_EMAIL_KEY = 'lotle_pending_confirmation_email_v1';
 const RESEND_COOLDOWN_SECONDS = 60;
 
 function readPendingEmail(): string {
