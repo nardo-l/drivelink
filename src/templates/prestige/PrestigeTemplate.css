@@ -602,3 +602,9 @@
 }
 
 .pt-vehicle-card-link-overlay { position: absolute; inset: 0; z-index: 1; }
+
+/* Shared carousel — Prestige visual language */
+.dl-tpl-prestige .dl-shared-carousel--prestige{--fc-surface:#141824;--fc-border:rgba(255,255,255,.1);--fc-text:#F3F4F6;--fc-muted:#A7ADBA;--fc-accent:#A78BFA;--fc-chip-bg:rgba(255,255,255,.07);--fc-photo-bg:#080a10;--fc-dot:#5b6170;--fc-shadow:0 12px 28px rgba(0,0,0,.22);padding:0 20px}
+.dl-tpl-prestige .dl-shared-carousel--prestige .dl-shared-carousel__status.is-available{background:rgba(16,185,129,.92);color:#fff}
+.dl-tpl-prestige .dl-shared-carousel--prestige .dl-shared-carousel__status.is-reserved{background:rgba(245,158,11,.95);color:#251707}
+.dl-tpl-prestige .dl-shared-carousel--prestige .dl-shared-carousel__empty{background:var(--pt-surface);border-color:var(--pt-border);color:var(--pt-muted)}

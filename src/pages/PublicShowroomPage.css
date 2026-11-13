@@ -381,3 +381,9 @@
   .dl-ps-card { transition:none; }
   .dl-ps-card:active { transform:none; opacity:1; }
 }
+
+/* Shared carousel — classic showroom visual language */
+.dl-public-showroom .dl-shared-carousel--classic{--fc-surface:#fff;--fc-border:#e9ebee;--fc-text:#0A0F1E;--fc-muted:#687080;--fc-accent:#0A0F1E;--fc-chip-bg:#f2f3f5;--fc-photo-bg:#eef0f2;--fc-shadow:0 5px 18px rgba(10,15,30,.055);padding-top:2px}
+.dl-public-showroom>.dl-ps-header{background:#fff}
+.dl-public-showroom .dl-ps-hero{height:284px;min-height:284px}
+.dl-public-showroom .dl-ps-header button{min-height:44px;cursor:pointer}

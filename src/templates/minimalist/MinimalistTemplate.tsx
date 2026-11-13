@@ -12,6 +12,7 @@ import {
   X,
 } from 'lucide-react';
 import type { TemplateShowroomProps } from '../types';
+import { FeaturedVehicleCarousel } from '../common/FeaturedVehicleCarousel';
 import './MinimalistTemplate.css';
 
 export const MinimalistTemplate: React.FC<TemplateShowroomProps> = ({
@@ -48,9 +49,7 @@ export const MinimalistTemplate: React.FC<TemplateShowroomProps> = ({
     [vehicles]
   );
 
-  const heroVehicle = useMemo(() => {
-    return availableVehicles.find(v => v.photos && v.photos.length > 0) || availableVehicles[0];
-  }, [availableVehicles]);
+
 
   const makes = useMemo(() => {
     const set = new Set<string>();
@@ -135,40 +134,11 @@ export const MinimalistTemplate: React.FC<TemplateShowroomProps> = ({
               Browse Inventory <ChevronRight size={16} />
             </button>
 
-            {heroVehicle && (
-              <div
-                className="mn-hero-vehicle"
-                onClick={() => onVehicleClick(heroVehicle.id)}
-              >
-                {heroVehicle.photos?.[0] ? (
-                  <img
-                    src={heroVehicle.photos[0]}
-                    alt={`${heroVehicle.year} ${heroVehicle.make} ${heroVehicle.model}`}
-                    loading="eager"
-                  />
-                ) : (
-                  <div className="aspect-[16/9] flex items-center justify-center bg-gray-100 text-gray-400">
-                    <Car size={44} />
-                  </div>
-                )}
-                <div className="mn-hero-vehicle-info">
-                  <div>
-                    <strong className="block text-sm font-bold text-gray-900">
-                      {heroVehicle.year} {heroVehicle.make} {heroVehicle.model}
-                    </strong>
-                    <span className="text-xs text-gray-500">
-                      {[heroVehicle.condition, heroVehicle.transmission].filter(Boolean).join(' · ')}
-                    </span>
-                  </div>
-                  <strong className="text-base font-black text-gray-900">
-                    {!heroVehicle.price || Number(heroVehicle.price) <= 0 ? 'Price on request' : new Intl.NumberFormat('en-US', { style: 'currency', currency: heroVehicle.currency || dealer.currency, maximumFractionDigits: 0 }).format(heroVehicle.price)}
-                  </strong>
-                </div>
-              </div>
-            )}
+
           </section>
 
           {/* Real Stats Only */}
+          {availableVehicles.length > 0 && (
           <div className="mn-stats-row">
             <div className="mn-stat-box">
               <Car size={18} />
@@ -178,8 +148,11 @@ export const MinimalistTemplate: React.FC<TemplateShowroomProps> = ({
               </div>
             </div>
           </div>
+          )}
         </>
       )}
+
+      {tab === 'home' && <FeaturedVehicleCarousel dealer={dealer} vehicles={vehicles} onVehicleClick={onVehicleClick} variant="minimalist" />}
 
       {/* Inventory Section */}
       {(tab === 'home' || tab === 'inventory' || tab === 'saved') && (

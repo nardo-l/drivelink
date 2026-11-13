@@ -1,0 +1,29 @@
+.dl-shared-carousel{width:100%;min-width:0;margin:0 0 26px;padding:0;position:relative;color:var(--fc-text,#0A0F1E)}
+.dl-shared-carousel__heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 13px}
+.dl-shared-carousel__heading h2{min-width:0;margin:0;font-size:clamp(18px,4vw,22px);font-weight:850;letter-spacing:-.04em;line-height:1.2;color:var(--fc-text,#0A0F1E)}
+.dl-shared-carousel__arrows{display:none;align-items:center;gap:8px}
+.dl-shared-carousel__arrows button{width:44px;height:44px;display:grid;place-items:center;border:1px solid var(--fc-border,#e5e7eb);border-radius:50%;background:var(--fc-surface,#fff);color:var(--fc-text,#0A0F1E);font-size:28px;line-height:1;cursor:pointer}
+.dl-shared-carousel__track{position:relative;display:flex;gap:12px;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-x:contain;padding:0 1px 5px}
+.dl-shared-carousel__track::-webkit-scrollbar{display:none}
+.dl-shared-carousel__slide{display:flex;flex:0 0 88%;min-width:0;flex-direction:column;overflow:hidden;scroll-snap-align:start;border:1px solid var(--fc-border,#e5e7eb);border-radius:22px;background:var(--fc-surface,#fff);color:var(--fc-text,#0A0F1E);text-decoration:none;box-shadow:var(--fc-shadow,0 5px 20px rgba(10,15,30,.06))}
+.dl-shared-carousel__slide:focus-visible{outline:3px solid var(--fc-accent,#0A0F1E);outline-offset:3px}
+.dl-shared-carousel__photo{position:relative;width:100%;aspect-ratio:16/9;overflow:hidden;background:var(--fc-photo-bg,#eef0f2)}
+.dl-shared-carousel__photo img{display:block;width:100%;height:100%;object-fit:cover}
+.dl-shared-carousel__no-photo{position:absolute;inset:0;display:grid;place-items:center;padding:16px;text-align:center;color:var(--fc-muted,#687080);font-size:12px;font-weight:650}
+.dl-shared-carousel__status{position:absolute;top:11px;left:11px;min-height:28px;display:inline-flex;align-items:center;padding:5px 10px;border-radius:999px;background:rgba(255,255,255,.96);color:#145c43;font-size:10px;font-weight:800;letter-spacing:.03em;text-transform:uppercase}
+.dl-shared-carousel__status.is-reserved{background:#fff0d6;color:#8a5709}
+.dl-shared-carousel__body{display:flex;min-width:0;flex:1;flex-direction:column;gap:8px;padding:13px 14px 15px}
+.dl-shared-carousel__body h3{display:-webkit-box;min-width:0;overflow:hidden;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow-wrap:anywhere;margin:0;color:var(--fc-text,#0A0F1E);font-size:15px;font-weight:800;line-height:1.25}
+.dl-shared-carousel__price{min-width:0;overflow-wrap:anywhere;color:var(--fc-accent,#0A0F1E);font-size:17px;font-weight:900;line-height:1.2}
+.dl-shared-carousel__specs{display:flex;min-width:0;flex-wrap:wrap;gap:6px;margin-top:auto}
+.dl-shared-carousel__specs span{max-width:100%;overflow-wrap:anywhere;padding:4px 7px;border-radius:7px;background:var(--fc-chip-bg,#f3f4f6);color:var(--fc-muted,#687080);font-size:10px;font-weight:650;line-height:1.25}
+.dl-shared-carousel__dots{display:flex;align-items:center;justify-content:center;gap:3px;margin:7px auto 0}
+.dl-shared-carousel__dots button{width:44px;height:44px;display:grid;place-items:center;border:0;background:transparent;cursor:pointer}
+.dl-shared-carousel__dots button:before{content:"";width:7px;height:7px;border-radius:999px;background:var(--fc-dot,#aeb4bf);transition:width .18s ease,background .18s ease}
+.dl-shared-carousel__dots button.is-active:before{width:22px;background:var(--fc-accent,#0A0F1E)}
+.dl-shared-carousel__dots button:focus-visible,.dl-shared-carousel__arrows button:focus-visible{outline:3px solid var(--fc-accent,#0A0F1E);outline-offset:2px}
+.dl-shared-carousel__empty{margin:0;padding:23px 16px;border:1px solid var(--fc-border,#e5e7eb);border-radius:18px;background:var(--fc-surface,#fff);color:var(--fc-muted,#687080);font-size:13px;font-weight:650;text-align:center}
+.dl-shared-carousel__sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+@media(min-width:768px){.dl-shared-carousel__arrows{display:flex}.dl-shared-carousel__slide{flex-basis:calc((100% - 12px)/2)}}
+@media(min-width:1100px){.dl-shared-carousel__slide{flex-basis:calc((100% - 24px)/3)}}
+@media(prefers-reduced-motion:reduce){.dl-shared-carousel__track{scroll-behavior:auto}.dl-shared-carousel__dots button:before{transition:none}}

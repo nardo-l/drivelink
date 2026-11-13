@@ -13,6 +13,7 @@ import { isSupabaseConfigured } from '../lib/supabase';
 import { absoluteUrl, homeTitle, pageTitle } from '../config/brand';
 import type { Dealership, Vehicle } from '../types';
 import { resolveTemplate } from '../templates/registry';
+import { FeaturedVehicleCarousel } from '../templates/common/FeaturedVehicleCarousel';
 import { TemplateSkeleton } from '../templates/common/TemplateSkeleton';
 import './PublicShowroomPage.css';
 
@@ -280,6 +281,7 @@ export const PublicShowroomPage: React.FC<PublicShowroomPageProps> = ({ slug, pr
   };
   const openContact = () => { setActiveTab('contact'); setSheet('contact'); };
   const browse = () => {
+    setSavedOnly(false);
     setActiveTab('inventory');
     document.getElementById('available-cars')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
@@ -288,6 +290,7 @@ export const PublicShowroomPage: React.FC<PublicShowroomPageProps> = ({ slug, pr
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
   const onSearch = () => {
+    if (activeTab === 'contact') { setActiveTab('inventory'); setSavedOnly(false); }
     searchInputRef.current?.focus();
     searchInputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
   };
@@ -314,8 +317,6 @@ export const PublicShowroomPage: React.FC<PublicShowroomPageProps> = ({ slug, pr
 
   return (
     <main className="dl-public-showroom">
-      <section className="dl-ps-hero" style={heroImage ? { backgroundImage: 'url("' + imageUrl(heroImage, 1600, 900) + '")' } : undefined}>
-        <div className="dl-ps-hero-fade" />
         <header className="dl-ps-header">
           <button type="button" className="dl-ps-brand" onClick={home} aria-label={dealer.name + ' home'}>
             <span className="dl-ps-avatar">
@@ -328,15 +329,29 @@ export const PublicShowroomPage: React.FC<PublicShowroomPageProps> = ({ slug, pr
             <button type="button" className="dl-ps-menu-round" onClick={openContact} aria-label="Open showroom menu"><Menu size={20} /></button>
           </div>
         </header>
+      {activeTab === 'home' && (
+      <section className="dl-ps-hero" style={heroImage ? { backgroundImage: 'url("' + imageUrl(heroImage, 1600, 900) + '")' } : undefined}>
+        <div className="dl-ps-hero-fade" />
+
         <div className="dl-ps-hero-content">
           {city && <span className="dl-ps-location-pill"><MapPin size={13} />{city}</span>}
           <h1>{dealer.tagline?.trim() && dealer.tagline.trim() !== 'Quality vehicles. Fair prices.' ? dealer.tagline.trim() : 'Find your next car.'}</h1>
-          <p>{countLabel(availableCount)} available</p>
+          {availableCount > 0 && <p>{countLabel(availableCount)} available</p>}
           <button type="button" className="dl-ps-browse-button" onClick={browse}>Browse inventory <ChevronRight size={17} /></button>
         </div>
       </section>
+      )}
 
       <div className="dl-ps-container">
+        {activeTab === 'home' && availableCount > 0 && (
+        <section className="dl-ps-trust-strip" aria-label="Dealership information">
+          <div><strong>{availableCount}</strong><span>cars in stock</span></div>
+          {waNumber && <div><strong>Replies on</strong><span>WhatsApp</span></div>}
+          {city && <div><strong>Based in</strong><span>{dealer.city || dealer.country}</span></div>}
+        </section>
+        )}
+        {activeTab === 'home' && <FeaturedVehicleCarousel dealer={dealer} vehicles={publicVehicles} onVehicleClick={id => navigate('/' + encodeURIComponent(dealer.slug) + '/vehicle/' + encodeURIComponent(id))} variant="classic" />}
+        {activeTab !== 'contact' && (
         <section className="dl-ps-search-section" aria-label="Search and filter inventory">
           <div className="dl-ps-search-row">
             <label className="dl-ps-search-box">
@@ -356,16 +371,15 @@ export const PublicShowroomPage: React.FC<PublicShowroomPageProps> = ({ slug, pr
           )}
         </section>
 
-        <section className="dl-ps-trust-strip" aria-label="Dealership information">
-          <div><strong>{availableCount}</strong><span>cars in stock</span></div>
-          {waNumber && <div><strong>Replies on</strong><span>WhatsApp</span></div>}
-          {city && <div><strong>Based in</strong><span>{dealer.city || dealer.country}</span></div>}
-        </section>
+        )}
 
+
+
+        {activeTab !== 'contact' && (activeTab !== 'home' || publicVehicles.length > 0) && (
         <section className="dl-ps-listings-section" id="available-cars">
           <div className="dl-ps-section-head">
             <h2>{savedOnly ? 'Saved cars' : 'Available cars'}</h2>
-            <span>{countLabel(filtered.length)}</span>
+            {filtered.length > 0 && <span>{countLabel(filtered.length)}</span>}
           </div>
           {filtered.length > 0 ? (
             <div className="dl-ps-grid">
@@ -415,13 +429,15 @@ export const PublicShowroomPage: React.FC<PublicShowroomPageProps> = ({ slug, pr
           ) : (
             <div className="dl-ps-empty-box">
               {savedOnly ? <><Heart size={34} /><h3>No saved cars</h3><p>Tap the heart on a car to save it.</p><button type="button" onClick={() => { setSavedOnly(false); setActiveTab('inventory'); }}>Browse inventory</button></>
-                : publicVehicles.length === 0 ? <><CarFront size={36} /><h3>No cars listed yet</h3><p>Check back soon or contact the dealership.</p>{waNumber && <button type="button" onClick={openWhatsApp}>Message us on WhatsApp</button>}</>
+                : publicVehicles.length === 0 ? <><h3>No vehicles listed yet</h3></>
                   : <><Search size={34} /><h3>No cars match your search</h3><button type="button" onClick={clearFilters}>Clear filters</button></>}
             </div>
           )}
         </section>
 
-        {waNumber && (
+        )}
+
+        {activeTab !== 'contact' && waNumber && (
           <button type="button" className="dl-ps-whatsapp-card" onClick={openWhatsApp}>
             <span className="dl-ps-whatsapp-icon"><WhatsAppIcon size={24} /></span>
             <span className="dl-ps-whatsapp-copy"><strong>Chat on WhatsApp</strong><small>Ask about any car</small></span>
@@ -429,13 +445,13 @@ export const PublicShowroomPage: React.FC<PublicShowroomPageProps> = ({ slug, pr
           </button>
         )}
 
-        <footer className="dl-ps-footer">
+        {activeTab !== 'contact' && <footer className="dl-ps-footer">
           <strong>{dealer.name}</strong>
           {phone && <a href={'tel:' + phone}><Phone size={14} />{phone}</a>}
           {dealer.address && <p><MapPin size={14} />{dealer.address}</p>}
           {hours && <p><Clock3 size={14} />{hours}</p>}
           {showPoweredBy && <span className="dl-ps-powered">Powered by Lotlé</span>}
-        </footer>
+        </footer>}
       </div>
 
       <nav className="dl-ps-bottom-bar" aria-label="Showroom navigation">

@@ -503,3 +503,7 @@
 }
 
 .mn-card-link-overlay { position: absolute; inset: 0; z-index: 1; }
+
+/* Shared carousel — Minimalist visual language */
+.dl-tpl-minimalist .dl-shared-carousel--minimalist{--fc-surface:#fff;--fc-border:#E5E7EB;--fc-text:#111827;--fc-muted:#6B7280;--fc-accent:#111827;--fc-chip-bg:#F9FAFB;--fc-photo-bg:#F3F4F6;--fc-dot:#c4c9d1;--fc-shadow:0 5px 18px rgba(17,24,39,.045);padding:0 20px}
+.dl-tpl-minimalist .dl-shared-carousel--minimalist .dl-shared-carousel__empty{background:#fff;border-color:var(--mn-border);color:var(--mn-muted)}

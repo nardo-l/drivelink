@@ -13,6 +13,7 @@ import {
   X,
 } from 'lucide-react';
 import type { TemplateShowroomProps } from '../types';
+import { FeaturedVehicleCarousel } from '../common/FeaturedVehicleCarousel';
 import './PrestigeTemplate.css';
 
 export const PrestigeTemplate: React.FC<TemplateShowroomProps> = ({
@@ -50,9 +51,7 @@ export const PrestigeTemplate: React.FC<TemplateShowroomProps> = ({
     [vehicles]
   );
 
-  const heroVehicle = useMemo(() => {
-    return availableVehicles.find(v => v.photos && v.photos.length > 0) || availableVehicles[0];
-  }, [availableVehicles]);
+
 
   const makes = useMemo(() => {
     const set = new Set<string>();
@@ -138,35 +137,11 @@ export const PrestigeTemplate: React.FC<TemplateShowroomProps> = ({
               Browse Inventory <ChevronRight size={16} />
             </button>
 
-            {heroVehicle && (
-              <div
-                className="pt-hero-showcase"
-                onClick={() => onVehicleClick(heroVehicle.id)}
-              >
-                {heroVehicle.photos?.[0] ? (
-                  <img
-                    src={heroVehicle.photos[0]}
-                    alt={`${heroVehicle.year} ${heroVehicle.make} ${heroVehicle.model}`}
-                    loading="eager"
-                  />
-                ) : (
-                  <div className="aspect-[16/9] flex items-center justify-center bg-black/60 text-white/40">
-                    <Car size={48} />
-                  </div>
-                )}
-                <div className="pt-hero-showcase-overlay">
-                  <strong className="text-white text-base font-bold">
-                    {heroVehicle.year} {heroVehicle.make} {heroVehicle.model}
-                  </strong>
-                  <span className="text-[#A78BFA] text-sm font-black">
-                    {!heroVehicle.price || Number(heroVehicle.price) <= 0 ? 'Price on request' : new Intl.NumberFormat('en-US', { style: 'currency', currency: heroVehicle.currency || dealer.currency, maximumFractionDigits: 0 }).format(heroVehicle.price)}
-                  </span>
-                </div>
-              </div>
-            )}
+
           </section>
 
           {/* Real stats only */}
+          {availableVehicles.length > 0 && (
           <div className="pt-stat-strip">
             <div className="pt-stat-chip">
               <Car size={20} />
@@ -176,8 +151,11 @@ export const PrestigeTemplate: React.FC<TemplateShowroomProps> = ({
               </div>
             </div>
           </div>
+          )}
         </>
       )}
+
+      {tab === 'home' && <FeaturedVehicleCarousel dealer={dealer} vehicles={vehicles} onVehicleClick={onVehicleClick} variant="prestige" />}
 
       {/* Inventory Section (shown on Home & Inventory tabs) */}
       {(tab === 'home' || tab === 'inventory' || tab === 'saved') && (
