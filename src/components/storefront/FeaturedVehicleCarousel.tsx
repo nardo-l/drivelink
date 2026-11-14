@@ -112,7 +112,7 @@ export const FeaturedVehicleCarousel: React.FC<FeaturedVehicleCarouselProps> = (
   }
 
   return (
-    <section className={'dl-shared-carousel dl-shared-carousel--' + variant} role="region" aria-roledescription="carousel" aria-label="Featured vehicles"
+    <section className="dl-shared-carousel" role="region" aria-roledescription="carousel" aria-label="Featured vehicles"
       onPointerDown={handlePointerDown} onPointerUp={handlePointerUp} onPointerCancel={handlePointerUp}
       onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave} onFocusCapture={handleFocus} onBlurCapture={handleBlur}>
       <div className="dl-shared-carousel__heading">
