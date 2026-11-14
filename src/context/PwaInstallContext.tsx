@@ -254,7 +254,6 @@ const PwaInstallSheet: React.FC<{onDismiss:()=>void;onClose:()=>void}> = ({onDis
   if (!sheet) return null;
   const success = sheet === 'success';
   const ios = isIos && !isInstalled && !canInstall && !success;
-  const manualInstall = ios;
   return <div className="lotle-pwa-overlay" onMouseDown={event => { if (event.target === event.currentTarget) onDismiss(); }}>
     <section ref={panel} className="lotle-pwa-sheet" role="dialog" aria-modal="true" aria-labelledby="lotle-pwa-title"
       onTouchStart={event => { touchY.current=event.touches[0]?.clientY ?? null; }}
@@ -269,9 +268,6 @@ const PwaInstallSheet: React.FC<{onDismiss:()=>void;onClose:()=>void}> = ({onDis
         <div><span>1</span><Share size={17}/>Tap Share in your browser</div>
         <div><span>2</span><Smartphone size={17}/>Choose “Add to Home Screen”</div>
         <div><span>3</span><Plus size={17}/>Tap “Add” to confirm</div>
-      </div> : manualInstall ? <div className="lotle-pwa-steps">
-        {android ? <><div><span>1</span><Plus size={17}/>Open your browser menu (⋮)</div><div><span>2</span><Smartphone size={17}/>Choose “Install app” or “Add to Home screen”</div><div><span>3</span><Check size={17}/>Confirm “Install” or “Add”</div></> : <><div><span>1</span><Plus size={17}/>Open your browser menu</div><div><span>2</span><Smartphone size={17}/>Choose “Install Lotlé” or “Install page as app”, if available</div><div><span>3</span><Check size={17}/>Confirm the installation</div></>}
-        <p className="lotle-pwa-help">If you don’t see an install option, this browser may not support installing web apps. Try Chrome or Edge.</p>
       </div> : <p>Open your showroom in one tap, get enquiry alerts, and use it like a normal app.</p>}
       <button className="lotle-pwa-primary" type="button" disabled={busy} onClick={() => {
         if (success) onClose();
