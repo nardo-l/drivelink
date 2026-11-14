@@ -13,6 +13,7 @@ import { VehicleDetailPage } from './pages/VehicleDetailPage';
 import { AddEditVehiclePage } from './pages/AddEditVehiclePage';
 import { EnquiriesPage } from './pages/EnquiriesPage';
 import { SettingsPage } from './pages/SettingsPage';
+import { ThemePickerPage } from './pages/ThemePickerPage';
 import { MorePage } from './pages/MorePage';
 import { SupportPage } from './pages/SupportPage';
 import { BillingPage } from './pages/BillingPage';
@@ -172,6 +173,10 @@ function AppContent() {
     if (isProtectedRoute && isLive && !session.isLoggedIn) return <LoginPage />;
     if (isProtectedRoute && isLive && session.isLoggedIn && !session.dealershipId) return <OnboardingFlow />;
 
+    if (currentPath === '/app/theme') {
+      return <ThemePickerPage />;
+    }
+
     // 5. Dealer Dashboard / Screen 03
     if (currentPath === '/app') {
       return safeDashboard();
@@ -289,7 +294,7 @@ function AppContent() {
 
       <ErrorBoundary label={`${currentPath || 'home'} page`}>{renderRoute()}</ErrorBoundary>
       <NotificationPermissionPrompt />
-      {(['/app', '/app/vehicles', '/app/enquiries', '/app/more'].includes(currentPath) || (currentPath === '/' && storageService.getUserSession().isLoggedIn && !!storageService.getUserSession().dealershipId)) && <BottomNav />}
+      {(['/app', '/app/vehicles', '/app/enquiries', '/app/more', '/app/theme'].includes(currentPath) || (currentPath === '/' && storageService.getUserSession().isLoggedIn && !!storageService.getUserSession().dealershipId)) && <BottomNav />}
 
       {/* Global Toast Notification */}
       {toast && (

@@ -10,6 +10,7 @@ interface PreviewModalProps {
   vehicles: Vehicle[];
   onApply: () => void;
   onClose: () => void;
+  readOnly?: boolean;
 }
 
 export const PreviewModal: React.FC<PreviewModalProps> = ({
@@ -18,6 +19,7 @@ export const PreviewModal: React.FC<PreviewModalProps> = ({
   vehicles,
   onApply,
   onClose,
+  readOnly = false,
 }) => {
   const Component = template.Component;
   const isDark = template.theme.isDark;
@@ -54,6 +56,7 @@ export const PreviewModal: React.FC<PreviewModalProps> = ({
         </div>
 
         <div className="flex items-center gap-2">
+          {!readOnly && (
           <button
             type="button"
             onClick={onApply}
@@ -62,6 +65,7 @@ export const PreviewModal: React.FC<PreviewModalProps> = ({
             <Check size={14} />
             Use Template
           </button>
+          )}
           <button
             type="button"
             onClick={onClose}

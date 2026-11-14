@@ -11,8 +11,8 @@ import {supabaseService} from '../services/supabaseService';
 import {notificationService} from '../services/notificationService';
 import {isSupabaseConfigured, supabase} from '../lib/supabase';
 import {planService} from '../services/planService';
-import type {Dealership, Vehicle} from '../types';
-import { TemplatePickerSheet } from '../components/dashboard/TemplatePickerSheet';
+import type {Dealership} from '../types';
+import { TEMPLATES_REGISTRY } from '../templates/registry';
 import './SettingsPage.css';
 import { usePwaInstall } from '../context/PwaInstallContext';
 
@@ -41,15 +41,12 @@ export const SettingsPage:React.FC=()=>{
  const logoInput=useRef<HTMLInputElement>(null),bannerInput=useRef<HTMLInputElement>(null);
  const initials=useMemo(()=>dealer.name.trim().split(/\\s+/).filter(Boolean).slice(0,2).map(x=>x[0]).join('').toUpperCase()||'DL',[dealer.name]);
  const showroomUrl=typeof window!=='undefined'?`${window.location.origin}/${encodeURIComponent(dealer.slug)}`:'';
- const [showTemplatePicker, setShowTemplatePicker] = useState(false);
- const [vehicles, setVehicles] = useState<Vehicle[]>([]);
  const templateLabel = useMemo(() => {
-   if (dealer.template === 'prestige') return 'Prestige (Cinematic Dark)';
-   if (dealer.template === 'minimalist') return 'Minimalist (Spacious Light)';
-   return 'Classic (Default)';
+   const template = TEMPLATES_REGISTRY[dealer.template as keyof typeof TEMPLATES_REGISTRY];
+   return template?.isAvailable ? template.name : 'Choose a theme';
  }, [dealer.template]);
 
- useEffect(()=>{let live=true;(async()=>{try{const [latest, vList]=await Promise.all([storageService.getDealershipAsync(), storageService.getVehiclesAsync().catch(()=>[])]);if(live){setDealer(latest);setVehicles(vList);setDraft({name:latest.name,city:latest.city,address:latest.address||'',phone:latest.phone,whatsapp:latest.whatsapp});}}catch(e){console.warn('Settings profile refresh failed',e);}})();return()=>{live=false;};},[]);
+ useEffect(()=>{let live=true;(async()=>{try{const latest=await storageService.getDealershipAsync();if(live){setDealer(latest);setDraft({name:latest.name,city:latest.city,address:latest.address||'',phone:latest.phone,whatsapp:latest.whatsapp});}}catch(e){console.warn('Settings profile refresh failed',e);}})();return()=>{live=false;};},[]);
  useEffect(()=>{let active=true;Promise.all([notificationService.isPushEnabled(),notificationService.getPreferences(dealer.id)]).then(([subscribed,prefs])=>{if(active)setPushEnabled(Boolean(subscribed&&prefs.push_enabled));}).catch(()=>{if(active)setPushEnabled(false);});planService.getMyPlan().then(snapshot=>setPlanStatus(snapshot.plan==='pro'?(snapshot.subscription_status==='active'?'Lotlé Pro':'Pro trial'):'Free plan')).catch(()=>setPlanStatus('Plan details unavailable'));return()=>{active=false;};},[dealer.id]);
 
  const saveProfile=async(patch:Partial<DealerDraft>)=>{
@@ -90,7 +87,7 @@ export const SettingsPage:React.FC=()=>{
    </section>
 
    <section className="dl-settings-group"><h2>Showroom</h2>
-    <Row icon={Sparkles} label="Showroom template" value={templateLabel} onClick={()=>setShowTemplatePicker(true)}/>
+    <Row icon={Sparkles} label="Showroom template" value={templateLabel} onClick={()=>navigate('/app/theme')}/>
     <Row icon={Image} label="Dealership branding" value="Update your logo and showroom banner" onClick={()=>openSheet('branding')}/>
     <Row icon={Store} label="Dealership name" value={dealer.name} onClick={()=>openSheet('name')}/>
     <Row icon={Phone} label="Phone and WhatsApp number" value={dealer.phone||dealer.whatsapp||'Add contact numbers'} onClick={()=>openSheet('contact')}/>
@@ -156,18 +153,5 @@ export const SettingsPage:React.FC=()=>{
     {sheet==='delete'&&<div className="dl-settings-sheet-body"><div className="dl-settings-warning"><AlertTriangle size={18}/> Account deletion requires identity verification by {name} Support. This will open a request; it will not delete your account immediately.</div><label>Type DELETE to confirm your request<input value={deleteText} onChange={e=>setDeleteText(e.target.value)} autoComplete="off" placeholder="DELETE"/></label><button type="button" className="dl-settings-danger" disabled={deleteText.trim()!=='DELETE'} onClick={requestDeletion}>Continue to support</button></div>}
    </section>
   </div>}
-   {showTemplatePicker && (
-    <TemplatePickerSheet
-      dealer={dealer}
-      vehicles={vehicles}
-      currentTemplate={dealer.template}
-      onSelect={async (newTemplate) => {
-        const updated = await storageService.updateDealershipAsync({ template: newTemplate });
-        setDealer(updated);
-        showToast('Showroom template updated');
-      }}
-      onClose={() => setShowTemplatePicker(false)}
-    />
-   )}
  </div>;
 };
