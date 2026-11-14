@@ -330,7 +330,7 @@ export const PublicShowroomPage: React.FC<PublicShowroomPageProps> = ({ slug, pr
         </section>
         )}
         {activeTab === 'home' && <FeaturedVehicleCarousel dealer={dealer} vehicles={publicVehicles} onVehicleClick={id => navigate('/' + encodeURIComponent(dealer.slug) + '/vehicle/' + encodeURIComponent(id))} />}
-        {activeTab === 'inventory' || activeTab === 'saved' ? (
+        {(activeTab === 'inventory' || activeTab === 'saved') && (
         <section className="dl-ps-search-section" aria-label="Search and filter inventory">
           <div className="dl-ps-search-row">
             <label className="dl-ps-search-box">
@@ -354,7 +354,7 @@ export const PublicShowroomPage: React.FC<PublicShowroomPageProps> = ({ slug, pr
 
 
 
-        {activeTab !== 'contact' && (activeTab !== 'home' || publicVehicles.length > 0) && (
+        {activeTab !== 'contact' && activeTab !== 'home' && (
         <section className="dl-ps-listings-section" id="available-cars">
           {activeTab !== 'home' && (
           <div className="dl-ps-section-head">
