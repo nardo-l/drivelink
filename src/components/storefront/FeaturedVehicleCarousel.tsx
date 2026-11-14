@@ -1,17 +1,15 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Dealership, Vehicle } from '../../types';
-import { pickShowcaseVehicles } from '../utils/featuredVehicles';
+import { pickShowcaseVehicles } from './featuredVehicles';
 import './FeaturedVehicleCarousel.css';
 
-type CarouselVariant = 'classic' | 'prestige' | 'minimalist';
 interface FeaturedVehicleCarouselProps {
   dealer: Dealership;
   vehicles: Vehicle[];
   onVehicleClick: (vehicleId: string) => void;
-  variant: CarouselVariant;
 }
 
-export const FeaturedVehicleCarousel: React.FC<FeaturedVehicleCarouselProps> = ({ dealer, vehicles, onVehicleClick, variant }) => {
+export const FeaturedVehicleCarousel: React.FC<FeaturedVehicleCarouselProps> = ({ dealer, vehicles, onVehicleClick }) => {
   const slides = useMemo(() => pickShowcaseVehicles(vehicles), [vehicles]);
   const trackRef = useRef<HTMLDivElement>(null);
   const activeIndexRef = useRef(0);
@@ -110,7 +108,7 @@ export const FeaturedVehicleCarousel: React.FC<FeaturedVehicleCarouselProps> = (
   const autoplayActive = slides.length > 1 && !reducedMotion && tabVisible;
 
   if (slides.length === 0) {
-    return <section className={'dl-shared-carousel dl-shared-carousel--' + variant} aria-label="Featured vehicles"><p className="dl-shared-carousel__empty">No vehicles listed yet</p></section>;
+    return <section className={'dl-shared-carousel'} aria-label="Featured vehicles"><p className="dl-shared-carousel__empty">No vehicles listed yet</p></section>;
   }
 
   return (

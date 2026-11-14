@@ -3,7 +3,7 @@ import React,{useEffect,useMemo,useRef,useState} from 'react';
 import {
  ArrowLeft,Building2,Store,Image,UserRound,Phone,MapPin,Clock3,CreditCard,Bell,Headset,
  FileText,Shield,LogOut,Trash2,ChevronRight,Copy,Check,Upload,Loader2,MessageCircle,
- Globe,Mail,X,CheckCircle2,AlertTriangle,ExternalLink,Smartphone,Sparkles
+ Globe,Mail,X,CheckCircle2,AlertTriangle,ExternalLink,Smartphone
 } from 'lucide-react';
 import {useNavigation} from '../context/NavigationContext';
 import {storageService} from '../services/storage';
@@ -12,7 +12,6 @@ import {notificationService} from '../services/notificationService';
 import {isSupabaseConfigured, supabase} from '../lib/supabase';
 import {planService} from '../services/planService';
 import type {Dealership} from '../types';
-import { TEMPLATES_REGISTRY } from '../templates/registry';
 import './SettingsPage.css';
 import { usePwaInstall } from '../context/PwaInstallContext';
 
@@ -41,11 +40,6 @@ export const SettingsPage:React.FC=()=>{
  const logoInput=useRef<HTMLInputElement>(null),bannerInput=useRef<HTMLInputElement>(null);
  const initials=useMemo(()=>dealer.name.trim().split(/\\s+/).filter(Boolean).slice(0,2).map(x=>x[0]).join('').toUpperCase()||'DL',[dealer.name]);
  const showroomUrl=typeof window!=='undefined'?`${window.location.origin}/${encodeURIComponent(dealer.slug)}`:'';
- const templateLabel = useMemo(() => {
-   const template = TEMPLATES_REGISTRY[dealer.template as keyof typeof TEMPLATES_REGISTRY];
-   return template?.isAvailable ? template.name : 'Choose a theme';
- }, [dealer.template]);
-
  useEffect(()=>{let live=true;(async()=>{try{const latest=await storageService.getDealershipAsync();if(live){setDealer(latest);setDraft({name:latest.name,city:latest.city,address:latest.address||'',phone:latest.phone,whatsapp:latest.whatsapp});}}catch(e){console.warn('Settings profile refresh failed',e);}})();return()=>{live=false;};},[]);
  useEffect(()=>{let active=true;Promise.all([notificationService.isPushEnabled(),notificationService.getPreferences(dealer.id)]).then(([subscribed,prefs])=>{if(active)setPushEnabled(Boolean(subscribed&&prefs.push_enabled));}).catch(()=>{if(active)setPushEnabled(false);});planService.getMyPlan().then(snapshot=>setPlanStatus(snapshot.plan==='pro'?(snapshot.subscription_status==='active'?'Lotlé Pro':'Pro trial'):'Free plan')).catch(()=>setPlanStatus('Plan details unavailable'));return()=>{active=false;};},[dealer.id]);
 
@@ -87,7 +81,6 @@ export const SettingsPage:React.FC=()=>{
    </section>
 
    <section className="dl-settings-group"><h2>Showroom</h2>
-    <Row icon={Sparkles} label="Showroom template" value={templateLabel} onClick={()=>navigate('/app/theme')}/>
     <Row icon={Image} label="Dealership branding" value="Update your logo and showroom banner" onClick={()=>openSheet('branding')}/>
     <Row icon={Store} label="Dealership name" value={dealer.name} onClick={()=>openSheet('name')}/>
     <Row icon={Phone} label="Phone and WhatsApp number" value={dealer.phone||dealer.whatsapp||'Add contact numbers'} onClick={()=>openSheet('contact')}/>

@@ -64,7 +64,6 @@ export function mapDealershipToRow(
     whatsapp: d.whatsapp || '',
     email: d.email || '',
     currency: d.currency || 'USD',
-    template: d.template || 'signature',
     logo_url: d.logoUrl || null,
     cover_url: d.coverUrl || null,
     banner_url: d.coverUrl || null,
@@ -323,7 +322,6 @@ export const supabaseService = {
     if (updates.whatsapp !== undefined) dbPayload.whatsapp = updates.whatsapp;
     if (updates.email !== undefined) dbPayload.email = updates.email;
     if (updates.currency !== undefined) dbPayload.currency = updates.currency;
-    if (updates.template !== undefined) dbPayload.template = updates.template;
     if (updates.logoUrl !== undefined) dbPayload.logo_url = updates.logoUrl;
     if (updates.coverUrl !== undefined) { dbPayload.cover_url = updates.coverUrl; dbPayload.banner_url = updates.coverUrl; }
     if (updates.bio !== undefined) dbPayload.bio = updates.bio;

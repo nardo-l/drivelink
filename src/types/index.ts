@@ -1,18 +1,7 @@
 export type VehicleStatus = 'available' | 'reserved' | 'sold' | 'draft' | 'hidden';
 export type TransmissionType = 'Automatic' | 'Manual';
 export type FuelType = 'Hybrid' | 'Petrol' | 'Diesel' | 'Electric';
-export type StorefrontTemplate =
-  | 'signature'
-  | 'inventory_first'
-  | 'independent'
-  | 'prestige'
-  | 'minimalist'
-  | 'street'
-  | 'luxury'
-  | 'adventure'
-  | 'tech'
-  | 'lifestyle'
-  | 'gallery';
+export type StorefrontTemplate = string;
 export type CurrencyCode = 'USD' | 'ZAR' | 'ZWG';
 
 export interface Vehicle {
@@ -201,7 +190,6 @@ export function dealershipModelToRow(model: Partial<Dealership>, userId?: string
   if (model.whatsapp !== undefined) row.whatsapp = model.whatsapp;
   if (model.email !== undefined) row.email = model.email;
   if (model.currency !== undefined) row.currency = model.currency;
-  if (model.template !== undefined) row.template = model.template;
   if (model.logoUrl !== undefined) row.logo_url = model.logoUrl;
   if (model.coverUrl !== undefined) { row.cover_url = model.coverUrl; row.banner_url = model.coverUrl; }
   if (model.bio !== undefined) row.bio = model.bio;
@@ -328,7 +316,6 @@ export interface OnboardingState {
     description: string;
   };
   branding: OnboardingBrandingState;
-  template: StorefrontTemplate;
   firstVehicle: {
     make: string;
     model: string;

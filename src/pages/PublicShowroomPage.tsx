@@ -12,9 +12,7 @@ import { planService } from '../services/planService';
 import { isSupabaseConfigured } from '../lib/supabase';
 import { absoluteUrl, homeTitle, pageTitle } from '../config/brand';
 import type { Dealership, Vehicle } from '../types';
-import { resolveTemplate } from '../templates/registry';
-import { FeaturedVehicleCarousel } from '../templates/common/FeaturedVehicleCarousel';
-import { TemplateSkeleton } from '../templates/common/TemplateSkeleton';
+import { FeaturedVehicleCarousel } from '../components/storefront/FeaturedVehicleCarousel';
 import './PublicShowroomPage.css';
 
 interface PublicShowroomPageProps {
@@ -296,25 +294,6 @@ export const PublicShowroomPage: React.FC<PublicShowroomPageProps> = ({ slug, pr
   };
   const savedCount = publicVehicles.filter(v => saved.includes(v.id)).length;
 
-  const activeTemplate = resolveTemplate(dealer.template);
-  if (activeTemplate) {
-    const Component = activeTemplate.Component;
-    return (
-      <React.Suspense fallback={<TemplateSkeleton isDark={activeTemplate.theme.isDark} />}>
-        <Component
-          dealer={dealer}
-          vehicles={publicVehicles}
-          showPoweredBy={showPoweredBy}
-          onVehicleClick={(vehicleId) => navigate('/' + encodeURIComponent(dealer.slug) + '/vehicle/' + encodeURIComponent(vehicleId))}
-          onContactClick={openContact}
-          onWhatsAppClick={openWhatsApp}
-          onShare={share}
-          initialTab={activeTab}
-        />
-      </React.Suspense>
-    );
-  }
-
   return (
     <main className="dl-public-showroom">
         <header className="dl-ps-header">
@@ -350,7 +329,7 @@ export const PublicShowroomPage: React.FC<PublicShowroomPageProps> = ({ slug, pr
           {city && <div><strong>Based in</strong><span>{dealer.city || dealer.country}</span></div>}
         </section>
         )}
-        {activeTab === 'home' && <FeaturedVehicleCarousel dealer={dealer} vehicles={publicVehicles} onVehicleClick={id => navigate('/' + encodeURIComponent(dealer.slug) + '/vehicle/' + encodeURIComponent(id))} variant="classic" />}
+        {activeTab === 'home' && <FeaturedVehicleCarousel dealer={dealer} vehicles={publicVehicles} onVehicleClick={id => navigate('/' + encodeURIComponent(dealer.slug) + '/vehicle/' + encodeURIComponent(id))} />}
         {activeTab !== 'contact' && (
         <section className="dl-ps-search-section" aria-label="Search and filter inventory">
           <div className="dl-ps-search-row">

@@ -43,7 +43,7 @@ export const BottomNav: React.FC = () => {
   const isActive = (path: string) => path === '/app'
     ? currentPath === '/app' || currentPath === '/'
     : currentPath === path || currentPath.startsWith(path + '/');
-  const moreActive = isActive('/app/more') || currentPath === '/app/theme' || currentPath === '/app/settings';
+  const moreActive = isActive('/app/more') || currentPath === '/app/settings';
 
   return (
     <nav

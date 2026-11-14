@@ -25,7 +25,6 @@ const initialState = (): OnboardingState => ({
   showroom: { businessName: '', handle: '', isPublished: true },
   contact: { country: 'Zimbabwe', city: 'Harare', address: '', whatsappCountryCode: '+263', whatsappNumber: '', whatsappSameAsPhone: true, phoneCountryCode: '+263', phoneNumber: '', description: '' },
   branding: { logoPreview: null, coverPreview: null },
-  template: 'signature',
   firstVehicle: { make: '', model: '', year: new Date().getFullYear(), price: '', currency: 'USD', mileageKm: '', transmission: 'Automatic', fuel: 'Petrol', condition: 'Local Pre-owned', status: 'available', description: '', photos: [], isSkipped: true },
   isCompleted: false,
 });
@@ -170,7 +169,6 @@ export const OnboardingFlow: React.FC<{ forceNewAccount?: boolean }> = ({ forceN
           showroom: data.showroom,
           contact: data.contact,
           branding: data.branding,
-          template: data.template,
           firstVehicle: data.firstVehicle,
         };
         const { error: saveError } = await supabase
@@ -254,7 +252,6 @@ export const OnboardingFlow: React.FC<{ forceNewAccount?: boolean }> = ({ forceN
         showroom: data.showroom,
         contact: data.contact,
         branding: data.branding,
-        template: data.template,
         firstVehicle: data.firstVehicle,
       };
       const { error: progressError } = await supabase.from('user_onboarding_progress').upsert({
@@ -302,7 +299,6 @@ export const OnboardingFlow: React.FC<{ forceNewAccount?: boolean }> = ({ forceN
         whatsapp: toE164(countryCode, data.contact.whatsappNumber) || '',
         email: user.email || data.account.email.trim(),
         currency: data.contact.country === 'South Africa' ? 'ZAR' : 'USD',
-        template: 'signature',
         dealershipType: data.sellerType,
         bio: '',
         tagline: data.showroom.businessName.trim(),
@@ -343,7 +339,6 @@ export const OnboardingFlow: React.FC<{ forceNewAccount?: boolean }> = ({ forceN
           showroom: data.showroom,
           contact: data.contact,
           branding: data.branding,
-          template: data.template,
           firstVehicle: data.firstVehicle,
         } as unknown as Json,
         intro_completed: true,
