@@ -100,7 +100,7 @@ export const SettingsPage:React.FC=()=>{
     <Row icon={ExternalLink} label="Manage billing" value="Plans and payment history" onClick={()=>navigate('/app/billing')}/>
    </section>
 
-   <section className="dl-settings-group"><h2>App</h2><Row icon={isInstalled?Check:Smartphone} label="Install app" value={isInstalled?"Installed":canInstall||isIos?"Add Lotlé to your device":"Install or add to your Home Screen"} onClick={()=>{if(!isInstalled)openInstall();}}/></section>
+   {(isInstalled||canInstall||isIos)&&<section className="dl-settings-group"><h2>App</h2><Row icon={isInstalled?Check:Smartphone} label={isInstalled?"App installed":"Install Lotlé"} value={isInstalled?"Installed":canInstall?"Ready to install":"Add Lotlé to your Home Screen"} onClick={()=>{if(!isInstalled&&(canInstall||isIos))openInstall();}}/></section>}
 
    <section className="dl-settings-group"><h2>Notifications</h2>
     <div className="dl-settings-toggle-row"><span className="dl-settings-row-icon"><Bell size={17}/></span><span className="dl-settings-row-copy"><strong>Push notifications</strong><small>{permission==='denied'?'Blocked':pushEnabled?'On':'Off'} · Manage your Lotlé alerts</small></span><button type="button" role="switch" aria-checked={pushEnabled} disabled={pushBusy||!notificationService.isPushSupported()} onClick={togglePush} className={'dl-settings-switch'+(pushEnabled?' active':'')}><span/></button></div>
