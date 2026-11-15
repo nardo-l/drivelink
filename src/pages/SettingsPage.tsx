@@ -1,4 +1,4 @@
-import { name, supportWhatsApp } from '../config/brand';
+import { name, supportWhatsApp, absoluteUrl, siteUrl } from '../config/brand';
 import React,{useEffect,useMemo,useRef,useState} from 'react';
 import {
  ArrowLeft,Building2,Store,Image,UserRound,Phone,MapPin,Clock3,CreditCard,Bell,Headset,
@@ -17,8 +17,6 @@ import { usePwaInstall } from '../context/PwaInstallContext';
 
 type SheetKey='profile'|'branding'|'name'|'slug'|'contact'|'location'|'hours'|'terms'|'privacy'|'logout'|'delete'|null;
 type DealerDraft=Pick<Dealership,'name'|'city'|'address'|'phone'|'whatsapp'>;
-
-const APP_VERSION='0.0.0';
 
 export const SettingsPage:React.FC=()=>{
  const {navigate,showToast}=useNavigation();
@@ -39,7 +37,8 @@ export const SettingsPage:React.FC=()=>{
  const [slugAvailability,setSlugAvailability]=useState<'idle'|'checking'|'available'|'taken'>('idle');
  const logoInput=useRef<HTMLInputElement>(null),bannerInput=useRef<HTMLInputElement>(null);
  const initials=useMemo(()=>dealer.name.trim().split(/\\s+/).filter(Boolean).slice(0,2).map(x=>x[0]).join('').toUpperCase()||'DL',[dealer.name]);
- const showroomUrl=typeof window!=='undefined'?`${window.location.origin}/${encodeURIComponent(dealer.slug)}`:'';
+ const showroomUrl=absoluteUrl('/'+encodeURIComponent(dealer.slug));
+ const showroomHost=new URL(siteUrl).host;
  useEffect(()=>{let live=true;(async()=>{try{const latest=await storageService.getDealershipAsync();if(live){setDealer(latest);setDraft({name:latest.name,city:latest.city,address:latest.address||'',phone:latest.phone,whatsapp:latest.whatsapp});}}catch(e){console.warn('Settings profile refresh failed',e);}})();return()=>{live=false;};},[]);
  useEffect(()=>{let active=true;Promise.all([notificationService.isPushEnabled(),notificationService.getPreferences(dealer.id)]).then(([subscribed,prefs])=>{if(active)setPushEnabled(Boolean(subscribed&&prefs.push_enabled));}).catch(()=>{if(active)setPushEnabled(false);});planService.getMyPlan().then(snapshot=>setPlanStatus(snapshot.plan==='pro'?(snapshot.subscription_status==='active'?'Lotlé Pro':'Pro trial'):'Free plan')).catch(()=>setPlanStatus('Plan details unavailable'));return()=>{active=false;};},[dealer.id]);
 
@@ -64,7 +63,7 @@ export const SettingsPage:React.FC=()=>{
   finally{setUploading(null);}
  };
  const signOut=async()=>{setSaving(true);try{if(isSupabaseConfigured())await supabaseService.signOut();await storageService.clearAppUserData();window.location.assign('/login');}catch(error){showToast(error instanceof Error?error.message:'Could not sign out.');setSaving(false);setSheet(null);}};
- const requestDeletion=()=>{if(deleteText.trim()!=='DELETE')return;const msg=encodeURIComponent(`Hi ${name} Support, I would like to request deletion of my account and dealership data. Dealership: '+dealer.name+'. Please guide me through the verification process.`);window.open('https://wa.me/'+supportWhatsApp+'?text='+msg,'_blank','noopener,noreferrer');setSheet(null);setDeleteText('');};
+ const requestDeletion=()=>{if(deleteText.trim()!=='DELETE')return;const msg=encodeURIComponent(`Hi ${name} Support, I would like to request deletion of my account and dealership data. Dealership: ${dealer.name}. Please guide me through the verification process.`);window.open('https://wa.me/'+supportWhatsApp+'?text='+msg,'_blank','noopener,noreferrer');setSheet(null);setDeleteText('');};
  const Row=({icon:Icon,label,value,onClick,danger=false}:any)=><button type="button" className={'dl-settings-row'+(danger?' is-danger':'')} onClick={onClick}><span className="dl-settings-row-icon"><Icon size={17}/></span><span className="dl-settings-row-copy"><strong>{label}</strong>{value&&<small>{value}</small>}</span><ChevronRight className="dl-settings-chevron" size={17}/></button>;
  const openSheet=(key:SheetKey)=>{setDraft({name:dealer.name,city:dealer.city,address:dealer.address||'',phone:dealer.phone,whatsapp:dealer.whatsapp});setSlugDraft(dealer.slug);setSlugAvailability('idle');setSheet(key);};
  return <div className="dl-settings-page">
@@ -103,14 +102,13 @@ export const SettingsPage:React.FC=()=>{
    </section>
 
    <section className="dl-settings-group"><h2>Support</h2>
-    <Row icon={Headset} label="Contact support" value="Chat with the {name} team" onClick={()=>window.open('https://wa.me/'+supportWhatsApp,'_blank','noopener,noreferrer')}/>
+    <Row icon={Headset} label="Contact support" value={`Chat with the ${name} team`} onClick={()=>window.open('https://wa.me/'+supportWhatsApp,'_blank','noopener,noreferrer')}/>
     <Row icon={FileText} label="Terms" value="Terms of service" onClick={()=>openSheet('terms')}/>
     <Row icon={Shield} label="Privacy" value="Privacy information" onClick={()=>openSheet('privacy')}/>
    </section>
 
    <section className="dl-settings-group dl-settings-account"><h2>Account</h2><Row icon={LogOut} label="Log out" onClick={()=>openSheet('logout')} danger/></section>
    <button type="button" className="dl-settings-delete-link" onClick={()=>openSheet('delete')}>Delete account</button>
-   <p className="dl-settings-version">{name} · Version {APP_VERSION}</p>
   </main>
 
   {sheet&&<div className="dl-settings-scrim" role="presentation" onMouseDown={e=>{if(e.target===e.currentTarget&&!saving&&!uploading)setSheet(null);}}>
@@ -124,8 +122,8 @@ export const SettingsPage:React.FC=()=>{
      <button type="button" className="dl-settings-primary" disabled={saving||!draft.name.trim()&&(sheet==='profile'||sheet==='name')} onClick={()=>void saveSheet()}>{saving?<Loader2 className="spin" size={16}/>:null}Save changes</button>
     </div>}
     {sheet==='slug'&&<div className="dl-settings-sheet-body">
-     <label>Showroom link <span>lotle.link/</span><input value={slugDraft} onChange={e=>setSlugDraft(e.target.value.toLowerCase().replace(/[^a-z0-9-]+/g,'-').replace(/-+/g,'-').replace(/^-|-$/g,''))} maxLength={63} autoCapitalize="none" autoCorrect="off" spellCheck={false}/></label>
-     <p className="dl-settings-note">{slugAvailability==='checking'?'Checking availability…':slugAvailability==='available'?'lotle.link/'+slugDraft+' is available':slugAvailability==='taken'?'That link is taken or reserved. Try another.':'Use at least 3 letters or numbers. Letters, numbers and hyphens only.'}</p>
+     <label>Showroom link <span>{showroomHost}/</span><input value={slugDraft} onChange={e=>setSlugDraft(e.target.value.toLowerCase().replace(/[^a-z0-9-]+/g,'-').replace(/-+/g,'-').replace(/^-|-$/g,''))} maxLength={63} autoCapitalize="none" autoCorrect="off" spellCheck={false}/></label>
+     <p className="dl-settings-note">{slugAvailability==='checking'?'Checking availability…':slugAvailability==='available'?showroomHost+'/'+slugDraft+' is available':slugAvailability==='taken'?'That link is taken or reserved. Try another.':'Use 3–63 lowercase letters or numbers, with single hyphens between words.'}</p>
      <button type="button" className="dl-settings-primary" disabled={saving||slugAvailability!=='available'} onClick={()=>void saveSlug()}>{saving?<Loader2 className="spin" size={16}/>:null}Save showroom link</button>
     </div>}
     {sheet==='branding'&&<div className="dl-settings-sheet-body dl-settings-branding">

@@ -12,9 +12,9 @@ export interface Vehicle {
   year: number;
   price: number;
   currency: CurrencyCode;
-  mileageKm: number;
-  transmission: TransmissionType;
-  fuel: FuelType;
+  mileageKm: number | null;
+  transmission: TransmissionType | null;
+  fuel: FuelType | null;
   engineSize?: string;
   colour?: string;
   condition?: string; // e.g. "Ex-Japan Import", "Local Pre-owned", "Brand New"
@@ -116,9 +116,9 @@ export interface VehicleRow {
   year: number;
   price: number;
   currency: string;
-  mileage_km: number;
-  transmission: string;
-  fuel: string;
+  mileage_km: number | null;
+  transmission: string | null;
+  fuel: string | null;
   engine_size: string | null;
   colour: string | null;
   condition: string | null;
@@ -202,6 +202,7 @@ export function dealershipModelToRow(model: Partial<Dealership>, userId?: string
 }
 
 export function vehicleRowToModel(row: VehicleRow): Vehicle {
+  const legacyDefaultSpecs = row.mileage_km === 0 && row.transmission === 'Automatic' && row.fuel === 'Petrol' && !row.condition;
   return {
     id: row.id,
     dealershipId: row.dealership_id,
@@ -210,9 +211,9 @@ export function vehicleRowToModel(row: VehicleRow): Vehicle {
     year: row.year,
     price: Number(row.price),
     currency: (row.currency === 'ZWG' ? 'ZWG' : row.currency === 'ZAR' ? 'ZAR' : 'USD') as CurrencyCode,
-    mileageKm: Number(row.mileage_km),
-    transmission: (row.transmission as TransmissionType) || 'Automatic',
-    fuel: (row.fuel as FuelType) || 'Petrol',
+    mileageKm: row.mileage_km == null ? null : Number(row.mileage_km),
+    transmission: legacyDefaultSpecs ? null : (row.transmission as TransmissionType) || null,
+    fuel: legacyDefaultSpecs ? null : (row.fuel as FuelType) || null,
     engineSize: row.engine_size || undefined,
     colour: row.colour || undefined,
     condition: row.condition || undefined,
@@ -235,7 +236,7 @@ export function vehicleModelToRow(model: Partial<Vehicle>): Partial<VehicleRow> 
   if (model.year !== undefined) row.year = Number(model.year);
   if (model.price !== undefined) row.price = Number(model.price);
   if (model.currency !== undefined) row.currency = model.currency;
-  if (model.mileageKm !== undefined) row.mileage_km = Number(model.mileageKm);
+  if (model.mileageKm !== undefined) row.mileage_km = model.mileageKm == null ? null : Number(model.mileageKm);
   if (model.transmission !== undefined) row.transmission = model.transmission;
   if (model.fuel !== undefined) row.fuel = model.fuel;
   if (model.engineSize !== undefined) row.engine_size = model.engineSize;
@@ -322,9 +323,9 @@ export interface OnboardingState {
     year: number | '';
     price: number | '';
     currency: CurrencyCode;
-    mileageKm: number | '';
-    transmission: TransmissionType;
-    fuel: FuelType;
+    mileageKm: number | '' | null;
+    transmission: TransmissionType | null;
+    fuel: FuelType | null;
     condition: string;
     status: VehicleStatus;
     description: string;

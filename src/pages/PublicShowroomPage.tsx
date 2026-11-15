@@ -371,7 +371,7 @@ export const PublicShowroomPage: React.FC<PublicShowroomPageProps> = ({ slug, pr
                 const hasPhoto = Boolean(vehicle.photos?.[0]);
                 const title = [vehicle.year, vehicle.make, vehicle.model].filter(Boolean).join(' ');
                 const specs = [
-                  vehicle.mileageKm != null && Number(vehicle.mileageKm) > 0 ? Number(vehicle.mileageKm).toLocaleString() + ' km' : '',
+                  vehicle.mileageKm != null && (Number(vehicle.mileageKm) > 0 || Number(vehicle.mileageKm) === 0 && (vehicle.condition === 'New' || vehicle.condition === 'Brand New')) ? Number(vehicle.mileageKm).toLocaleString() + ' km' : '',
                   vehicle.fuel || '',
                   vehicle.transmission || '',
                 ].filter(Boolean);

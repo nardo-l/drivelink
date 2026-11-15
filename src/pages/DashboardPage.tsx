@@ -8,7 +8,7 @@ import { TrialUpgradeCard } from '../components/dashboard/TrialUpgradeCard';
 import { planService } from '../services/planService';
 import { notificationService } from '../services/notificationService';
 import { Bell, CarFront, ChevronRight, Eye, MessageCircle, Plus, Share2, ArrowUpRight } from 'lucide-react';
-import { absoluteUrl, legacyName, name } from '../config/brand';
+import { absoluteUrl, name } from '../config/brand';
 import './DashboardPage.css';
 
 type SubscriptionStatus = {
@@ -22,7 +22,8 @@ type SubscriptionStatus = {
 export const DashboardPage: React.FC = () => {
   const { navigate, showToast } = useNavigation();
   const isLive = isSupabaseConfigured() && !storageService.isDemoModeActive();
-  const [dealership, setDealership] = useState(() => isLive ? { ...storageService.getDealership(), name: 'Your dealership', slug: '' } : storageService.getDealership());
+  const [dealership, setDealership] = useState(() => isLive ? { ...storageService.getDealership(), name: '', slug: '' } : storageService.getDealership());
+  const [dealershipLoaded, setDealershipLoaded] = useState(!isLive);
   const [vehicles, setVehicles] = useState(() => isLive ? [] : storageService.getVehicles());
   const [enquiries, setEnquiries] = useState(() => isLive ? [] : storageService.getEnquiries());
   const [loading, setLoading] = useState(isLive);
@@ -45,7 +46,7 @@ export const DashboardPage: React.FC = () => {
         storageService.getVehiclesAsync(),
         storageService.getEnquiriesAsync(),
       ]);
-      setDealership(d); setVehicles(v); setEnquiries(e);
+      setDealership(d); setDealershipLoaded(true); setVehicles(v); setEnquiries(e);
       if (isLive) void notificationService.unreadCount(d.id).then(setUnreadNotifications).catch(() => setUnreadNotifications(0));
     } catch (error: any) {
       setLoadError(error?.message || 'We could not load your dealership data.');
@@ -141,13 +142,15 @@ export const DashboardPage: React.FC = () => {
       <main className="dl-dashboard-main flex-1 px-4 sm:px-7 pt-5 pb-[calc(120px+env(safe-area-inset-bottom))] w-full max-w-5xl mx-auto">
         <header className="dl-dashboard-header flex items-center justify-between gap-3 mb-5">
           <div className="flex min-w-0 items-center gap-3">
-            <div className="dl-dealer-avatar shrink-0">
-              {dealership.logoUrl ? <img src={dealership.logoUrl} alt="" /> : <span>{dealership.name.split(/\s+/).slice(0,2).map(x=>x[0]).join('').toUpperCase()}</span>}
-            </div>
-            <div className="min-w-0">
-              <p className="text-xs text-[#858d99] font-medium">{greeting}</p>
-              <button onClick={() => navigate('/app/settings')} className="block max-w-[48vw] truncate text-left text-[16px] font-extrabold tracking-tight">{dealership.name}</button>
-            </div>
+            {loading || !dealershipLoaded ? <div className="flex items-center gap-3" aria-label="Loading dealership"><div className="h-10 w-10 shrink-0 animate-pulse rounded-full bg-[#e9edf2]"/><div className="space-y-2"><div className="h-3 w-24 animate-pulse rounded bg-[#e9edf2]"/><div className="h-4 w-36 animate-pulse rounded bg-[#e9edf2]"/></div></div> : <>
+              <div className="dl-dealer-avatar shrink-0">
+                {dealership.logoUrl ? <img src={dealership.logoUrl} alt="" /> : <span>{dealership.name.split(/\s+/).slice(0,2).map(x=>x[0]).join('').toUpperCase()}</span>}
+              </div>
+              <div className="min-w-0">
+                <p className="text-xs text-[#858d99] font-medium">{greeting}</p>
+                <button onClick={() => navigate('/app/settings')} className="block max-w-[48vw] truncate text-left text-[16px] font-extrabold tracking-tight">{dealership.name}</button>
+              </div>
+            </>}
           </div>
           <div className="flex shrink-0 items-center gap-2">
             <button type="button" onClick={async () => {
@@ -158,15 +161,15 @@ export const DashboardPage: React.FC = () => {
               }
               try { await navigator.clipboard.writeText(fullPublicUrl); showToast('Showroom link copied'); }
               catch { showToast('Unable to copy showroom link'); }
-            }} className="dl-share-pill"><Share2 size={15}/><span>Share</span></button>
+            }} disabled={loading || !dealership.slug} className="dl-share-pill"><Share2 size={15}/><span>Share</span></button>
             <button onClick={() => navigate('/app/notifications')} aria-label={unreadNotifications > 0 ? `Notifications, ${unreadNotifications} unread` : 'Notifications'} className="dl-bell-button"><Bell size={19}/>{unreadNotifications > 0 && <span className="dl-notification-dot">{unreadNotifications > 99 ? '99+' : unreadNotifications}</span>}</button>
           </div>
         </header>
 
-        {brandNoticeVisible && <aside className="mb-4 flex items-start justify-between gap-3 rounded-2xl border border-[#e5e7eb] bg-white px-4 py-3 text-xs text-[#303846]" role="status"><p className="min-w-0 flex-1"><strong>{legacyName} is now {name}.</strong> Same app, same showroom link.</p><button type="button" onClick={() => void dismissBrandNotice()} aria-label="Dismiss brand update notice" className="shrink-0 rounded-full px-2 py-1 font-bold text-[#667085]">Dismiss</button></aside>}
+        {brandNoticeVisible && <aside className="mb-4 flex items-start justify-between gap-3 rounded-2xl border border-[#e5e7eb] bg-white px-4 py-3 text-xs text-[#303846]" role="status"><p className="min-w-0 flex-1"><strong>You're now using {name}.</strong> Same app, same showroom link.</p><button type="button" onClick={() => void dismissBrandNotice()} aria-label="Dismiss brand update notice" className="shrink-0 rounded-full px-2 py-1 font-bold text-[#667085]">Dismiss</button></aside>}
 
         <TrialUpgradeCard subscription={subscription} vehicleCount={vehicles.filter(vehicle => vehicle.status !== 'hidden').length} maxVehicles={subscription?.maxVehicles ?? 3} serverNow={serverClock.current.serverMs + (window.performance.now() - serverClock.current.monotonicMs)} onUpgrade={() => navigate(subscription?.plan === 'pro' && subscription.status === 'active' ? '/app/billing' : '/app/upgrade?reason=general')}/>
-        {loading ? <div className="dl-skeleton-card h-[104px] mb-4"/> : vehicles.length === 0 ? (
+        {loading || !dealershipLoaded ? <div className="dl-skeleton-card h-[104px] mb-4"/> : vehicles.length === 0 ? (
           <section className="dl-empty-inventory mb-4">
             <div className="dl-empty-icon"><CarFront size={22}/></div><div className="min-w-0 flex-1"><h2>Add your first vehicle</h2><p>It goes live on your showroom link right away</p></div>
             <button onClick={() => navigate('/app/vehicles/new')} aria-label="Add vehicle"><Plus size={20}/></button>
@@ -182,7 +185,7 @@ export const DashboardPage: React.FC = () => {
         <section className="mb-4">
           <div className="mb-2 flex items-center justify-between"><h2 className="text-[12px] font-extrabold">At a glance</h2><span className="text-[10px] text-[#929aa5]">Last {performancePeriod} days</span></div>
           <div className="grid grid-cols-3 gap-2">
-            {periodStats.map(item=>{const Icon=item.icon;return <button key={item.label} onClick={item.action} className="dl-stat-card text-left"><Icon size={16}/><strong>{loading||performanceLoading?'—':item.value.toLocaleString()}</strong><span>{item.label}</span></button>;})}
+            {periodStats.map(item=>{const Icon=item.icon;return <button key={item.label} onClick={item.action} className="dl-stat-card text-left"><Icon size={16}/><strong>{loading||!dealershipLoaded||performanceLoading?'—':item.value.toLocaleString()}</strong><span>{item.label}</span></button>;})}
           </div>
         </section>
 

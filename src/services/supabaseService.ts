@@ -77,6 +77,7 @@ export function mapDealershipToRow(
 }
 
 export function mapVehicleFromRow(row: VehicleRow): Vehicle {
+  const legacyDefaultSpecs = row.mileage_km === 0 && row.transmission === 'Automatic' && row.fuel === 'Petrol' && !row.condition;
   return {
     id: row.id,
     dealershipId: row.dealership_id,
@@ -85,9 +86,9 @@ export function mapVehicleFromRow(row: VehicleRow): Vehicle {
     year: row.year,
     price: row.price,
     currency: (row.currency || 'USD') as CurrencyCode,
-    mileageKm: row.mileage_km,
-    transmission: (row.transmission || 'Automatic') as TransmissionType,
-    fuel: (row.fuel || 'Petrol') as FuelType,
+    mileageKm: row.mileage_km == null ? null : Number(row.mileage_km),
+    transmission: legacyDefaultSpecs ? null : (row.transmission || null) as TransmissionType | null,
+    fuel: legacyDefaultSpecs ? null : (row.fuel || null) as FuelType | null,
     engineSize: row.engine_size || undefined,
     colour: row.colour || undefined,
     condition: row.condition || undefined,
@@ -113,9 +114,9 @@ export function mapVehicleToRow(
     year: v.year,
     price: v.price,
     currency: v.currency || 'USD',
-    mileage_km: v.mileageKm,
-    transmission: v.transmission,
-    fuel: v.fuel,
+    mileage_km: v.mileageKm ?? null,
+    transmission: v.transmission ?? null,
+    fuel: v.fuel ?? null,
     engine_size: v.engineSize || null,
     colour: v.colour || null,
     condition: v.condition || null,

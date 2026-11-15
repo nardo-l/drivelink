@@ -25,7 +25,7 @@ const initialState = (): OnboardingState => ({
   showroom: { businessName: '', handle: '', isPublished: true },
   contact: { country: 'Zimbabwe', city: 'Harare', address: '', whatsappCountryCode: '+263', whatsappNumber: '', whatsappSameAsPhone: true, phoneCountryCode: '+263', phoneNumber: '', description: '' },
   branding: { logoPreview: null, coverPreview: null },
-  firstVehicle: { make: '', model: '', year: new Date().getFullYear(), price: '', currency: 'USD', mileageKm: '', transmission: 'Automatic', fuel: 'Petrol', condition: 'Local Pre-owned', status: 'available', description: '', photos: [], isSkipped: true },
+  firstVehicle: { make: '', model: '', year: new Date().getFullYear(), price: '', currency: 'USD', mileageKm: '', transmission: null, fuel: null, condition: 'Local Pre-owned', status: 'available', description: '', photos: [], isSkipped: true },
   isCompleted: false,
 });
 
@@ -153,9 +153,20 @@ export const OnboardingFlow: React.FC<{ forceNewAccount?: boolean }> = ({ forceN
 
   const step = data.currentStep || 1;
   const countryCode = data.contact.country === 'South Africa' ? '+27' : '+263';
-  const update = (patch: Partial<OnboardingState>) => setData(prev => ({ ...prev, ...patch }));
-  const updateContact = (patch: Partial<OnboardingState['contact']>) => setData(prev => ({ ...prev, contact: { ...prev.contact, ...patch } }));
-  const updateShowroom = (patch: Partial<OnboardingState['showroom']>) => setData(prev => ({ ...prev, showroom: { ...prev.showroom, ...patch } }));
+  const update = (patch: Partial<OnboardingState>) => {
+    setData(prev => ({ ...prev, ...patch }));
+    if (patch.sellerType || patch.account && patch.account.email.includes('@') && patch.account.password.length >= 6) setError('');
+  };
+  const updateContact = (patch: Partial<OnboardingState['contact']>) => {
+    const next = { ...data.contact, ...patch };
+    setData(prev => ({ ...prev, contact: { ...prev.contact, ...patch } }));
+    if (step === 3 && next.country && next.city.trim() || step === 4 && next.whatsappNumber.replace(/[^0-9]/g, '').length >= 7 && data.showroom.businessName.trim()) setError('');
+  };
+  const updateShowroom = (patch: Partial<OnboardingState['showroom']>) => {
+    const next = { ...data.showroom, ...patch };
+    setData(prev => ({ ...prev, showroom: { ...prev.showroom, ...patch } }));
+    if (step === 4 && next.businessName.trim() && data.contact.whatsappNumber.replace(/[^0-9]/g, '').length >= 7 || step === 5 && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(next.handle) && next.handle.length >= 3) setError('');
+  };
 
   useEffect(() => {
     if (!progressReady || forceNewAccount || forceNotificationsPreview) return;
@@ -346,7 +357,7 @@ export const OnboardingFlow: React.FC<{ forceNewAccount?: boolean }> = ({ forceN
         notifications_enabled: notificationsEnabled,
         updated_at: savedAt,
       }, { onConflict: 'user_id' });
-      if (progressError) console.warn('[DriveLink onboarding][onboarding_progress_sync] Client progress refresh was non-critical; server completion is already persisted:', {
+      if (progressError) console.warn(`[${name} onboarding][onboarding_progress_sync] Client progress refresh was non-critical; server completion is already persisted:`, {
         message: progressError.message, code: progressError.code, details: progressError.details, hint: progressError.hint
       });
 
@@ -518,7 +529,8 @@ export const OnboardingFlow: React.FC<{ forceNewAccount?: boolean }> = ({ forceN
       {step === 5 && <section className="flex flex-1 flex-col">
         <h1 className="text-[30px] font-bold leading-tight tracking-tight">Choose your showroom link.</h1><p className="mt-2 text-sm leading-6 text-gray-500">This is the link you will share with buyers.</p>
         <label className="mt-8 block"><span className="mb-2 block text-xs font-semibold text-gray-700">Your public link</span><div className="flex h-12 items-center overflow-hidden rounded-[15px] border border-[#E5E7EB] px-3 focus-within:border-black"><span className="whitespace-nowrap text-xs text-gray-500">{new URL(siteUrl).host}/</span><input aria-label="Showroom link name" className="h-full min-w-0 flex-1 px-2 text-sm outline-none" value={data.showroom.handle} onChange={e=>updateShowroom({handle:e.target.value.toLowerCase().replace(/[^a-z0-9-]/g,'-').replace(/--+/g,'-').replace(/^-|-$/g,'')})} placeholder="moyo-motors"/></div></label>
-        <div className="mt-4 rounded-[15px] border border-[#E5E7EB] p-4 text-sm" aria-live="polite">{checking?<span className="flex items-center gap-2 text-gray-500"><Loader2 size={15} className="animate-spin"/> Checking availability…</span>:available===true?<span className="text-gray-800">✓ This link is available</span>:available===false?<span className="text-gray-700">This link is already in use or reserved. We’ll add a unique suffix automatically.</span>:<span className="text-gray-500">Use at least 3 letters, numbers or hyphens.</span>}</div>
+        <p className="mt-2 text-xs text-gray-500">Use 3–63 lowercase letters or numbers, with single hyphens between words.</p>
+         <div className="mt-4 rounded-[15px] border border-[#E5E7EB] p-4 text-sm" aria-live="polite">{checking?<span className="flex items-center gap-2 text-gray-500"><Loader2 size={15} className="animate-spin"/> Checking availability…</span>:available===true?<span className="text-gray-800">✓ This link is available</span>:available===false?<span className="text-gray-700">This link is already in use or reserved. We’ll add a unique suffix automatically.</span>:<span className="text-gray-500">Use at least 3 letters, numbers or hyphens.</span>}</div>
         {error&&<p role="alert" className="mt-3 text-sm text-red-600">{error}</p>}
         <button type="button" onClick={()=>setStep(6)} disabled={!validSlug} className="mt-auto flex h-12 w-full items-center justify-center gap-2 rounded-full bg-black text-sm font-semibold text-white disabled:opacity-40">Continue <ArrowRight size={17}/></button>
       </section>}

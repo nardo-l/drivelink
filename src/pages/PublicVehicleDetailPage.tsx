@@ -28,7 +28,7 @@ export const PublicVehicleDetailPage:React.FC<PublicVehicleDetailPageProps>=({ve
  const dealerInitials=dealer.name.split(/\\s+/).slice(0,2).map(x=>x[0]).join('').toUpperCase();
  const specs=[
   {label:'Year',value:vehicle.year?String(vehicle.year):'',Icon:CalendarDays},
-  {label:'Mileage',value:vehicle.mileageKm!=null?Number(vehicle.mileageKm).toLocaleString()+' km':'',Icon:Gauge},
+  {label:'Mileage',value:vehicle.mileageKm!=null&&(Number(vehicle.mileageKm)>0||Number(vehicle.mileageKm)===0&&(vehicle.condition==='New'||vehicle.condition==='Brand New'))?Number(vehicle.mileageKm).toLocaleString()+' km':'',Icon:Gauge},
   {label:'Transmission',value:vehicle.transmission||'',Icon:Settings2},
   {label:'Fuel',value:vehicle.fuel||'',Icon:Fuel},
   {label:'Colour',value:vehicle.colour||'',Icon:Palette},

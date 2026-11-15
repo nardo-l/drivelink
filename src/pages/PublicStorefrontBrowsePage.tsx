@@ -58,8 +58,9 @@ export const PublicStorefrontBrowsePage: React.FC<{ slug: string }> = ({ slug })
       if (maxPrice && v.price > Number(maxPrice)) return false;
       if (yearFrom && v.year < Number(yearFrom)) return false;
       if (yearTo && v.year > Number(yearTo)) return false;
-      if (minMileage && v.mileageKm < Number(minMileage)) return false;
-      if (maxMileage && v.mileageKm > Number(maxMileage)) return false;
+      if ((minMileage || maxMileage) && v.mileageKm == null) return false;
+      if (minMileage && v.mileageKm! < Number(minMileage)) return false;
+      if (maxMileage && v.mileageKm! > Number(maxMileage)) return false;
       if (transmission !== 'All' && v.transmission !== transmission) return false;
       if (fuel !== 'All' && v.fuel !== fuel) return false;
       return true;
@@ -97,7 +98,7 @@ export const PublicStorefrontBrowsePage: React.FC<{ slug: string }> = ({ slug })
         <button onClick={() => setFavorites(old => old.includes(vehicle.id) ? old.filter(id => id !== vehicle.id) : [...old,vehicle.id])} aria-label={favorites.includes(vehicle.id) ? 'Remove from favourites' : 'Add to favourites'} aria-pressed={favorites.includes(vehicle.id)} className={favorites.includes(vehicle.id) ? 'saved' : ''}><Heart fill={favorites.includes(vehicle.id) ? 'currentColor' : 'none'}/></button>
         <div className="dl-store-car-overlay">
           <h2>{vehicle.make} {vehicle.model}</h2>
-          <p>{vehicle.year}<i/> {vehicle.mileageKm.toLocaleString()} km<i/> {vehicle.fuel}</p>
+          <p>{vehicle.year}{vehicle.mileageKm != null && (vehicle.mileageKm > 0 || vehicle.mileageKm === 0 && (vehicle.condition === 'New' || vehicle.condition === 'Brand New')) && <><i/>{vehicle.mileageKm.toLocaleString()} km</>}{vehicle.fuel && <><i/>{vehicle.fuel}</>}</p>
           <div className="dl-store-car-bottom"><strong>{money(vehicle)}</strong><button onClick={() => navigate('/' + dealer.slug + '/vehicle/' + vehicle.id)}>View details <span><ArrowRight/></span></button></div>
         </div>
       </div>
@@ -110,7 +111,7 @@ export const PublicStorefrontBrowsePage: React.FC<{ slug: string }> = ({ slug })
       <div className="dl-store-filter-two"><label>Year from<input type="number" min="1950" max={new Date().getFullYear()+1} value={yearFrom} onChange={e => setYearFrom(e.target.value)} placeholder="Any year"/></label><label>Year to<input type="number" min="1950" max={new Date().getFullYear()+1} value={yearTo} onChange={e => setYearTo(e.target.value)} placeholder="Any year"/></label></div>
       <div className="dl-store-filter-two"><label>Min mileage (km)<input type="number" min="0" value={minMileage} onChange={e => setMinMileage(e.target.value)} placeholder="Any"/></label><label>Max mileage (km)<input type="number" min="0" value={maxMileage} onChange={e => setMaxMileage(e.target.value)} placeholder="Any"/></label></div>
       <div className="dl-store-custom-select"><span>Transmission</span><Select title="Transmission" value={transmission} options={[{value:'All',label:'All'},{value:'Automatic',label:'Automatic'},{value:'Manual',label:'Manual'}]} onChange={setTransmission}/></div>
-      <div className="dl-store-custom-select"><span>Fuel type</span><Select title="Fuel type" value={fuel} options={[{value:'All',label:'All'},...Array.from(new Set(vehicles.map(v=>v.fuel))).map(f=>({value:f,label:f}))]} onChange={setFuel}/></div>
+      <div className="dl-store-custom-select"><span>Fuel type</span><Select title="Fuel type" value={fuel} options={[{value:'All',label:'All'},...Array.from(new Set(vehicles.map(v=>v.fuel).filter(Boolean))).map(f=>({value:String(f),label:String(f)}))]} onChange={setFuel}/></div>
       <div className="dl-store-filter-actions"><button onClick={clearFilters}>Clear all</button><button onClick={() => setFiltersOpen(false)}>Show {filtered.length} cars</button></div>
     </section></div>}
   </main>;

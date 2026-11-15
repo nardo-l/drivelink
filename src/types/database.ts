@@ -149,9 +149,9 @@ export interface Database {
           year: number;
           price: number;
           currency: string;
-          mileage_km: number;
-          transmission: string;
-          fuel: string;
+          mileage_km: number | null;
+          transmission: string | null;
+          fuel: string | null;
           engine_size: string | null;
           colour: string | null;
           condition: string | null;
@@ -171,9 +171,9 @@ export interface Database {
           year: number;
           price: number;
           currency?: string;
-          mileage_km: number;
-          transmission: string;
-          fuel: string;
+          mileage_km?: number | null;
+          transmission?: string | null;
+          fuel?: string | null;
           engine_size?: string | null;
           colour?: string | null;
           condition?: string | null;
@@ -193,9 +193,9 @@ export interface Database {
           year?: number;
           price?: number;
           currency?: string;
-          mileage_km?: number;
-          transmission?: string;
-          fuel?: string;
+          mileage_km?: number | null;
+          transmission?: string | null;
+          fuel?: string | null;
           engine_size?: string | null;
           colour?: string | null;
           condition?: string | null;

@@ -1,3 +1,4 @@
+import { absoluteUrl } from '../config/brand';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Search, Plus, CarFront, MoreHorizontal, Pencil, Trash2, X,
@@ -149,7 +150,7 @@ export const VehiclesListPage: React.FC = () => {
   };
   const shareVehicle = async (vehicle: Vehicle) => {
     const dealer = storageService.getDealership();
-    const url = `${window.location.origin}/${dealer.slug}/vehicle/${vehicle.id}`;
+    const url = absoluteUrl('/' + encodeURIComponent(dealer.slug) + '/vehicle/' + encodeURIComponent(vehicle.id));
     try {
       await navigator.clipboard.writeText(url);
       showToast('Vehicle link copied');
@@ -288,7 +289,7 @@ export const VehiclesListPage: React.FC = () => {
                   </div>
                   <div className="garage-photo-copy">
                     <div className="garage-photo-details"><h2>{vehicle.make} {vehicle.model}</h2>
-                      <p className="garage-vehicle-meta"><span><CalendarDays size={11}/>{vehicle.year}</span><span><Gauge size={11}/>{vehicle.mileageKm.toLocaleString()} km</span><span><Fuel size={11}/>{vehicle.fuel || 'Petrol'}</span></p>
+                      <p className="garage-vehicle-meta"><span><CalendarDays size={11}/>{vehicle.year}</span>{vehicle.mileageKm != null && (vehicle.mileageKm > 0 || vehicle.mileageKm === 0 && (vehicle.condition === 'New' || vehicle.condition === 'Brand New')) && <span><Gauge size={11}/>{vehicle.mileageKm.toLocaleString()} km</span>}{vehicle.fuel && <span><Fuel size={11}/>{vehicle.fuel}</span>}</p>
                     </div>
                     <p className="garage-vehicle-price">{price(vehicle)}</p>
                   </div>

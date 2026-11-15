@@ -12,7 +12,7 @@ const runtime = globalThis as typeof globalThis & {
 };
 let denoSiteUrl: string | undefined;
 try { denoSiteUrl = runtime.Deno?.env?.get('SITE_URL'); } catch { denoSiteUrl = undefined; }
-export const siteUrl = (runtime.__SITE_URL__ || runtime.process?.env?.SITE_URL || denoSiteUrl || 'https://drivelink-gilt.vercel.app').trim().replace(/\/+$/, '');
+export const siteUrl = (runtime.__SITE_URL__ || runtime.process?.env?.SITE_URL || denoSiteUrl || (typeof window !== 'undefined' ? window.location.origin : 'https://lotle.link')).trim().replace(/\/+$/, '');
 export const homeTitle = 'Lotlé | Free online car showroom for dealers in Zimbabwe';
 
 export function pageTitle(page: string): string {

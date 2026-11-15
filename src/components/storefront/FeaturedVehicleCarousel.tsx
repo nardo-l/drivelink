@@ -126,7 +126,7 @@ export const FeaturedVehicleCarousel: React.FC<FeaturedVehicleCarouselProps> = (
         {slides.map((vehicle, index) => {
           const title = [vehicle.year, vehicle.make, vehicle.model].filter(Boolean).join(' ') || 'Vehicle';
           const specs = [
-            vehicle.mileageKm != null && Number(vehicle.mileageKm) > 0 ? Number(vehicle.mileageKm).toLocaleString() + ' km' : '',
+            vehicle.mileageKm != null && (Number(vehicle.mileageKm) > 0 || Number(vehicle.mileageKm) === 0 && (vehicle.condition === 'New' || vehicle.condition === 'Brand New')) ? Number(vehicle.mileageKm).toLocaleString() + ' km' : '',
             vehicle.transmission || '',
             vehicle.fuel || '',
           ].filter(Boolean).slice(0, 3);
