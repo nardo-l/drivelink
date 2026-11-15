@@ -1,10 +1,10 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigation } from '../context/NavigationContext';
 import { storageService } from '../services/storage';
 import { isSupabaseConfigured, supabase } from '../lib/supabase';
 import { StatusBadge } from '../components/common/Badge';
 import { PerformanceSection } from '../components/dashboard/PerformanceSection';
-import { TrialUpgradeCard } from '../components/dashboard/TrialUpgradeCard';
+import { PlanSummaryCard } from '../components/dashboard/PlanSummaryCard';
 import { planService } from '../services/planService';
 import { notificationService } from '../services/notificationService';
 import { Bell, CarFront, ChevronRight, Eye, MessageCircle, Plus, Share2, ArrowUpRight } from 'lucide-react';
@@ -14,7 +14,6 @@ import './DashboardPage.css';
 type SubscriptionStatus = {
   status: string;
   plan: 'free' | 'pro';
-  pro_trial_ends_at: string | null;
   current_period_end: string | null;
   maxVehicles: number | null;
 };
@@ -33,14 +32,13 @@ export const DashboardPage: React.FC = () => {
   const [performanceLoading, setPerformanceLoading] = useState(true);
   const markPerformanceLoaded = useCallback(() => setPerformanceLoading(false), []);
   const [subscription, setSubscription] = useState<SubscriptionStatus | null>(null);
-  const serverClock = useRef({ serverMs: Date.now(), monotonicMs: window.performance.now() });
   const [brandNoticeVisible, setBrandNoticeVisible] = useState(false);
   const [unreadNotifications, setUnreadNotifications] = useState(0);
   const load = async () => {
     setLoading(true);
     setLoadError('');
     try {
-      await planService.getMyPlan(); // server-side downgrade reconciliation runs before inventory is loaded
+      await planService.getMyPlan().catch(() => undefined); // Plan lookup must not block dealership data
       const [d, v, e] = await Promise.all([
         storageService.getDealershipAsync(),
         storageService.getVehiclesAsync(),
@@ -99,11 +97,9 @@ export const DashboardPage: React.FC = () => {
     const value: SubscriptionStatus = {
       status: snapshot.subscription_status || 'inactive',
       plan: snapshot.plan,
-      pro_trial_ends_at: snapshot.pro_trial_ends_at,
       current_period_end: snapshot.current_period_end,
       maxVehicles: snapshot.config[snapshot.plan].maxVehicles,
     };
-    serverClock.current = { serverMs: Date.now(), monotonicMs: window.performance.now() };
     setSubscription(value);
     return value;
   };
@@ -168,7 +164,7 @@ export const DashboardPage: React.FC = () => {
 
         {brandNoticeVisible && <aside className="mb-4 flex items-start justify-between gap-3 rounded-2xl border border-[#e5e7eb] bg-white px-4 py-3 text-xs text-[#303846]" role="status"><p className="min-w-0 flex-1"><strong>You're now using {name}.</strong> Same app, same showroom link.</p><button type="button" onClick={() => void dismissBrandNotice()} aria-label="Dismiss brand update notice" className="shrink-0 rounded-full px-2 py-1 font-bold text-[#667085]">Dismiss</button></aside>}
 
-        <TrialUpgradeCard subscription={subscription} vehicleCount={vehicles.filter(vehicle => vehicle.status !== 'hidden').length} maxVehicles={subscription?.maxVehicles ?? 3} serverNow={serverClock.current.serverMs + (window.performance.now() - serverClock.current.monotonicMs)} onUpgrade={() => navigate(subscription?.plan === 'pro' && subscription.status === 'active' ? '/app/billing' : '/app/upgrade?reason=general')}/>
+        <PlanSummaryCard subscription={subscription} vehicleCount={vehicles.filter(vehicle => vehicle.status !== 'hidden').length} maxVehicles={subscription?.maxVehicles ?? 3} onUpgrade={() => navigate(subscription?.plan === 'pro' ? '/app/billing' : '/app/upgrade?reason=general')}/>
         {loading || !dealershipLoaded ? <div className="dl-skeleton-card h-[104px] mb-4"/> : vehicles.length === 0 ? (
           <section className="dl-empty-inventory mb-4">
             <div className="dl-empty-icon"><CarFront size={22}/></div><div className="min-w-0 flex-1"><h2>Add your first vehicle</h2><p>It goes live on your showroom link right away</p></div>

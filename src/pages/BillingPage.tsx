@@ -15,7 +15,6 @@ type Subscription = {
   current_period_start: string | null;
   current_period_end: string | null;
   grace_until: string | null;
-  pro_trial_ends_at?: string | null;
 };
 
 type Payment = {
@@ -180,26 +179,13 @@ export const BillingPage: React.FC = () => {
 
   const now = Date.now();
   const periodEnd = subscription?.current_period_end ? new Date(subscription.current_period_end).getTime() : 0;
-  const proTrialEnd = subscription?.pro_trial_ends_at ? new Date(subscription.pro_trial_ends_at).getTime() : 0;
   const graceEnd = subscription?.grace_until ? new Date(subscription.grace_until).getTime() : 0;
   const active = Boolean(subscription?.status === 'active' && periodEnd > now);
-  const proTrialActive = Boolean(!active && proTrialEnd && now < proTrialEnd);
   const inGrace = Boolean(periodEnd && now > periodEnd && graceEnd >= now);
-  const accessEnd = proTrialActive ? proTrialEnd : periodEnd;
-  const daysLeft = accessEnd ? Math.max(0, Math.ceil((accessEnd - now) / 86400000)) : 0;
-  const expiringSoon = (active && daysLeft <= 5) || (proTrialActive && daysLeft <= 3);
-  const hasAccess = active || proTrialActive;
-  const statusLabel = hasAccess ? (expiringSoon ? 'Expiring soon' : 'Active') : 'Free plan';
-  const statusTone = hasAccess
-    ? expiringSoon ? 'bg-amber-50 text-amber-700' : 'bg-emerald-50 text-emerald-700'
-    : 'bg-slate-100 text-slate-600';
+  const hasAccess = active;
+  const statusLabel = hasAccess ? 'Active' : 'Free plan';
+  const statusTone = hasAccess ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-600';
   const isRenewal = active || inGrace;
-  const progressStart = proTrialActive
-    ? proTrialEnd - 14 * 86400000
-    : (subscription?.current_period_start ? new Date(subscription.current_period_start).getTime() : now);
-  const progress = accessEnd > progressStart
-    ? Math.min(100, Math.max(0, ((now - progressStart) / (accessEnd - progressStart)) * 100))
-    : 0;
   const upgradeReason = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('reason') : null;
   const upgradeReasonCopy: Record<string,string> = {
     general: 'Upgrade to Lotlé Pro for unlimited vehicles, up to 10 photos per vehicle and full analytics.',
@@ -245,20 +231,10 @@ export const BillingPage: React.FC = () => {
             <>
               <h2 className="mt-4 text-[22px] font-extrabold tracking-[-0.04em]">{name} Pro</h2>
               <p className="mt-1 text-xs leading-5 text-slate-500">
-                {proTrialActive
-                  ? `Your Pro trial ends on ${dateLabel(subscription?.pro_trial_ends_at)}`
-                  : `Renews manually on ${dateLabel(subscription?.current_period_end)}`}
+                {subscription?.current_period_end
+                  ? `Renews manually on ${dateLabel(subscription.current_period_end)}`
+                  : 'Your paid Pro plan is active.'}
               </p>
-              <div className="mt-5 flex items-end justify-between">
-                <strong className="text-sm font-bold">{daysLeft} {daysLeft === 1 ? 'day' : 'days'} left</strong>
-                <span className="text-[10px] font-medium text-slate-400">Access period</span>
-              </div>
-              <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-slate-100">
-                <div
-                  className="h-full rounded-full bg-[#0A0F1E] transition-[width] duration-500"
-                  style={{ width: `${progress}%` }}
-                />
-              </div>
             </>
           ) : (
             <>

@@ -150,8 +150,8 @@ img { max-width: 100%; }
 .dl-mobile-menu>button:not(.dl-button) { padding:12px 10px;text-align:left;font-size:14px;font-weight:700;background:transparent; }
 .dl-hero { min-height:570px;display:grid;grid-template-columns:.91fr 1.09fr;align-items:center;gap:20px;padding-top:42px;padding-bottom:50px; }
 .dl-hero-copy { position:relative;z-index:3;padding:0 0 20px 4px; }
-.dl-trial-badge { display:inline-flex;align-items:center;gap:8px;padding:7px 12px;border-radius:999px;background:#fff0e6;color:#a64d17;font-size:11px;font-weight:800; }
-.dl-trial-badge i { width:7px;height:7px;border-radius:50%;background:var(--marketing-orange); }
+.dl-plan-badge { display:inline-flex;align-items:center;gap:8px;padding:7px 12px;border-radius:999px;background:#fff0e6;color:#a64d17;font-size:11px;font-weight:800; }
+.dl-plan-badge i { width:7px;height:7px;border-radius:50%;background:var(--marketing-orange); }
 .dl-hero h1 { margin:20px 0 18px;font-family:"Instrument Serif",Georgia,serif;font-size:clamp(60px,6.4vw,88px);font-weight:500;letter-spacing:-3.6px;line-height:.91;color:#15171b; }
 .dl-hero h1 em { color:#f47716;font-style:normal; }
 .dl-hero-copy>p { max-width:465px;color:#50535a;font-size:16px;line-height:1.7; }
@@ -1327,8 +1327,8 @@ select:focus-visible, textarea:focus-visible {
 .dl-marketing-page :is(.dl-brand-mark,.dl-brand-mini,.dl-button,.dl-phone-cta,.dl-mock-cta,.dl-mock-plus) {
   background: #111111 !important; color: #ffffff !important; box-shadow: none;
 }
-.dl-marketing-page :is(.dl-hero h1 em,.dl-kicker,.dl-feature-icon,.dl-trial-badge,.dl-float-title span) { color: #111111 !important; }
-.dl-marketing-page :is(.dl-trial-badge,.dl-feature-icon,.dl-mock-status,.dl-mock-avatar) {
+.dl-marketing-page :is(.dl-hero h1 em,.dl-kicker,.dl-feature-icon,.dl-plan-badge,.dl-float-title span) { color: #111111 !important; }
+.dl-marketing-page :is(.dl-plan-badge,.dl-feature-icon,.dl-mock-status,.dl-mock-avatar) {
   background: #f1f1f1 !important; color: #333333 !important;
 }
 .dl-marketing-page :is(.dl-chart-line,.dl-sparkline) { background: #777777 !important; border-color: #777777 !important; }
@@ -1468,7 +1468,7 @@ body, .dl-frame, .dl-workspace { color: #171717; background: #FAF9F6 !important;
   font-family: "DM Serif Display", Georgia, serif !important; font-weight: 400 !important;
 }
 .dl-marketing-page :is(.dl-hero h1 em,.dl-kicker,.dl-feature-icon,.dl-float-title span) { color: #C96B3D !important; }
-.dl-marketing-page :is(.dl-trial-badge,.dl-feature-icon,.dl-mock-status,.dl-mock-avatar) {
+.dl-marketing-page :is(.dl-plan-badge,.dl-feature-icon,.dl-mock-status,.dl-mock-avatar) {
   background: #F1EFEA !important; color: #626262 !important;
 }
 .dl-marketing-page :is(.dl-button:hover,.dl-marketing-nav nav button:hover,.dl-login-link:hover,.dl-footer-links button:hover) {

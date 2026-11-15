@@ -267,10 +267,6 @@ export interface Database {
         Args: { p_days?: number };
         Returns: { view_date: string; views: number }[];
       };
-      activate_dealership_trial: {
-        Args: Record<PropertyKey, never>;
-        Returns: Json;
-      };
     };
     Enums: {
       [_ in never]: never;

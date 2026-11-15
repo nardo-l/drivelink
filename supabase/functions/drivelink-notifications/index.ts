@@ -99,7 +99,7 @@ function isUrgent(notification: any) {
   const eventId = String(notification.data?.eventId || "");
   const event = NOTIFICATION_EVENTS[eventId];
   return event?.priority === "urgent" || eventId === "test_notification"
-    || ["new_enquiry", "payment_confirmed", "pro_trial_ending", "pro_renewal_due"].includes(eventId)
+    || ["new_enquiry", "payment_confirmed", "pro_renewal_due"].includes(eventId)
     || (notification.category === "enquiry" && !String(notification.title).toLowerCase().includes("waiting"));
 }
 
@@ -113,7 +113,7 @@ async function createScheduledNotifications() {
   for (const dealer of dealers || []) {
     const [{ data: prefs }, { data: subscription }, { data: vehicles }, { data: enquiries }, { data: payments }] = await Promise.all([
       db.from("notification_preferences").select("*").eq("dealership_id", dealer.id).maybeSingle(),
-      db.from("dealership_subscriptions").select("status,trial_ends_at,current_period_end").eq("dealership_id", dealer.id).maybeSingle(),
+      db.from("dealership_subscriptions").select("status,current_period_end").eq("dealership_id", dealer.id).maybeSingle(),
       db.from("vehicles").select("id,status").eq("dealership_id", dealer.id),
       db.from("enquiries").select("id,buyer_name,vehicle_id,stage,created_at").eq("dealership_id", dealer.id).eq("stage", "new").lte("created_at", new Date(now.getTime() - 60 * 60 * 1000).toISOString()),
       db.from("dealership_subscription_payments").select("id,amount,currency,status,created_at").eq("dealership_id", dealer.id).in("status", ["created", "pending"]).lte("created_at", new Date(now.getTime() - 15 * 60 * 1000).toISOString()),
@@ -130,15 +130,6 @@ async function createScheduledNotifications() {
         if (vehicle) vehicleLabel = [vehicle.year, vehicle.make, vehicle.model].filter(Boolean).join(" ");
       }
       if (await insertEventNotification(dealer.id, "unanswered_enquiry", enquiry.id, { buyer: enquiry.buyer_name || "A buyer", vehicle: vehicleLabel, id: enquiry.id })) created++;
-    }
-    if (timedWindow && subscription?.status === "trial" && subscription.trial_ends_at) {
-      const remaining = new Date(subscription.trial_ends_at).getTime() - now.getTime();
-      if (remaining <= 72 * 60 * 60 * 1000 && remaining > 48 * 60 * 60 * 1000) {
-        if (await insertEventNotification(dealer.id, "pro_trial_ending", dealer.id, { when: "Your Pro trial ends in 3 days" }, "3d")) created++;
-      }
-      if (harareDate(new Date(subscription.trial_ends_at)) === harareDate(now)) {
-        if (await insertEventNotification(dealer.id, "pro_trial_ending", dealer.id, { when: "Your Pro trial ends today" }, "last_day")) created++;
-      }
     }
     if (timedWindow && subscription?.status === "active" && subscription.current_period_end) {
       const end = new Date(subscription.current_period_end);
@@ -238,9 +229,13 @@ async function deliverPendingPush() {
   const { data: pending, error } = await db.from("notifications").select("id,dealership_id,category,title,body,data,created_at")
     .is("push_sent_at", null).order("created_at", { ascending: true }).limit(300);
   if (error) throw error;
+  const pendingWithoutLegacyTrials = (pending || []).filter((notification) => {
+    const event = String(notification.data?.eventId || notification.data?.type || "").toLowerCase();
+    return !event.includes("trial") && !(`${notification.title} ${notification.body}`.toLowerCase().includes("trial"));
+  });
   const handled = new Set<string>();
   let sent = 0, removed = 0, batched = 0;
-  for (const notification of pending || []) {
+  for (const notification of pendingWithoutLegacyTrials) {
     if (handled.has(notification.id)) continue;
     const { data: prefs } = await db.from("notification_preferences").select("*").eq("dealership_id", notification.dealership_id).maybeSingle();
     const { data: subscriptions } = await db.from("push_subscriptions").select("id,endpoint,p256dh,auth").eq("dealership_id", notification.dealership_id);
@@ -266,7 +261,7 @@ async function deliverPendingPush() {
     const result = await deliverOne(pushNotification, prefs || {}, subscriptions || []);
     sent += result.sent; removed += result.removed; handled.add(notification.id);
   }
-  return { pending: pending?.length || 0, sent, removed, batched };
+  return { pending: pendingWithoutLegacyTrials.length, sent, removed, batched };
 }
 
 async function authenticateRequest(req: Request) {

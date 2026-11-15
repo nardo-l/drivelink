@@ -1,7 +1,7 @@
 export const name = 'Lotlé';
 export const nameAscii = 'lotle';
 export const tagline = 'Your car showroom, online';
-export const description = 'Start a Free online car showroom with Lotlé, manage up to 3 vehicles and receive buyer enquiries. Explore Lotlé Pro with a 14-day Pro trial, unlimited vehicles and full analytics. Built for car dealers in Zimbabwe and South Africa.';
+export const description = 'Start a Free online car showroom with Lotlé, manage up to 3 vehicles and receive buyer enquiries. Upgrade to Lotlé Pro for unlimited vehicles and full analytics. Built for car dealers in Zimbabwe and South Africa.';
 export const supportWhatsApp = '263789113734';
 export const supportEmail = 'support@lotle.link';
 export const legacyName = 'DriveLink';

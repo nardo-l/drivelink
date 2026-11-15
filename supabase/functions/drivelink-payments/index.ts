@@ -214,16 +214,14 @@ Deno.serve(async (req: Request) => {
 
   if (body.action === "status") {
     const { data: subscription, error } = await admin.from("dealership_subscriptions")
-      .select("status, amount, currency, plan_code, pro_trial_ends_at, trial_started_at, trial_ends_at, trial_used, current_period_start, current_period_end, grace_until")
+      .select("status, amount, currency, plan_code, current_period_start, current_period_end, grace_until")
       .eq("dealership_id", dealership.id).maybeSingle();
     if (error) return json({ error: "Could not load subscription." }, 500);
-    if (subscription) {
+    if (subscription && ["inactive", "active", "grace_period", "expired", "cancelled"].includes(subscription.status)) {
       const now = Date.now();
-      const trialEnd = subscription.trial_ends_at ? new Date(subscription.trial_ends_at).getTime() : 0;
       const periodEnd = subscription.current_period_end ? new Date(subscription.current_period_end).getTime() : 0;
       const graceEnd = subscription.grace_until ? new Date(subscription.grace_until).getTime() : 0;
-      const nextStatus = trialEnd && !periodEnd && now <= trialEnd ? "trial"
-        : periodEnd && now <= periodEnd ? "active"
+      const nextStatus = periodEnd && now <= periodEnd ? "active"
         : periodEnd && graceEnd && now <= graceEnd ? "grace_period" : "expired";
       if (subscription.status !== nextStatus) {
         await admin.from("dealership_subscriptions").update({ status: nextStatus, updated_at: new Date().toISOString() })

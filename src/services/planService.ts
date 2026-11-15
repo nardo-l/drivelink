@@ -11,7 +11,6 @@ export type PlanConfig = {
 };
 export type PlanSnapshot = {
   plan: LotlePlan;
-  pro_trial_ends_at: string | null;
   current_period_end: string | null;
   subscription_status: string | null;
   dealership_id: string | null;
@@ -31,21 +30,24 @@ const fallbackConfig: PlanSnapshot['config'] = {
 export const planService = {
   async getMyPlan(): Promise<PlanSnapshot> {
     if (!isSupabaseConfigured()) {
-      return { plan: 'free', pro_trial_ends_at: null, current_period_end: null, subscription_status: null, dealership_id: null, config: fallbackConfig };
+      return { plan: 'free', current_period_end: null, subscription_status: null, dealership_id: null, config: fallbackConfig };
     }
-    const { data, error } = await supabase.rpc('get_my_plan' as any);
-    if (error) {
-      console.error('[Lotle plan] Could not load plan snapshot', { code: error.code, message: error.message, details: error.details });
-      throw error;
+    let value: Partial<PlanSnapshot> | null = null;
+    try {
+      const result = await supabase.rpc('get_my_plan' as any);
+      if (!result.error) value = result.data as Partial<PlanSnapshot> | null;
+    } catch {
+      // A missing RPC or network failure must never block the Free plan.
     }
-    const value = data as Partial<PlanSnapshot> | null;
+    const paidPro = value?.subscription_status === 'active'
+      && Boolean(value.current_period_end)
+      && new Date(value.current_period_end!).getTime() > Date.now();
     return {
-      plan: value?.plan === 'pro' ? 'pro' : 'free',
-      pro_trial_ends_at: value?.pro_trial_ends_at || null,
+      plan: paidPro ? 'pro' : 'free',
       current_period_end: value?.current_period_end || null,
       subscription_status: value?.subscription_status || null,
       dealership_id: value?.dealership_id || null,
-      config: value?.config || fallbackConfig,
+      config: fallbackConfig,
     };
   },
 

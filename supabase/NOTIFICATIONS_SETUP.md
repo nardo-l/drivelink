@@ -33,7 +33,7 @@ Review and run `supabase/NOTIFICATIONS_CRON.sql` only after:
 2. The Edge Function secrets above are configured.
 3. The Vault secret `lotle_notification_cron_secret` is created.
 
-The SQL schedules the worker every minute. The worker evaluates unanswered enquiries, trial and renewal reminders, first-vehicle reminders, payment-pending notices and the Monday 08:00 Africa/Harare weekly summary. Immediate enquiry and confirmed-payment notifications wake the worker from the database trigger.
+The SQL schedules the worker every minute. The worker evaluates unanswered enquiries, renewal reminders, first-vehicle reminders, payment-pending notices and the Monday 08:00 Africa/Harare weekly summary. Immediate enquiry and confirmed-payment notifications wake the worker from the database trigger.
 
 ## Event and delivery behavior
 

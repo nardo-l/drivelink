@@ -21,6 +21,11 @@ export interface NotificationPreferences {
   quiet_hours_end: string | null;
 }
 
+function isLegacyTrialNotification(row: Pick<LotleNotification, 'title' | 'body' | 'data'>): boolean {
+  const event = String(row.data?.eventId || row.data?.type || '').toLowerCase();
+  return event.includes('trial') || `${row.title} ${row.body}`.toLowerCase().includes('trial');
+}
+
 const vapidPublicKey = (import.meta.env.VITE_VAPID_PUBLIC_KEY as string | undefined)?.trim();
 function urlBase64ToUint8Array(value: string): Uint8Array {
   const padding = '='.repeat((4 - value.length % 4) % 4);
@@ -33,7 +38,7 @@ export const notificationService = {
     const { data, error } = await (supabase as any).from('notifications').select('id,category,title,body,data,read_at,created_at')
       .eq('dealership_id', dealershipId).order('created_at', { ascending: false }).limit(limit);
     if (error) throw error;
-    return ((data || []) as LotleNotification[]).filter(row => !Array.isArray(row.data?.channels) || row.data.channels.includes('in_app'));
+    return ((data || []) as LotleNotification[]).filter(row => !isLegacyTrialNotification(row) && (!Array.isArray(row.data?.channels) || row.data.channels.includes('in_app')));
   },
   async getPreferences(dealershipId: string): Promise<NotificationPreferences> {
     const { data, error } = await (supabase as any).from('notification_preferences').select('*').eq('dealership_id', dealershipId).maybeSingle();
@@ -64,15 +69,16 @@ export const notificationService = {
     return { pushSent: Number(data?.pushSent || 0), pushReady: Boolean(data?.pushReady), deviceCount: Number(data?.deviceCount || 0) };
   },
   async unreadCount(dealershipId: string): Promise<number> {
-    const { data, error } = await (supabase as any).from('notifications').select('id,data')
+    const { data, error } = await (supabase as any).from('notifications').select('id,title,body,data')
       .eq('dealership_id', dealershipId).is('read_at', null);
     if (error) throw error;
-    return (data || []).filter((row: any) => !Array.isArray(row.data?.channels) || row.data.channels.includes('in_app')).length;
+    return (data || []).filter((row: any) => !isLegacyTrialNotification(row) && (!Array.isArray(row.data?.channels) || row.data.channels.includes('in_app'))).length;
   },
   async getById(id: string): Promise<LotleNotification | null> {
     const { data, error } = await (supabase as any).from('notifications').select('id,category,title,body,data,read_at,created_at').eq('id', id).maybeSingle();
     if (error) throw error;
-    return data as LotleNotification | null;
+    const notification = data as LotleNotification | null;
+    return notification && !isLegacyTrialNotification(notification) ? notification : null;
   },
   async unreadEnquiryCount(dealershipId: string): Promise<number> {
     const { count, error } = await (supabase as any).from('notifications').select('id', { count: 'exact', head: true })
