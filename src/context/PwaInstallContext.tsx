@@ -65,6 +65,7 @@ export const PwaInstallProvider: React.FC<React.PropsWithChildren> = ({ children
   const openInstall = useCallback(() => {
     // Android can still use Chrome's own menu when the browser has not exposed
     // a programmatic install prompt yet. Keep this manual fallback available.
+    if (!canInstall && !isIos && !isAndroid) return;
     if (!/^\/app(?:\/(?:analytics|vehicles|enquiries|more|settings|storefront|notifications))?\/?$/.test(currentPath)) return;
     if (document.querySelector('[role="dialog"][aria-modal="true"]')) return;
     setManual(true);
