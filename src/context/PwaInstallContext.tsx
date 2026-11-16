@@ -51,7 +51,9 @@ export const PwaInstallProvider: React.FC<React.PropsWithChildren> = ({ children
   const session = storageService.getUserSession();
   const accountId = session.userId || session.dealershipId;
   const accountKey = accountId ? 'lotle_pwa_' + accountId : '';
-  const canInstall = !!deferredPrompt;
+  const nativeInstall = (navigator as Navigator & { install?: () => Promise<unknown> }).install;
+  const canInstall = !!deferredPrompt || typeof nativeInstall === 'function';
+  const isAndroid = /android/i.test(navigator.userAgent);
   // All iOS browsers use the Home Screen installation flow, not only Safari.
   const isIos = (/iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)) && !(window as any).MSStream;
   const isInstalled = installed || window.matchMedia('(display-mode: standalone)').matches || (navigator as any).standalone === true;
@@ -61,13 +63,14 @@ export const PwaInstallProvider: React.FC<React.PropsWithChildren> = ({ children
 
   const closeInstall = useCallback(() => { setSheet(null); setBusy(false); setManual(false); },[]);
   const openInstall = useCallback(() => {
-    if (!canInstall && !isIos) return;
+    // Android can still use Chrome's own menu when the browser has not exposed
+    // a programmatic install prompt yet. Keep this manual fallback available.
     if (!/^\/app(?:\/(?:analytics|vehicles|enquiries|more|settings|storefront|notifications))?\/?$/.test(currentPath)) return;
     if (document.querySelector('[role="dialog"][aria-modal="true"]')) return;
     setManual(true);
     if (accountKey) sessionStorage.setItem(accountKey + '_shown_session','1');
     setSheet('install');
-  },[accountKey,currentPath,canInstall,isIos]);
+  },[accountKey,currentPath,canInstall,isIos,isAndroid]);
 
   useEffect(() => {
     const update = () => setRevision(v => v + 1);
@@ -105,15 +108,29 @@ export const PwaInstallProvider: React.FC<React.PropsWithChildren> = ({ children
   },[]);
 
   const promptInstall = useCallback(async () => {
-    if (!deferredPrompt || busy) return;
+    const installApi = (navigator as Navigator & { install?: () => Promise<unknown> }).install;
+    if ((!deferredPrompt && typeof installApi !== 'function') || busy) return;
     const event = deferredPrompt;
+    // beforeinstallprompt is single-use. Clear it before awaiting the browser UI.
+    if (event) { deferredPrompt = null; notify(); }
     window.dispatchEvent(new CustomEvent('lotle:pwa-analytics',{detail:{event:'install_tapped'}}));
     setBusy(true);
     try {
+      if (typeof installApi === 'function') {
+        // Keep this call in the original button activation so Chrome can honour
+        // the user's transient activation.
+        await installApi.call(navigator);
+        installed = true;
+        successShown.current = true;
+        setSheet('success');
+        if (accountKey) localStorage.setItem(accountKey + '_success','1');
+        window.dispatchEvent(new CustomEvent('lotle:pwa-analytics',{detail:{event:'accepted'}}));
+        notify();
+        return;
+      }
+      if (!event) return;
       await event.prompt();
       const choice = await event.userChoice;
-      deferredPrompt = null;
-      notify();
       if (choice.outcome === 'accepted') {
         installed = true;
         successShown.current = true;
@@ -253,7 +270,9 @@ const PwaInstallSheet: React.FC<{onDismiss:()=>void;onClose:()=>void}> = ({onDis
 
   if (!sheet) return null;
   const success = sheet === 'success';
-  const ios = isIos && !isInstalled && !canInstall && !success;
+  const ios = isIos && !isInstalled && !success;
+  const android = /android/i.test(navigator.userAgent) && !isInstalled && !success;
+  const androidManual = android && !canInstall;
   return <div className="lotle-pwa-overlay" onMouseDown={event => { if (event.target === event.currentTarget) onDismiss(); }}>
     <section ref={panel} className="lotle-pwa-sheet" role="dialog" aria-modal="true" aria-labelledby="lotle-pwa-title"
       onTouchStart={event => { touchY.current=event.touches[0]?.clientY ?? null; }}
@@ -263,12 +282,16 @@ const PwaInstallSheet: React.FC<{onDismiss:()=>void;onClose:()=>void}> = ({onDis
         <img className="lotle-pwa-app-icon" src="/icon.svg" alt="Lotlé app icon"/>
         {success && <span className="lotle-pwa-check"><Check size={15}/></span>}
       </div>
-      <h2 id="lotle-pwa-title">{success?'Lotlé is installed':ios?'Add Lotlé to your Home Screen':'Install Lotlé'}</h2>
+      <h2 id="lotle-pwa-title">{success?'Lotlé is installed':ios?'Add Lotlé to your Home Screen':androidManual?'Install Lotlé from Chrome':'Install Lotlé'}</h2>
       {success ? <p>Find it on your home screen.</p> : ios ? <div className="lotle-pwa-steps">
         <div><span>1</span><Share size={17}/>Tap Share in your browser</div>
         <div><span>2</span><Smartphone size={17}/>Choose “Add to Home Screen”</div>
         <div><span>3</span><Plus size={17}/>Tap “Add” to confirm</div>
-      </div> : <p>Open your showroom in one tap, get enquiry alerts, and use it like a normal app.</p>}
+      </div> : androidManual ? <><p>Chrome has not made its one-tap install prompt available yet. You can still install Lotlé from Chrome:</p><div className="lotle-pwa-steps">
+        <div><span>1</span><span aria-hidden="true">⋮</span>Open Chrome’s three-dot menu</div>
+        <div><span>2</span><Smartphone size={17}/>Tap “Install app” or “Add to Home screen”</div>
+        <div><span>3</span><Plus size={17}/>Confirm the installation</div>
+      </div></> : <p>Open your showroom in one tap, get enquiry alerts, and use it like a normal app.</p>}
       <button className="lotle-pwa-primary" type="button" disabled={busy} onClick={() => {
         if (success) onClose();
         else if (ios) onDismiss();
