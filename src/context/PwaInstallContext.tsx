@@ -209,7 +209,7 @@ export const PwaInstallProvider: React.FC<React.PropsWithChildren> = ({ children
         const hasMoment = true;
         const dismissals = Number(localStorage.getItem(accountKey + '_dismissals') || 0);
         const until = Number(localStorage.getItem(accountKey + '_until') || 0);
-        if (!active || !hasMoment || (!canInstall && !isIos) || dismissals >= 3 || Date.now() < until) return;
+        if (!active || !hasMoment || (!canInstall && !isIos && !isAndroid) || dismissals >= 3 || Date.now() < until) return;
         if (document.querySelector('[role="dialog"][aria-modal="true"]')) {
           retryTimer = window.setTimeout(() => { void checkMoment(); },700);
           return;
