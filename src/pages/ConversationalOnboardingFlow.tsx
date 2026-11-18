@@ -6,7 +6,6 @@ import { ArrowLeft, ArrowRight, Check, Copy, Car, Truck, Bus, Crown, Eye, EyeOff
 import { useNavigation } from '../context/NavigationContext';
 import { storageService } from '../services/storage';
 import { supabaseService } from '../services/supabaseService';
-import { verifyEmailAddress } from '../services/emailVerificationService';
 import { isSupabaseConfigured, supabase } from '../lib/supabase';
 import { OnboardingState, SellerType } from '../types';
 import type { Json } from '../types/database';
@@ -238,12 +237,6 @@ export const OnboardingFlow: React.FC<{ forceNewAccount?: boolean }> = ({ forceN
       const previousSession = await supabaseService.getSession();
       if (previousSession?.user) await supabaseService.signOut();
       await storageService.clearAppUserData();
-      const emailCheck = await verifyEmailAddress(data.account.email.trim());
-      if (emailCheck.checked && !emailCheck.valid) {
-        setError(emailCheck.message || 'Please enter a valid, non-disposable email address.');
-        return;
-      }
-      if (!emailCheck.checked) console.info('Email domain verification was unavailable; continuing with account creation.');
       const auth = await supabaseService.signUp(data.account.email.trim(), data.account.password);
       if (!auth.user) throw new Error('Account creation did not return a user. Please try again.');
       const user = auth.user;
