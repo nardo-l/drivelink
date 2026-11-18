@@ -6,6 +6,7 @@ import { WelcomePage } from './pages/WelcomePage';
 import { LoginPage } from './pages/LoginPage';
 import { ForgotPasswordPage, ResetPasswordPage } from './pages/PasswordRecoveryPages';
 import { OnboardingFlow } from './pages/ConversationalOnboardingFlow';
+import { StartOnboardingPage } from './pages/StartOnboardingPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { AnalyticsPage } from './pages/AnalyticsPage';
 import { VehiclesListPage } from './pages/VehiclesListPage';
@@ -139,6 +140,7 @@ function AppContent() {
       </div>;
     }
 
+    if (currentPath === '/start') return <StartOnboardingPage />;
     if (currentPath === '/welcome') return <WelcomePage />;
 
     // Public landing page stays separate from the current onboarding flow.

@@ -149,11 +149,11 @@ export const supabaseService = {
   // ---------------------------------------------------------------------------
   // AUTHENTICATION
   // ---------------------------------------------------------------------------
-  async signUp(email: string, password: string) {
+  async signUp(email: string, password: string, redirectPath: string = '/onboarding') {
     if (!isSupabaseConfigured()) {
       throw new Error('Supabase is not configured. Please add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.');
     }
-    const { data, error } = await supabase.auth.signUp({ email, password, options: { emailRedirectTo: `${window.location.origin}/onboarding` } });
+    const { data, error } = await supabase.auth.signUp({ email, password, options: { emailRedirectTo: `${window.location.origin}${redirectPath}` } });
     if (error) throw error;
     return data;
   },
@@ -170,9 +170,9 @@ export const supabaseService = {
     if (error) throw error;
   },
 
-  async signInWithGoogle() {
+  async signInWithGoogle(redirectPath: string = '/onboarding') {
     if (!isSupabaseConfigured()) throw new Error('Supabase is not configured.');
-    const { data, error } = await supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: `${window.location.origin}/onboarding` } });
+    const { data, error } = await supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: `${window.location.origin}${redirectPath}` } });
     if (error) throw error;
     return data;
   },
