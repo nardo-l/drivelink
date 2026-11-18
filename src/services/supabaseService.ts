@@ -262,6 +262,20 @@ export const supabaseService = {
     return data === true;
   },
 
+  async checkStartHandleAvailability(slug: string): Promise<boolean> {
+    if (!isSupabaseConfigured()) throw new Error('Showroom links are unavailable right now.');
+    const session = await this.getSession();
+    const functionName = session
+      ? 'check_dealership_slug_availability'
+      : 'check_dealership_slug_available_public';
+    const { data, error } = await supabase.rpc(functionName as any, { p_slug: slug } as any);
+    if (error) {
+      console.error('Error checking /start showroom link availability:', { functionName, error });
+      throw error;
+    }
+    return data === true;
+  },
+
   async updateDealershipSlug(slug: string): Promise<Dealership> {
     if (!isSupabaseConfigured()) throw new Error('Showroom links are unavailable offline.');
     const { data, error } = await supabase.rpc('update_my_dealership_slug' as any, { p_slug: slug } as any);
