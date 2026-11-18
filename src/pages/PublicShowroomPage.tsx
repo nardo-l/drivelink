@@ -11,7 +11,7 @@ import { supabaseService } from '../services/supabaseService';
 import { planService } from '../services/planService';
 import { isSupabaseConfigured } from '../lib/supabase';
 import { absoluteUrl, homeTitle, pageTitle } from '../config/brand';
-import type { Dealership, Vehicle } from '../types';
+import type { Dealership, FuelType, Vehicle } from '../types';
 import { FeaturedVehicleCarousel } from '../components/storefront/FeaturedVehicleCarousel';
 import './PublicShowroomPage.css';
 
@@ -356,12 +356,10 @@ export const PublicShowroomPage: React.FC<PublicShowroomPageProps> = ({ slug, pr
 
         {activeTab !== 'contact' && activeTab !== 'home' && (
         <section className="dl-ps-listings-section" id="available-cars">
-          {activeTab !== 'home' && (
           <div className="dl-ps-section-head">
             <h2>{savedOnly ? 'Saved cars' : 'Available cars'}</h2>
             {filtered.length > 0 && <span>{countLabel(filtered.length)}</span>}
           </div>
-          )}
           {filtered.length > 0 ? (
             <div className="dl-ps-grid">
               {filtered.map((vehicle, index) => {
@@ -463,7 +461,7 @@ export const PublicShowroomPage: React.FC<PublicShowroomPageProps> = ({ slug, pr
                   <label>Year from<input type="number" min="1950" value={yearFrom} onChange={event => setYearFrom(event.target.value)} placeholder="Any" /></label>
                   <label>Year to<input type="number" min="1950" value={yearTo} onChange={event => setYearTo(event.target.value)} placeholder="Any" /></label>
                   <div className="dl-ps-filter-select"><span>Transmission</span><Select title="Transmission" value={transmission} options={[{ value: 'All', label: 'All transmissions' }, { value: 'Automatic', label: 'Automatic' }, { value: 'Manual', label: 'Manual' }]} onChange={setTransmission} /></div>
-                  <div className="dl-ps-filter-select"><span>Fuel</span><Select title="Fuel" value={fuel} options={[{ value: 'All', label: 'All fuel types' }, ...Array.from(new Set(available.map(v => v.fuel).filter(Boolean))).map(value => ({ value, label: value }))]} onChange={setFuel} /></div>
+                  <div className="dl-ps-filter-select"><span>Fuel</span><Select title="Fuel" value={fuel} options={[{ value: 'All', label: 'All fuel types' }, ...Array.from(new Set(available.map(v => v.fuel).filter((value): value is FuelType => value !== null))).map(value => ({ value, label: value }))]} onChange={setFuel} /></div>
                 </div>
                 <div className="dl-ps-sheet-actions"><button type="button" className="is-secondary" onClick={clearFilters}>Clear filters</button><button type="button" onClick={() => setSheet(null)}>Show {countLabel(filtered.length)}</button></div>
               </>

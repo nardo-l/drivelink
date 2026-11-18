@@ -69,7 +69,7 @@ export const PwaInstallProvider: React.FC<React.PropsWithChildren> = ({ children
     setManual(true);
     if (accountKey) sessionStorage.setItem(accountKey + '_shown_session','1');
     setSheet('install');
-  },[accountKey,currentPath,canInstall,isIos,isAndroid]);
+  },[accountKey,currentPath,canInstall,isIos]);
 
   useEffect(() => {
     const update = () => setRevision(v => v + 1);
