@@ -4,7 +4,6 @@ import { ArrowLeft, MapPin, Phone, MessageCircle, Send, Share2, Grid2x2 } from '
 import { useNavigation } from '../context/NavigationContext';
 import { storageService } from '../services/storage';
 import { supabaseService } from '../services/supabaseService';
-import { verifyEmailAddress } from '../services/emailVerificationService';
 import { isSupabaseConfigured } from '../lib/supabase';
 import type { Dealership, Vehicle } from '../types';
 
@@ -21,7 +20,6 @@ export const PublicStorefrontContactPage: React.FC<{ slug: string }> = ({ slug }
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
   const [error, setError] = useState('');
-  const [emailNotice, setEmailNotice] = useState('');
 
   useEffect(() => {
     let active = true;
@@ -41,14 +39,6 @@ export const PublicStorefrontContactPage: React.FC<{ slug: string }> = ({ slug }
     load();
     return () => { active = false; };
   }, [slug]);
-
-  // Advisory only: runs when the field loses focus and never gates the enquiry.
-  const checkEmailHint = async () => {
-    const value = email.trim();
-    if (!value) { setEmailNotice(''); return; }
-    const result = await verifyEmailAddress(value);
-    setEmailNotice(result.message || (result.suggestion ? `Did you mean ${value.split('@')[0]}@${result.suggestion}?` : ''));
-  };
 
   const submit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -86,7 +76,7 @@ export const PublicStorefrontContactPage: React.FC<{ slug: string }> = ({ slug }
       {sent ? <div className="dl-contact-success"><strong>Enquiry sent.</strong><span>Thank you. Your message has been delivered to the dealership.</span></div> : <>
         <label>Your name<input value={name} onChange={e => setName(e.target.value)} required placeholder="Full name"/></label>
         <label>Phone / WhatsApp number<input type="tel" value={phone} onChange={e => setPhone(e.target.value)} required placeholder="+263… or +27…"/></label>
-        <label>Email address (optional)<input type="text" inputMode="email" autoComplete="email" value={email} onChange={e => { setEmail(e.target.value); setEmailNotice(''); }} onBlur={checkEmailHint} placeholder="you@example.com"/>{emailNotice && <small className="dl-contact-email-hint">{emailNotice}</small>}</label>
+        <label>Email address (optional)<input type="email" inputMode="email" autoComplete="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@example.com"/></label>
         <div className="dl-contact-select"><span>Vehicle of interest (optional)</span><Select name="vehicleId" aria-label="Vehicle of interest" value={vehicleId} title="Vehicle of interest" placeholder="General enquiry" options={[{value:'',label:'General enquiry'},...vehicles.map(v=>({value:v.id,label:`${v.year} ${v.make} ${v.model}`}))]} onChange={setVehicleId}/></div>
         <label>Message<textarea rows={4} value={message} onChange={e => setMessage(e.target.value)} required placeholder="How can the dealership help?"/></label>
         {error && <p className="dl-contact-error">{error}</p>}
