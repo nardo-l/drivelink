@@ -32,7 +32,7 @@ export const WelcomePage: React.FC = () => {
   const { navigate } = useNavigation();
   const [menuOpen, setMenuOpen] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(0);
-  const goStart = () => navigate('/onboarding');
+  const goStart = () => navigate('/start');
   const scrollTo = (id: string) => {
     setMenuOpen(false);
     const target = document.getElementById(id);
