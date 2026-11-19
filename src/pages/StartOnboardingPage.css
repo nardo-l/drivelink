@@ -2,15 +2,105 @@
 .lotle-start-welcome{min-height:220px;border:1px solid #ededed;border-radius:24px;background:#fafafa;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:24px;text-align:center}.lotle-start-welcome-mark{width:76px;height:76px;border-radius:24px;background:#eee;display:grid;place-items:center;color:#111}.lotle-start-welcome p{margin:0;color:#686868;font-size:14px;font-weight:600}
 .lotle-start-wheels{display:grid;grid-template-columns:1fr 1fr;gap:12px;min-width:0}.lotle-start-phone{display:grid;grid-template-columns:74px 1fr;gap:12px;align-items:start}.lotle-start-country-code{min-height:54px;margin-top:26px;border:1px solid #e4e4e4;border-radius:15px;display:grid;place-items:center;font-size:15px;font-weight:750}
 .lotle-start-slug{padding:16px;border:1px solid #ececec;border-radius:20px;background:#fafafa}.lotle-start-url{font-size:13px;color:#777;margin-bottom:13px}.lotle-start-slug-status{min-height:20px;margin:8px 0 0;font-size:12px;line-height:1.45;color:#777}.lotle-start-slug-status.is-available{color:#176b3a}.lotle-start-slug-status.is-taken,.lotle-start-slug-status.is-failed{color:#b42318}
-.lotle-start-summary{min-height:230px;padding:25px 18px;border:1px solid #eaeaea;border-radius:24px;background:#fafafa;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center}.lotle-start-summary-icon{width:58px;height:58px;border-radius:20px;background:#eee;display:grid;place-items:center;margin-bottom:4px}.lotle-start-summary strong{font-size:20px;font-weight:800;letter-spacing:-.04em}.lotle-start-summary>span{font-size:14px;color:#333}.lotle-start-summary small{font-size:12px;color:#858585}
 .lotle-start-account{display:grid;gap:3px}.lotle-start-signin{justify-self:center;margin-top:8px;padding:8px 12px;color:#525252;font-size:13px;font-weight:600;text-decoration:underline;text-underline-offset:3px}.lotle-start-signin:focus-visible{outline:2px solid #0a0f1e;outline-offset:3px;border-radius:6px}
-.lotle-start-photo-picker{min-height:150px;border:1.5px dashed #d8d8d8;border-radius:20px;background:#fafafa;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:#333;position:relative;cursor:pointer}.lotle-start-photo-picker strong{font-size:14px}.lotle-start-photo-picker small{font-size:12px;color:#858585}.lotle-start-photo-picker input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer}
-.lotle-start-photo-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin-top:13px}.lotle-start-photo-grid>div{position:relative;aspect-ratio:1;border-radius:13px;overflow:hidden;background:#eee}.lotle-start-photo-grid img{width:100%;height:100%;object-fit:cover}.lotle-start-photo-grid button{position:absolute;top:5px;right:5px;width:44px;height:44px;border:0;border-radius:50%;background:rgba(0,0,0,.72);color:#fff;display:grid;place-items:center}
-.lotle-start-vehicle{display:grid;gap:1px}.lotle-start-vehicle-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}.lotle-start-validation{min-height:18px;margin:0;color:#b42318;font-size:12px;line-height:1.4}.lotle-start button:focus-visible,.lotle-start input:focus-visible{outline:2px solid #111!important;outline-offset:3px!important}
-.lotle-start-draft-note{margin:3px 0 0;color:#777;font-size:12px;line-height:1.5}.lotle-start :focus-visible{outline:2px solid #111;outline-offset:3px}
 .lotle-start-wheels .lotle-text-field{grid-column:1/-1}
-@media(max-width:380px){.lotle-start-wheels{gap:8px}.lotle-start-vehicle-row{gap:8px}.lotle-start-phone{grid-template-columns:66px 1fr;gap:8px}}
 
 .lotle-start-retry{min-height:44px;margin-top:8px;padding:0 18px;border:1px solid var(--dl-line);border-radius:999px;background:var(--dl-card);color:var(--dl-ink);font:600 14px inherit;cursor:pointer}.lotle-start-retry:focus-visible{outline:2px solid var(--dl-ink);outline-offset:3px}
 
 .lotle-start-welcome-image{display:block;width:100%;max-height:260px;height:auto;object-fit:contain;border-radius:18px}
+
+/* /start link explainer carousel */
+.lotle-link-explainer{width:100%;min-width:0}
+.lotle-link-carousel{width:100%;min-width:0;outline:none}
+.lotle-link-carousel:focus-visible{outline:2px solid #0a0f1e;outline-offset:4px;border-radius:20px}
+.lotle-link-carousel-track{display:flex;gap:0;width:100%;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x mandatory;scrollbar-width:none}
+.lotle-link-carousel-track::-webkit-scrollbar{display:none}
+.lotle-link-slide{flex:0 0 100%;min-width:0;display:flex;flex-direction:column;align-items:center;gap:12px;padding:8px 4px 4px;scroll-snap-align:center;scroll-snap-stop:always}
+.lotle-link-slide>p{margin:0;color:#555;font-size:13px;font-weight:700;text-align:center}
+.lotle-link-slide-device{width:min(100%,276px);height:440px;display:flex;align-items:center;justify-content:center}
+.lotle-mock-phone{position:relative;width:252px;height:432px;max-width:100%;overflow:hidden;border:7px solid #17191d;border-radius:34px;box-shadow:0 12px 32px rgba(15,23,42,.16);font-family:Inter,ui-sans-serif,system-ui,sans-serif;font-size:11px}
+.lotle-mock-status{height:22px;display:flex;align-items:center;justify-content:space-between;padding:0 13px;font-size:9px;font-weight:800}
+.lotle-social-avatar{width:54px;height:54px;flex:0 0 54px;display:grid;place-items:center;overflow:hidden;border-radius:50%;background:#e7e9ed;color:#1d2430;font-size:14px;font-weight:800}
+.lotle-social-avatar img{width:100%;height:100%;object-fit:cover}
+.lotle-mock-tiktok{background:#fff;color:#161616}
+.lotle-mock-tiktok-head,.lotle-mock-instagram-head{height:32px;display:flex;align-items:center;justify-content:space-between;padding:0 13px;font-size:13px}
+.lotle-mock-profile{display:flex;align-items:center;gap:13px;padding:15px 14px 10px}
+.lotle-mock-profile-name{display:flex;min-width:0;flex-direction:column;gap:5px}
+.lotle-mock-profile-name strong{max-width:145px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px}
+.lotle-mock-profile-name small{color:#737780;font-size:10px}
+.lotle-mock-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:0 14px}
+.lotle-mock-actions span{padding:9px 0;border-radius:5px;background:#f0f0f2;text-align:center;font-size:10px;font-weight:800}
+.lotle-mock-actions span:first-child{background:#fe2c55;color:white}
+.lotle-mock-bio{margin:11px 14px 6px;font-size:10px;line-height:1.5}
+.lotle-mock-link{display:flex;align-items:center;gap:5px;margin:0 14px;padding:7px 8px;border-radius:7px;background:#f1f2f5;color:#15171a;font-size:9px;font-weight:800;overflow-wrap:anywhere}
+.lotle-mock-link span{font-size:13px}
+.lotle-mock-profile-tabs{display:flex;justify-content:space-around;margin-top:15px;padding:10px 0;border-top:1px solid #eee;border-bottom:1px solid #eee;color:#666;font-size:14px}
+.lotle-mock-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;padding-top:3px}
+.lotle-mock-grid i{height:75px;background:#e9ebee}
+.lotle-mock-grid i:nth-child(2){background:#dfe3e7}
+.lotle-mock-instagram{background:#fff;color:#171717}
+.lotle-mock-instagram .lotle-mock-profile{padding-top:18px}
+.lotle-mock-profile-bars{display:flex;flex:1;justify-content:space-around;gap:7px}
+.lotle-mock-profile-bars i{width:31%;height:24px;border-radius:5px;background:#e9ebee}
+.lotle-mock-display-name{display:block;margin:0 14px 5px;font-size:11px}
+.lotle-mock-instagram .lotle-mock-bio{margin-top:4px}
+.lotle-mock-instagram-link{margin:0 14px;color:#1769aa;font-size:10px;font-weight:700;overflow-wrap:anywhere}
+.lotle-mock-ig-actions{display:flex;gap:7px;margin:13px 14px 0}
+.lotle-mock-ig-actions span{flex:1;padding:8px 0;border-radius:6px;background:#efeff1;text-align:center;font-size:10px;font-weight:800}
+.lotle-mock-profile-tabs{margin-top:13px}
+.lotle-mock-story{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;border-color:#151515;background:linear-gradient(180deg,#171a22,#08090d);color:#fff;padding:0 10px}
+.lotle-mock-story-top{width:100%;display:flex;align-items:center;gap:8px;padding:17px 2px 12px}
+.lotle-mock-story-top .lotle-social-avatar{width:28px;height:28px;flex-basis:28px;border:1px solid #fff;background:#343943;color:#fff;font-size:9px}
+.lotle-mock-story-top strong{max-width:125px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lotle-mock-story-top small{color:#c4c7cc}
+.lotle-mock-story-top>span:last-child{margin-left:auto}
+.lotle-mock-story-car{display:flex;width:100%;height:260px;align-items:center;justify-content:center;border-radius:10px;background:linear-gradient(155deg,#d8dce0,#aeb5bd 45%,#626b76);color:#27303a;text-align:center}
+.lotle-mock-story-car:before{content:"";position:absolute;width:170px;height:70px;margin-top:38px;border-radius:60% 45% 18% 18%;background:linear-gradient(180deg,#66717c,#2d343d);box-shadow:0 18px 16px rgba(0,0,0,.2)}
+.lotle-mock-story-car span{position:relative;z-index:1;margin-top:-150px;font-size:9px;font-weight:900;letter-spacing:1px}
+.lotle-mock-story-sticker{max-width:100%;margin-top:-19px;padding:10px 12px;border:1px solid #d7d7d7;border-radius:999px;background:#fff;color:#222;text-align:center;font-size:9px;font-weight:800;overflow-wrap:anywhere;box-shadow:0 3px 8px #0003}
+.lotle-mock-story-bottom{margin-top:auto;padding:15px 0 20px;color:#d7d9dd;font-size:10px}
+.lotle-mock-whatsapp{background:#efeae2;color:#111}
+.lotle-mock-chat-head{height:58px;display:flex;align-items:center;gap:9px;padding:0 10px;background:#f8f8f8}
+.lotle-mock-chat-head>span:first-child{font-size:20px}
+.lotle-mock-chat-head .lotle-social-avatar{width:34px;height:34px;flex-basis:34px;font-size:10px}
+.lotle-mock-chat-head div{display:flex;flex-direction:column;gap:3px}
+.lotle-mock-chat-head small{color:#777;font-size:9px}
+.lotle-mock-chat-body{height:calc(100% - 100px);display:flex;flex-direction:column;gap:9px;padding:13px 8px;background-color:#e9e3d9;background-image:radial-gradient(#d9d2c8 0.7px,transparent .7px);background-size:9px 9px}
+.lotle-mock-date{align-self:center;padding:5px 9px;border-radius:6px;background:#f8f5ef;color:#666;font-size:8px;font-weight:800}
+.lotle-mock-chat-out,.lotle-mock-chat-in{max-width:88%;padding:9px;border-radius:9px;font-size:10px;line-height:1.45;box-shadow:0 1px 1px #0001}
+.lotle-mock-chat-out{align-self:flex-end;background:#d8f7c7}
+.lotle-mock-chat-out a{display:block;margin-top:4px;color:#1769aa;font-weight:700;overflow-wrap:anywhere}
+.lotle-mock-chat-out small,.lotle-mock-chat-in small{display:block;margin-top:4px;color:#71806b;text-align:right;font-size:8px}
+.lotle-mock-chat-out small b{color:#3988c7}
+.lotle-mock-link-preview{align-self:flex-end;width:82%;margin-top:-7px;padding:7px;border-radius:8px;background:#fff;box-shadow:0 1px 2px #0002}
+.lotle-mock-car-placeholder{height:78px;border-radius:5px;background:linear-gradient(150deg,#cdd2d8,#747e88)}
+.lotle-mock-link-preview strong,.lotle-mock-link-preview small{display:block;margin-top:5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lotle-mock-link-preview small{color:#68717c;font-size:8px}
+.lotle-mock-chat-in{align-self:flex-start;background:#fff}
+.lotle-mock-chat-in small{color:#8a8a8a}
+.lotle-mock-chat-input{position:absolute;right:0;bottom:0;left:0;height:36px;padding:11px 12px;border-top:1px solid #ddd;background:#fafafa;color:#999;font-size:9px}
+.lotle-link-dots{display:flex;justify-content:center;gap:9px;padding:9px 0 2px}
+.lotle-link-dots button{width:9px;height:9px;padding:0;border:0;border-radius:50%;background:#c9cdd3;cursor:pointer}
+.lotle-link-dots button.is-active{width:22px;border-radius:99px;background:#0a0f1e}
+.lotle-start-branding{display:flex;flex-direction:column;gap:16px}
+.lotle-start-final{display:flex;flex-direction:column;gap:18px}
+.lotle-start-final-preview{display:flex;flex-direction:column;align-items:center;gap:7px;padding:18px;border:1px solid #e8ebf0;border-radius:18px;background:#fafafa}
+.lotle-start-final-avatar{display:grid;width:62px;height:62px;place-items:center;overflow:hidden;border-radius:50%;background:#e8ebef;color:#111;font-size:17px;font-weight:800}
+.lotle-start-final-avatar img{width:100%;height:100%;object-fit:cover}
+.lotle-start-final-preview strong{font-size:17px}
+.lotle-start-final-preview>span:last-child{color:#858d98;font-size:12px}
+.lotle-start-final-link{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:12px;border:1px solid #e5e8ed;border-radius:13px;background:#fff}
+.lotle-start-final-link>span{min-width:0;overflow-wrap:anywhere;font-size:12px;font-weight:700}
+.lotle-start-final-link button{display:flex;flex:none;align-items:center;gap:5px;padding:8px 10px;border:0;border-radius:9px;background:#0a0f1e;color:#fff;font-size:11px;font-weight:800}
+.lotle-start-dashboard-link{align-self:center;padding:8px;border:0;background:transparent;color:#596273;text-decoration:underline;text-underline-offset:3px;font-size:13px;font-weight:700}
+@media(max-width:380px){.lotle-link-slide-device{height:420px}.lotle-mock-phone{width:240px;height:412px}.lotle-mock-grid i{height:65px}}
+@media(prefers-reduced-motion:reduce){.lotle-link-carousel-track{scroll-behavior:auto}}
+
+.lotle-start-google{width:100%;min-height:50px;margin-top:5px;border:1px solid #e4e4e4;border-radius:15px;background:#fff;color:#171717;font-size:14px;font-weight:700}
+.lotle-start-google:disabled{opacity:.6}
+.lotle-start-skip{align-self:center;padding:9px 12px;border:0;background:transparent;color:#596273;font-size:13px;font-weight:700;text-decoration:underline;text-underline-offset:3px}
+.lotle-mock-chat-out span{display:block;margin-top:4px;color:#1769aa;font-weight:700;overflow-wrap:anywhere}
+.lotle-mock-story-top strong{max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lotle-mock-story-car{position:relative}
+
+.lotle-start-validation{min-height:18px;margin:0;color:#b42318;font-size:12px;line-height:1.4}
