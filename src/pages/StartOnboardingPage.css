@@ -118,10 +118,10 @@
 @media(prefers-reduced-motion:reduce){.lotle-link-carousel-track{scroll-behavior:auto!important}}
 
 
-/* Fictional Sample Motors phone mockup on the /start welcome screen */
-.lotle-start-welcome{min-height:0;border:0;border-radius:0;background:transparent;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;padding:0;text-align:center}
-.lotle-start-welcome-phone{width:min(70vw,320px);max-width:100%;aspect-ratio:.66;box-sizing:border-box;padding:8px;border:6px solid #171a20;border-radius:38px;background:#171a20;box-shadow:0 18px 42px rgba(10,15,30,.22),0 3px 8px rgba(10,15,30,.12)}
-.lotle-start-welcome-screen{position:relative;width:100%;height:100%;overflow:hidden;border-radius:26px;background:#fff;color:#101827;text-align:left;font-family:Inter,ui-sans-serif,system-ui,sans-serif}
+/* Fictional Sample Motors welcome mockup */
+.lotle-start-welcome{width:100%;min-width:0;min-height:0;border:0;border-radius:0;background:transparent;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:10px;padding:0;text-align:center}
+.lotle-start-welcome-phone{width:min(280px,70vw);max-width:100%;aspect-ratio:.66;box-sizing:border-box;padding:7px;border:6px solid #171a20;border-radius:34px;background:#171a20;box-shadow:0 14px 32px rgba(10,15,30,.18);flex:none}
+.lotle-start-welcome-screen{position:relative;width:100%;height:100%;overflow:hidden;border-radius:24px;background:#fff;color:#101827;text-align:left;font-family:Inter,ui-sans-serif,system-ui,sans-serif}
 .lotle-sample-status{height:23px;display:flex;align-items:center;justify-content:space-between;padding:0 13px;font-size:9px;font-weight:800}
 .lotle-sample-header{height:48px;display:flex;align-items:center;gap:8px;padding:0 11px;border-bottom:1px solid #eef0f3}
 .lotle-sample-mark{width:30px;height:30px;display:grid;place-items:center;flex:none;border-radius:9px;background:#0a0f1e;color:#fff;font-size:9px;font-weight:850}
@@ -138,16 +138,13 @@
 .lotle-sample-section strong{font-size:10px}
 .lotle-sample-section small,.lotle-sample-section>span{font-size:7px;color:#77808d}
 .lotle-sample-car{margin:0 10px;border:1px solid #e9edf1;border-radius:11px;overflow:hidden}
-.lotle-sample-car-art{height:94px;display:grid;place-items:center;background:linear-gradient(145deg,#e8edf1,#cbd3db)}
-.lotle-sample-car-shape{position:relative;width:72%;height:21px;margin-top:15px;border-radius:45% 38% 14% 14%;background:linear-gradient(180deg,#687585,#273343);box-shadow:0 8px 8px rgba(20,30,40,.15)}
-.lotle-sample-car-shape:before{content:"";position:absolute;left:22%;top:-14px;width:53%;height:18px;border-radius:70% 65% 0 0;background:linear-gradient(180deg,#aab6c2,#647181)}
-.lotle-sample-car-shape:after{content:"";position:absolute;left:12%;right:12%;bottom:-5px;height:9px;border-radius:99px;background:radial-gradient(circle at 18% 50%,#1c2632 0 4px,transparent 4.5px),radial-gradient(circle at 82% 50%,#1c2632 0 4px,transparent 4.5px)}
+.lotle-sample-car-art{height:104px;display:grid;place-items:center;padding:5px 7px;background:linear-gradient(145deg,#f0f3f5,#dce3e8)}
+.lotle-sample-car-svg{display:block;width:100%;max-width:240px;height:100%;overflow:visible}
 .lotle-sample-car-copy{display:grid;gap:3px;padding:8px 9px}
 .lotle-sample-car-copy strong{font-size:9px}
 .lotle-sample-car-copy small{font-size:7px;color:#697383}
 .lotle-sample-car-copy b{font-size:7px;color:#3d536d}
 .lotle-sample-bottom{position:absolute;right:0;bottom:0;left:0;height:32px;display:flex;align-items:center;justify-content:space-around;border-top:1px solid #edf0f3;background:#fff;color:#4c5664;font-size:7px;font-weight:750}
 .lotle-start-welcome-caption{margin:0;color:#535d6b;font-size:11px;font-weight:650}
-.lotle-start-welcome-image{display:none}
-@media(max-width:380px){.lotle-start-welcome-phone{width:min(70vw,260px);border-radius:34px}.lotle-start-welcome-screen{border-radius:22px}.lotle-sample-car-art{height:78px}}
-.lotle-link-dots button:focus-visible{outline:2px solid #0a0f1e;outline-offset:1px}
+@media(max-height:700px){.lotle-start-welcome-phone{width:min(280px,70vw,calc(38dvh * .66));}}
+@media(max-width:380px){.lotle-start-welcome-phone{width:min(250px,70vw,calc(38dvh * .66));border-radius:30px}.lotle-start-welcome-screen{border-radius:20px}.lotle-sample-car-art{height:78px}}
