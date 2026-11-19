@@ -77,9 +77,11 @@
 .lotle-mock-chat-in{align-self:flex-start;background:#fff}
 .lotle-mock-chat-in small{color:#8a8a8a}
 .lotle-mock-chat-input{position:absolute;right:0;bottom:0;left:0;height:36px;padding:11px 12px;border-top:1px solid #ddd;background:#fafafa;color:#999;font-size:9px}
-.lotle-link-dots{display:flex;justify-content:center;gap:9px;padding:9px 0 2px}
- .lotle-link-dots button{width:44px;height:44px;display:grid;place-items:center;padding:0;border:0;border-radius:50%;background:#c9cdd3;cursor:pointer}
-.lotle-link-dots button:before{content:"";width:9px;height:9px;border-radius:99px;background:#c9cdd3}.lotle-link-dots button.is-active:before{width:22px;background:#0a0f1e}
+.lotle-link-dots{display:flex;align-items:center;justify-content:center;gap:9px;padding:12px 0 2px}
+.lotle-link-dots button{width:32px;height:20px;display:flex;align-items:center;justify-content:center;padding:0;border:0;border-radius:0;background:transparent;cursor:pointer}
+.lotle-link-dots button:before{content:"";width:100%;height:4px;border-radius:999px;background:#c9cdd3;transition:background .2s ease}
+.lotle-link-dots button.is-active:before{background:#0a0f1e}
+.lotle-link-dots button:focus-visible{outline:2px solid #0a0f1e;outline-offset:2px}
 .lotle-start-branding{display:flex;flex-direction:column;gap:16px}
 .lotle-start-final{display:flex;flex-direction:column;gap:18px}
 .lotle-start-final-preview{display:flex;flex-direction:column;align-items:center;gap:7px;padding:18px;border:1px solid #e8ebf0;border-radius:18px;background:#fafafa}
@@ -148,3 +150,11 @@
 .lotle-start-welcome-caption{margin:0;color:#535d6b;font-size:11px;font-weight:650}
 @media(max-height:700px){.lotle-start-welcome-phone{width:min(280px,70vw,calc(38dvh * .66));}}
 @media(max-width:380px){.lotle-start-welcome-phone{width:min(250px,70vw,calc(38dvh * .66));border-radius:30px}.lotle-start-welcome-screen{border-radius:20px}.lotle-sample-car-art{height:78px}}
+
+/* Real vehicle imagery in the onboarding social-profile previews */
+.lotle-mock-grid-tile img{display:block;width:100%;height:100%;object-fit:cover}
+.lotle-mock-story-car{overflow:hidden}
+.lotle-mock-story-car img{display:block;width:100%;height:100%;object-fit:cover}
+.lotle-mock-story-car small{position:absolute;left:8px;bottom:8px;padding:5px 7px;border-radius:5px;background:#111a;color:#fff}
+.lotle-mock-car-placeholder{overflow:hidden}
+.lotle-mock-car-placeholder img{display:block;width:100%;height:100%;object-fit:cover}
