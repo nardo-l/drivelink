@@ -38,3 +38,19 @@
 .lotle-kit-screen.is-welcome .lotle-kit-copy h1{font-size:clamp(30px,8.4vw,38px);line-height:1.02}
 .lotle-kit-screen.is-welcome .lotle-kit-copy p{margin-top:9px;color:#565d68;font-size:14px}
 @media(max-width:380px){.lotle-kit-screen.is-welcome .lotle-kit-header{padding-inline:16px}.lotle-kit-screen.is-welcome .lotle-kit-content{padding-inline:18px}.lotle-kit-screen.is-welcome .lotle-kit-footer{padding-inline:18px}}
+
+/* /start welcome layout: one column, no overlap or gradient masking */
+.lotle-kit-screen.is-welcome{height:100vh;height:100dvh;min-height:0;overflow:hidden}
+.lotle-kit-screen.is-welcome .lotle-kit-header{width:min(100%,480px);flex:none;padding:calc(10px + env(safe-area-inset-top,0px)) 22px 4px}
+.lotle-kit-screen.is-welcome .lotle-kit-content{width:min(100%,480px);flex:1 1 auto;min-height:0;overflow-y:auto;overflow-x:hidden;justify-content:center;gap:0;padding:8px 22px 12px}
+.lotle-kit-screen.is-welcome .lotle-kit-copy{width:100%;margin:0 0 12px;text-align:center}
+.lotle-kit-screen.is-welcome .lotle-kit-copy h1{max-width:100%;font-size:clamp(28px,5vw,38px);line-height:1.04;text-align:center}
+.lotle-kit-screen.is-welcome .lotle-kit-copy p{max-width:100%;margin:8px auto 0;text-align:center}
+.lotle-kit-screen.is-welcome .lotle-kit-error{flex:none}
+.lotle-kit-screen.is-welcome .lotle-kit-footer{width:min(100%,480px);flex:none;padding:8px 22px calc(10px + env(safe-area-inset-bottom,0px));background:#fff}
+.lotle-kit-screen.is-welcome .lotle-kit-footer-fade{display:none}
+.lotle-kit-screen.is-welcome .lotle-kit-continue{min-height:54px}
+.lotle-kit-screen.is-welcome .lotle-kit-footer-secondary{padding-top:4px}
+.lotle-kit-screen.is-welcome .lotle-kit-footer-secondary a{min-height:44px}
+@media(max-width:380px){.lotle-kit-screen.is-welcome .lotle-kit-header{padding-inline:18px}.lotle-kit-screen.is-welcome .lotle-kit-content{padding:6px 18px 8px}.lotle-kit-screen.is-welcome .lotle-kit-copy{margin-bottom:9px}.lotle-kit-screen.is-welcome .lotle-kit-copy h1{font-size:29px}.lotle-kit-screen.is-welcome .lotle-kit-copy p{font-size:13px}.lotle-kit-screen.is-welcome .lotle-kit-footer{padding-inline:18px}}
+@media(max-height:700px){.lotle-kit-screen.is-welcome .lotle-kit-content{justify-content:flex-start;padding-top:6px;padding-bottom:6px}.lotle-kit-screen.is-welcome .lotle-kit-copy{margin-bottom:8px}.lotle-kit-screen.is-welcome .lotle-kit-footer{padding-top:5px}}
