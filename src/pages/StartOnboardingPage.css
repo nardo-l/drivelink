@@ -120,36 +120,34 @@
 @media(prefers-reduced-motion:reduce){.lotle-link-carousel-track{scroll-behavior:auto!important}}
 
 
-/* Fictional Sample Motors welcome mockup */
-.lotle-start-welcome{width:100%;min-width:0;min-height:0;border:0;border-radius:0;background:transparent;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:10px;padding:0;text-align:center}
-.lotle-start-welcome-phone{width:min(280px,70vw);max-width:100%;aspect-ratio:.66;box-sizing:border-box;padding:7px;border:6px solid #171a20;border-radius:34px;background:#171a20;box-shadow:0 14px 32px rgba(10,15,30,.18);flex:none}
-.lotle-start-welcome-screen{position:relative;width:100%;height:100%;overflow:hidden;border-radius:24px;background:#fff;color:#101827;text-align:left;font-family:Inter,ui-sans-serif,system-ui,sans-serif}
-.lotle-sample-status{height:23px;display:flex;align-items:center;justify-content:space-between;padding:0 13px;font-size:9px;font-weight:800}
-.lotle-sample-header{height:48px;display:flex;align-items:center;gap:8px;padding:0 11px;border-bottom:1px solid #eef0f3}
-.lotle-sample-mark{width:30px;height:30px;display:grid;place-items:center;flex:none;border-radius:9px;background:#0a0f1e;color:#fff;font-size:9px;font-weight:850}
-.lotle-sample-header>div{display:flex;min-width:0;flex-direction:column;gap:2px}
-.lotle-sample-header strong{font-size:11px;font-weight:800}
-.lotle-sample-header small{color:#6b7280;font-size:8px}
-.lotle-sample-menu{margin-left:auto;color:#5d6674;font-size:13px}
-.lotle-sample-hero{height:28%;display:flex;flex-direction:column;justify-content:center;gap:5px;padding:12px 13px;background:linear-gradient(145deg,#111827,#364152);color:#fff}
-.lotle-sample-hero>span{font-size:7px;font-weight:850;letter-spacing:.12em;color:#d8dee8}
-.lotle-sample-hero strong{font-size:clamp(15px,4.6vw,21px);line-height:1.05;letter-spacing:-.04em}
-.lotle-sample-hero small{font-size:8px;color:#e0e5ec}
-.lotle-sample-section{display:flex;align-items:center;justify-content:space-between;padding:11px 11px 7px}
-.lotle-sample-section>div{display:grid;gap:2px}
-.lotle-sample-section strong{font-size:10px}
-.lotle-sample-section small,.lotle-sample-section>span{font-size:7px;color:#77808d}
-.lotle-sample-car{margin:0 10px;border:1px solid #e9edf1;border-radius:11px;overflow:hidden}
-.lotle-sample-car-art{height:104px;overflow:hidden;background:#eef1f4}
-.lotle-sample-car-art img{display:block;width:100%;height:100%;object-fit:cover;object-position:center}
-.lotle-sample-car-copy{display:grid;gap:3px;padding:8px 9px}
-.lotle-sample-car-copy strong{font-size:9px}
-.lotle-sample-car-copy small{font-size:7px;color:#697383}
-.lotle-sample-car-copy b{font-size:7px;color:#3d536d}
-.lotle-sample-bottom{position:absolute;right:0;bottom:0;left:0;height:32px;display:flex;align-items:center;justify-content:space-around;border-top:1px solid #edf0f3;background:#fff;color:#4c5664;font-size:7px;font-weight:750}
-.lotle-start-welcome-caption{margin:0;color:#535d6b;font-size:11px;font-weight:650}
-@media(max-height:700px){.lotle-start-welcome-phone{width:min(280px,70vw,calc(38dvh * .66));}}
-@media(max-width:380px){.lotle-start-welcome-phone{width:min(250px,70vw,calc(38dvh * .66));border-radius:30px}.lotle-start-welcome-screen{border-radius:20px}.lotle-sample-car-art{height:78px}}
+/* First-screen Sample Motors showroom preview */
+.lotle-start-welcome{width:100%;min-width:0;display:flex;flex-direction:column;align-items:stretch;gap:13px;padding:0;text-align:left}
+.lotle-welcome-showroom{width:100%;overflow:hidden;border:1px solid #e8ebef;border-radius:22px;background:#fff;box-shadow:0 12px 30px rgba(10,15,30,.08)}
+.lotle-welcome-photo{position:relative;width:100%;height:clamp(190px,43vw,270px);overflow:hidden;background:#e9edf1}
+.lotle-welcome-photo:after{position:absolute;right:0;bottom:0;left:0;height:34%;background:linear-gradient(transparent,rgba(5,10,20,.38));content:"";pointer-events:none}
+.lotle-welcome-photo img{display:block;width:100%;height:100%;object-fit:cover;object-position:center}
+.lotle-welcome-photo-label,.lotle-welcome-photo-count{position:absolute;z-index:1;bottom:13px;padding:6px 9px;border:1px solid rgba(255,255,255,.35);border-radius:999px;background:rgba(10,15,30,.68);color:#fff;font-size:9px;font-weight:800;letter-spacing:.06em}
+.lotle-welcome-photo-label{left:13px}
+.lotle-welcome-photo-count{right:13px}
+.lotle-welcome-showroom-body{padding:14px}
+.lotle-welcome-dealer{display:flex;align-items:center;gap:9px}
+.lotle-welcome-dealer-mark{width:38px;height:38px;display:grid;flex:none;place-items:center;border-radius:12px;background:#0a0f1e;color:#fff;font-size:11px;font-weight:850}
+.lotle-welcome-dealer>div{display:grid;min-width:0;gap:3px}
+.lotle-welcome-dealer strong{color:#101827;font-size:13px;font-weight:800}
+.lotle-welcome-dealer small{color:#7b8491;font-size:10px}
+.lotle-welcome-live{display:flex;align-items:center;gap:5px;margin-left:auto;padding:6px 8px;border-radius:999px;background:#f0f7f2;color:#287247;font-size:8px;font-weight:850;letter-spacing:.05em}
+.lotle-welcome-live i{width:6px;height:6px;border-radius:50%;background:#36a269}
+.lotle-welcome-listing{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;margin-top:17px}
+.lotle-welcome-listing>div{display:grid;min-width:0;gap:4px}
+.lotle-welcome-listing strong{color:#111827;font-size:clamp(16px,4.8vw,21px);font-weight:850;letter-spacing:-.045em}
+.lotle-welcome-listing>div span{color:#697383;font-size:10px;line-height:1.4}
+.lotle-welcome-view{display:flex;flex:none;align-items:center;gap:4px;padding:8px 10px;border-radius:999px;background:#0a0f1e;color:#fff;font-size:9px;font-weight:750}
+.lotle-welcome-link{display:flex;align-items:center;gap:8px;margin-top:14px;padding:10px 11px;border:1px solid #e9edf1;border-radius:11px;background:#fafbfc;color:#687383}
+.lotle-welcome-link span{flex:1;min-width:0;overflow:hidden;color:#303a49;font-size:10px;font-weight:700;text-overflow:ellipsis;white-space:nowrap}
+.lotle-welcome-link svg:last-child{color:#27834d}
+.lotle-start-welcome-caption{margin:0;color:#596273;font-size:11px;font-weight:600;line-height:1.5;text-align:center}
+@media(max-width:380px){.lotle-welcome-photo{height:190px}.lotle-welcome-showroom{border-radius:18px}.lotle-welcome-showroom-body{padding:12px}.lotle-welcome-listing{align-items:flex-start;flex-direction:column}.lotle-welcome-view{align-self:flex-start}}
+@media(max-height:700px){.lotle-welcome-photo{height:clamp(150px,34vh,220px)}}
 
 /* Real vehicle imagery in the onboarding social-profile previews */
 .lotle-mock-grid-tile img{display:block;width:100%;height:100%;object-fit:cover}
