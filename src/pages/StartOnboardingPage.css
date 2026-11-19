@@ -2,7 +2,7 @@
 .lotle-start-welcome{min-height:220px;border:1px solid #ededed;border-radius:24px;background:#fafafa;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:24px;text-align:center}.lotle-start-welcome-mark{width:76px;height:76px;border-radius:24px;background:#eee;display:grid;place-items:center;color:#111}.lotle-start-welcome p{margin:0;color:#686868;font-size:14px;font-weight:600}
 .lotle-start-wheels{display:grid;grid-template-columns:1fr 1fr;gap:12px;min-width:0}.lotle-start-phone{display:grid;grid-template-columns:74px 1fr;gap:12px;align-items:start}.lotle-start-country-code{min-height:54px;margin-top:26px;border:1px solid #e4e4e4;border-radius:15px;display:grid;place-items:center;font-size:15px;font-weight:750}
 .lotle-start-slug{padding:16px;border:1px solid #ececec;border-radius:20px;background:#fafafa}.lotle-start-url{font-size:13px;color:#777;margin-bottom:13px}.lotle-start-slug-status{min-height:20px;margin:8px 0 0;font-size:12px;line-height:1.45;color:#777}.lotle-start-slug-status.is-available{color:#176b3a}.lotle-start-slug-status.is-taken,.lotle-start-slug-status.is-failed{color:#b42318}
-.lotle-start-account{display:grid;gap:3px}.lotle-start-signin{justify-self:center;margin-top:8px;padding:8px 12px;color:#525252;font-size:13px;font-weight:600;text-decoration:underline;text-underline-offset:3px}.lotle-start-signin:focus-visible{outline:2px solid #0a0f1e;outline-offset:3px;border-radius:6px}
+.lotle-start-account{display:grid;gap:3px} .lotle-start-signin{justify-self:center;min-height:44px;margin-top:8px;padding:8px 12px;color:#525252;font-size:13px;font-weight:600;text-decoration:underline;text-underline-offset:3px}.lotle-start-signin:focus-visible{outline:2px solid #0a0f1e;outline-offset:3px;border-radius:6px}
 .lotle-start-wheels .lotle-text-field{grid-column:1/-1}
 
 .lotle-start-retry{min-height:44px;margin-top:8px;padding:0 18px;border:1px solid var(--dl-line);border-radius:999px;background:var(--dl-card);color:var(--dl-ink);font:600 14px inherit;cursor:pointer}.lotle-start-retry:focus-visible{outline:2px solid var(--dl-ink);outline-offset:3px}
@@ -78,8 +78,8 @@
 .lotle-mock-chat-in small{color:#8a8a8a}
 .lotle-mock-chat-input{position:absolute;right:0;bottom:0;left:0;height:36px;padding:11px 12px;border-top:1px solid #ddd;background:#fafafa;color:#999;font-size:9px}
 .lotle-link-dots{display:flex;justify-content:center;gap:9px;padding:9px 0 2px}
-.lotle-link-dots button{width:9px;height:9px;padding:0;border:0;border-radius:50%;background:#c9cdd3;cursor:pointer}
-.lotle-link-dots button.is-active{width:22px;border-radius:99px;background:#0a0f1e}
+ .lotle-link-dots button{width:44px;height:44px;display:grid;place-items:center;padding:0;border:0;border-radius:50%;background:#c9cdd3;cursor:pointer}
+.lotle-link-dots button:before{content:"";width:9px;height:9px;border-radius:99px;background:#c9cdd3}.lotle-link-dots button.is-active:before{width:22px;background:#0a0f1e}
 .lotle-start-branding{display:flex;flex-direction:column;gap:16px}
 .lotle-start-final{display:flex;flex-direction:column;gap:18px}
 .lotle-start-final-preview{display:flex;flex-direction:column;align-items:center;gap:7px;padding:18px;border:1px solid #e8ebf0;border-radius:18px;background:#fafafa}
@@ -90,22 +90,19 @@
 .lotle-start-final-link{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:12px;border:1px solid #e5e8ed;border-radius:13px;background:#fff}
 .lotle-start-final-link>span{min-width:0;overflow-wrap:anywhere;font-size:12px;font-weight:700}
 .lotle-start-final-link button{display:flex;flex:none;align-items:center;gap:5px;padding:8px 10px;border:0;border-radius:9px;background:#0a0f1e;color:#fff;font-size:11px;font-weight:800}
-.lotle-start-dashboard-link{align-self:center;padding:8px;border:0;background:transparent;color:#596273;text-decoration:underline;text-underline-offset:3px;font-size:13px;font-weight:700}
+ .lotle-start-dashboard-link{align-self:center;min-height:44px;padding:8px;border:0;background:transparent;color:#596273;text-decoration:underline;text-underline-offset:3px;font-size:13px;font-weight:700}
 @media(max-width:380px){.lotle-link-slide-device{height:420px}.lotle-mock-phone{width:240px;height:412px}.lotle-mock-grid i{height:65px}}
 @media(prefers-reduced-motion:reduce){.lotle-link-carousel-track{scroll-behavior:auto}}
 
 .lotle-start-google{width:100%;min-height:50px;margin-top:5px;border:1px solid #e4e4e4;border-radius:15px;background:#fff;color:#171717;font-size:14px;font-weight:700}
 .lotle-start-google:disabled{opacity:.6}
-.lotle-start-skip{align-self:center;padding:9px 12px;border:0;background:transparent;color:#596273;font-size:13px;font-weight:700;text-decoration:underline;text-underline-offset:3px}
+ .lotle-start-skip{align-self:center;min-height:44px;padding:9px 12px;border:0;background:transparent;color:#596273;font-size:13px;font-weight:700;text-decoration:underline;text-underline-offset:3px}
 .lotle-mock-chat-out span{display:block;margin-top:4px;color:#1769aa;font-weight:700;overflow-wrap:anywhere}
 .lotle-mock-story-top strong{max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .lotle-mock-story-car{position:relative}
 
 .lotle-start-validation{min-height:18px;margin:0;color:#b42318;font-size:12px;line-height:1.4}
 
-/* Safe-area spacing for every /start screen */
-.lotle-kit-screen.lotle-start{padding-top:calc(env(safe-area-inset-top,0px) + 12px)}
-.lotle-kit-screen.lotle-start .lotle-kit-content{padding-top:32px}
 .lotle-mock-grid-tile{height:75px;display:flex;align-items:center;justify-content:center;overflow:hidden;background:linear-gradient(145deg,#dfe4e8,#c4cbd2)}
 .lotle-mock-grid-tile:nth-child(2){background:linear-gradient(145deg,#d8e0e5,#aeb8c1)}
 .lotle-mock-car-silhouette{position:relative;display:block;width:74%;height:24px;margin-top:15px;border-radius:45% 38% 12% 12%;background:linear-gradient(180deg,#77838e,#35404a);box-shadow:0 9px 9px rgba(24,34,44,.16)}
@@ -119,3 +116,38 @@
 .lotle-mock-car-placeholder .lotle-mock-car-silhouette{width:70%;height:22px;margin-top:14px}
 @media(max-width:380px){.lotle-mock-grid-tile{height:65px}}
 @media(prefers-reduced-motion:reduce){.lotle-link-carousel-track{scroll-behavior:auto!important}}
+
+
+/* Fictional Sample Motors phone mockup on the /start welcome screen */
+.lotle-start-welcome{min-height:0;border:0;border-radius:0;background:transparent;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;padding:0;text-align:center}
+.lotle-start-welcome-phone{width:min(70vw,320px);max-width:100%;aspect-ratio:.66;box-sizing:border-box;padding:8px;border:6px solid #171a20;border-radius:38px;background:#171a20;box-shadow:0 18px 42px rgba(10,15,30,.22),0 3px 8px rgba(10,15,30,.12)}
+.lotle-start-welcome-screen{position:relative;width:100%;height:100%;overflow:hidden;border-radius:26px;background:#fff;color:#101827;text-align:left;font-family:Inter,ui-sans-serif,system-ui,sans-serif}
+.lotle-sample-status{height:23px;display:flex;align-items:center;justify-content:space-between;padding:0 13px;font-size:9px;font-weight:800}
+.lotle-sample-header{height:48px;display:flex;align-items:center;gap:8px;padding:0 11px;border-bottom:1px solid #eef0f3}
+.lotle-sample-mark{width:30px;height:30px;display:grid;place-items:center;flex:none;border-radius:9px;background:#0a0f1e;color:#fff;font-size:9px;font-weight:850}
+.lotle-sample-header>div{display:flex;min-width:0;flex-direction:column;gap:2px}
+.lotle-sample-header strong{font-size:11px;font-weight:800}
+.lotle-sample-header small{color:#6b7280;font-size:8px}
+.lotle-sample-menu{margin-left:auto;color:#5d6674;font-size:13px}
+.lotle-sample-hero{height:28%;display:flex;flex-direction:column;justify-content:center;gap:5px;padding:12px 13px;background:linear-gradient(145deg,#111827,#364152);color:#fff}
+.lotle-sample-hero>span{font-size:7px;font-weight:850;letter-spacing:.12em;color:#d8dee8}
+.lotle-sample-hero strong{font-size:clamp(15px,4.6vw,21px);line-height:1.05;letter-spacing:-.04em}
+.lotle-sample-hero small{font-size:8px;color:#e0e5ec}
+.lotle-sample-section{display:flex;align-items:center;justify-content:space-between;padding:11px 11px 7px}
+.lotle-sample-section>div{display:grid;gap:2px}
+.lotle-sample-section strong{font-size:10px}
+.lotle-sample-section small,.lotle-sample-section>span{font-size:7px;color:#77808d}
+.lotle-sample-car{margin:0 10px;border:1px solid #e9edf1;border-radius:11px;overflow:hidden}
+.lotle-sample-car-art{height:94px;display:grid;place-items:center;background:linear-gradient(145deg,#e8edf1,#cbd3db)}
+.lotle-sample-car-shape{position:relative;width:72%;height:21px;margin-top:15px;border-radius:45% 38% 14% 14%;background:linear-gradient(180deg,#687585,#273343);box-shadow:0 8px 8px rgba(20,30,40,.15)}
+.lotle-sample-car-shape:before{content:"";position:absolute;left:22%;top:-14px;width:53%;height:18px;border-radius:70% 65% 0 0;background:linear-gradient(180deg,#aab6c2,#647181)}
+.lotle-sample-car-shape:after{content:"";position:absolute;left:12%;right:12%;bottom:-5px;height:9px;border-radius:99px;background:radial-gradient(circle at 18% 50%,#1c2632 0 4px,transparent 4.5px),radial-gradient(circle at 82% 50%,#1c2632 0 4px,transparent 4.5px)}
+.lotle-sample-car-copy{display:grid;gap:3px;padding:8px 9px}
+.lotle-sample-car-copy strong{font-size:9px}
+.lotle-sample-car-copy small{font-size:7px;color:#697383}
+.lotle-sample-car-copy b{font-size:7px;color:#3d536d}
+.lotle-sample-bottom{position:absolute;right:0;bottom:0;left:0;height:32px;display:flex;align-items:center;justify-content:space-around;border-top:1px solid #edf0f3;background:#fff;color:#4c5664;font-size:7px;font-weight:750}
+.lotle-start-welcome-caption{margin:0;color:#535d6b;font-size:11px;font-weight:650}
+.lotle-start-welcome-image{display:none}
+@media(max-width:380px){.lotle-start-welcome-phone{width:min(70vw,260px);border-radius:34px}.lotle-start-welcome-screen{border-radius:22px}.lotle-sample-car-art{height:78px}}
+.lotle-link-dots button:focus-visible{outline:2px solid #0a0f1e;outline-offset:1px}

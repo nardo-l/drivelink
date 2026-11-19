@@ -6,21 +6,19 @@ import './OnboardingKit.css';
 export function QuestionScreen(props: {
   children: React.ReactNode; step: number; total: number; heading: string; subtext?: string;
   onBack?: () => void; onContinue: () => void; canContinue: boolean; continueLabel?: string;
-  error?: string; busy?: boolean;
+  error?: string; busy?: boolean; footerSecondary?: React.ReactNode;
 }) {
-  const {children,step,total,heading,subtext,onBack,onContinue,canContinue,continueLabel='Continue',error,busy=false}=props;
-  return <main className="lotle-kit-screen lotle-start">
-    <header className="lotle-kit-header">
-      <button className="lotle-kit-back" type="button" onClick={onBack || (()=>undefined)} disabled={!onBack} aria-label="Go back"><ArrowLeft size={19}/></button>
-      <div className="lotle-kit-progress" role="progressbar" aria-valuemin={0} aria-valuemax={total} aria-valuenow={step} aria-label={'Step '+step+' of '+total}><span style={{width:Math.max(0,Math.min(100,step/total*100))+'%'}}/></div>
-      <span className="lotle-kit-brand">{name}</span>
+  const {children,step,total,heading,subtext,onBack,onContinue,canContinue,continueLabel='Continue',error,busy=false,footerSecondary}=props;
+  return <main className={"lotle-kit-screen lotle-start"+(step===0?" is-welcome":"")}>
+    <header className={"lotle-kit-header"+(step===0?" is-welcome":"")}>
+      {step===0?<span className="lotle-kit-brand">{name}</span>:<><button className="lotle-kit-back" type="button" onClick={onBack || (()=>undefined)} disabled={!onBack} aria-label="Go back"><ArrowLeft size={19}/></button><div className="lotle-kit-progress" role="progressbar" aria-valuemin={0} aria-valuemax={total} aria-valuenow={step} aria-label={'Step '+step+' of '+total}><span style={{width:Math.max(0,Math.min(100,step/total*100))+'%'}}/></div><span className="lotle-kit-brand">{name}</span></>}
     </header>
     <section className="lotle-kit-content">
       <div className="lotle-kit-copy"><h1>{heading}</h1>{subtext&&<p>{subtext}</p>}</div>
       {children}
       <p className="lotle-kit-error" role="alert" aria-live="polite">{error||''}</p>
     </section>
-    <footer className="lotle-kit-footer"><div className="lotle-kit-footer-fade"/><button className="lotle-kit-continue" type="button" onClick={onContinue} disabled={!canContinue||busy}>{busy?'Please wait…':continueLabel}</button></footer>
+    <footer className="lotle-kit-footer"><div className="lotle-kit-footer-fade"/><button className="lotle-kit-continue" type="button" onClick={onContinue} disabled={!canContinue||busy}>{busy?'Please wait…':continueLabel}</button>{footerSecondary&&<div className="lotle-kit-footer-secondary">{footerSecondary}</div>}</footer>
   </main>;
 }
 
