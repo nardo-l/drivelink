@@ -148,7 +148,7 @@ export const PwaInstallProvider: React.FC<React.PropsWithChildren> = ({ children
 
   useEffect(() => {
     if (manual || sheet || !accountId || !session.isLoggedIn || !session.dealershipId || !isSupabaseConfigured() || isInstalled || !canInstall) return;
-    const eligiblePath = currentPath.replace(/\\/+$/, '') || '/';
+    const eligiblePath = currentPath.replace(/\/+$/, '') || '/';
     if (!isInstallEligiblePath(eligiblePath)) return;
 
     const shownKey = accountKey + '_shown_session';
