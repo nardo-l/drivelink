@@ -14,6 +14,7 @@ import {planService} from '../services/planService';
 import type {Dealership} from '../types';
 import './SettingsPage.css';
 import { usePwaInstall } from '../context/PwaInstallContext';
+import { isReservedShowroomHandle } from '../utils/reservedShowroomHandles';
 
 type SheetKey='profile'|'branding'|'name'|'slug'|'contact'|'location'|'hours'|'terms'|'privacy'|'logout'|'delete'|null;
 type DealerDraft=Pick<Dealership,'name'|'city'|'address'|'phone'|'whatsapp'>;
@@ -34,7 +35,7 @@ export const SettingsPage:React.FC=()=>{
  const [deleteText,setDeleteText]=useState('');
  const [copied,setCopied]=useState(false);
  const [slugDraft,setSlugDraft]=useState(dealer.slug);
- const [slugAvailability,setSlugAvailability]=useState<'idle'|'checking'|'available'|'taken'>('idle');
+ const [slugAvailability,setSlugAvailability]=useState<'idle'|'checking'|'available'|'taken'|'reserved'>('idle');
  const logoInput=useRef<HTMLInputElement>(null),bannerInput=useRef<HTMLInputElement>(null);
  const initials=useMemo(()=>dealer.name.trim().split(/\\s+/).filter(Boolean).slice(0,2).map(x=>x[0]).join('').toUpperCase()||'DL',[dealer.name]);
  const showroomUrl=absoluteUrl('/'+encodeURIComponent(dealer.slug));
@@ -49,7 +50,7 @@ export const SettingsPage:React.FC=()=>{
   finally{setSaving(false);}
  };
  const saveSheet=async()=>{if(sheet==='profile')return saveProfile(draft);if(sheet==='name')return saveProfile({name:draft.name});if(sheet==='contact')return saveProfile({phone:draft.phone,whatsapp:draft.whatsapp});if(sheet==='location')return saveProfile({city:draft.city,address:draft.address});};
- useEffect(()=>{if(sheet!=='slug')return;const clean=slugDraft.toLowerCase().trim().replace(/[^a-z0-9-]+/g,'-').replace(/-+/g,'-').replace(/^-|-$/g,'');if(clean.length<3){setSlugAvailability('idle');return;}setSlugAvailability('checking');let active=true;const timer=window.setTimeout(()=>{supabaseService.checkHandleAvailability(clean).then(ok=>{if(active)setSlugAvailability(ok?'available':'taken');}).catch(()=>{if(active)setSlugAvailability('taken');});},300);return()=>{active=false;window.clearTimeout(timer);};},[slugDraft,sheet]);
+ useEffect(()=>{if(sheet!=='slug')return;const clean=slugDraft.toLowerCase().trim().replace(/[^a-z0-9-]+/g,'-').replace(/-+/g,'-').replace(/^-|-$/g,'');if(clean.length<3){setSlugAvailability('idle');return;}if(isReservedShowroomHandle(clean)){setSlugAvailability('reserved');return;}setSlugAvailability('checking');let active=true;const timer=window.setTimeout(()=>{supabaseService.checkHandleAvailability(clean).then(ok=>{if(active)setSlugAvailability(ok?'available':'taken');}).catch(()=>{if(active)setSlugAvailability('taken');});},300);return()=>{active=false;window.clearTimeout(timer);};},[slugDraft,sheet]);
  const saveSlug=async()=>{if(slugAvailability!=='available')return;setSaving(true);try{const updated=await supabaseService.updateDealershipSlug(slugDraft);setDealer(updated);storageService.saveDealership(updated);setSheet(null);showToast('Showroom link updated');}catch(error){showToast(error instanceof Error?error.message:'Could not update your showroom link.');}finally{setSaving(false);}};
  const copyLink=async()=>{try{await navigator.clipboard.writeText(showroomUrl);setCopied(true);showToast('Showroom link copied');window.setTimeout(()=>setCopied(false),1800);}catch{showToast('Could not copy the showroom link');}};
  const togglePush=async()=>{if(pushBusy)return;setPushBusy(true);try{if(pushEnabled){await notificationService.disablePush(dealer.id);setPushEnabled(false);showToast('Saved');}else{await notificationService.enablePush(dealer.id,true);setPushEnabled(true);setPermission(typeof Notification==='undefined'?'default':Notification.permission);showToast('Saved');}}catch(error){setPermission(typeof Notification==='undefined'?'default':Notification.permission);showToast(error instanceof Error?error.message:'Could not update notifications.');}finally{setPushBusy(false);}};
@@ -123,7 +124,7 @@ export const SettingsPage:React.FC=()=>{
     </div>}
     {sheet==='slug'&&<div className="dl-settings-sheet-body">
      <label>Showroom link <span>{showroomHost}/</span><input value={slugDraft} onChange={e=>setSlugDraft(e.target.value.toLowerCase().replace(/[^a-z0-9-]+/g,'-').replace(/-+/g,'-').replace(/^-|-$/g,''))} maxLength={63} autoCapitalize="none" autoCorrect="off" spellCheck={false}/></label>
-     <p className="dl-settings-note">{slugAvailability==='checking'?'Checking availability…':slugAvailability==='available'?showroomHost+'/'+slugDraft+' is available':slugAvailability==='taken'?'That link is taken or reserved. Try another.':'Use 3–63 lowercase letters or numbers, with single hyphens between words.'}</p>
+     <p className="dl-settings-note">{slugAvailability==='reserved'?'That link name is reserved. Try another.':slugAvailability==='checking'?'Checking availability…':slugAvailability==='available'?showroomHost+'/'+slugDraft+' is available':slugAvailability==='taken'?'That link is taken. Try another.':'Use 3–63 lowercase letters or numbers, with single hyphens between words.'}</p>
      <button type="button" className="dl-settings-primary" disabled={saving||slugAvailability!=='available'} onClick={()=>void saveSlug()}>{saving?<Loader2 className="spin" size={16}/>:null}Save showroom link</button>
     </div>}
     {sheet==='branding'&&<div className="dl-settings-sheet-body dl-settings-branding">

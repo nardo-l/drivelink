@@ -37,6 +37,12 @@ function LegacyStorefrontRedirect({ slug }: { slug: string }) {
   return null;
 }
 
+function DashboardPathRedirect() {
+  const { navigate } = useNavigation();
+  React.useEffect(() => { navigate('/app'); }, [navigate]);
+  return null;
+}
+
 function AppContent() {
   const safeDashboard = () => <ErrorBoundary label="dashboard"><DashboardPage /></ErrorBoundary>;
   const { currentPath, toast } = useNavigation();
@@ -142,6 +148,7 @@ function AppContent() {
 
     if (currentPath === '/start') return <StartOnboardingPage />;
     if (currentPath === '/welcome') return <WelcomePage />;
+    if (currentPath === '/dashboard') return <DashboardPathRedirect />;
 
     // Public landing page stays separate from the current onboarding flow.
     // Returning dealers with a completed setup go straight to their dashboard.

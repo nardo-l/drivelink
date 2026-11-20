@@ -217,7 +217,7 @@ export const PublicShowroomPage: React.FC<PublicShowroomPageProps> = ({ slug, pr
   }, [dealer, vehicles, previewDealership]);
 
   if (loading) return <main className="dl-public-showroom"><div className="dl-ps-loading"><span /></div></main>;
-  if (!dealer) return <main className="dl-public-showroom dl-ps-unavailable"><div><h1>Showroom unavailable</h1><p>This dealership link may be incorrect or unpublished.</p></div></main>;
+  if (!dealer) return <main className="dl-public-showroom dl-ps-unavailable"><div><h1>Showroom unavailable</h1><p>We couldn't find this showroom. The link may be wrong, or the dealer hasn't published it yet.</p><button type="button" onClick={() => navigate('/')}>Go to Lotlé</button></div></main>;
 
   const initials = dealer.name.trim().split(/\s+/).slice(0, 2).map(x => x[0]).join('').toUpperCase() || 'DL';
   const city = [dealer.city, dealer.country].filter(Boolean).join(', ');
