@@ -56,7 +56,6 @@ export const PwaInstallProvider: React.FC<React.PropsWithChildren> = ({ children
   const isInstalled = installed || window.matchMedia('(display-mode: standalone)').matches || (navigator as any).standalone === true;
   const successShown = useRef(false);
   const installedSeen = useRef(isInstalled);
-  const visitCounted = useRef(false);
 
   const closeInstall = useCallback(() => { setSheet(null); setBusy(false); setManual(false); },[]);
   const openInstall = useCallback(() => {
