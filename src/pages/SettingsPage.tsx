@@ -21,7 +21,7 @@ type DealerDraft=Pick<Dealership,'name'|'city'|'address'|'phone'|'whatsapp'>;
 
 export const SettingsPage:React.FC=()=>{
  const {navigate,showToast}=useNavigation();
- const {openInstall,isInstalled,canInstall,isIos}=usePwaInstall();
+ const {openInstall,isInstalled,canInstall}=usePwaInstall();
  const [dealer,setDealer]=useState<Dealership>(()=>storageService.getDealership());
  const [sheet,setSheet]=useState<SheetKey>(null);
  const [draft,setDraft]=useState<DealerDraft>(()=>({name:dealer.name,city:dealer.city,address:dealer.address||'',phone:dealer.phone,whatsapp:dealer.whatsapp}));
@@ -93,13 +93,13 @@ export const SettingsPage:React.FC=()=>{
     <Row icon={ExternalLink} label="Manage billing" value="Plans and payment history" onClick={()=>navigate('/app/billing')}/>
    </section>
 
-   {(isInstalled||canInstall||isIos)&&<section className="dl-settings-group"><h2>App</h2><Row icon={isInstalled?Check:Smartphone} label={isInstalled?"App installed":"Install Lotlé"} value={isInstalled?"Installed":canInstall?"Ready to install":"Add Lotlé to your Home Screen"} onClick={()=>{if(!isInstalled&&(canInstall||isIos))openInstall();}}/></section>}
+   {(isInstalled||canInstall)&&<section className="dl-settings-group"><h2>App</h2><Row icon={isInstalled?Check:Smartphone} label={isInstalled?"App installed":"Install Lotlé"} value={isInstalled?"Installed":"Ready to install"} onClick={()=>{if(!isInstalled&&canInstall)openInstall();}}/></section>}
 
    <section className="dl-settings-group"><h2>Notifications</h2>
     <div className="dl-settings-toggle-row"><span className="dl-settings-row-icon"><Bell size={17}/></span><span className="dl-settings-row-copy"><strong>Push notifications</strong><small>{permission==='denied'?'Blocked':pushEnabled?'On':'Off'} · Manage your Lotlé alerts</small></span><button type="button" role="switch" aria-checked={pushEnabled} disabled={pushBusy||!notificationService.isPushSupported()} onClick={togglePush} className={'dl-settings-switch'+(pushEnabled?' active':'')}><span/></button></div>
     <button type="button" onClick={()=>navigate('/app/notifications')} className="dl-settings-help flex w-full items-center justify-between text-left">Manage notification categories and quiet hours <ChevronRight size={15}/></button>
     {permission==='denied'&&<p className="dl-settings-help">Notifications are blocked by your browser. Open your browser or device Settings → Site settings → Notifications, allow {name}, then return here and switch notifications on.</p>}
-    {!notificationService.isPushSupported()&&<div className="dl-settings-help">This browser does not currently support push notifications. <button type="button" onClick={openInstall} className="font-bold underline">Install Lotlé</button> or use a supported browser.</div>}
+    {!notificationService.isPushSupported()&&<div className="dl-settings-help">This browser does not currently support push notifications. You can still manage enquiries in your Lotlé dashboard.</div>}
    </section>
 
    <section className="dl-settings-group"><h2>Support</h2>
