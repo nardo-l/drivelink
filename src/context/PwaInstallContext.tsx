@@ -11,6 +11,7 @@ let deferredPrompt: InstallPromptEvent | null = null;
 let installed = false;
 const listeners = new Set<() => void>();
 const notify = () => listeners.forEach(listener => listener());
+const isInstallEligiblePath = (path:string) => /^\/app(?:\/(?:analytics|vehicles(?:\/.*)?|enquiries|more|settings|storefront|notifications))?\/?$/.test(path);
 const getPwaPath = () => {
   const hash = window.location.hash;
   return hash.startsWith('#/') ? hash.slice(1).split('?')[0] : window.location.pathname;
@@ -64,7 +65,7 @@ export const PwaInstallProvider: React.FC<React.PropsWithChildren> = ({ children
     // Only show this sheet when Chrome has supplied its native install prompt,
     // or show Home Screen instructions on iOS.
     if (!canInstall && !isIos) return;
-    if (!/^\/app(?:\/(?:analytics|vehicles|enquiries|more|settings|storefront|notifications))?\/?$/.test(currentPath)) return;
+    if (!isInstallEligiblePath(currentPath))) return;
     if (document.querySelector('[role="dialog"][aria-modal="true"]')) return;
     setManual(true);
     if (accountKey) sessionStorage.setItem(accountKey + '_shown_session','1');
@@ -151,7 +152,7 @@ export const PwaInstallProvider: React.FC<React.PropsWithChildren> = ({ children
 
   useEffect(() => {
     if (manual || sheet || !accountId || !session.isLoggedIn || !session.dealershipId || !isSupabaseConfigured() || isInstalled) return;
-    if (!/^\/app(?:\/(?:analytics|vehicles|enquiries|more|settings|storefront|notifications))?\/?$/.test(currentPath)) {
+    if (!isInstallEligiblePath(currentPath))) {
       visitCounted.current = false;
       return;
     }

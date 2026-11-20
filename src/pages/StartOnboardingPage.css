@@ -131,3 +131,12 @@
 .lotle-start-notifications-copy strong{font-size:16px;font-weight:800;letter-spacing:-.02em}
 .lotle-start-notifications-copy p,.lotle-start-notifications-note{margin:0;color:#687080;font-size:13px;line-height:1.6}
 .lotle-start-notifications-note{padding-top:12px;border-top:1px solid #e5e8ed}
+
+
+/* /start app installation step */
+.lotle-start-install{display:flex;flex-direction:column;align-items:center;gap:16px;padding:22px 18px;border:1px solid #e8ebef;border-radius:22px;background:#fafbfc;text-align:center}
+.lotle-start-install-icon{width:58px;height:58px;display:grid;place-items:center;border-radius:19px;background:#edf0f4;color:#0a0f1e}
+.lotle-start-install p{margin:0;color:#687080;font-size:13px;line-height:1.6}
+.lotle-start-install ol{width:100%;display:grid;gap:12px;margin:0;padding:0;list-style:none;text-align:left}
+.lotle-start-install li{display:flex;align-items:flex-start;gap:11px;color:#303a49;font-size:13px;line-height:1.5}
+.lotle-start-install li span{width:23px;height:23px;display:grid;flex:none;place-items:center;border-radius:50%;background:#e8ebef;color:#0a0f1e;font-size:11px;font-weight:800}
