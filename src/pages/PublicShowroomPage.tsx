@@ -154,7 +154,7 @@ export const PublicShowroomPage: React.FC<PublicShowroomPageProps> = ({ slug, pr
   }), [publicVehicles, savedOnly, saved, query, make, minPrice, maxPrice, yearFrom, yearTo, transmission, fuel]);
 
   useEffect(() => {
-    if (!dealer) return;
+    if (!dealer || previewDealership) return;
     const availableCount = vehicles.filter(v => v.status === 'available').length;
     document.title = pageTitle(dealer.name + ' cars');
     const setMeta = (key: string, value: string, property = false) => {
@@ -214,7 +214,7 @@ export const PublicShowroomPage: React.FC<PublicShowroomPageProps> = ({ slug, pr
       document.title = homeTitle;
       document.querySelector('#dl-public-showroom-jsonld')?.remove();
     };
-  }, [dealer, vehicles]);
+  }, [dealer, vehicles, previewDealership]);
 
   if (loading) return <main className="dl-public-showroom"><div className="dl-ps-loading"><span /></div></main>;
   if (!dealer) return <main className="dl-public-showroom dl-ps-unavailable"><div><h1>Showroom unavailable</h1><p>This dealership link may be incorrect or unpublished.</p></div></main>;
@@ -315,14 +315,14 @@ export const PublicShowroomPage: React.FC<PublicShowroomPageProps> = ({ slug, pr
         <div className="dl-ps-hero-content">
           {city && <span className="dl-ps-location-pill"><MapPin size={13} />{city}</span>}
           <h1>{dealer.tagline?.trim() && dealer.tagline.trim() !== 'Quality vehicles. Fair prices.' ? dealer.tagline.trim() : 'Find your next car.'}</h1>
-          {availableCount > 0 && <p>{countLabel(availableCount)} available</p>}
+          {!previewDealership && availableCount > 0 && <p>{countLabel(availableCount)} available</p>}
           <button type="button" className="dl-ps-browse-button" onClick={browse}>Browse inventory <ChevronRight size={17} /></button>
         </div>
       </section>
       )}
 
       <div className="dl-ps-container">
-        {activeTab === 'home' && availableCount > 0 && (
+        {activeTab === 'home' && availableCount > 0 && !previewDealership && (
         <section className="dl-ps-trust-strip" aria-label="Dealership information">
           <div><strong>{availableCount}</strong><span>cars in stock</span></div>
           {waNumber && <div><strong>Replies on</strong><span>WhatsApp</span></div>}
