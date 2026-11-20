@@ -225,7 +225,7 @@ export const PwaInstallProvider: React.FC<React.PropsWithChildren> = ({ children
 };
 
 const PwaInstallSheet: React.FC<{onDismiss:()=>void;onClose:()=>void}> = ({onDismiss,onClose}) => {
-  const {canInstall,isInstalled,busy,sheet,promptInstall} = usePwaInstall();
+  const {canInstall,busy,sheet,promptInstall} = usePwaInstall();
   const panel = useRef<HTMLElement>(null);
   const touchY = useRef<number|null>(null);
   useEffect(() => {
