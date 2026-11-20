@@ -124,9 +124,9 @@ export const PwaInstallProvider: React.FC<React.PropsWithChildren> = ({ children
         window.dispatchEvent(new CustomEvent('lotle:pwa-analytics',{detail:{event:'accepted'}}));
       } else {
         if (accountKey) {
-          const count = Number(localStorage.getItem(accountKey + '_dismissals') || 0) + 1;
-          localStorage.setItem(accountKey + '_dismissals',String(count));
-          localStorage.setItem(accountKey + '_until',String(Date.now() + 14*24*60*60*1000));
+          const count = Number(localStorage.getItem(accountKey + '_dismissals_v2') || 0) + 1;
+          localStorage.setItem(accountKey + '_dismissals_v2',String(count));
+          localStorage.setItem(accountKey + '_until_v2',String(Date.now() + 14*24*60*60*1000));
         }
         window.dispatchEvent(new CustomEvent('lotle:pwa-analytics',{detail:{event:'dismissed'}}));
         closeInstall();
@@ -154,8 +154,8 @@ export const PwaInstallProvider: React.FC<React.PropsWithChildren> = ({ children
     const shownKey = accountKey + '_shown_session';
     if (sessionStorage.getItem(shownKey)) return;
 
-    const dismissals = Number(localStorage.getItem(accountKey + '_dismissals') || 0);
-    const until = Number(localStorage.getItem(accountKey + '_until') || 0);
+    const dismissals = Number(localStorage.getItem(accountKey + '_dismissals_v2') || 0);
+    const until = Number(localStorage.getItem(accountKey + '_until_v2') || 0);
     if (dismissals >= 3 || Date.now() < until) return;
 
     let active = true;
@@ -182,9 +182,9 @@ export const PwaInstallProvider: React.FC<React.PropsWithChildren> = ({ children
 
   const dismiss = useCallback(() => {
     if (accountKey) {
-      const count = Number(localStorage.getItem(accountKey + '_dismissals') || 0) + 1;
-      localStorage.setItem(accountKey + '_dismissals',String(count));
-      localStorage.setItem(accountKey + '_until',String(Date.now() + 14*24*60*60*1000));
+      const count = Number(localStorage.getItem(accountKey + '_dismissals_v2') || 0) + 1;
+      localStorage.setItem(accountKey + '_dismissals_v2',String(count));
+      localStorage.setItem(accountKey + '_until_v2',String(Date.now() + 14*24*60*60*1000));
     }
     window.dispatchEvent(new CustomEvent('lotle:pwa-analytics',{detail:{event:'dismissed'}}));
     closeInstall();
