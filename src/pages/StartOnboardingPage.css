@@ -93,8 +93,6 @@
 @media(max-width:380px){.lotle-link-slide-device{height:420px}.lotle-mock-phone{width:240px;height:412px}.lotle-mock-grid i{height:65px}}
 @media(prefers-reduced-motion:reduce){.lotle-link-carousel-track{scroll-behavior:auto}}
 
-.lotle-start-google{width:100%;min-height:50px;margin-top:5px;border:1px solid #e4e4e4;border-radius:15px;background:#fff;color:#171717;font-size:14px;font-weight:700}
-.lotle-start-google:disabled{opacity:.6}
  .lotle-start-skip{align-self:center;min-height:44px;padding:9px 12px;border:0;background:transparent;color:#596273;font-size:13px;font-weight:700;text-decoration:underline;text-underline-offset:3px}
 .lotle-mock-chat-out span{display:block;margin-top:4px;color:#1769aa;font-weight:700;overflow-wrap:anywhere}
 .lotle-mock-story-top strong{max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
