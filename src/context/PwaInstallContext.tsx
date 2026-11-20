@@ -148,67 +148,38 @@ export const PwaInstallProvider: React.FC<React.PropsWithChildren> = ({ children
   },[isInstalled,accountKey,sheet,closeInstall]);
 
   useEffect(() => {
-    if (manual || sheet || !accountId || !session.isLoggedIn || !session.dealershipId || !isSupabaseConfigured() || isInstalled) return;
-    if (!isInstallEligiblePath(currentPath)) {
-      visitCounted.current = false;
-      return;
-    }
+    if (manual || sheet || !accountId || !session.isLoggedIn || !session.dealershipId || !isSupabaseConfigured() || isInstalled || !canInstall) return;
+    const eligiblePath = currentPath.replace(/\\/+$/, '') || '/';
+    if (!isInstallEligiblePath(eligiblePath)) return;
+
     const shownKey = accountKey + '_shown_session';
-    const visitsKey = accountKey + '_visits';
-    let visits = Number(localStorage.getItem(visitsKey) || 0);
-    if (!visitCounted.current) {
-      visitCounted.current = true;
-      visits += 1;
-      localStorage.setItem(visitsKey,String(visits));
-    }
     if (sessionStorage.getItem(shownKey)) return;
+
+    const dismissals = Number(localStorage.getItem(accountKey + '_dismissals') || 0);
+    const until = Number(localStorage.getItem(accountKey + '_until') || 0);
+    if (dismissals >= 3 || Date.now() < until) return;
+
     let active = true;
-    let checking = false;
     let retryTimer: number | undefined;
-    const checkMoment = async () => {
-      if (checking) return;
-      checking = true;
-      try {
-        const [vehicles,enquiries] = await Promise.all([storageService.getVehiclesAsync(),storageService.getEnquiriesAsync()]);
-        const momentKey = accountKey + '_value_moment';
-        const snapshot = {
-          vehicles: vehicles.filter(vehicle => vehicle.status === 'available').length,
-          enquiries: enquiries.length,
-        };
-        const baselineKey = accountKey + '_baseline';
-        const baseline = localStorage.getItem(baselineKey);
-        if (!baseline) {
-          localStorage.setItem(baselineKey,JSON.stringify(snapshot));
-        } else {
-          try {
-            const previous = JSON.parse(baseline);
-            if (snapshot.vehicles > previous.vehicles || snapshot.enquiries > previous.enquiries) localStorage.setItem(momentKey,'1');
-            localStorage.setItem(baselineKey,JSON.stringify({
-              vehicles:Math.max(snapshot.vehicles,previous.vehicles || 0),
-              enquiries:Math.max(snapshot.enquiries,previous.enquiries || 0),
-            }));
-          } catch { localStorage.setItem(baselineKey,JSON.stringify(snapshot)); }
-        }
-        // Offer the install sheet as soon as a signed-in dealer lands on the dashboard.
-        // Dismissal limits, the 14-day snooze and once-per-session still apply.
-        const hasMoment = true;
-        const dismissals = Number(localStorage.getItem(accountKey + '_dismissals') || 0);
-        const until = Number(localStorage.getItem(accountKey + '_until') || 0);
-        if (!active || !hasMoment || !canInstall || currentPath !== '/app' || dismissals >= 3 || Date.now() < until) return;
-        if (document.querySelector('[role="dialog"][aria-modal="true"]')) {
-          retryTimer = window.setTimeout(() => { void checkMoment(); },700);
-          return;
-        }
-        if (sessionStorage.getItem(shownKey)) return;
-        sessionStorage.setItem(shownKey,'1');
-        window.dispatchEvent(new CustomEvent('lotle:pwa-analytics',{detail:{event:'shown'}}));
-        setSheet('install');
-      } catch {} finally { checking = false; }
+    const showWhenClear = () => {
+      if (!active || sessionStorage.getItem(shownKey)) return;
+      if (document.querySelector('[role="dialog"][aria-modal="true"]')) {
+        retryTimer = window.setTimeout(showWhenClear, 700);
+        return;
+      }
+      sessionStorage.setItem(shownKey, '1');
+      window.dispatchEvent(new CustomEvent('lotle:pwa-analytics', { detail: { event: 'shown' } }));
+      setSheet('install');
     };
-    void checkMoment();
-    const poll = window.setInterval(() => { if (localStorage.getItem(accountKey + '_value_moment') !== '1') void checkMoment(); },30000);
-    return () => { active = false; window.clearInterval(poll); if (retryTimer) window.clearTimeout(retryTimer); };
-  },[currentPath,accountId,session.isLoggedIn,session.dealershipId,accountKey,canInstall,isInstalled,manual,sheet,revision]);
+
+    // Do not wait for vehicle/enquiry API requests: installation is independent
+    // of dashboard data, and a failed request must never suppress the prompt.
+    showWhenClear();
+    return () => {
+      active = false;
+      if (retryTimer) window.clearTimeout(retryTimer);
+    };
+  }, [currentPath, accountId, session.isLoggedIn, session.dealershipId, accountKey, canInstall, isInstalled, manual, sheet]);
 
   const dismiss = useCallback(() => {
     if (accountKey) {
