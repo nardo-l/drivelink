@@ -7,6 +7,7 @@ import { LoginPage } from './pages/LoginPage';
 import { ForgotPasswordPage, ResetPasswordPage } from './pages/PasswordRecoveryPages';
 import { OnboardingFlow } from './pages/ConversationalOnboardingFlow';
 import { StartOnboardingPage } from './pages/StartOnboardingPage';
+import { StartTransitionLoading, type StartSetupPhase } from './components/onboarding/StartTransitionLoading';
 import { DashboardPage } from './pages/DashboardPage';
 import { AnalyticsPage } from './pages/AnalyticsPage';
 import { VehiclesListPage } from './pages/VehiclesListPage';
@@ -51,6 +52,15 @@ function AppContent() {
     updateBrandMetadata({ title: currentPath === '/' || currentPath === '' ? homeTitle : pageTitle(page) });
   }, [currentPath]);
   const [sessionChecked, setSessionChecked] = React.useState(false);
+  const [startSetupProgress, setStartSetupProgress] = React.useState<{phase:StartSetupPhase;error:string;startedAt?:number}>(() => {
+    try { const saved = JSON.parse(localStorage.getItem('lotle_start_draft_v1') || '{}'); return { phase: saved.setupStage || 'idle', error: saved.setupError || '', startedAt: saved.setupStartedAt }; }
+    catch { return { phase: 'idle', error: '' }; }
+  });
+  React.useEffect(() => {
+    const updateProgress = (event: Event) => { const detail = (event as CustomEvent<{phase:StartSetupPhase;error:string;startedAt?:number}>).detail; if (detail) setStartSetupProgress(detail); };
+    window.addEventListener('lotle:start-setup-progress', updateProgress);
+    return () => window.removeEventListener('lotle:start-setup-progress', updateProgress);
+  }, []);
   React.useEffect(() => { if (sessionChecked) window.dispatchEvent(new Event('lotle:session-updated')); }, [sessionChecked]);
   const isDemo = storageService.isDemoModeActive();
   const isConfigured = isSupabaseConfigured();
@@ -135,7 +145,7 @@ function AppContent() {
     const session = storageService.getUserSession();
     const isProtectedRoute = currentPath.startsWith('/app');
     if (forceNotificationsPreview) return <OnboardingFlow />;
-    if (isLive && !sessionChecked) {
+    if (isLive && !sessionChecked && currentPath !== '/start') {
       return <div className="min-h-[100dvh] bg-[#f4f4f3] px-5 py-8" aria-label="Loading account">
         <div className="mx-auto w-full max-w-[520px] animate-pulse space-y-5">
           <div className="h-10 w-36 rounded-xl bg-gray-200" />
@@ -146,7 +156,7 @@ function AppContent() {
       </div>;
     }
 
-    if (currentPath === '/start') return <StartOnboardingPage />;
+    if (currentPath === '/start') return <div style={{position:'relative',minHeight:'100dvh'}}><StartOnboardingPage />{isLive&&!sessionChecked&&startSetupProgress.phase!=='idle'&&startSetupProgress.phase!=='failed'&&startSetupProgress.phase!=='needs-sign-in'&&<div style={{position:'absolute',inset:0,zIndex:100}}><StartTransitionLoading phase={startSetupProgress.phase} startedAt={startSetupProgress.startedAt}/></div>}</div>;
     if (currentPath === '/welcome') return <WelcomePage />;
     if (currentPath === '/dashboard') return <DashboardPathRedirect />;
 

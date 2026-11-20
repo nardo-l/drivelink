@@ -1,0 +1,25 @@
+.lotle-start-transition{position:relative;isolation:isolate;display:grid;width:100%;min-height:100dvh;height:100dvh;overflow:hidden;place-items:center;box-sizing:border-box;padding:calc(28px + env(safe-area-inset-top,0px)) 20px calc(28px + env(safe-area-inset-bottom,0px));background:#fff;color:#0a0f1e}
+.lotle-start-transition-glow{position:absolute;z-index:-1;inset:0;background:radial-gradient(ellipse 78% 60% at 50% 34%,rgba(213,204,255,.48) 0%,rgba(245,220,224,.32) 48%,rgba(255,255,255,0) 78%);pointer-events:none}
+.lotle-start-transition-content{display:flex;width:min(100%,440px);flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.lotle-start-transition-logo{width:112px;flex:none;margin-bottom:clamp(34px,7vh,58px)}
+.lotle-start-transition-indicator{position:relative;width:42px;height:42px;flex:none;margin-bottom:24px;border:3px solid rgba(10,15,30,.12);border-top-color:#0a0f1e;border-radius:50%;animation:lotle-start-transition-spin .85s linear infinite}
+.lotle-start-transition-indicator span{position:absolute;inset:7px;border:1px solid rgba(10,15,30,.12);border-radius:50%}
+.lotle-start-transition h1{max-width:100%;margin:0;color:#0a0f1e;font-size:clamp(27px,6vw,34px);font-weight:850;letter-spacing:-.055em;line-height:1.08}
+.lotle-start-transition-subtext,.lotle-start-transition-result>p{margin:10px 0 0;color:#687080;font-size:14px;line-height:1.55}
+.lotle-start-transition-steps{display:grid;width:min(100%,360px);gap:14px;margin:34px 0 0;padding:0;list-style:none;text-align:left}
+.lotle-start-transition-steps li{display:flex;min-width:0;align-items:center;gap:12px;color:#737b88;font-size:14px;line-height:1.4}
+.lotle-start-transition-steps li.is-active{color:#0a0f1e;font-weight:700}
+.lotle-start-transition-steps li.is-done{color:#4b5563}
+.lotle-start-transition-step-icon{display:grid;width:23px;height:23px;flex:none;place-items:center;border:1.5px solid #d8dce3;border-radius:50%;box-sizing:border-box}
+.lotle-start-transition .is-active .lotle-start-transition-step-icon{border-color:#0a0f1e}
+.lotle-start-transition .is-active .lotle-start-transition-step-icon span{width:7px;height:7px;border-radius:50%;background:#0a0f1e}
+.lotle-start-transition .is-done .lotle-start-transition-step-icon{border-color:#0a0f1e;background:#0a0f1e;color:#fff}
+.lotle-start-transition-slow{margin:24px 0 0;color:#626b79;font-size:13px;line-height:1.5}
+.lotle-start-transition-result{width:100%;display:flex;flex-direction:column;align-items:center}
+.lotle-start-transition-actions{display:grid;width:min(100%,360px);gap:10px;margin-top:28px}
+.lotle-start-transition-actions button{min-height:50px;padding:12px 18px;border:0;border-radius:999px;background:#0a0f1e;color:#fff;font-size:14px;font-weight:750;cursor:pointer}
+.lotle-start-transition-actions .lotle-start-transition-secondary{border:1px solid #dfe2e8;background:#fff;color:#293140}
+.lotle-start-transition-actions button:focus-visible{outline:3px solid #8c7bea;outline-offset:3px}
+@keyframes lotle-start-transition-spin{to{transform:rotate(360deg)}}
+@media(max-width:380px){.lotle-start-transition{padding-right:18px;padding-left:18px}.lotle-start-transition-logo{margin-bottom:32px}.lotle-start-transition-steps{gap:12px;margin-top:28px}.lotle-start-transition-steps li{font-size:13px}}
+@media(prefers-reduced-motion:reduce){.lotle-start-transition-indicator{animation:none;border-color:#0a0f1e}.lotle-start-transition-indicator span{inset:7px;border:2px solid #0a0f1e}}
