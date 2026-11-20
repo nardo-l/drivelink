@@ -5,7 +5,6 @@ import {AnswerCard,InsightCard,QuestionScreen,SegmentedToggle,TextField,WheelPic
 import {ShowroomBrandingEditor} from '../components/ShowroomBrandingEditor';
 import {Logo} from '../components/common/Logo';
 import {isReservedShowroomHandle} from '../utils/reservedShowroomHandles';
-import {PublicShowroomPage} from './PublicShowroomPage';
 import {supabase,isSupabaseConfigured} from '../lib/supabase';
 import {supabaseService} from '../services/supabaseService';
 import {storageService} from '../services/storage';
@@ -30,12 +29,6 @@ const onboardingVehicleImages=[
 ];
 const STEPS:Step[]=['welcome','role','cars','channels','headache','source','insight','location','currency','dealership','whatsapp','slug','explainer','account','branding','notifications','install','final'];
 const CITIES:Record<Country,string[]>={Zimbabwe:['Harare','Bulawayo','Mutare','Gweru','Masvingo','Kwekwe','Kadoma','Chinhoyi','Victoria Falls','Other'],'South Africa':['Johannesburg','Cape Town','Durban','Pretoria','Gqeberha','Bloemfontein','East London','Polokwane','Nelspruit','Other']};
-const exampleDealership:Dealership={id:'example-sample-motors',name:'Sample Motors',slug:'sample-motors',tagline:'Find your next car.',bio:'A fictional example showroom for the Lotlé onboarding preview.',stickerText:'',country:'Zimbabwe',city:'Harare',address:'Borrowdale, Harare',phone:'+263771234567',whatsapp:'263771234567',email:'hello@example.invalid',currency:'USD',template:'classic',isVerified:false,isPublished:true,storefrontViews:0,totalEnquiries:0};
-const exampleVehicles:Vehicle[]=[
- {id:'example-toyota-aqua',dealershipId:'example-sample-motors',make:'Toyota',model:'Aqua S',year:2019,price:10900,currency:'USD',mileageKm:64000,transmission:'Automatic',fuel:'Hybrid',engineSize:'1.5L',colour:'Pearl White',condition:'Ex-Japan Import',dutyStatus:'Duty Paid & Registered',status:'available',description:'Well-kept hybrid hatchback with automatic transmission and economical 1.5L engine.',photos:[],features:['Hybrid','Automatic','1.5L'],createdAt:'2026-11-03T09:00:00.000Z',updatedAt:'2026-11-03T09:00:00.000Z'},
- {id:'example-honda-fit',dealershipId:'example-sample-motors',make:'Honda',model:'Fit Hybrid',year:2018,price:8750,currency:'USD',mileageKm:72000,transmission:'Automatic',fuel:'Hybrid',engineSize:'1.5L',colour:'Silver',condition:'Ex-Japan Import',dutyStatus:'Duty Paid & Registered',status:'available',description:'Practical compact hatchback with a spacious cabin and efficient hybrid drivetrain.',photos:[],features:['Hybrid','Automatic','1.5L'],createdAt:'2026-11-02T09:00:00.000Z',updatedAt:'2026-11-02T09:00:00.000Z'},
- {id:'example-toyota-hilux',dealershipId:'example-sample-motors',make:'Toyota',model:'Hilux GD-6 Double Cab',year:2021,price:36500,currency:'USD',mileageKm:58000,transmission:'Automatic',fuel:'Diesel',engineSize:'2.8L',colour:'Graphite Grey',condition:'Local Pre-owned',dutyStatus:'Duty Paid & Registered',status:'available',description:'Double-cab pickup with a 2.8L turbo-diesel engine, automatic transmission and four-wheel drive.',photos:[],features:['Diesel','Automatic','2.8L','4WD'],createdAt:'2026-11-01T09:00:00.000Z',updatedAt:'2026-11-01T09:00:00.000Z'}
-];
 const emptyDraft=():Draft=>({step:'welcome',role:'',carCount:'',channels:[],headache:'',source:'',country:'Zimbabwe',city:'Harare',cityOther:'',currency:'USD',dealershipName:'',whatsapp:'',slug:'',email:'',password:'',brandingTagline:'',authPending:false,slugEdited:false,accountCreated:false,notificationsEnabled:false,notificationsDismissedAt:null});
 const readDraft=():Draft=>{try{const parsed=JSON.parse(localStorage.getItem(DRAFT_KEY)||'null') as (Partial<Draft>&{photos?:unknown;vehicle?:unknown})|null;if(!parsed)return emptyDraft();delete parsed.photos;delete parsed.vehicle;return {...emptyDraft(),...parsed,step:STEPS.includes(parsed.step as Step)?parsed.step as Step:'welcome',channels:Array.isArray(parsed.channels)?parsed.channels:[],brandingTagline:typeof parsed.brandingTagline==='string'?parsed.brandingTagline:'',slugEdited:Boolean(parsed.slugEdited)};}catch{return emptyDraft();}};
 const slugify=(value:string)=>value.toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,48);
@@ -98,11 +91,18 @@ export const StartOnboardingPage:React.FC=()=>{
   <header className="lotle-start-welcome-brand"><Logo size="sm"/></header>
   <section className="lotle-start-welcome-stage" aria-label="A preview of your Lotlé showroom">
     <div className="lotle-start-phone-clip">
-      <div className="lotle-start-phone-frame" role="img" aria-label="Example showroom preview for Sample Motors in Harare">
-        <div className="lotle-start-phone-screen">
-          <div className="lotle-start-phone-scale"><PublicShowroomPage previewDealership={exampleDealership} previewVehicles={exampleVehicles}/></div>
-        </div>
-      </div>
+      <img
+        className="lotle-start-hero-image"
+        src="https://cimyerrelscqjiwqvnnn.supabase.co/storage/v1/object/public/drivelink-assets/landing%20page%20images/start-hero-640.webp"
+        srcSet="https://cimyerrelscqjiwqvnnn.supabase.co/storage/v1/object/public/drivelink-assets/landing%20page%20images/start-hero-640.webp 640w, https://cimyerrelscqjiwqvnnn.supabase.co/storage/v1/object/public/drivelink-assets/landing%20page%20images/start-hero-960.webp 960w"
+        sizes="(min-width: 600px) 278px, 250px"
+        width={960}
+        height={1200}
+        loading="eager"
+        fetchPriority="high"
+        decoding="async"
+        alt="Example Lotlé showroom on a phone"
+      />
     </div>
     <span className="lotle-start-example-label">Example showroom</span>
     <div className="lotle-start-enquiry-stack" aria-label="Example customer enquiry notifications">

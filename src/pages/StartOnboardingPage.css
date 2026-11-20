@@ -148,44 +148,7 @@
 .lotle-start-welcome-brand .dl-logo{gap:3px}
 .lotle-start-welcome-stage{position:relative;isolation:isolate;background:radial-gradient(ellipse 68% 78% at 50% 43%,rgba(213,204,255,.58) 0%,rgba(245,220,224,.35) 48%,rgba(255,255,255,0) 78%);overflow:visible}
 .lotle-start-phone-clip{position:absolute;top:-1px;left:50%;width:260px;height:252px;overflow:hidden;transform:translateX(-50%);border-radius:38px 38px 0 0}
-.lotle-start-phone-frame{position:relative;width:260px;height:438px;padding:13px 6px 6px;border:7px solid #171b24;border-radius:39px 39px 30px 30px;background:#171b24;box-shadow:0 16px 38px rgba(18,20,35,.2);box-sizing:border-box}
-.lotle-start-phone-frame:before{position:absolute;z-index:3;top:4px;left:50%;width:54px;height:6px;border-radius:999px;background:#343a46;content:"";transform:translateX(-50%);pointer-events:none}
-.lotle-start-phone-screen{width:100%;height:100%;overflow:hidden;border-radius:26px 26px 22px 22px;background:#fff}
-.lotle-start-phone-scale{width:390px;height:700px;overflow:hidden;transform:scale(.62);transform-origin:top left;pointer-events:none}
-.lotle-start-phone-scale .dl-public-showroom{width:390px;height:700px;min-height:700px;overflow:hidden;padding-bottom:58px}
-.lotle-start-phone-scale .dl-ps-header{width:calc(100% - 24px);height:56px}
-.lotle-start-phone-scale .dl-ps-avatar{width:34px;height:34px}
-.lotle-start-phone-scale .dl-ps-dealer-name{font-size:13px}
-.lotle-start-phone-scale .dl-ps-search-round,.lotle-start-phone-scale .dl-ps-menu-round{width:36px;height:36px}
-.lotle-start-phone-scale .dl-ps-hero{height:190px;min-height:190px}
-.lotle-start-phone-scale .dl-ps-hero-content{width:calc(100% - 24px);margin:18px auto 0}
-.lotle-start-phone-scale .dl-ps-hero-content h1{max-width:80%;font-size:28px}
-.lotle-start-phone-scale .dl-ps-location-pill{margin-bottom:9px;padding:5px 8px;font-size:9px}
-.lotle-start-phone-scale .dl-ps-browse-button{padding:9px 12px;font-size:10px}
-.lotle-start-phone-scale .dl-ps-container{width:calc(100% - 24px)}
-.lotle-start-phone-scale .dl-shared-carousel{margin:0 0 10px;padding-top:0}
-.lotle-start-phone-scale .dl-shared-carousel__heading{margin-bottom:7px}
-.lotle-start-phone-scale .dl-shared-carousel__heading h2{font-size:15px}
-.lotle-start-phone-scale .dl-shared-carousel__track{gap:8px;padding-bottom:0}
-.lotle-start-phone-scale .dl-shared-carousel__slide{flex-basis:100%;border-radius:16px}
-.lotle-start-phone-scale .dl-shared-carousel__photo{aspect-ratio:16/8}
-.lotle-start-phone-scale .dl-shared-carousel__no-photo{font-size:0}
-.lotle-start-phone-scale .dl-shared-carousel__no-photo:after{color:#687080;content:"Example vehicle photo";font-size:10px;font-weight:650}
-.lotle-start-phone-scale .dl-shared-carousel__status{top:7px;left:7px;min-height:22px;padding:4px 7px;font-size:8px}
-.lotle-start-phone-scale .dl-shared-carousel__body{gap:5px;padding:8px 10px}
-.lotle-start-phone-scale .dl-shared-carousel__body h3{font-size:13px}
-.lotle-start-phone-scale .dl-shared-carousel__price{font-size:14px}
-.lotle-start-phone-scale .dl-shared-carousel__specs{gap:4px}
-.lotle-start-phone-scale .dl-shared-carousel__specs span{padding:3px 5px;font-size:8px}
-.lotle-start-phone-scale .dl-shared-carousel__dots{display:none}
-.lotle-start-phone-scale .dl-ps-whatsapp-card{min-height:66px;margin:2px 0 10px;padding:10px 12px;border-radius:16px}
-.lotle-start-phone-scale .dl-ps-whatsapp-icon{width:38px;height:38px}
-.lotle-start-phone-scale .dl-ps-whatsapp-copy strong{font-size:13px}
-.lotle-start-phone-scale .dl-ps-whatsapp-copy small{font-size:10px}
-.lotle-start-phone-scale .dl-ps-footer{display:none}
-.lotle-start-phone-scale .dl-ps-bottom-bar{min-height:58px;padding:5px 8px}
-.lotle-start-phone-scale .dl-ps-bottom-bar button{height:42px;font-size:8px}
-.lotle-start-phone-scale .dl-ps-bottom-bar button svg{width:16px;height:16px}
+.lotle-start-hero-image{display:block;width:100%;height:auto;mix-blend-mode:multiply}
 .lotle-start-example-label{position:absolute;z-index:4;top:13px;right:max(16px,calc((100% - 420px)/2));padding:5px 9px;border:1px solid rgba(255,255,255,.85);border-radius:999px;background:rgba(255,255,255,.82);color:#5d6471;font-size:9px;font-weight:800;letter-spacing:.045em;text-transform:uppercase;box-shadow:0 3px 12px rgba(25,25,45,.06)}
 .lotle-start-enquiry-stack{position:absolute;z-index:6;right:0;bottom:-77px;left:0;width:min(calc(100% - 32px),320px);margin:auto;display:grid;gap:0;pointer-events:none}
 .lotle-start-enquiry-card{min-height:65px;display:grid;grid-template-columns:34px minmax(0,1fr) auto;align-items:center;gap:9px;padding:9px 11px;border:1px solid rgba(20,25,38,.055);border-radius:15px;background:#fff;box-shadow:0 9px 26px rgba(24,27,42,.12);box-sizing:border-box;opacity:0;animation:lotle-start-enquiry-in .55s ease-out forwards}
@@ -226,8 +189,6 @@
 @media(min-width:600px){
  .lotle-start-welcome-page{grid-template-rows:48px 260px minmax(0,1fr)}
  .lotle-start-phone-clip{width:278px;height:284px}
- .lotle-start-phone-frame{width:278px}
- .lotle-start-phone-scale{transform:scale(.66)}
  .lotle-start-welcome-panel{padding-top:84px}
  .lotle-start-welcome-copy h1{font-size:34px}
  .lotle-start-welcome-copy p{font-size:14px}
@@ -248,8 +209,6 @@
 @media(max-width:380px){
  .lotle-start-welcome-page{grid-template-rows:38px 214px minmax(0,1fr)}
  .lotle-start-phone-clip{width:250px;height:236px}
- .lotle-start-phone-frame{width:250px}
- .lotle-start-phone-scale{transform:scale(.59)}
  .lotle-start-enquiry-stack{width:calc(100% - 28px);bottom:-77px}
  .lotle-start-welcome-panel{padding:81px 17px calc(10px + env(safe-area-inset-bottom,0px))}
  .lotle-start-avatar-cluster{height:62px}
@@ -259,5 +218,4 @@
 @media(prefers-reduced-motion:reduce){
  .lotle-start-enquiry-card{animation:none;opacity:1;transform:none}
  .lotle-start-floating-avatar{animation:none}
- .lotle-start-phone-scale *{scroll-behavior:auto!important;transition:none!important}
 }
