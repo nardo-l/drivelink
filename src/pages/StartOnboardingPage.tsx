@@ -93,7 +93,51 @@ export const StartOnboardingPage:React.FC=()=>{
 
  if(draft.step==='account'&&(accountCreationState!=='idle'||draft.accountCreated))return <main className="lotle-start-account-state" aria-live="polite"><Logo size="sm"/><section><span className="lotle-start-account-state-icon">{accountCreationState==='creating'||draft.accountCreated?<Loader2 size={25} className="lotle-start-spin"/>:<Check size={25}/>}</span><h1>{accountCreationState==='creating'||draft.accountCreated?'Creating your showroom':accountCreationState==='needs-sign-in'?'Your account is ready':'Your showroom needs one more step'}</h1><p>{accountCreationState==='creating'||draft.accountCreated?'We are creating your account and preparing your showroom. Keep this page open; this may take a moment.':accountCreationState==='needs-sign-in'?'Your account was created successfully. Sign in to continue setting up your showroom.':'Your account was created, but we could not finish the showroom setup. Your details are saved; you can safely retry.'}</p>{error&&<p className="lotle-start-account-state-error" role="alert">{error}</p>}{accountCreationState==='setup-error'&&<button type="button" onClick={()=>{if(draft.ownerId){setAccountCreationState('creating');void finishAccountSetup(draft.ownerId,draft.email);}}}>Try again</button>}{accountCreationState==='needs-sign-in'&&<button type="button" onClick={()=>window.location.replace('/login')}>Sign in to continue</button>}</section></main>;
  switch(draft.step){
- case 'welcome':return <main className="lotle-start-welcome-page"><div className="lotle-start-welcome-content"><Logo size="sm"/><section className="lotle-start-welcome-copy"><h1>Your own car showroom, in minutes.</h1><p>Add your cars and get one link. Customers open it, browse your cars and message you on WhatsApp.</p></section><div className="lotle-start-phone-preview"><span className="lotle-start-example-label">Example showroom</span><div className="lotle-start-phone-frame" aria-label="Example showroom displayed in a phone"><div className="lotle-start-phone-screen"><div className="lotle-start-phone-scale"><PublicShowroomPage previewDealership={exampleDealership} previewVehicles={exampleVehicles}/></div></div></div></div><ul className="lotle-start-welcome-points"><li><span><Link2 size={17}/></span>One link for all your cars</li><li><span><MessageCircle size={17}/></span>Customers chat with you on WhatsApp</li><li><span><Check size={17}/></span>Free to start. Not a marketplace.</li></ul></div><footer className="lotle-start-welcome-footer"><button type="button" onClick={advance}>Build my showroom</button><p>Already have an account? <a href="/login">Sign in</a></p></footer></main>;
+ case 'welcome':return <main className="lotle-start-welcome-page">
+  <header className="lotle-start-welcome-brand"><Logo size="sm"/></header>
+  <section className="lotle-start-welcome-stage" aria-label="A preview of your Lotlé showroom">
+    <div className="lotle-start-phone-clip">
+      <div className="lotle-start-phone-frame" role="img" aria-label="Example showroom preview for Sample Motors in Harare">
+        <div className="lotle-start-phone-screen">
+          <div className="lotle-start-phone-scale"><PublicShowroomPage previewDealership={exampleDealership} previewVehicles={exampleVehicles}/></div>
+        </div>
+      </div>
+    </div>
+    <span className="lotle-start-example-label">Example showroom</span>
+    <div className="lotle-start-enquiry-stack" aria-label="Example customer enquiry notifications">
+      <article className="lotle-start-enquiry-card lotle-start-enquiry-card-one">
+        <span className="lotle-start-enquiry-avatar" aria-hidden="true">TN</span>
+        <span className="lotle-start-enquiry-copy"><strong>New enquiry</strong><span>Tendai asked about the 2019 Polo. Is it still available?</span></span>
+        <time>now</time>
+      </article>
+      <article className="lotle-start-enquiry-card lotle-start-enquiry-card-two">
+        <span className="lotle-start-enquiry-avatar lotle-start-enquiry-avatar-peach" aria-hidden="true">CM</span>
+        <span className="lotle-start-enquiry-copy"><strong>New enquiry</strong><span>Chipo wants to know the price of the Aqua.</span></span>
+        <time>2m</time>
+      </article>
+    </div>
+  </section>
+  <section className="lotle-start-welcome-panel">
+    <div className="lotle-start-avatar-cluster" aria-hidden="true">
+      <span className="lotle-start-floating-avatar lotle-start-avatar-a">TN</span>
+      <span className="lotle-start-floating-avatar lotle-start-avatar-b">CM</span>
+      <span className="lotle-start-floating-avatar lotle-start-avatar-c">RM</span>
+      <span className="lotle-start-floating-avatar lotle-start-avatar-d">PK</span>
+      <span className="lotle-start-floating-avatar lotle-start-avatar-e">JM</span>
+      <span className="lotle-start-floating-avatar lotle-start-avatar-f">SK</span>
+      <span className="lotle-start-floating-avatar lotle-start-avatar-g">LN</span>
+      <span className="lotle-start-avatar-centre"><Logo size="sm"/></span>
+    </div>
+    <section className="lotle-start-welcome-copy">
+      <h1>Your own car showroom, in minutes.</h1>
+      <p>One link for all your cars. Customers browse and message you on WhatsApp. Not a marketplace.</p>
+    </section>
+    <footer className="lotle-start-welcome-footer">
+      <button type="button" onClick={advance}>Build my showroom</button>
+      <p>Already have an account? <a href="/login">Sign in</a></p>
+    </footer>
+  </section>
+</main>;
  case 'role':return screen('What best describes you?','Choose the option that fits your business.',cards(roleOptions,draft.role?[draft.role]:[],v=>selectSingle({role:v as SellerType})),!!draft.role,advance);
  case 'cars':return screen('How many cars do you usually have for sale?','A rough estimate is perfect.',cards([{value:'1–5',label:'1–5 cars',icon:<CarFront/>},{value:'6–20',label:'6–20 cars',icon:<CarFront/>},{value:'21–50',label:'21–50 cars',icon:<Truck/>},{value:'50+',label:'More than 50',icon:<Building2/>}],draft.carCount?[draft.carCount]:[],v=>selectSingle({carCount:v})),!!draft.carCount,advance);
  case 'channels':return screen('Where do you sell your cars today?','Select all the places you currently use.',cards(channelOptions.map(x=>({...x,label:x.value})),draft.channels,v=>update({channels:draft.channels.includes(v)?draft.channels.filter(x=>x!==v):[...draft.channels,v]}),true),draft.channels.length>0,advance);
