@@ -1,5 +1,5 @@
 import { name, nameAscii, description, siteUrl, supportEmail, supportWhatsApp } from '../config/brand';
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useNavigation } from '../context/NavigationContext';
 import { MARKETING_CAR_IMAGES } from '../utils/marketingCarImages';
 import { Logo } from '../components/common/Logo';
@@ -31,8 +31,56 @@ const FeatureMockup: React.FC<{ type: 'showroom' | 'garage' | 'leads' | 'analyti
 export const WelcomePage: React.FC = () => {
   const { navigate } = useNavigation();
   const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const menuToggleRef = useRef<HTMLButtonElement>(null);
   const [openFaq, setOpenFaq] = useState<number | null>(0);
-  const goStart = () => navigate('/start');
+  const goStart = () => { setMenuOpen(false); navigate('/start'); };
+  useEffect(() => {
+    if (!menuOpen) return;
+    const previousHtmlOverflow = document.documentElement.style.overflow;
+    const previousBodyOverflow = document.body.style.overflow;
+    document.documentElement.style.overflow = 'hidden';
+    document.body.style.overflow = 'hidden';
+    const getFocusable = () => Array.from(menuRef.current?.querySelectorAll<HTMLElement>('button:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])') || []);
+    const focusFirst = () => getFocusable()[0]?.focus();
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        setMenuOpen(false);
+        menuToggleRef.current?.focus();
+        return;
+      }
+      if (event.key !== 'Tab') return;
+      const focusable = getFocusable();
+      if (!focusable.length) { event.preventDefault(); return; }
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && (document.activeElement === first || !menuRef.current?.contains(document.activeElement))) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && (document.activeElement === last || !menuRef.current?.contains(document.activeElement))) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+    const onPointerDown = (event: PointerEvent) => {
+      const target = event.target;
+      if (!(target instanceof Node)) return;
+      if (!menuRef.current?.contains(target) && !menuToggleRef.current?.contains(target)) setMenuOpen(false);
+    };
+    const onResize = () => { if (window.innerWidth >= 768) setMenuOpen(false); };
+    document.addEventListener('keydown', onKeyDown);
+    document.addEventListener('pointerdown', onPointerDown);
+    window.addEventListener('resize', onResize);
+    window.requestAnimationFrame(focusFirst);
+    return () => {
+      document.documentElement.style.overflow = previousHtmlOverflow;
+      document.body.style.overflow = previousBodyOverflow;
+      document.removeEventListener('keydown', onKeyDown);
+      document.removeEventListener('pointerdown', onPointerDown);
+      window.removeEventListener('resize', onResize);
+    };
+  }, [menuOpen]);
   const scrollTo = (id: string) => {
     setMenuOpen(false);
     const target = document.getElementById(id);
@@ -46,13 +94,16 @@ export const WelcomePage: React.FC = () => {
       <div className="dl-marketing-glow dl-glow-one"/><div className="dl-marketing-glow dl-glow-two"/>
       <header className="dl-marketing-nav">
         <a href="#top" className="dl-brand" aria-label={`${name} home`}><Logo variant="dark" size="md"/></a>
-        <nav className="hidden md:flex items-center gap-8">
+        <nav className="dl-desktop-links" aria-label="Main navigation">
           <button onClick={()=>scrollTo('features')}>Features</button><button onClick={()=>scrollTo('how-it-works')}>How it works</button><button onClick={()=>scrollTo('pricing')}>Pricing</button><button onClick={()=>scrollTo('faq')}>FAQ</button>
         </nav>
-        <div className="hidden md:flex items-center gap-5"><button className="dl-login-link" onClick={()=>navigate('/login')}>Log in</button><button className="dl-button dl-button-small" onClick={goStart}>Get Started <ArrowRight size={15}/></button></div>
-        <button className="md:hidden dl-menu-toggle" aria-label={menuOpen?'Close menu':'Open menu'} onClick={()=>setMenuOpen(v=>!v)}>{menuOpen?<X/>:<Menu/>}</button>
+        <div className="dl-desktop-actions"><button className="dl-login-link" onClick={()=>navigate('/login')}>Log in</button><button className="dl-button dl-button-small" onClick={goStart}>Get Started <ArrowRight size={15}/></button></div>
+        <button className="dl-mobile-primary dl-button dl-button-small" type="button" onClick={goStart}>Start free <ArrowRight size={15}/></button>
+        <button ref={menuToggleRef} className="dl-menu-toggle" type="button" aria-label={menuOpen?'Close navigation menu':'Open navigation menu'} aria-expanded={menuOpen} aria-controls="dl-mobile-menu" onClick={()=>setMenuOpen(v=>!v)}>{menuOpen?<X aria-hidden="true"/>:<Menu aria-hidden="true"/>}</button>
       </header>
-      {menuOpen && <div className="dl-mobile-menu"><button onClick={()=>scrollTo('features')}>Features</button><button onClick={()=>scrollTo('how-it-works')}>How it works</button><button onClick={()=>scrollTo('pricing')}>Pricing</button><button onClick={()=>scrollTo('faq')}>FAQ</button><button onClick={()=>{setMenuOpen(false);navigate('/login')}}>Log in</button><button className="dl-button" onClick={goStart}>Get Started <ArrowRight size={15}/></button></div>}
+      {menuOpen && <nav ref={menuRef} id="dl-mobile-menu" className="dl-mobile-menu" aria-label="Mobile navigation">
+        <button type="button" onClick={()=>scrollTo('features')}>Features</button><button type="button" onClick={()=>scrollTo('how-it-works')}>How it works</button><button type="button" onClick={()=>scrollTo('pricing')}>Pricing</button><button type="button" onClick={()=>scrollTo('faq')}>FAQ</button><button type="button" onClick={()=>{setMenuOpen(false);navigate('/login');}}>Log in</button><button type="button" className="dl-button" onClick={goStart}>Get Started <ArrowRight size={15}/></button>
+      </nav>}
 
       <section id="top" className="dl-hero dl-section-wrap">
         <div className="dl-hero-copy">
