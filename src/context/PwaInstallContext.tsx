@@ -64,7 +64,7 @@ export const PwaInstallProvider: React.FC<React.PropsWithChildren> = ({ children
     if (!isInstallEligiblePath(currentPath)) return;
     if (document.querySelector('[role="dialog"][aria-modal="true"]')) return;
     setManual(true);
-    if (accountKey) sessionStorage.setItem(accountKey + '_shown_session','1');
+    if (accountKey) sessionStorage.setItem(accountKey + '_shown_session_v3','1');
     setSheet('install');
   },[accountKey,currentPath,canInstall]);
 
@@ -123,12 +123,7 @@ export const PwaInstallProvider: React.FC<React.PropsWithChildren> = ({ children
         if (accountKey) localStorage.setItem(accountKey + '_success','1');
         window.dispatchEvent(new CustomEvent('lotle:pwa-analytics',{detail:{event:'accepted'}}));
       } else {
-        if (accountKey) {
-          const count = Number(localStorage.getItem(accountKey + '_dismissals_v2') || 0) + 1;
-          localStorage.setItem(accountKey + '_dismissals_v2',String(count));
-          localStorage.setItem(accountKey + '_until_v2',String(Date.now() + 14*24*60*60*1000));
-        }
-        window.dispatchEvent(new CustomEvent('lotle:pwa-analytics',{detail:{event:'dismissed'}}));
+          window.dispatchEvent(new CustomEvent('lotle:pwa-analytics',{detail:{event:'dismissed'}}));
         closeInstall();
       }
     } catch { closeInstall(); }
@@ -151,12 +146,9 @@ export const PwaInstallProvider: React.FC<React.PropsWithChildren> = ({ children
     const eligiblePath = currentPath.replace(/\/+$/, '') || '/';
     if (!isInstallEligiblePath(eligiblePath)) return;
 
-    const shownKey = accountKey + '_shown_session';
+    const shownKey = accountKey + '_shown_session_v3';
     if (sessionStorage.getItem(shownKey)) return;
 
-    const dismissals = Number(localStorage.getItem(accountKey + '_dismissals_v2') || 0);
-    const until = Number(localStorage.getItem(accountKey + '_until_v2') || 0);
-    if (dismissals >= 3 || Date.now() < until) return;
 
     let active = true;
     let retryTimer: number | undefined;
@@ -181,11 +173,6 @@ export const PwaInstallProvider: React.FC<React.PropsWithChildren> = ({ children
   }, [currentPath, accountId, session.isLoggedIn, session.dealershipId, accountKey, canInstall, isInstalled, manual, sheet]);
 
   const dismiss = useCallback(() => {
-    if (accountKey) {
-      const count = Number(localStorage.getItem(accountKey + '_dismissals_v2') || 0) + 1;
-      localStorage.setItem(accountKey + '_dismissals_v2',String(count));
-      localStorage.setItem(accountKey + '_until_v2',String(Date.now() + 14*24*60*60*1000));
-    }
     window.dispatchEvent(new CustomEvent('lotle:pwa-analytics',{detail:{event:'dismissed'}}));
     closeInstall();
   },[accountKey,closeInstall]);
