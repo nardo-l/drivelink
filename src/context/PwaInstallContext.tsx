@@ -59,14 +59,14 @@ export const PwaInstallProvider: React.FC<React.PropsWithChildren> = ({ children
 
   const closeInstall = useCallback(() => { setSheet(null); setBusy(false); setManual(false); },[]);
   const openInstall = useCallback(() => {
-    // Only open this sheet when the browser has supplied a native install prompt.
-    if (!canInstall) return;
+    // The Lotlé sheet is our UI; it should not depend on Chrome's timing.
+    // The native Install action becomes available when Chrome supplies its event.
     if (!isInstallEligiblePath(currentPath)) return;
     if (document.querySelector('[role="dialog"][aria-modal="true"]')) return;
     setManual(true);
     if (accountKey) sessionStorage.setItem(accountKey + '_shown_session_v3','1');
     setSheet('install');
-  },[accountKey,currentPath,canInstall]);
+  },[accountKey,currentPath]);
 
   useEffect(() => {
     const update = () => setRevision(v => v + 1);
@@ -142,7 +142,7 @@ export const PwaInstallProvider: React.FC<React.PropsWithChildren> = ({ children
   },[isInstalled,accountKey,sheet,closeInstall]);
 
   useEffect(() => {
-    if (manual || sheet || !accountId || !session.isLoggedIn || !session.dealershipId || !isSupabaseConfigured() || isInstalled || !canInstall) return;
+    if (manual || sheet || !accountId || !session.isLoggedIn || !session.dealershipId || !isSupabaseConfigured() || isInstalled) return;
     const eligiblePath = currentPath.replace(/\/+$/, '') || '/';
     if (!isInstallEligiblePath(eligiblePath)) return;
 
@@ -223,13 +223,19 @@ const PwaInstallSheet: React.FC<{onDismiss:()=>void;onClose:()=>void}> = ({onDis
         {success && <span className="lotle-pwa-check"><Check size={15}/></span>}
       </div>
       <h2 id="lotle-pwa-title">{success?'Lotlé is installed':'Install Lotlé'}</h2>
-      {success ? <p>Find it on your home screen.</p> : <p>Open your showroom in one tap, get enquiry alerts, and use it like a normal app.</p>}
-      <button className="lotle-pwa-primary" type="button" disabled={busy} onClick={() => {
+      {success ? (
+        <p>Find it on your home screen.</p>
+      ) : (
+        <>
+          <p>Open your showroom in one tap, get enquiry alerts, and use it like a normal app.</p>
+          {!canInstall && <p className="lotle-pwa-install-status" role="status">Chrome hasn't made its native install prompt available yet. This popup will stay here, and the Install button will become available as soon as Chrome allows installation.</p>}
+        </>
+      )}
+      <button className="lotle-pwa-primary" type="button" disabled={busy || (!success && !canInstall)} onClick={() => {
         if (success) onClose();
         else if (canInstall) void promptInstall();
-        else onClose();
       }}>
-        {busy ? <span className="lotle-pwa-spinner"/> : success?'Done':'Install'}
+        {busy ? <span className="lotle-pwa-spinner"/> : success ? 'Done' : canInstall ? 'Install' : 'Preparing install…'}
       </button>
       {!success && <button className="lotle-pwa-later" type="button" onClick={onDismiss}>Not now</button>}
     </section>
