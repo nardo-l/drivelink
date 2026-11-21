@@ -1,14 +1,35 @@
-import { siteUrl } from '../src/config/brand';
 declare const process: { env: Record<string, string | undefined> };
 
-type DealerSitemapRow = { slug: string; updated_at?: string | null };
-const xmlEscape = (value: string) => value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;');
-
-export default async function handler(_request: { method?: string }, response: {
+type Request = {
+  method?: string;
+  headers?: { 'x-forwarded-host'?: string | string[] };
+};
+type Response = {
   setHeader(name: string, value: string): void;
   status(code: number): { send(body: string): void };
-}): Promise<void> {
-  const base = siteUrl.replace(/\/$/, '');
+};
+type DealerSitemapRow = { slug: string; updated_at?: string | null };
+
+const xmlEscape = (value: string) => value
+  .replace(/&/g, '&amp;')
+  .replace(/</g, '&lt;')
+  .replace(/>/g, '&gt;')
+  .replace(/"/g, '&quot;')
+  .replace(/'/g, '&apos;');
+
+function getBaseUrl(request: Request): string {
+  const configured = process.env.SITE_URL?.trim();
+  if (configured) return configured.replace(/\/+$/, '');
+
+  const forwarded = request.headers?.['x-forwarded-host'];
+  const host = (Array.isArray(forwarded) ? forwarded[0] : forwarded)?.split(',')[0].trim();
+  if (host && /^[a-z0-9.-]+(?::\d+)?$/i.test(host)) return 'https://' + host;
+
+  return 'https://lotle.vercel.app';
+}
+
+export default async function handler(request: Request, response: Response): Promise<void> {
+  const base = getBaseUrl(request);
   let dealers: DealerSitemapRow[] = [];
   const supabaseUrl = process.env.VITE_SUPABASE_URL;
   const anonKey = process.env.VITE_SUPABASE_ANON_KEY;
