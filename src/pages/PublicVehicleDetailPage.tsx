@@ -21,7 +21,7 @@ export const PublicVehicleDetailPage:React.FC<PublicVehicleDetailPageProps>=({ve
  if(!dealer||!vehicle)return <div className="dl-store-loading"><h1>Vehicle unavailable</h1><p>This vehicle may have been sold or removed.</p><button onClick={()=>navigate('/'+(slug||''))}>Return to showroom</button></div>;
  const photos=vehicle.photos||[],money=!vehicle.price||Number(vehicle.price)<=0?'Price on request':new Intl.NumberFormat('en-US',{style:'currency',currency:vehicle.currency||dealer.currency,maximumFractionDigits:0}).format(vehicle.price);
  const title=[vehicle.year,vehicle.make,vehicle.model].filter(Boolean).join(' ');
- const waNumber=(dealer.whatsapp||dealer.phone||'').replace(/\\D/g,'');
+ const waNumber=(dealer.whatsapp||dealer.phone||'').replace(/\D/g,'');
  const openWhatsApp=()=>{if(waNumber)setShowEnquiryAssistant(true);};
  const prev=()=>setPhotoIndex(i=>(i-1+photos.length)%photos.length),next=()=>setPhotoIndex(i=>(i+1)%photos.length);
  const share=async()=>{const url=absoluteUrl(window.location.pathname+window.location.search+window.location.hash);if(navigator.share){try{await navigator.share({title,text:money,url});}catch{}}else{await navigator.clipboard?.writeText(url);showToast('Vehicle link copied');}};
