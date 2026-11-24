@@ -32,7 +32,7 @@ const harareDayStart = (date = new Date()) => {
   return new Date(Date.UTC(year, month - 1, day) - 2 * 60 * 60 * 1000).toISOString();
 };
 const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), {
-  status, headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "authorization, apikey, content-type", "Access-Control-Allow-Methods": "POST, OPTIONS" },
+  status, headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-api-version, x-notification-secret", "Access-Control-Allow-Methods": "POST, OPTIONS" },
 });
 const categoryForDb = (category: string) => ({
   enquiries: "enquiry", reminders: "inventory", summaries: "daily_summary", account_billing: "subscription",
