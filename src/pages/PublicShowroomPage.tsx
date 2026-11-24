@@ -13,6 +13,7 @@ import { isSupabaseConfigured } from '../lib/supabase';
 import { absoluteUrl, homeTitle, pageTitle } from '../config/brand';
 import type { Dealership, FuelType, Vehicle } from '../types';
 import { FeaturedVehicleCarousel } from '../components/storefront/FeaturedVehicleCarousel';
+import { CustomerEnquiryAssistant } from '../components/storefront/CustomerEnquiryAssistant';
 import './PublicShowroomPage.css';
 
 interface PublicShowroomPageProps {
@@ -46,6 +47,7 @@ export const PublicShowroomPage: React.FC<PublicShowroomPageProps> = ({ slug, pr
   const [savedOnly, setSavedOnly] = useState(false);
   const [saved, setSaved] = useState<string[]>([]);
   const [sheet, setSheet] = useState<Sheet>(null);
+  const [showEnquiryAssistant, setShowEnquiryAssistant] = useState(false);
   const [loadedImages, setLoadedImages] = useState<string[]>([]);
   const [activeTab, setActiveTab] = useState<'home' | 'inventory' | 'saved' | 'contact'>('home');
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -221,7 +223,7 @@ export const PublicShowroomPage: React.FC<PublicShowroomPageProps> = ({ slug, pr
 
   const initials = dealer.name.trim().split(/\s+/).slice(0, 2).map(x => x[0]).join('').toUpperCase() || 'DL';
   const city = [dealer.city, dealer.country].filter(Boolean).join(', ');
-  const waNumber = (dealer.whatsapp || '').replace(/\D/g, '');
+  const waNumber = (dealer.whatsapp || dealer.phone || '').replace(/\D/g, '');
   const phone = dealer.phone || '';
   const hours = (dealer as any).hours || (dealer as any).openingHours || '';
   const firstCarPhoto = vehicles.find(v => v.photos?.[0])?.photos?.[0] || '';
@@ -256,27 +258,7 @@ export const PublicShowroomPage: React.FC<PublicShowroomPageProps> = ({ slug, pr
       catch { showToast(url); }
     }
   };
-  const generalMessage = 'Hi, I am interested in a car from ' + dealer.name;
-  const recordGeneralWhatsAppEnquiry = () => {
-    const enquiry = {
-      dealershipId: dealer.id, buyerName: 'WhatsApp Buyer', buyerPhone: 'WhatsApp Link Click',
-      message: generalMessage, stage: 'new' as const, source: 'whatsapp' as const,
-      notes: 'Buyer clicked showroom WhatsApp contact link.',
-    };
-    if (isSupabaseConfigured()) {
-      void supabaseService.createEnquiry(enquiry).catch(err => console.error('Could not record WhatsApp enquiry:', err));
-    } else {
-      try {
-        storageService.saveDealership(dealer);
-        void storageService.createEnquiryAsync(enquiry).catch(err => console.error('Could not record WhatsApp enquiry:', err));
-      } catch (err) { console.error('Could not record WhatsApp enquiry:', err); }
-    }
-  };
-  const openWhatsApp = () => {
-    if (!waNumber) return;
-    recordGeneralWhatsAppEnquiry();
-    window.open('https://wa.me/' + waNumber + '?text=' + encodeURIComponent(generalMessage), '_blank', 'noopener,noreferrer');
-  };
+  const openWhatsApp = () => { if (waNumber) setShowEnquiryAssistant(true); };
   const openContact = () => { setActiveTab('contact'); setSheet('contact'); };
   const browse = () => {
     setSavedOnly(false);
@@ -469,6 +451,8 @@ export const PublicShowroomPage: React.FC<PublicShowroomPageProps> = ({ slug, pr
           </section>
         </div>
       )}
+
+      {showEnquiryAssistant && <CustomerEnquiryAssistant dealership={dealer} onClose={() => setShowEnquiryAssistant(false)} />}
     </main>
   );
 };
