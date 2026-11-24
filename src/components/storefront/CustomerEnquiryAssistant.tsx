@@ -25,7 +25,7 @@ export const CustomerEnquiryAssistant: React.FC<Props> = ({ dealership, vehicle,
   const [error, setError] = useState('');
 
   const vehicleName = vehicle ? [vehicle.year, vehicle.make, vehicle.model].filter(Boolean).join(' ') : '';
-  const dealerNumber = (dealership.whatsapp || dealership.phone || '').replace(/\\D/g, '');
+  const dealerNumber = (dealership.whatsapp || dealership.phone || '').replace(/\D/g, '');
   const progress = ((step + 1) / 4) * 100;
 
   useEffect(() => {
@@ -37,7 +37,7 @@ export const CustomerEnquiryAssistant: React.FC<Props> = ({ dealership, vehicle,
 
   const canContinue = useMemo(() => {
     if (step === 0) return name.trim().length >= 2;
-    if (step === 3) return phone.replace(/\\D/g, '').length >= 7;
+    if (step === 3) return phone.replace(/\D/g, '').length >= 7;
     return true;
   }, [step, name, phone]);
 
@@ -153,7 +153,7 @@ export const CustomerEnquiryAssistant: React.FC<Props> = ({ dealership, vehicle,
   const [error, setError] = useState('');
 
   const vehicleName = vehicle ? [vehicle.year, vehicle.make, vehicle.model].filter(Boolean).join(' ') : '';
-  const dealerNumber = (dealership.whatsapp || dealership.phone || '').replace(/\\D/g, '');
+  const dealerNumber = (dealership.whatsapp || dealership.phone || '').replace(/\D/g, '');
   const progress = ((step + 1) / 4) * 100;
 
   useEffect(() => {
@@ -165,7 +165,7 @@ export const CustomerEnquiryAssistant: React.FC<Props> = ({ dealership, vehicle,
 
   const canContinue = useMemo(() => {
     if (step === 0) return name.trim().length >= 2;
-    if (step === 3) return phone.replace(/\\D/g, '').length >= 7;
+    if (step === 3) return phone.replace(/\D/g, '').length >= 7;
     return true;
   }, [step, name, phone]);
 
