@@ -258,7 +258,7 @@ export const PublicShowroomPage: React.FC<PublicShowroomPageProps> = ({ slug, pr
       catch { showToast(url); }
     }
   };
-  const openWhatsApp = () => { if (waNumber) setShowEnquiryAssistant(true); };
+  const openWhatsApp = () => { if (waNumber) { setSheet(null); setShowEnquiryAssistant(true); } };
   const openContact = () => { setActiveTab('contact'); setSheet('contact'); };
   const browse = () => {
     setSavedOnly(false);
