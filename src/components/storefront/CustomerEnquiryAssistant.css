@@ -1,0 +1,33 @@
+.lotle-enquiry-backdrop{position:fixed;inset:0;z-index:1200;display:flex;align-items:center;justify-content:center;padding:18px;background:rgba(10,15,30,.58);overflow-y:auto}
+.lotle-enquiry-dialog{width:min(100%,480px);max-height:min(760px,calc(100dvh - 36px));overflow-y:auto;background:#fff;color:#0a0f1e;border-radius:26px;box-shadow:0 24px 80px rgba(0,0,0,.24);display:flex;flex-direction:column}
+.lotle-enquiry-header{display:flex;align-items:center;justify-content:space-between;padding:22px 24px 15px;gap:12px}
+.lotle-enquiry-header>div{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.lotle-enquiry-eyebrow{font-size:10px;font-weight:800;letter-spacing:.12em;color:#647084}
+.lotle-enquiry-step{font-size:12px;color:#647084}
+.lotle-enquiry-header>button{border:0;background:#f1f3f6;color:#0a0f1e;width:40px;height:40px;border-radius:50%;display:grid;place-items:center;cursor:pointer}
+.lotle-enquiry-progress{height:4px;background:#edf0f4;margin:0 24px;border-radius:9px;overflow:hidden}
+.lotle-enquiry-progress span{height:100%;display:block;background:#0a0f1e;border-radius:9px;transition:width .2s ease}
+.lotle-enquiry-content{padding:26px 24px 20px;flex:1}
+.lotle-enquiry-content h2{font-size:clamp(24px,5vw,30px);line-height:1.12;letter-spacing:-.04em;margin:0 0 10px;font-weight:750}
+.lotle-enquiry-content>p{font-size:14px;line-height:1.55;color:#647084;margin:0 0 22px}
+.lotle-enquiry-content label{display:flex;flex-direction:column;gap:9px;font-size:13px;font-weight:650;color:#344054}
+.lotle-enquiry-content input,.lotle-enquiry-content textarea{width:100%;min-width:0;border:1px solid #dce1e8;border-radius:14px;padding:15px 16px;font:inherit;font-size:16px;color:#0a0f1e;background:#fff;outline:none}
+.lotle-enquiry-content input:focus,.lotle-enquiry-content textarea:focus{border-color:#0a0f1e;box-shadow:0 0 0 3px rgba(10,15,30,.1)}
+.lotle-enquiry-vehicle{display:flex;flex-direction:column;gap:4px;background:#f5f6f8;border-radius:13px;padding:11px 13px;margin-bottom:20px}
+.lotle-enquiry-vehicle span{font-size:9px;font-weight:800;letter-spacing:.1em;color:#748094}
+.lotle-enquiry-vehicle strong{font-size:13px}
+.lotle-enquiry-options{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.lotle-enquiry-options button{min-height:50px;padding:11px 12px;border:1px solid #e1e5eb;background:#fff;border-radius:13px;color:#172033;font-size:13px;font-weight:600;text-align:left;display:flex;align-items:center;justify-content:space-between;gap:8px;cursor:pointer}
+.lotle-enquiry-options button.selected{border-color:#0a0f1e;background:#f1f3f6}
+.lotle-enquiry-skip{margin-top:14px;padding:8px 0;border:0;background:transparent;color:#667085;font-size:13px;text-decoration:underline;cursor:pointer}
+.lotle-enquiry-extra{margin-top:20px}
+.lotle-enquiry-extra textarea{resize:vertical;min-height:72px}
+.lotle-enquiry-privacy{font-size:12px!important;margin:12px 0 0!important}
+.lotle-enquiry-error{margin:14px 0 0!important;padding:11px 12px;background:#fff1f0;border-radius:10px;color:#b42318!important;font-size:13px!important}
+.lotle-enquiry-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 24px 22px;border-top:1px solid #edf0f4}
+.lotle-enquiry-back,.lotle-enquiry-next{min-height:48px;border-radius:14px;padding:0 17px;display:inline-flex;align-items:center;justify-content:center;gap:9px;font-size:14px;font-weight:700;cursor:pointer}
+.lotle-enquiry-back{border:1px solid #e1e5eb;background:#fff;color:#344054}
+.lotle-enquiry-next{border:0;background:#0a0f1e;color:#fff;margin-left:auto}
+.lotle-enquiry-next:disabled,.lotle-enquiry-back:disabled{opacity:.45;cursor:not-allowed}
+@media(max-width:520px){.lotle-enquiry-backdrop{align-items:flex-end;padding:0}.lotle-enquiry-dialog{width:100%;max-height:min(88dvh,820px);border-radius:25px 25px 0 0;padding-bottom:env(safe-area-inset-bottom)}.lotle-enquiry-content{padding:23px 21px 18px}.lotle-enquiry-header{padding:18px 21px 13px}.lotle-enquiry-footer{padding:14px 21px 18px}.lotle-enquiry-options{grid-template-columns:1fr 1fr}}
+@media(prefers-reduced-motion:reduce){.lotle-enquiry-progress span{transition:none}}
