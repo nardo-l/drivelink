@@ -12,7 +12,7 @@ interface Props {
   onClose: () => void;
 }
 
-const budgetsFor = (currency: string) => { const symbol = currency === 'ZAR' ? 'R' : currency === 'ZWG' ? 'ZWG ' : '
+const budgetsFor = (currency: string) => { const symbol = currency === 'ZAR' ? 'R' : currency === 'ZWG' ? 'ZWG ' : '$'; return ['Under ' + symbol + '3,000', symbol + '3,000–' + symbol + '5,000', symbol + '5,000–' + symbol + '8,000', symbol + '8,000–' + symbol + '12,000', symbol + '12,000–' + symbol + '20,000', symbol + '20,000+']; };
 
 export const CustomerEnquiryAssistant: React.FC<Props> = ({ dealership, vehicle, onClose }) => {
   const [step, setStep] = useState(0);
