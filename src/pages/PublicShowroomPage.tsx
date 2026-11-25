@@ -49,6 +49,7 @@ export const PublicShowroomPage: React.FC<PublicShowroomPageProps> = ({ slug, pr
   const [sheet, setSheet] = useState<Sheet>(null);
   const [showEnquiryAssistant, setShowEnquiryAssistant] = useState(false);
   const [loadedImages, setLoadedImages] = useState<string[]>([]);
+  const [failedImages, setFailedImages] = useState<string[]>([]);
   const [activeTab, setActiveTab] = useState<'home' | 'inventory' | 'saved' | 'contact'>('home');
   const searchInputRef = useRef<HTMLInputElement>(null);
 
@@ -230,7 +231,7 @@ export const PublicShowroomPage: React.FC<PublicShowroomPageProps> = ({ slug, pr
   const heroImage = dealer.coverUrl || firstCarPhoto;
   const availableCount = available.length;
   const countLabel = (n: number) => n + ' ' + (n === 1 ? 'car' : 'cars');
-  const money = (v: Vehicle) => new Intl.NumberFormat('en-US', {
+  const money = (v: Vehicle) => v.price == null || Number(v.price) <= 0 ? 'Price on request' : new Intl.NumberFormat('en-US', {
     style: 'currency', currency: v.currency || dealer.currency, maximumFractionDigits: 0,
   }).format(v.price);
   // Use the exact public Storage URL saved with the vehicle. Rewriting it to
@@ -349,6 +350,8 @@ export const PublicShowroomPage: React.FC<PublicShowroomPageProps> = ({ slug, pr
                 const isReserved = vehicle.status === 'reserved';
                 const isSaved = saved.includes(vehicle.id);
                 const hasPhoto = Boolean(vehicle.photos?.[0]);
+                const imageFailed = failedImages.includes(vehicle.id);
+                const showPhoto = hasPhoto && !imageFailed;
                 const title = [vehicle.year, vehicle.make, vehicle.model].filter(Boolean).join(' ');
                 const specs = [
                   vehicle.mileageKm != null && (Number(vehicle.mileageKm) > 0 || Number(vehicle.mileageKm) === 0 && (vehicle.condition === 'New' || vehicle.condition === 'Brand New')) ? Number(vehicle.mileageKm).toLocaleString() + ' km' : '',
@@ -357,25 +360,26 @@ export const PublicShowroomPage: React.FC<PublicShowroomPageProps> = ({ slug, pr
                 ].filter(Boolean);
                 const vehicleUrl = '/' + dealer.slug + '/vehicle/' + vehicle.id;
                 return (
-                  <article key={vehicle.id} className={'dl-ps-card ' + (isSold ? 'is-sold' : '') + (!hasPhoto ? ' no-photo' : '')}>
+                  <article key={vehicle.id} className={'dl-ps-card ' + (isSold ? 'is-sold' : '') + (!showPhoto ? ' no-photo' : '')}>
                     <a className="dl-ps-card-link" href={vehicleUrl} aria-label={'View ' + title}>
                       <div className="dl-ps-card-media">
-                        {hasPhoto ? (
+                        {showPhoto ? (
                           <>
                             {!loadedImages.includes(vehicle.id) && <div className="dl-ps-image-skeleton" />}
                             <img src={imageUrl(vehicle.photos[0])} alt={title} className={'dl-ps-card-img ' + (loadedImages.includes(vehicle.id) ? 'is-loaded' : '')}
                               loading={index === 0 ? 'eager' : 'lazy'} fetchPriority={index === 0 ? 'high' : 'auto'} decoding="async"
-                              width={1200} height={900} onLoad={() => setLoadedImages(current => current.includes(vehicle.id) ? current : [...current, vehicle.id])}
-                              onError={() => setLoadedImages(current => current.includes(vehicle.id) ? current : [...current, vehicle.id])} />
+                              width={1200} height={900}
+                              onLoad={() => setLoadedImages(current => current.includes(vehicle.id) ? current : [...current, vehicle.id])}
+                              onError={() => setFailedImages(current => current.includes(vehicle.id) ? current : [...current, vehicle.id])} />
                           </>
-                        ) : <div className="dl-ps-no-photo-view"><CarFront size={58} /><span>Photo coming soon</span></div>}
-                        {hasPhoto && <div className="dl-ps-card-gradient" />}
-                        {(isReserved || isSold) && <span className={'dl-ps-status-pill ' + (isSold ? 'is-sold' : 'is-reserved')}>{isSold ? 'Sold' : 'Reserved'}</span>}
+                        ) : <div className="dl-ps-no-photo-view" aria-hidden="true"><CarFront size={58} strokeWidth={1.35} /></div>}
+                        {showPhoto && <div className="dl-ps-card-gradient" />}
+                        <span className={'dl-ps-status-pill is-' + vehicle.status}>{isSold ? 'Sold' : isReserved ? 'Reserved' : 'Available'}</span>
                         <div className="dl-ps-card-overlay">
                           <div className="dl-ps-card-copy">
                             <h3 title={title}>{title}</h3>
-                            {specs.length > 0 && <div className="dl-ps-card-specs">{specs.map((spec, specIndex) => <React.Fragment key={spec}>{specIndex > 0 && <span className="dl-ps-spec-separator">•</span>}<span>{spec}</span></React.Fragment>)}</div>}
                             <strong className="dl-ps-card-price">{money(vehicle)}</strong>
+                            {specs.length > 0 && <div className="dl-ps-card-specs">{specs.map(spec => <span key={spec}>{spec}</span>)}</div>}
                           </div>
                         </div>
                       </div>

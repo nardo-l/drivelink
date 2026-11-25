@@ -27,3 +27,72 @@
 @media(min-width:768px){.dl-shared-carousel__arrows{display:flex}.dl-shared-carousel__slide{flex-basis:calc((100% - 12px)/2)}}
 @media(min-width:1100px){.dl-shared-carousel__slide{flex-basis:calc((100% - 24px)/3)}}
 @media(prefers-reduced-motion:reduce){.dl-shared-carousel__track{scroll-behavior:auto}.dl-shared-carousel__dots button:before{transition:none}}
+/* Classic showroom photo-first glass cards */
+.dl-shared-carousel__slide {
+  position:relative; display:block; aspect-ratio:4/5; overflow:hidden;
+  border:0; border-radius:24px; background:#101522;
+  box-shadow:0 7px 22px rgba(10,15,30,.09);
+}
+.dl-shared-carousel__photo {
+  position:absolute; inset:0; width:100%; height:100%; aspect-ratio:auto;
+  overflow:hidden; background:linear-gradient(145deg,#252d3b 0%,#101522 72%,#090d16 100%);
+}
+.dl-shared-carousel__photo img {
+  position:absolute; inset:0; display:block; width:100%; height:100%; object-fit:cover;
+}
+.dl-shared-carousel__photo::after {
+  content:""; position:absolute; z-index:1; inset:40% 0 0; pointer-events:none;
+  background:linear-gradient(to bottom,rgba(0,0,0,0),rgba(0,0,0,.35));
+}
+.dl-shared-carousel__no-photo {
+  position:absolute; inset:0; display:grid; place-items:center;
+  background:linear-gradient(145deg,#252d3b 0%,#101522 72%,#090d16 100%);
+  color:rgba(255,255,255,.42);
+}
+.dl-shared-carousel__status {
+  z-index:3; top:11px; left:11px; min-height:28px;
+  border:1px solid rgba(255,255,255,.24); background:rgba(12,16,28,.72);
+  color:#fff; -webkit-backdrop-filter:blur(8px) saturate(130%);
+  backdrop-filter:blur(8px) saturate(130%); text-transform:none;
+}
+.dl-shared-carousel__status.is-reserved,
+.dl-shared-carousel__status.is-sold {background:rgba(12,16,28,.72);color:#fff;}
+.dl-shared-carousel__body {
+  position:absolute; z-index:2; right:10px; bottom:10px; left:10px;
+  display:flex; min-width:0; padding:13px 13px 12px; gap:8px;
+  border:1px solid rgba(255,255,255,.22); border-radius:18px;
+  background:rgba(12,16,28,.60); color:#fff;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.18),0 8px 22px rgba(0,0,0,.2);
+  -webkit-backdrop-filter:blur(14px) saturate(130%);
+  backdrop-filter:blur(14px) saturate(130%);
+}
+.dl-shared-carousel__body h3 {
+  display:-webkit-box; min-width:0; margin:0; overflow:hidden;
+  -webkit-box-orient:vertical; -webkit-line-clamp:2; overflow-wrap:anywhere;
+  color:#fff; font-size:15px; font-weight:700; line-height:1.22;
+}
+.dl-shared-carousel__price {
+  min-width:0; color:#fff; font-size:20px; font-weight:900;
+  line-height:1.12; overflow-wrap:anywhere;
+}
+.dl-shared-carousel__specs {display:flex;min-width:0;flex-wrap:wrap;gap:6px;margin-top:0;}
+.dl-shared-carousel__specs span {
+  max-width:100%; padding:4px 7px; border:1px solid rgba(255,255,255,.12);
+  border-radius:999px; background:rgba(255,255,255,.16); color:#fff;
+  font-size:10px; line-height:1.2; overflow-wrap:anywhere;
+}
+.dl-shared-carousel__slide:focus-visible {outline:3px solid #0A0F1E;outline-offset:3px;}
+@supports not (backdrop-filter:blur(1px)) {
+  .dl-shared-carousel__body {background:rgba(12,16,28,.78);}
+  .dl-shared-carousel__status {background:rgba(12,16,28,.86);}
+}
+@media (prefers-reduced-transparency:reduce) {
+  .dl-shared-carousel__body,.dl-shared-carousel__status {
+    background:#0c101c; -webkit-backdrop-filter:none; backdrop-filter:none;
+  }
+}
+@media (prefers-reduced-motion:reduce) {
+  .dl-shared-carousel__photo img,.dl-shared-carousel__slide,.dl-shared-carousel__body {
+    animation:none; transition:none;
+  }
+}

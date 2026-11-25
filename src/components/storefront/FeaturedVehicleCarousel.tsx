@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { CarFront } from 'lucide-react';
 import type { Dealership, Vehicle } from '../../types';
 import { pickShowcaseVehicles } from './featuredVehicles';
 import './FeaturedVehicleCarousel.css';
@@ -18,6 +19,7 @@ export const FeaturedVehicleCarousel: React.FC<FeaturedVehicleCarouselProps> = (
   const hoveringRef = useRef(false);
   const focusedRef = useRef(false);
   const [activeIndex, setActiveIndex] = useState(0);
+  const [failedImages, setFailedImages] = useState<string[]>([]);
   const [reducedMotion, setReducedMotion] = useState(() => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
   const [tabVisible, setTabVisible] = useState(() => typeof document === 'undefined' || !document.hidden);
 
@@ -131,6 +133,8 @@ export const FeaturedVehicleCarousel: React.FC<FeaturedVehicleCarouselProps> = (
             vehicle.fuel || '',
           ].filter(Boolean).slice(0, 3);
           const href = '/' + encodeURIComponent(dealer.slug) + '/vehicle/' + encodeURIComponent(vehicle.id);
+          const photoAvailable = Boolean(vehicle.photos?.[0]) && !failedImages.includes(vehicle.id);
+          const statusLabel = vehicle.status === 'sold' ? 'Sold' : vehicle.status === 'reserved' ? 'Reserved' : 'Available';
           return <a key={vehicle.id} className="dl-shared-carousel__slide" href={href} aria-roledescription="slide" aria-label={(index + 1) + ' of ' + slides.length}
             onClick={event => {
               if (event.button === 0 && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey) {
@@ -139,13 +143,28 @@ export const FeaturedVehicleCarousel: React.FC<FeaturedVehicleCarouselProps> = (
               }
             }}>
             <div className="dl-shared-carousel__photo">
-              {vehicle.photos?.[0] ? <img src={vehicle.photos[0]} alt={title} loading={index === 0 ? 'eager' : 'lazy'} fetchPriority={index === 0 ? 'high' : 'auto'} decoding="async" /> : <div className="dl-shared-carousel__no-photo">Photo unavailable</div>}
-              <span className={'dl-shared-carousel__status is-' + vehicle.status}>{vehicle.status === 'reserved' ? 'Reserved' : 'Available'}</span>
-            </div>
-            <div className="dl-shared-carousel__body">
-              <h3>{title}</h3>
-              <strong className="dl-shared-carousel__price">{formatPrice(vehicle)}</strong>
-              {specs.length > 0 && <div className="dl-shared-carousel__specs">{specs.map(spec => <span key={spec}>{spec}</span>)}</div>}
+              {photoAvailable ? (
+                <img
+                  src={vehicle.photos[0]}
+                  alt={title}
+                  loading={index === 0 ? 'eager' : 'lazy'}
+                  fetchPriority={index === 0 ? 'high' : 'auto'}
+                  decoding="async"
+                  width={1200}
+                  height={1500}
+                  onError={() => setFailedImages(current => current.includes(vehicle.id) ? current : [...current, vehicle.id])}
+                />
+              ) : (
+                <div className="dl-shared-carousel__no-photo" aria-hidden="true">
+                  <CarFront size={62} strokeWidth={1.35} />
+                </div>
+              )}
+              <span className={'dl-shared-carousel__status is-' + vehicle.status}>{statusLabel}</span>
+              <div className="dl-shared-carousel__body">
+                <h3>{title}</h3>
+                <strong className="dl-shared-carousel__price">{formatPrice(vehicle)}</strong>
+                {specs.length > 0 && <div className="dl-shared-carousel__specs">{specs.map(spec => <span key={spec}>{spec}</span>)}</div>}
+              </div>
             </div>
           </a>;
         })}
