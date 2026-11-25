@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabase';
+import { normalizeWhatsAppMessage } from '../utils/phoneUtils';
 
 export interface LotleNotification {
   id: string;
@@ -38,7 +39,9 @@ export const notificationService = {
     const { data, error } = await (supabase as any).from('notifications').select('id,category,title,body,data,read_at,created_at')
       .eq('dealership_id', dealershipId).order('created_at', { ascending: false }).limit(limit);
     if (error) throw error;
-    return ((data || []) as LotleNotification[]).filter(row => !isLegacyTrialNotification(row) && (!Array.isArray(row.data?.channels) || row.data.channels.includes('in_app')));
+    return ((data || []) as LotleNotification[])
+      .filter(row => !isLegacyTrialNotification(row) && (!Array.isArray(row.data?.channels) || row.data.channels.includes('in_app')))
+      .map(row => ({ ...row, body: normalizeWhatsAppMessage(row.body) }));
   },
   async getPreferences(dealershipId: string): Promise<NotificationPreferences> {
     const { data, error } = await (supabase as any).from('notification_preferences').select('*').eq('dealership_id', dealershipId).maybeSingle();
@@ -78,7 +81,9 @@ export const notificationService = {
     const { data, error } = await (supabase as any).from('notifications').select('id,category,title,body,data,read_at,created_at').eq('id', id).maybeSingle();
     if (error) throw error;
     const notification = data as LotleNotification | null;
-    return notification && !isLegacyTrialNotification(notification) ? notification : null;
+    return notification && !isLegacyTrialNotification(notification)
+      ? { ...notification, body: normalizeWhatsAppMessage(notification.body) }
+      : null;
   },
   async unreadEnquiryCount(dealershipId: string): Promise<number> {
     const { count, error } = await (supabase as any).from('notifications').select('id', { count: 'exact', head: true })

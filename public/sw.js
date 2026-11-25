@@ -1,6 +1,18 @@
 // Lotlé service worker: preserve push delivery and cache only safe app shell assets.
 const LOTLE_CACHE_VERSION = 'lotle-runtime-v7';
 
+function normalizeNotificationBody(value) {
+  return String(value || '')
+    .replace(/\\+r\\+n/g, '\n')
+    .replace(/\\+n/g, '\n')
+    .replace(/\\+r/g, '\n')
+    .replace(/\r\n?/g, '\n')
+    .replace(/[ \t]+\n/g, '\n')
+    .replace(/\n[ \t]*\n(?:[ \t]*\n)+/g, '\n\n')
+    .replace(/^\n+|\n+$/g, '')
+    .trim();
+}
+
 self.addEventListener('install', (event) => {
   event.waitUntil(self.skipWaiting());
 });
@@ -20,7 +32,7 @@ self.addEventListener('push', (event) => {
   try { payload = event.data ? event.data.json() : {}; } catch { payload = { body: event.data?.text() || '' }; }
   const title = payload.title || 'Lotlé update';
   const options = {
-    body: payload.body || 'You have a new update in Lotlé.',
+    body: normalizeNotificationBody(payload.body) || 'You have a new update in Lotlé.',
     icon: '/icon.svg?v=lotle-6',
     badge: '/icon.svg?v=lotle-6',
     data: payload.data || { url: '/#/app/notifications' },

@@ -4,7 +4,7 @@ import type { Dealership, Vehicle } from '../../types';
 import { supabaseService } from '../../services/supabaseService';
 import { storageService } from '../../services/storage';
 import { isSupabaseConfigured } from '../../lib/supabase';
-import { cleanLocalDigits, getWhatsAppDirectUrl, toE164, validatePhoneNumber } from '../../utils/phoneUtils';
+import { buildBuyerEnquiryMessage, buildWhatsAppUrl, cleanLocalDigits, toE164, validatePhoneNumber } from '../../utils/phoneUtils';
 import './CustomerEnquiryAssistant.css';
 
 type EnquiryChoice =
@@ -152,20 +152,6 @@ export const CustomerEnquiryAssistant: React.FC<Props> = ({
     setPhoneTouched(false);
   };
 
-  const buildMessage = (anonymous: boolean): string => {
-    const lines = [
-      anonymous ? 'Hello, I am enquiring about this vehicle.' : 'Hi, my name is ' + name.trim() + '.',
-      vehicleName
-        ? 'I am interested in the ' + vehicleName + (vehicle && vehicle.price > 0 ? ' (' + priceLabel + ')' : '') + '.'
-        : 'I am enquiring about vehicles at ' + dealership.name + '.',
-      'My question: ' + choice,
-      choice === 'Book a test drive' && preferredTime.trim()
-        ? 'Preferred day and time: ' + preferredTime.trim()
-        : '',
-    ];
-    return lines.filter(Boolean).join('\n\n');
-  };
-
   const persistEnquiry = async (payload: {
     dealershipId: string;
     vehicleId?: string;
@@ -224,7 +210,15 @@ export const CustomerEnquiryAssistant: React.FC<Props> = ({
       // Storage restrictions should not prevent a genuine enquiry.
     }
 
-    const message = buildMessage(anonymous);
+    const message = buildBuyerEnquiryMessage({
+      dealershipName: dealership.name,
+      buyerName: anonymous ? undefined : name.trim(),
+      buyerPhone: anonymous ? undefined : buyerPhone,
+      vehicleName: vehicleName || undefined,
+      price: vehicle && vehicle.price > 0 ? priceLabel : undefined,
+      choice,
+      preferredTime: choice === 'Book a test drive' ? preferredTime : undefined,
+    });
     const payload = {
       dealershipId: dealership.id,
       ...(vehicle?.id ? { vehicleId: vehicle.id } : {}),
@@ -234,7 +228,7 @@ export const CustomerEnquiryAssistant: React.FC<Props> = ({
       stage: 'new' as const,
       source: 'whatsapp' as const,
     };
-    const url = getWhatsAppDirectUrl(dealerNumber, message);
+    const url = buildWhatsAppUrl(dealerNumber, message);
     setWhatsAppUrl(url);
 
     // Open a blank tab synchronously within the click so popup blockers do not

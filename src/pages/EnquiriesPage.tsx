@@ -8,6 +8,7 @@ import { useNavigation } from '../context/NavigationContext';
 import { storageService } from '../services/storage';
 import { Enquiry, EnquiryStage, Vehicle } from '../types';
 import './EnquiriesPage.css';
+import { buildWhatsAppUrl, normalizeWhatsAppMessage } from '../utils/phoneUtils';
 
 type EnquiryFilter = 'all' | 'new' | 'contacted' | 'converted' | 'lost';
 const filters: { id: EnquiryFilter; label: string }[] = [
@@ -174,7 +175,7 @@ export const EnquiriesPage: React.FC = () => {
     if (!phone) return '';
     const vehicle = vehicleFor(enquiry);
     const car = vehicle ? `the ${vehicle.year} ${vehicle.make} ${vehicle.model}` : 'our showroom';
-    return `https://wa.me/${phone}?text=${encodeURIComponent(`Hi ${enquiry.buyerName}, thanks for your interest in ${car}. How can I help?`)}`;
+    return buildWhatsAppUrl(phone, 'Hi ' + (enquiry.buyerName || 'there') + ', thanks for your interest in ' + car + '. How can I help?');
   };
 
   const shareShowroom = async () => {
@@ -308,7 +309,7 @@ export const EnquiriesPage: React.FC = () => {
                       {vehicle?.photos?.[0] ? <img className="enquiry-car-thumb" src={vehicle.photos[0]} alt="" loading="lazy"/> : <div className="enquiry-car-thumb enquiry-car-thumb-empty"><CarFront size={19}/></div>}
                     </div>
                     <div className="enquiry-card-status"><span className={`enquiry-status ${statusClass(enquiry)}`}>{displayStage(enquiry.stage)}</span></div>
-                    <p className="enquiry-message-preview">{enquiry.message || 'No message provided.'}</p>
+                    <p className="enquiry-message-preview">{normalizeWhatsAppMessage(enquiry.message) || 'No message provided.'}</p>
                     {contactUrl ? <div className="enquiry-contact-actions">
                       <a className="enquiry-whatsapp-cta" href={contactUrl} target="_blank" rel="noreferrer" onClick={event => { event.stopPropagation(); confirmContacted(enquiry); }}><WhatsAppIcon size={18}/> Reply on WhatsApp</a>
                       <a className="enquiry-call-cta" href={`tel:${enquiry.buyerPhone}`} aria-label={`Call ${enquiry.buyerName}`} onClick={event => { event.stopPropagation(); confirmContacted(enquiry); }}><Phone size={16}/></a>
@@ -338,7 +339,7 @@ export const EnquiriesPage: React.FC = () => {
               {vehicleFor(active)?.photos?.[0] ? <img src={vehicleFor(active)?.photos[0]} alt={`${vehicleFor(active)?.make} ${vehicleFor(active)?.model}`}/> : <div className="enquiries-vehicle-placeholder"><CarFront size={25}/></div>}
               <div><small>INTERESTED VEHICLE</small><strong>{vehicleFor(active)?.year} {vehicleFor(active)?.make} {vehicleFor(active)?.model}</strong><b>{vehicleFor(active)?.currency === 'ZAR' ? 'R' : '$'}{vehicleFor(active)?.price.toLocaleString()}</b></div>
             </div>}
-            <div className="enquiries-message-card"><small>BUYER MESSAGE</small><p>{active.message}</p><time>{new Date(active.createdAt).toLocaleString()}</time></div>
+            <div className="enquiries-message-card"><small>BUYER MESSAGE</small><p>{normalizeWhatsAppMessage(active.message)}</p><time>{new Date(active.createdAt).toLocaleString()}</time></div>
             <div className="enquiries-status-field"><span>Enquiry status</span><Select name="stage" aria-label="Enquiry status" value={stage} title="Enquiry status" options={[{value:'new',label:'New'},{value:active.stage === 'negotiating' ? 'negotiating' : 'contacted',label:'Contacted'},{value:'sold',label:'Converted'},{value:'lost',label:'Lost'}]} onChange={value=>setStage(value as EnquiryStage)}/></div>
             <label className="enquiries-status-field">Internal notes<textarea value={notes} onChange={event => setNotes(event.target.value)} rows={3} placeholder="Add a note about this buyer…"/></label>
             <button type="button" disabled={saving} onClick={() => void save()} className="enquiries-save-button">{saving ? 'Saving…' : 'Save enquiry updates'}</button>

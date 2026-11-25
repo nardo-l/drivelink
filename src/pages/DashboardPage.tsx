@@ -7,6 +7,7 @@ import { PerformanceSection } from '../components/dashboard/PerformanceSection';
 import { PlanSummaryCard } from '../components/dashboard/PlanSummaryCard';
 import { planService } from '../services/planService';
 import { notificationService } from '../services/notificationService';
+import { normalizeWhatsAppMessage } from '../utils/phoneUtils';
 import { Bell, CarFront, ChevronRight, Eye, MessageCircle, Plus, Share2, ArrowUpRight } from 'lucide-react';
 import { absoluteUrl, name } from '../config/brand';
 import './DashboardPage.css';
@@ -199,7 +200,7 @@ export const DashboardPage: React.FC = () => {
 
         <section className="mb-4">
           <div className="mb-2 flex items-center justify-between"><h2 className="text-[12px] font-extrabold">Recent enquiries</h2><button onClick={()=>navigate('/app/enquiries')} className="text-[10px] font-bold text-[#4c5562]">See all <ChevronRight size={13} className="inline"/></button></div>
-          {recent.length ? <div className="dl-recent-card">{recent.map(item=><button key={item.id} onClick={()=>navigate('/app/enquiries')} className="dl-recent-row"><span className="dl-recent-avatar">{item.buyerName.slice(0,1).toUpperCase()}</span><span className="min-w-0 flex-1"><strong>{item.buyerName}</strong><small>{item.message}</small></span><span className="dl-recent-date">{new Date(item.createdAt).toLocaleDateString()}</span></button>)}</div> : <div className="dl-recent-empty"><MessageCircle size={19}/><p>No enquiries yet</p><small>New customer enquiries will appear here.</small></div>}
+          {recent.length ? <div className="dl-recent-card">{recent.map(item=><button key={item.id} onClick={()=>navigate('/app/enquiries')} className="dl-recent-row"><span className="dl-recent-avatar">{item.buyerName.slice(0,1).toUpperCase()}</span><span className="min-w-0 flex-1"><strong>{item.buyerName}</strong><small>{normalizeWhatsAppMessage(item.message)}</small></span><span className="dl-recent-date">{new Date(item.createdAt).toLocaleDateString()}</span></button>)}</div> : <div className="dl-recent-empty"><MessageCircle size={19}/><p>No enquiries yet</p><small>New customer enquiries will appear here.</small></div>}
         </section>
 
         {!loading && vehicles.length > 0 && <section className="mb-4"><div className="mb-2 flex items-center justify-between"><h2 className="text-[12px] font-extrabold">Garage snapshot</h2><button onClick={()=>navigate('/app/vehicles')} className="text-[10px] font-bold text-[#4c5562]">View garage</button></div>{vehicles.slice(0,2).map(vehicle=><button key={vehicle.id} onClick={()=>navigate(`/app/vehicles/${vehicle.id}`)} className="dl-garage-row"><span className="dl-garage-photo">{vehicle.photos?.[0]&&<img src={vehicle.photos[0]} alt=""/>}</span><span className="min-w-0 flex-1"><strong>{vehicle.year} {vehicle.make} {vehicle.model}</strong><small>{vehicle.currency==='ZAR'?'R':'$'}{vehicle.price.toLocaleString()}</small></span><StatusBadge status={vehicle.status} size="sm"/></button>)}</section>}

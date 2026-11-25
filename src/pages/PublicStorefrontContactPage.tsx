@@ -5,6 +5,7 @@ import { useNavigation } from '../context/NavigationContext';
 import { storageService } from '../services/storage';
 import { supabaseService } from '../services/supabaseService';
 import { isSupabaseConfigured } from '../lib/supabase';
+import { buildWhatsAppUrl, normalizeWhatsAppMessage } from '../utils/phoneUtils';
 import type { Dealership, Vehicle } from '../types';
 
 export const PublicStorefrontContactPage: React.FC<{ slug: string }> = ({ slug }) => {
@@ -45,7 +46,7 @@ export const PublicStorefrontContactPage: React.FC<{ slug: string }> = ({ slug }
     if (!dealer || !name.trim() || !phone.trim() || !message.trim()) { setError('Please complete your name, phone number and message.'); return; }
     setSending(true); setError('');
     try {
-      const payload = { dealershipId: dealer.id, vehicleId: vehicleId || null, buyerName: name.trim(), buyerPhone: phone.trim(), buyerEmail: email.trim() || undefined, message: message.trim(), stage: 'new' as const, source: 'form' as const, notes: 'Public dealership contact form.' };
+      const payload = { dealershipId: dealer.id, vehicleId: vehicleId || null, buyerName: name.trim(), buyerPhone: phone.trim(), buyerEmail: email.trim() || undefined, message: normalizeWhatsAppMessage(message), stage: 'new' as const, source: 'form' as const, notes: 'Public dealership contact form.' };
       if (isSupabaseConfigured()) await supabaseService.createEnquiry(payload);
       else await storageService.createEnquiryAsync(payload);
       setSent(true);
@@ -57,7 +58,7 @@ export const PublicStorefrontContactPage: React.FC<{ slug: string }> = ({ slug }
   if (!dealer) return <div className="dl-store-loading">This dealership could not be found.</div>;
   const back = () => navigate('/' + dealer.slug + '/browse');
   const shareShowroom = async () => { const url = window.location.origin + '/' + dealer.slug; if (navigator.share) { try { await navigator.share({ title: dealer.name, url }); } catch { /* share sheet dismissed */ } } else if (navigator.clipboard) { await navigator.clipboard.writeText(url); } };
-  const whatsapp = dealer.whatsapp ? 'https://wa.me/' + dealer.whatsapp.replace(/\D/g,'') : '';
+  const whatsapp = dealer.whatsapp ? buildWhatsAppUrl(dealer.whatsapp) : '';
 
   return <main className="dl-store-contact">
     <header><button onClick={back} aria-label="Back to inventory"><ArrowLeft/></button><span>Contact dealership</span></header>

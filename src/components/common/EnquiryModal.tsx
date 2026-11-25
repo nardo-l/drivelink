@@ -3,6 +3,7 @@ import { X, Send, MessageCircle, Phone, CheckCircle2 } from 'lucide-react';
 import { storageService } from '../../services/storage';
 import { Vehicle } from '../../types';
 import { useNavigation } from '../../context/NavigationContext';
+import { buildWhatsAppUrl, normalizeWhatsAppMessage } from '../../utils/phoneUtils';
 
 interface EnquiryModalProps {
   isOpen: boolean;
@@ -33,13 +34,14 @@ export const EnquiryModal: React.FC<EnquiryModalProps> = ({ isOpen, onClose, veh
       return;
     }
 
+    const normalisedMessage = normalizeWhatsAppMessage(message);
     storageService.createEnquiryAsync({
       dealershipId: dealership.id,
       vehicleId: vehicle ? vehicle.id : null,
       buyerName: buyerName.trim(),
       buyerPhone: buyerPhone.trim(),
       buyerEmail: buyerEmail.trim() || undefined,
-      message,
+      message: normalisedMessage,
       stage: 'new',
       source: 'form',
       notes: `Direct web form inquiry for ${vehicle ? `${vehicle.year} ${vehicle.make} ${vehicle.model}` : 'general showroom'}.`,
@@ -54,9 +56,8 @@ export const EnquiryModal: React.FC<EnquiryModalProps> = ({ isOpen, onClose, veh
   };
 
   const handleDirectWhatsApp = () => {
-    const encoded = encodeURIComponent(message);
-    const cleanNumber = dealership.whatsapp.replace(/\D/g, '');
-    window.open(`https://wa.me/${cleanNumber}?text=${encoded}`, '_blank');
+    const normalisedMessage = normalizeWhatsAppMessage(message);
+    window.open(buildWhatsAppUrl(dealership.whatsapp, normalisedMessage), '_blank');
     // Record lead in background with source 'whatsapp'
     storageService.createEnquiryAsync({
       dealershipId: dealership.id,
@@ -64,7 +65,7 @@ export const EnquiryModal: React.FC<EnquiryModalProps> = ({ isOpen, onClose, veh
       buyerName: buyerName.trim() || 'WhatsApp Buyer',
       buyerPhone: buyerPhone.trim() || 'WhatsApp Link Click',
       buyerEmail: buyerEmail.trim() || undefined,
-      message,
+      message: normalisedMessage,
       stage: 'new',
       source: 'whatsapp',
       notes: 'Buyer clicked WhatsApp contact link from storefront.',

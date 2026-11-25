@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { X, Copy, Check, MessageCircle, QrCode, ExternalLink } from 'lucide-react';
 import { useNavigation } from '../../context/NavigationContext';
 import { notificationService } from '../../services/notificationService';
+import { buildWhatsAppShareUrl } from '../../utils/phoneUtils';
 
 interface ShareModalProps {
   isOpen: boolean;
@@ -34,8 +35,7 @@ export const ShareModal: React.FC<ShareModalProps> = ({
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const shareText = encodeURIComponent(`${title}\n${description}\n${url}`);
-  const whatsappUrl = `https://api.whatsapp.com/send?text=${shareText}`;
+  const whatsappUrl = buildWhatsAppShareUrl(`${title}\n${description}\n${url}`);
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-xs p-0 sm:p-4 animate-in fade-in duration-200">

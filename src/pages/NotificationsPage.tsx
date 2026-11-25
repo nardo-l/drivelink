@@ -5,6 +5,7 @@ import { useNavigation } from '../context/NavigationContext';
 import { storageService } from '../services/storage';
 import { notificationService, type LotleNotification, type NotificationPreferences } from '../services/notificationService';
 import { isSupabaseConfigured } from '../lib/supabase';
+import { normalizeWhatsAppMessage } from '../utils/phoneUtils';
 import { BottomNav } from '../components/layout/BottomNav';
 
 
@@ -275,7 +276,7 @@ export const NotificationsPage: React.FC = () => {
       {loading ? <div className="space-y-3">{[1,2,3].map(n => <div key={n} className="h-20 animate-pulse rounded-2xl bg-white" />)}</div> :
         items.length ? <div className="space-y-2">{items.map(item => <button key={item.id} onClick={() => void openNotification(item)} className={'flex w-full items-start gap-3 rounded-2xl border p-4 text-left transition hover:border-slate-300 ' + (item.read_at ? 'border-slate-200 bg-white' : 'border-slate-300 bg-white shadow-sm')}>
           <span className={'mt-1 h-2 w-2 shrink-0 rounded-full ' + (item.read_at ? 'bg-transparent' : 'bg-slate-900')} />
-          <span className="min-w-0 flex-1"><span className="flex min-w-0 flex-wrap items-center justify-between gap-1"><span className="text-[10px] font-bold uppercase tracking-wide text-slate-500">{categoryLabel[item.category] || 'Update'}</span><span className="text-[10px] text-slate-500">{new Date(item.created_at).toLocaleString()}</span></span><span className="mt-1 block break-words text-sm font-bold text-slate-900">{item.title}</span><span className="mt-1 block break-words text-xs leading-relaxed text-slate-600">{item.body}</span></span>
+          <span className="min-w-0 flex-1"><span className="flex min-w-0 flex-wrap items-center justify-between gap-1"><span className="text-[10px] font-bold uppercase tracking-wide text-slate-500">{categoryLabel[item.category] || 'Update'}</span><span className="text-[10px] text-slate-500">{new Date(item.created_at).toLocaleString()}</span></span><span className="mt-1 block break-words text-sm font-bold text-slate-900">{item.title}</span><span className="mt-1 block break-words text-xs leading-relaxed text-slate-600">{normalizeWhatsAppMessage(item.body)}</span></span>
         </button>)}</div> : <div className="rounded-2xl border border-dashed border-slate-300 bg-white px-6 py-14 text-center"><div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100"><BellOff className="h-6 w-6 text-slate-500" /></div><h3 className="mt-4 text-sm font-bold">You're all caught up</h3><p className="mt-1 text-xs text-slate-500">New enquiries and dealership activity will appear here.</p></div>}
     </main>
     <BottomNav />
