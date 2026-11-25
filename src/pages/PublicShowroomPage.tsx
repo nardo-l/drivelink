@@ -452,7 +452,7 @@ export const PublicShowroomPage: React.FC<PublicShowroomPageProps> = ({ slug, pr
         </div>
       )}
 
-      {showEnquiryAssistant && <CustomerEnquiryAssistant dealership={dealer} onClose={() => setShowEnquiryAssistant(false)} />}
+      {showEnquiryAssistant && <CustomerEnquiryAssistant dealership={dealer} onClose={() => setShowEnquiryAssistant(false)} preview={Boolean(previewDealership)} />}
     </main>
   );
 };

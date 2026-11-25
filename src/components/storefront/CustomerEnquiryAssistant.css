@@ -1,33 +1,389 @@
-.lotle-enquiry-backdrop{position:fixed;inset:0;z-index:1200;display:flex;align-items:center;justify-content:center;padding:18px;background:rgba(10,15,30,.58);overflow-y:auto}
-.lotle-enquiry-dialog{width:min(100%,480px);max-height:min(760px,calc(100dvh - 36px));overflow-y:auto;background:#fff;color:#0a0f1e;border-radius:26px;box-shadow:0 24px 80px rgba(0,0,0,.24);display:flex;flex-direction:column}
-.lotle-enquiry-header{display:flex;align-items:center;justify-content:space-between;padding:22px 24px 15px;gap:12px}
-.lotle-enquiry-header>div{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
-.lotle-enquiry-eyebrow{font-size:10px;font-weight:800;letter-spacing:.12em;color:#647084}
-.lotle-enquiry-step{font-size:12px;color:#647084}
-.lotle-enquiry-header>button{border:0;background:#f1f3f6;color:#0a0f1e;width:40px;height:40px;border-radius:50%;display:grid;place-items:center;cursor:pointer}
-.lotle-enquiry-progress{height:4px;background:#edf0f4;margin:0 24px;border-radius:9px;overflow:hidden}
-.lotle-enquiry-progress span{height:100%;display:block;background:#0a0f1e;border-radius:9px;transition:width .2s ease}
-.lotle-enquiry-content{padding:26px 24px 20px;flex:1}
-.lotle-enquiry-content h2{font-size:clamp(24px,5vw,30px);line-height:1.12;letter-spacing:-.04em;margin:0 0 10px;font-weight:750}
-.lotle-enquiry-content>p{font-size:14px;line-height:1.55;color:#647084;margin:0 0 22px}
-.lotle-enquiry-content label{display:flex;flex-direction:column;gap:9px;font-size:13px;font-weight:650;color:#344054}
-.lotle-enquiry-content input,.lotle-enquiry-content textarea{width:100%;min-width:0;border:1px solid #dce1e8;border-radius:14px;padding:15px 16px;font:inherit;font-size:16px;color:#0a0f1e;background:#fff;outline:none}
-.lotle-enquiry-content input:focus,.lotle-enquiry-content textarea:focus{border-color:#0a0f1e;box-shadow:0 0 0 3px rgba(10,15,30,.1)}
-.lotle-enquiry-vehicle{display:flex;flex-direction:column;gap:4px;background:#f5f6f8;border-radius:13px;padding:11px 13px;margin-bottom:20px}
-.lotle-enquiry-vehicle span{font-size:9px;font-weight:800;letter-spacing:.1em;color:#748094}
-.lotle-enquiry-vehicle strong{font-size:13px}
-.lotle-enquiry-options{display:grid;grid-template-columns:1fr 1fr;gap:9px}
-.lotle-enquiry-options button{min-height:50px;padding:11px 12px;border:1px solid #e1e5eb;background:#fff;border-radius:13px;color:#172033;font-size:13px;font-weight:600;text-align:left;display:flex;align-items:center;justify-content:space-between;gap:8px;cursor:pointer}
-.lotle-enquiry-options button.selected{border-color:#0a0f1e;background:#f1f3f6}
-.lotle-enquiry-skip{margin-top:14px;padding:8px 0;border:0;background:transparent;color:#667085;font-size:13px;text-decoration:underline;cursor:pointer}
-.lotle-enquiry-extra{margin-top:20px}
-.lotle-enquiry-extra textarea{resize:vertical;min-height:72px}
-.lotle-enquiry-privacy{font-size:12px!important;margin:12px 0 0!important}
-.lotle-enquiry-error{margin:14px 0 0!important;padding:11px 12px;background:#fff1f0;border-radius:10px;color:#b42318!important;font-size:13px!important}
-.lotle-enquiry-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 24px 22px;border-top:1px solid #edf0f4}
-.lotle-enquiry-back,.lotle-enquiry-next{min-height:48px;border-radius:14px;padding:0 17px;display:inline-flex;align-items:center;justify-content:center;gap:9px;font-size:14px;font-weight:700;cursor:pointer}
-.lotle-enquiry-back{border:1px solid #e1e5eb;background:#fff;color:#344054}
-.lotle-enquiry-next{border:0;background:#0a0f1e;color:#fff;margin-left:auto}
-.lotle-enquiry-next:disabled,.lotle-enquiry-back:disabled{opacity:.45;cursor:not-allowed}
-@media(max-width:520px){.lotle-enquiry-backdrop{align-items:flex-end;padding:0}.lotle-enquiry-dialog{width:100%;max-height:min(88dvh,820px);border-radius:25px 25px 0 0;padding-bottom:env(safe-area-inset-bottom)}.lotle-enquiry-content{padding:23px 21px 18px}.lotle-enquiry-header{padding:18px 21px 13px}.lotle-enquiry-footer{padding:14px 21px 18px}.lotle-enquiry-options{grid-template-columns:1fr 1fr}}
-@media(prefers-reduced-motion:reduce){.lotle-enquiry-progress span{transition:none}}
+.lotle-enquiry-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 0;
+  background: rgba(10, 15, 30, .54);
+  overscroll-behavior: contain;
+}
+.lotle-enquiry-dialog {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  width: min(100%, 560px);
+  max-height: 100dvh;
+  min-height: min(560px, 82dvh);
+  overflow: hidden;
+  color: #0a0f1e;
+  background: #fff;
+  border-radius: 28px 28px 0 0;
+  box-shadow: 0 -16px 64px rgba(0, 0, 0, .18);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.lotle-enquiry-header {
+  box-sizing: border-box;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  min-width: 0;
+  padding: 18px 20px 16px;
+  border-bottom: 1px solid #edf0f4;
+}
+.lotle-enquiry-car {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+.lotle-enquiry-car-photo {
+  flex: 0 0 64px;
+  width: 64px;
+  height: 64px;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  border-radius: 16px;
+  color: #667085;
+  background: #f0f2f5;
+}
+.lotle-enquiry-car-photo img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+.lotle-enquiry-car-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+.lotle-enquiry-car-copy strong {
+  overflow: hidden;
+  color: #0a0f1e;
+  font-size: 15px;
+  font-weight: 750;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+}
+.lotle-enquiry-car-copy span {
+  color: #667085;
+  font-size: 13px;
+  line-height: 1.3;
+}
+.lotle-enquiry-close,
+.lotle-enquiry-back {
+  flex: 0 0 44px;
+  width: 44px;
+  height: 44px;
+  display: inline-grid;
+  place-items: center;
+  border: 1px solid #e2e6ec;
+  border-radius: 50%;
+  color: #0a0f1e;
+  background: #fff;
+  cursor: pointer;
+}
+.lotle-enquiry-content {
+  box-sizing: border-box;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 24px 22px 22px;
+}
+.lotle-enquiry-content h2 {
+  margin: 0 0 9px;
+  color: #0a0f1e;
+  font-size: clamp(25px, 6vw, 30px);
+  font-weight: 780;
+  line-height: 1.12;
+  letter-spacing: -.045em;
+  overflow-wrap: anywhere;
+}
+.lotle-enquiry-content > p {
+  margin: 0 0 20px;
+  color: #667085;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.lotle-enquiry-choices {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+.lotle-enquiry-choice {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 17px;
+  border: 1px solid #0a0f1e;
+  border-radius: 18px;
+  color: #fff;
+  background: #0a0f1e;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 680;
+  text-align: left;
+  cursor: pointer;
+}
+.lotle-enquiry-choice-arrow {
+  flex: 0 0 auto;
+  font-size: 21px;
+  line-height: 1;
+}
+.lotle-enquiry-form {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+.lotle-enquiry-form .lotle-enquiry-content {
+  padding-top: 22px;
+}
+.lotle-enquiry-selected {
+  display: inline-flex;
+  width: fit-content;
+  max-width: 100%;
+  margin: 0 0 20px !important;
+  padding: 7px 11px;
+  border-radius: 999px;
+  color: #344054 !important;
+  background: #f1f3f6;
+  font-size: 12px !important;
+  font-weight: 650;
+}
+.lotle-enquiry-content label {
+  display: block;
+  margin: 0 0 7px;
+  color: #344054;
+  font-size: 13px;
+  font-weight: 700;
+}
+.lotle-enquiry-content label span {
+  color: #8a94a5;
+  font-weight: 500;
+}
+.lotle-enquiry-content input {
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  min-width: 0;
+  min-height: 52px;
+  margin: 0 0 15px;
+  padding: 13px 14px;
+  border: 1px solid #d9dee7;
+  border-radius: 14px;
+  outline: none;
+  color: #0a0f1e;
+  background: #fff;
+  font: inherit;
+  font-size: 16px;
+}
+.lotle-enquiry-content input:focus {
+  border-color: #0a0f1e;
+  box-shadow: 0 0 0 3px rgba(10, 15, 30, .12);
+}
+.lotle-enquiry-content input[aria-invalid="true"] {
+  border-color: #b42318;
+}
+.lotle-enquiry-phone {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  margin-bottom: 15px;
+  border: 1px solid #d9dee7;
+  border-radius: 14px;
+  background: #fff;
+}
+.lotle-enquiry-phone:focus-within {
+  border-color: #0a0f1e;
+  box-shadow: 0 0 0 3px rgba(10, 15, 30, .12);
+}
+.lotle-enquiry-country-code {
+  flex: 0 0 auto;
+  padding: 0 0 0 14px;
+  color: #344054;
+  font-size: 15px;
+  font-weight: 700;
+}
+.lotle-enquiry-phone input {
+  flex: 1 1 auto;
+  width: 1%;
+  margin: 0;
+  border: 0;
+  box-shadow: none !important;
+}
+.lotle-enquiry-phone input:focus {
+  border: 0;
+  box-shadow: none;
+}
+.lotle-enquiry-privacy {
+  margin: 1px 0 0 !important;
+  color: #7a8494 !important;
+  font-size: 12px !important;
+}
+.lotle-enquiry-field-error {
+  margin: -9px 0 13px !important;
+  color: #b42318 !important;
+  font-size: 12px !important;
+}
+.lotle-enquiry-error,
+.lotle-enquiry-save-notice {
+  margin: 13px 0 0 !important;
+  padding: 10px 12px;
+  border-radius: 11px;
+  font-size: 12px !important;
+  line-height: 1.45 !important;
+}
+.lotle-enquiry-error {
+  color: #912018 !important;
+  background: #fff1f0;
+}
+.lotle-enquiry-save-notice {
+  color: #475467 !important;
+  background: #f2f4f7;
+}
+.lotle-enquiry-honeypot {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+.lotle-enquiry-footer {
+  box-sizing: border-box;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 13px 22px calc(14px + env(safe-area-inset-bottom));
+  border-top: 1px solid #edf0f4;
+  background: #fff;
+}
+.lotle-enquiry-submit-actions {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 7px;
+  min-width: 0;
+}
+.lotle-enquiry-submit {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 52px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 12px 18px;
+  border: 0;
+  border-radius: 999px;
+  color: #fff;
+  background: #0a0f1e;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 750;
+  cursor: pointer;
+}
+.lotle-enquiry-submit:disabled {
+  opacity: .48;
+  cursor: not-allowed;
+}
+.lotle-enquiry-skip {
+  min-height: 36px;
+  border: 0;
+  color: #737e8f;
+  background: transparent;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+}
+.lotle-enquiry-success {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 30px;
+  padding-bottom: 34px;
+}
+.lotle-enquiry-success-icon {
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  margin-bottom: 18px;
+  border-radius: 50%;
+  color: #0a0f1e;
+  background: #edf0f4;
+}
+.lotle-enquiry-success h2 {
+  margin-bottom: 12px;
+}
+.lotle-enquiry-success > p {
+  margin-bottom: 20px;
+}
+.lotle-enquiry-open-whatsapp {
+  margin-top: 2px;
+}
+.lotle-enquiry-close-finish {
+  align-self: center;
+  min-height: 44px;
+  margin-top: 9px;
+  padding: 8px 18px;
+  border: 0;
+  color: #667085;
+  background: transparent;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 650;
+  cursor: pointer;
+}
+.lotle-enquiry-dialog button:focus-visible {
+  outline: 3px solid #667085;
+  outline-offset: 3px;
+}
+@media (min-width: 640px) {
+  .lotle-enquiry-backdrop {
+    align-items: center;
+    padding: 20px;
+  }
+  .lotle-enquiry-dialog {
+    max-height: min(820px, calc(100dvh - 40px));
+    min-height: 0;
+    border-radius: 28px;
+  }
+  .lotle-enquiry-header {
+    padding: 20px 24px 17px;
+  }
+  .lotle-enquiry-content {
+    padding-right: 26px;
+    padding-left: 26px;
+  }
+  .lotle-enquiry-footer {
+    padding-right: 26px;
+    padding-left: 26px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lotle-enquiry-dialog,
+  .lotle-enquiry-dialog * {
+    animation: none !important;
+    scroll-behavior: auto !important;
+    transition: none !important;
+  }
+}
