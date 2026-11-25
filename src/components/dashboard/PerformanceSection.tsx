@@ -1,7 +1,6 @@
 import React, { memo, useEffect, useState, useRef } from 'react';
 import { Select } from '../common/Select';
 import { supabaseService } from '../../services/supabaseService';
-import { useNavigation } from '../../context/NavigationContext';
 import type { Enquiry, Vehicle } from '../../types';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
@@ -12,7 +11,7 @@ type Props = {
   isLive: boolean;
   enquiries?: Enquiry[];
   vehicles?: Vehicle[];
-  showroomUrl: string;
+  onOpenShare: () => void;
   onPeriodChange: (period: 7 | 30 | 90) => void;
   onData: (data: PerformanceData) => void;
   onInitialLoadComplete: () => void;
@@ -64,12 +63,11 @@ export const PerformanceSection = memo(function PerformanceSection({
   isLive,
   enquiries = [],
   vehicles = [],
-  showroomUrl,
+  onOpenShare,
   onPeriodChange,
   onData,
   onInitialLoadComplete,
 }: Props) {
-  const { showToast } = useNavigation();
   const [data, setData] = useState<PerformanceData>({ visits: 0, enquiries: 0 });
   const [hasData, setHasData] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -153,15 +151,6 @@ export const PerformanceSection = memo(function PerformanceSection({
       if (index !== activeSlide && index >= 0 && index < categories.length) {
         setActiveSlide(index);
       }
-    }
-  };
-
-  const shareLink = async () => {
-    try {
-      await navigator.clipboard.writeText(showroomUrl);
-      showToast('Showroom link copied');
-    } catch {
-      showToast('Unable to copy showroom link');
     }
   };
 
@@ -251,7 +240,7 @@ export const PerformanceSection = memo(function PerformanceSection({
             ) : data.visits === 0 && data.enquiries === 0 ? (
               <div className="dl-performance-empty">
                 <p>No activity yet. Share your showroom link to start getting visitors</p>
-                <button onClick={shareLink}>Share link</button>
+                <button onClick={onOpenShare}>Share link</button>
               </div>
             ) : (
               <PerformanceBars data={data} />

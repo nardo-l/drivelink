@@ -4,6 +4,7 @@ import { storageService } from '../services/storage';
 import { isSupabaseConfigured, supabase } from '../lib/supabase';
 import { StatusBadge } from '../components/common/Badge';
 import { PerformanceSection } from '../components/dashboard/PerformanceSection';
+import { ShareSheet } from '../components/common/ShareSheet';
 import { PlanSummaryCard } from '../components/dashboard/PlanSummaryCard';
 import { planService } from '../services/planService';
 import { notificationService } from '../services/notificationService';
@@ -35,6 +36,7 @@ export const DashboardPage: React.FC = () => {
   const [subscription, setSubscription] = useState<SubscriptionStatus | null>(null);
   const [brandNoticeVisible, setBrandNoticeVisible] = useState(false);
   const [unreadNotifications, setUnreadNotifications] = useState(0);
+  const [shareOpen, setShareOpen] = useState(false);
   const load = async () => {
     setLoading(true);
     setLoadError('');
@@ -125,7 +127,7 @@ export const DashboardPage: React.FC = () => {
   const reservedCount = vehicles.filter(v => v.status === 'reserved').length;
   const recent = useMemo(() => [...enquiries].sort((a,b) => new Date(b.createdAt).getTime()-new Date(a.createdAt).getTime()).slice(0,3), [enquiries]);
   const latestVehicle = vehicles[0];
-  const fullPublicUrl = absoluteUrl(`/showroom/${encodeURIComponent(dealership.slug)}`);
+  const fullPublicUrl = absoluteUrl(`/${encodeURIComponent(dealership.slug)}`);
   const hour = new Date().getHours();
   const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
   const periodStats = [
@@ -150,15 +152,7 @@ export const DashboardPage: React.FC = () => {
             </>}
           </div>
           <div className="flex shrink-0 items-center gap-2">
-            <button type="button" onClick={async () => {
-              const shareData = { title: dealership.name, text: 'Explore vehicles from ' + dealership.name + '.', url: fullPublicUrl };
-              if (typeof navigator !== 'undefined' && navigator.share) {
-                try { await navigator.share(shareData); } catch (error: any) { if (error?.name !== 'AbortError') showToast('Could not share showroom.'); }
-                return;
-              }
-              try { await navigator.clipboard.writeText(fullPublicUrl); showToast('Showroom link copied'); }
-              catch { showToast('Unable to copy showroom link'); }
-            }} disabled={loading || !dealership.slug} className="dl-share-pill"><Share2 size={15}/><span>Share</span></button>
+            <button type="button" onClick={() => setShareOpen(true)} disabled={loading || !dealership.slug} className="dl-share-pill"><Share2 size={15}/><span>Share</span></button>
             <button onClick={() => navigate('/app/notifications')} aria-label={unreadNotifications > 0 ? `Notifications, ${unreadNotifications} unread` : 'Notifications'} className="dl-bell-button"><Bell size={19}/>{unreadNotifications > 0 && <span className="dl-notification-dot">{unreadNotifications > 99 ? '99+' : unreadNotifications}</span>}</button>
           </div>
         </header>
@@ -192,7 +186,7 @@ export const DashboardPage: React.FC = () => {
           isLive={isLive}
           enquiries={enquiries}
           vehicles={vehicles}
-          showroomUrl={fullPublicUrl}
+          onOpenShare={() => setShareOpen(true)}
           onPeriodChange={setPerformancePeriod}
           onData={setPerformance}
           onInitialLoadComplete={markPerformanceLoaded}
@@ -207,6 +201,7 @@ export const DashboardPage: React.FC = () => {
         {loadError && <div role="alert" className="mb-4 rounded-xl bg-[#fff1f0] text-[#b42318] p-3 text-xs">{loadError}</div>}
         <button onClick={()=>navigate('/app/vehicles/new')} className="dl-add-vehicle"><Plus size={17}/> Add vehicle</button>
       </main>
+      <ShareSheet isOpen={shareOpen} onClose={() => setShareOpen(false)} title={dealership.name} url={fullPublicUrl} dealershipId={dealership.id} />
     </div>
   );
 };

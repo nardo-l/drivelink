@@ -2,7 +2,7 @@ import { name, supportWhatsApp, absoluteUrl, siteUrl } from '../config/brand';
 import React,{useEffect,useMemo,useRef,useState} from 'react';
 import {
  ArrowLeft,Building2,Store,Image,UserRound,Phone,MapPin,Clock3,CreditCard,Bell,Headset,
- FileText,Shield,LogOut,Trash2,ChevronRight,Copy,Check,Upload,Loader2,MessageCircle,
+ FileText,Shield,LogOut,Trash2,ChevronRight,Upload,Loader2,MessageCircle,
  Globe,Mail,X,CheckCircle2,AlertTriangle,ExternalLink,Smartphone
 } from 'lucide-react';
 import {useNavigation} from '../context/NavigationContext';
@@ -13,6 +13,7 @@ import {isSupabaseConfigured, supabase} from '../lib/supabase';
 import {planService} from '../services/planService';
 import type {Dealership} from '../types';
 import './SettingsPage.css';
+import { ShareSheet } from '../components/common/ShareSheet';
 import { usePwaInstall } from '../context/PwaInstallContext';
 import { isReservedShowroomHandle } from '../utils/reservedShowroomHandles';
 
@@ -33,7 +34,7 @@ export const SettingsPage:React.FC=()=>{
  const [permission,setPermission]=useState<NotificationPermission>(()=>typeof Notification==='undefined'?'default':Notification.permission);
  const [planStatus,setPlanStatus]=useState('Checking plan…');
  const [deleteText,setDeleteText]=useState('');
- const [copied,setCopied]=useState(false);
+ const [shareOpen,setShareOpen]=useState(false);
  const [slugDraft,setSlugDraft]=useState(dealer.slug);
  const [slugAvailability,setSlugAvailability]=useState<'idle'|'checking'|'available'|'taken'|'reserved'>('idle');
  const logoInput=useRef<HTMLInputElement>(null),bannerInput=useRef<HTMLInputElement>(null);
@@ -52,7 +53,6 @@ export const SettingsPage:React.FC=()=>{
  const saveSheet=async()=>{if(sheet==='profile')return saveProfile(draft);if(sheet==='name')return saveProfile({name:draft.name});if(sheet==='contact')return saveProfile({phone:draft.phone,whatsapp:draft.whatsapp});if(sheet==='location')return saveProfile({city:draft.city,address:draft.address});};
  useEffect(()=>{if(sheet!=='slug')return;const clean=slugDraft.toLowerCase().trim().replace(/[^a-z0-9-]+/g,'-').replace(/-+/g,'-').replace(/^-|-$/g,'');if(clean.length<3){setSlugAvailability('idle');return;}if(isReservedShowroomHandle(clean)){setSlugAvailability('reserved');return;}setSlugAvailability('checking');let active=true;const timer=window.setTimeout(()=>{supabaseService.checkHandleAvailability(clean).then(ok=>{if(active)setSlugAvailability(ok?'available':'taken');}).catch(()=>{if(active)setSlugAvailability('taken');});},300);return()=>{active=false;window.clearTimeout(timer);};},[slugDraft,sheet]);
  const saveSlug=async()=>{if(slugAvailability!=='available')return;setSaving(true);try{const updated=await supabaseService.updateDealershipSlug(slugDraft);setDealer(updated);storageService.saveDealership(updated);setSheet(null);showToast('Showroom link updated');}catch(error){showToast(error instanceof Error?error.message:'Could not update your showroom link.');}finally{setSaving(false);}};
- const copyLink=async()=>{try{await navigator.clipboard.writeText(showroomUrl);setCopied(true);showToast('Showroom link copied');window.setTimeout(()=>setCopied(false),1800);}catch{showToast('Could not copy the showroom link');}};
  const togglePush=async()=>{if(pushBusy)return;setPushBusy(true);try{if(pushEnabled){await notificationService.disablePush(dealer.id);setPushEnabled(false);showToast('Saved');}else{await notificationService.enablePush(dealer.id,true);setPushEnabled(true);setPermission(typeof Notification==='undefined'?'default':Notification.permission);showToast('Saved');}}catch(error){setPermission(typeof Notification==='undefined'?'default':Notification.permission);showToast(error instanceof Error?error.message:'Could not update notifications.');}finally{setPushBusy(false);}};
  const uploadAsset=async(kind:'logo'|'banner',file?:File)=>{
   if(!file)return;
@@ -77,7 +77,7 @@ export const SettingsPage:React.FC=()=>{
      <button type="button" onClick={()=>openSheet('profile')} className="dl-settings-edit">Edit</button>
     </div>
     <button type="button" className="dl-settings-copy" onClick={()=>openSheet('slug')}>Edit showroom link</button>
-    <button type="button" className="dl-settings-copy" onClick={copyLink}>{copied?<Check size={14}/>:<Copy size={14}/>} {copied?'Copied':'Copy showroom link'}</button>
+    <button type="button" className="dl-settings-copy" onClick={()=>setShareOpen(true)}>Share showroom</button>
    </section>
 
    <section className="dl-settings-group"><h2>Showroom</h2>
@@ -145,5 +145,6 @@ export const SettingsPage:React.FC=()=>{
     {sheet==='delete'&&<div className="dl-settings-sheet-body"><div className="dl-settings-warning"><AlertTriangle size={18}/> Account deletion requires identity verification by {name} Support. This will open a request; it will not delete your account immediately.</div><label>Type DELETE to confirm your request<input value={deleteText} onChange={e=>setDeleteText(e.target.value)} autoComplete="off" placeholder="DELETE"/></label><button type="button" className="dl-settings-danger" disabled={deleteText.trim()!=='DELETE'} onClick={requestDeletion}>Continue to support</button></div>}
    </section>
   </div>}
+  <ShareSheet isOpen={shareOpen} onClose={()=>setShareOpen(false)} title={dealer.name} url={showroomUrl} dealershipId={dealer.id}/>
  </div>;
 };
