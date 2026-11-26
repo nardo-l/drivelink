@@ -569,3 +569,56 @@
   .dl-public-showroom .dl-ps-card,.dl-public-showroom .dl-ps-card-img,.dl-public-showroom .dl-ps-card-cta {transition:none!important;animation:none!important;}
   .dl-public-showroom .dl-ps-card:active {transform:none;opacity:1;}
 }
+
+
+/* Minimal editorial vehicle gallery cards */
+.dl-public-showroom .dl-ps-grid {align-items:stretch;gap:18px;}
+.dl-public-showroom .dl-ps-card {
+  position:relative;min-width:0;aspect-ratio:4/5;overflow:hidden;isolation:isolate;
+  border:1px solid rgba(255,255,255,.1);border-radius:26px;background:#0a0f1e;
+  box-shadow:0 8px 24px rgba(10,15,30,.1);cursor:pointer;
+  transition:transform 180ms ease,box-shadow 180ms ease;
+}
+.dl-public-showroom .dl-ps-card-media {position:absolute;inset:0;overflow:hidden;border-radius:inherit;background:linear-gradient(145deg,#273247,#0a0f1e);}
+.dl-public-showroom .dl-ps-card-link {position:absolute;inset:0;z-index:1;display:block;border-radius:inherit;color:inherit;text-decoration:none;}
+.dl-public-showroom .dl-ps-card-img {
+  position:absolute;inset:0;display:block;width:100%;height:100%;object-fit:cover;object-position:center;
+  transform:scale(1);transition:transform 360ms ease,opacity 220ms ease;
+}
+.dl-public-showroom .dl-ps-card-gradient {
+  position:absolute;z-index:1;inset:0;pointer-events:none;
+  background:linear-gradient(180deg,rgba(5,8,15,.06) 0%,rgba(5,8,15,0) 36%,rgba(5,8,15,.2) 58%,rgba(5,8,15,.88) 100%);
+}
+.dl-public-showroom .dl-ps-card-overlay {
+  position:absolute;z-index:2;right:0;bottom:0;left:0;display:flex;flex-direction:column;align-items:flex-start;
+  gap:5px;min-width:0;padding:19px 19px 21px;border:0;border-radius:0;background:transparent;
+  color:#fff;box-shadow:none;pointer-events:none;
+}
+.dl-public-showroom .dl-ps-card-overlay h3 {
+  display:-webkit-box;min-width:0;width:100%;max-width:100%;margin:0;overflow:hidden;
+  -webkit-box-orient:vertical;-webkit-line-clamp:2;
+  color:#fff;font-size:clamp(21px,4.5vw,27px);font-weight:850;line-height:1.12;letter-spacing:-.04em;
+  overflow-wrap:anywhere;text-overflow:ellipsis;
+}
+.dl-public-showroom .dl-ps-card-price {
+  display:block;width:auto;max-width:100%;margin:1px 0 0;padding:0;overflow-wrap:anywhere;
+  color:rgba(255,255,255,.94);font-size:clamp(16px,3.5vw,20px);font-weight:700;line-height:1.3;
+  letter-spacing:-.025em;text-align:left;white-space:normal;text-overflow:clip;
+}
+.dl-public-showroom .dl-ps-no-photo-view {background:linear-gradient(145deg,#273247,#0a0f1e);color:rgba(255,255,255,.6);}
+.dl-public-showroom .dl-ps-image-skeleton {background:linear-gradient(110deg,#182235 25%,#273247 40%,#182235 65%);background-size:300% 100%;}
+.dl-public-showroom .dl-ps-card-link:focus-visible {outline:3px solid #fff;outline-offset:-5px;box-shadow:inset 0 0 0 5px #0a0f1e;}
+@media (hover:hover) and (pointer:fine) {
+  .dl-public-showroom .dl-ps-card:hover {transform:translateY(-2px);box-shadow:0 13px 30px rgba(10,15,30,.17);}
+  .dl-public-showroom .dl-ps-card:hover .dl-ps-card-img {transform:scale(1.025);}
+}
+@media (max-width:390px) {
+  .dl-public-showroom .dl-ps-card {aspect-ratio:4/5.1;border-radius:24px;}
+  .dl-public-showroom .dl-ps-card-overlay {padding:16px 15px 17px;}
+  .dl-public-showroom .dl-ps-card-overlay h3 {font-size:21px;}
+  .dl-public-showroom .dl-ps-card-price {font-size:16px;}
+}
+@media (prefers-reduced-motion:reduce) {
+  .dl-public-showroom .dl-ps-card,.dl-public-showroom .dl-ps-card-img {transition:none!important;animation:none!important;}
+  .dl-public-showroom .dl-ps-card:active {transform:none;}
+}
