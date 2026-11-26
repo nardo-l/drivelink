@@ -354,10 +354,14 @@ export const PublicShowroomPage: React.FC<PublicShowroomPageProps> = ({ slug, pr
                 const imageFailed = failedImages.includes(vehicle.id);
                 const showPhoto = hasPhoto && !imageFailed;
                 const title = [vehicle.year, vehicle.make, vehicle.model].filter(Boolean).join(' ');
+                const mileage = vehicle.mileageKm != null && (Number(vehicle.mileageKm) > 0 || Number(vehicle.mileageKm) === 0 && (vehicle.condition === 'New' || vehicle.condition === 'Brand New'))
+                  ? Number(vehicle.mileageKm).toLocaleString() + ' km' : '';
                 const specs = [
-                  vehicle.mileageKm != null && (Number(vehicle.mileageKm) > 0 || Number(vehicle.mileageKm) === 0 && (vehicle.condition === 'New' || vehicle.condition === 'Brand New')) ? Number(vehicle.mileageKm).toLocaleString() + ' km' : '',
-                  vehicle.fuel || '',
-                  vehicle.transmission || '',
+                  mileage ? 'Mileage · ' + mileage : '',
+                  vehicle.transmission ? 'Transmission · ' + vehicle.transmission : '',
+                  vehicle.fuel ? 'Fuel · ' + vehicle.fuel : '',
+                  vehicle.colour ? 'Colour · ' + vehicle.colour : '',
+                  vehicle.condition ? 'Condition · ' + vehicle.condition : '',
                 ].filter(Boolean);
                 const vehicleUrl = '/' + dealer.slug + '/vehicle/' + vehicle.id;
                 return (
@@ -374,13 +378,18 @@ export const PublicShowroomPage: React.FC<PublicShowroomPageProps> = ({ slug, pr
                               onError={() => setFailedImages(current => current.includes(vehicle.id) ? current : [...current, vehicle.id])} />
                           </>
                         ) : <div className="dl-ps-no-photo-view" aria-hidden="true"><CarFront size={58} strokeWidth={1.35} /></div>}
-                        {showPhoto && <div className="dl-ps-card-gradient" />}
+                        <div className="dl-ps-card-gradient" />
                         <span className={'dl-ps-status-pill is-' + vehicle.status}>{isSold ? 'Sold' : isReserved ? 'Reserved' : 'Available'}</span>
+                        <strong className="dl-ps-card-price">{money(vehicle)}</strong>
                         <div className="dl-ps-card-overlay">
                           <div className="dl-ps-card-copy">
-                            <h3 title={title}>{title}</h3>
-                            <strong className="dl-ps-card-price">{money(vehicle)}</strong>
+                            <h3 title={title}>
+                              {vehicle.year && <span className="dl-ps-card-year">{vehicle.year}</span>}
+                              <span>{[vehicle.make, vehicle.model].filter(Boolean).join(' ') || title || 'Vehicle'}</span>
+                            </h3>
+                            {vehicle.description?.trim() && <p className="dl-ps-card-description">{vehicle.description.trim()}</p>}
                             {specs.length > 0 && <div className="dl-ps-card-specs">{specs.map(spec => <span key={spec}>{spec}</span>)}</div>}
+                            <span className="dl-ps-card-cta">View details <span aria-hidden="true">→</span></span>
                           </div>
                         </div>
                       </div>
