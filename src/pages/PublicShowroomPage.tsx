@@ -366,11 +366,8 @@ export const PublicShowroomPage: React.FC<PublicShowroomPageProps> = ({ slug, pr
                               onError={() => setFailedImages(current => current.includes(vehicle.id) ? current : [...current, vehicle.id])} />
                           </>
                         ) : <div className="dl-ps-no-photo-view" aria-hidden="true"><CarFront size={58} strokeWidth={1.35} /></div>}
-                        <div className="dl-ps-card-gradient" />
-                        <div className="dl-ps-card-overlay">
-                          <h3 title={title}>{title}</h3>
-                          <strong className="dl-ps-card-price">{money(vehicle)}</strong>
-                        </div>
+                        <strong className="dl-ps-card-price">{money(vehicle)}</strong>
+                        <span className="dl-ps-card-dealer-tab">{dealer.name}</span>
                       </div>
                     </a>
                   </article>

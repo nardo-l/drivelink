@@ -1,7 +1,7 @@
 import { absoluteUrl, name } from '../config/brand';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Select } from '../components/common/Select';
-import { ArrowRight, CarFront, Contact, Grid2x2, Heart, MapPin, Search, Share2, SlidersHorizontal, X } from 'lucide-react';
+import { ArrowRight, CarFront, Contact, Grid2x2, MapPin, Search, Share2, SlidersHorizontal, X } from 'lucide-react';
 import { useNavigation } from '../context/NavigationContext';
 import { storageService } from '../services/storage';
 import { supabaseService } from '../services/supabaseService';
@@ -26,7 +26,6 @@ export const PublicStorefrontBrowsePage: React.FC<{ slug: string }> = ({ slug })
   const [transmission, setTransmission] = useState('All');
   const [fuel, setFuel] = useState('All');
   const [sort, setSort] = useState('newest');
-  const [favorites, setFavorites] = useState<string[]>([]);
 
   useEffect(() => {
     let active = true;
@@ -92,16 +91,13 @@ export const PublicStorefrontBrowsePage: React.FC<{ slug: string }> = ({ slug })
     <section className="dl-store-section-heading"><div><h1>Featured Cars</h1><p>{filtered.length} vehicles available</p></div><button onClick={() => {setBrand('All');setQuery('');}}>View all <ArrowRight size={16}/></button></section>
     <div className="dl-store-sort"><span>Available inventory</span><Select compact value={sort} aria-label="Sort vehicles" title="Sort vehicles" options={[{value:'newest',label:'Recently added'},{value:'price-low',label:'Price: low to high'},{value:'price-high',label:'Price: high to low'},{value:'year',label:'Newest year'}]} onChange={setSort}/></div>
     {filtered.length ? <section className="dl-store-list">{filtered.map(vehicle => <article key={vehicle.id} className="dl-store-car-card">
-      <div className="dl-store-car-photo">
-        {vehicle.photos?.[0] ? <img src={vehicle.photos[0]} alt={vehicle.year + ' ' + vehicle.make + ' ' + vehicle.model}/> : <div className="dl-store-car-no-photo"><CarFront/></div>}
-        <div className="dl-store-car-shade"/>
-        <button onClick={() => setFavorites(old => old.includes(vehicle.id) ? old.filter(id => id !== vehicle.id) : [...old,vehicle.id])} aria-label={favorites.includes(vehicle.id) ? 'Remove from favourites' : 'Add to favourites'} aria-pressed={favorites.includes(vehicle.id)} className={favorites.includes(vehicle.id) ? 'saved' : ''}><Heart fill={favorites.includes(vehicle.id) ? 'currentColor' : 'none'}/></button>
-        <div className="dl-store-car-overlay">
-          <h2>{vehicle.make} {vehicle.model}</h2>
-          <p>{vehicle.year}{vehicle.mileageKm != null && (vehicle.mileageKm > 0 || vehicle.mileageKm === 0 && (vehicle.condition === 'New' || vehicle.condition === 'Brand New')) && <><i/>{vehicle.mileageKm.toLocaleString()} km</>}{vehicle.fuel && <><i/>{vehicle.fuel}</>}</p>
-          <div className="dl-store-car-bottom"><strong>{money(vehicle)}</strong><button onClick={() => navigate('/' + dealer.slug + '/vehicle/' + vehicle.id)}>View details <span><ArrowRight/></span></button></div>
+      <a className="dl-store-car-link" href={'/' + encodeURIComponent(dealer.slug) + '/vehicle/' + encodeURIComponent(vehicle.id)} aria-label={'View ' + vehicle.make + ' ' + vehicle.model + ' at ' + dealer.name}>
+        <div className="dl-store-car-photo">
+          {vehicle.photos?.[0] ? <img src={vehicle.photos[0]} alt={vehicle.year + ' ' + vehicle.make + ' ' + vehicle.model}/> : <div className="dl-store-car-no-photo"><CarFront/></div>}
+          <strong className="dl-store-car-price">{money(vehicle)}</strong>
+          <span className="dl-store-car-dealer-tab">{dealer.name}</span>
         </div>
-      </div>
+      </a>
     </article>)}</section> : <div className="dl-store-empty"><CarFront/><h2>No matching vehicles</h2><p>Try a different search or clear your filters.</p><button onClick={() => {clearFilters();setQuery('');}}>Clear filters</button></div>}
     <footer className="dl-store-footer">{dealer.name} · Powered by {name}</footer>
     <nav className="dl-store-bottom-nav"><button onClick={goHome}><Grid2x2/><span>Home</span></button><button className="active"><CarFront/><span>Inventory</span></button><button onClick={goContact}><Contact/><span>Enquiries</span></button><button onClick={shareShowroom}><Share2/><span>More</span></button></nav>

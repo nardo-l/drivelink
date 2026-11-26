@@ -41,3 +41,32 @@
 @media(prefers-reduced-motion:reduce){.dl-shared-carousel__track{scroll-behavior:auto}.dl-shared-carousel__dots button:before{transition:none}.dl-shared-carousel__image,.dl-shared-carousel__slide,.dl-shared-carousel__base{animation:none;transition:none}}
 @media(max-width:390px){.dl-shared-carousel__body{padding:17px 17px max(15px,env(safe-area-inset-bottom));gap:6px}.dl-shared-carousel__title-row h3{font-size:22px}.dl-shared-carousel__price{max-width:45%;padding:7px 8px;font-size:11px}.dl-shared-carousel__summary{font-size:11px}.dl-shared-carousel__specs{gap:5px}.dl-shared-carousel__specs span{font-size:9px;padding:5px 8px}}
 @media(max-width:359px){.dl-shared-carousel__title-row{flex-wrap:wrap}.dl-shared-carousel__price{max-width:100%}}
+
+
+/* Image-first featured cards with attached blue corner tabs */
+.dl-shared-carousel__slide {aspect-ratio:4/5;border-radius:25px;box-shadow:0 8px 24px rgba(10,15,30,.12);}
+.dl-shared-carousel__photo {position:absolute;inset:0;overflow:hidden;border-radius:inherit;}
+.dl-shared-carousel__image {position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;}
+.dl-shared-carousel__tint-layer,.dl-shared-carousel__base,.dl-shared-carousel__status,
+.dl-shared-carousel__body {display:none!important;}
+.dl-shared-carousel__card-link {position:absolute;z-index:3;inset:0;display:block;border-radius:inherit;color:#fff;text-decoration:none;}
+.dl-shared-carousel__card-link:focus-visible {outline:3px solid #fff;outline-offset:-5px;box-shadow:inset 0 0 0 5px #0a0f1e;}
+.dl-shared-carousel__price {
+ position:absolute;top:0;right:0;display:flex;align-items:center;justify-content:center;
+ max-width:calc(100% - 16px);min-height:42px;margin:0;padding:9px 15px;
+ border:0;border-radius:0 0 0 15px;background:#2563eb;color:#fff;
+ box-shadow:0 2px 8px rgba(0,0,0,.16);font-size:clamp(13px,3.7vw,17px);
+ font-weight:850;line-height:1.2;letter-spacing:-.015em;text-align:center;overflow-wrap:anywhere;
+}
+.dl-shared-carousel__name {
+ position:absolute;left:0;bottom:0;display:-webkit-box;max-width:calc(100% - 12px);
+ overflow:hidden;-webkit-box-orient:vertical;-webkit-line-clamp:2;padding:12px 16px;
+ border-radius:0 15px 0 0;background:#2563eb;color:#fff;
+ box-shadow:0 -2px 8px rgba(0,0,0,.12);font-size:clamp(17px,4.5vw,22px);
+ font-weight:850;line-height:1.12;letter-spacing:-.025em;overflow-wrap:anywhere;
+}
+@media(max-width:390px){
+ .dl-shared-carousel__slide{border-radius:22px;}
+ .dl-shared-carousel__price{min-height:39px;padding:8px 12px;font-size:13px;}
+ .dl-shared-carousel__name{padding:10px 13px;font-size:18px;}
+}
