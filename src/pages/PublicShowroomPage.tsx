@@ -48,6 +48,7 @@ export const PublicShowroomPage: React.FC<PublicShowroomPageProps> = ({ slug, pr
   const [saved, setSaved] = useState<string[]>([]);
   const [sheet, setSheet] = useState<Sheet>(null);
   const [showEnquiryAssistant, setShowEnquiryAssistant] = useState(false);
+  const [enquiryVehicle, setEnquiryVehicle] = useState<Vehicle | null>(null);
   const [loadedImages, setLoadedImages] = useState<string[]>([]);
   const [failedImages, setFailedImages] = useState<string[]>([]);
   const [activeTab, setActiveTab] = useState<'home' | 'inventory' | 'saved' | 'contact'>('home');
@@ -259,7 +260,7 @@ export const PublicShowroomPage: React.FC<PublicShowroomPageProps> = ({ slug, pr
       catch { showToast(url); }
     }
   };
-  const openWhatsApp = () => { if (waNumber) { setSheet(null); setShowEnquiryAssistant(true); } };
+  const openWhatsApp = () => { if (waNumber) { setSheet(null); setEnquiryVehicle(null); setShowEnquiryAssistant(true); } };
   const openContact = () => { setActiveTab('contact'); setSheet('contact'); };
   const browse = () => {
     setSavedOnly(false);
@@ -312,7 +313,7 @@ export const PublicShowroomPage: React.FC<PublicShowroomPageProps> = ({ slug, pr
           {city && <div><strong>Based in</strong><span>{dealer.city || dealer.country}</span></div>}
         </section>
         )}
-        {activeTab === 'home' && <FeaturedVehicleCarousel dealer={dealer} vehicles={publicVehicles} onVehicleClick={id => navigate('/' + encodeURIComponent(dealer.slug) + '/vehicle/' + encodeURIComponent(id))} />}
+        {activeTab === 'home' && <FeaturedVehicleCarousel dealer={dealer} vehicles={publicVehicles} onVehicleClick={id => navigate('/' + encodeURIComponent(dealer.slug) + '/vehicle/' + encodeURIComponent(id))} onEnquire={vehicle => { setEnquiryVehicle(vehicle); setShowEnquiryAssistant(true); }} />}
         {(activeTab === 'inventory' || activeTab === 'saved') && (
         <section className="dl-ps-search-section" aria-label="Search and filter inventory">
           <div className="dl-ps-search-row">
@@ -456,7 +457,7 @@ export const PublicShowroomPage: React.FC<PublicShowroomPageProps> = ({ slug, pr
         </div>
       )}
 
-      {showEnquiryAssistant && <CustomerEnquiryAssistant dealership={dealer} onClose={() => setShowEnquiryAssistant(false)} preview={Boolean(previewDealership)} />}
+      {showEnquiryAssistant && <CustomerEnquiryAssistant dealership={dealer} vehicle={enquiryVehicle} onClose={() => { setShowEnquiryAssistant(false); setEnquiryVehicle(null); }} preview={Boolean(previewDealership)} />}
     </main>
   );
 };
