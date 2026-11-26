@@ -476,3 +476,96 @@
   .dl-public-showroom .dl-ps-card-price {font-size:19px;}
   .dl-public-showroom .dl-ps-card-specs {gap:4px;}
 }
+
+
+/* Premium full-bleed inventory cards */
+.dl-public-showroom .dl-ps-grid {gap:18px;align-items:stretch;}
+.dl-public-showroom .dl-ps-card {
+  aspect-ratio:4/5; min-height:0; border:1px solid rgba(255,255,255,.1); border-radius:26px;
+  overflow:hidden; background:#101522; color:#fff; box-shadow:0 10px 28px rgba(10,15,30,.14);
+  transition:transform 180ms ease,box-shadow 180ms ease;
+}
+.dl-public-showroom .dl-ps-card-media {position:absolute;inset:0;overflow:hidden;border-radius:inherit;background:linear-gradient(145deg,#273247,#0a0f1e);}
+.dl-public-showroom .dl-ps-card-img {position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;transform:scale(1);transition:transform 320ms ease,opacity 220ms ease;}
+.dl-public-showroom .dl-ps-card-gradient {
+  position:absolute;z-index:1;inset:0;pointer-events:none;
+  background:linear-gradient(180deg,rgba(5,8,15,.12) 0%,rgba(5,8,15,0) 30%,rgba(5,8,15,.2) 48%,rgba(5,8,15,.88) 76%,#05080f 100%);
+}
+.dl-public-showroom .dl-ps-card.is-sold .dl-ps-card-img {filter:grayscale(.48) brightness(.72);opacity:1;}
+.dl-public-showroom .dl-ps-status-pill {
+  position:absolute;z-index:3;top:13px;left:13px;min-height:32px;display:inline-flex;align-items:center;
+  padding:6px 11px;border:1px solid rgba(255,255,255,.22);border-radius:999px;
+  background:rgba(10,15,30,.76);color:#fff;font-size:10px;font-weight:750;letter-spacing:.01em;
+  box-shadow:0 3px 12px rgba(0,0,0,.18);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
+}
+.dl-public-showroom .dl-ps-card-price {
+  position:absolute;z-index:3;top:13px;right:13px;width:auto;max-width:calc(100% - 110px);min-height:38px;
+  display:inline-flex;align-items:center;justify-content:center;margin:0;padding:8px 12px;
+  overflow-wrap:anywhere;border:1px solid rgba(255,255,255,.2);border-radius:999px;
+  background:rgba(10,15,30,.78);color:#fff;font-size:clamp(13px,3.8vw,17px);font-weight:850;
+  line-height:1.2;letter-spacing:-.02em;text-align:center;white-space:normal;
+  box-shadow:0 4px 14px rgba(0,0,0,.2);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
+}
+.dl-public-showroom .dl-ps-card-overlay {
+  position:absolute;z-index:2;right:0;bottom:0;left:0;display:flex;min-width:0;
+  padding:clamp(15px,4vw,21px);border:0;border-radius:0;background:transparent;color:#fff;box-shadow:none;
+  -webkit-backdrop-filter:none;backdrop-filter:none;
+}
+.dl-public-showroom .dl-ps-card-copy {display:flex;width:100%;min-width:0;flex-direction:column;align-items:stretch;gap:0;}
+.dl-public-showroom .dl-ps-card-overlay h3 {
+  display:-webkit-box;min-width:0;max-width:100%;margin:0 0 7px;overflow:hidden;
+  -webkit-box-orient:vertical;-webkit-line-clamp:2;overflow-wrap:anywhere;
+  color:#fff;font-size:clamp(20px,5vw,25px);font-weight:850;line-height:1.12;letter-spacing:-.04em;
+}
+.dl-public-showroom .dl-ps-card-year {display:inline;font-weight:900;margin-right:6px;color:#fff;}
+.dl-public-showroom .dl-ps-card-description {
+  display:-webkit-box;min-width:0;max-width:100%;margin:0 0 10px;overflow:hidden;
+  -webkit-box-orient:vertical;-webkit-line-clamp:2;
+  color:rgba(255,255,255,.86);font-size:12px;line-height:1.45;overflow-wrap:anywhere;
+  -webkit-mask-image:linear-gradient(to bottom,#000 72%,transparent 100%);mask-image:linear-gradient(to bottom,#000 72%,transparent 100%);
+}
+.dl-public-showroom .dl-ps-card-specs {
+  display:flex;min-width:0;max-width:100%;flex-wrap:wrap;align-items:center;gap:6px;
+  overflow:hidden;max-height:62px;margin:0 0 13px;color:#fff;font-size:10px;line-height:1.2;white-space:normal;
+}
+.dl-public-showroom .dl-ps-card-specs > span {
+  display:inline-flex;max-width:100%;min-height:27px;align-items:center;padding:5px 8px;
+  border:1px solid rgba(255,255,255,.2);border-radius:999px;background:rgba(255,255,255,.13);
+  color:#fff;font-size:10px;font-weight:650;line-height:1.2;white-space:normal;overflow-wrap:anywhere;
+}
+.dl-public-showroom .dl-ps-card-cta {
+  display:flex;width:100%;min-height:48px;align-items:center;justify-content:center;gap:8px;
+  margin-top:auto;padding:0 16px;border:1px solid rgba(255,255,255,.82);border-radius:999px;
+  background:linear-gradient(180deg,#fff 0%,#edf0f4 100%);color:#0a0f1e;
+  font-size:13px;font-weight:850;line-height:1.2;box-shadow:0 5px 16px rgba(0,0,0,.14);
+}
+.dl-public-showroom .dl-ps-card-cta > span {font-size:17px;line-height:1;}
+.dl-public-showroom .dl-ps-heart-btn {
+  position:absolute;z-index:5;top:57px;right:13px;width:44px;height:44px;min-width:44px;min-height:44px;
+  display:grid;place-items:center;border:1px solid rgba(255,255,255,.22);border-radius:50%;
+  background:rgba(10,15,30,.76);color:#fff;box-shadow:0 4px 14px rgba(0,0,0,.2);
+  -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);cursor:pointer;
+}
+.dl-public-showroom .dl-ps-heart-btn.is-saved {color:#fff;background:rgba(10,15,30,.9);}
+.dl-public-showroom .dl-ps-card-link:focus-visible {z-index:4;outline:3px solid #fff;outline-offset:-5px;box-shadow:inset 0 0 0 5px #0a0f1e;}
+.dl-public-showroom .dl-ps-no-photo-view {background:linear-gradient(145deg,#273247,#0a0f1e);color:rgba(255,255,255,.62);}
+.dl-public-showroom .dl-ps-image-skeleton {background:linear-gradient(110deg,#222b3b 25%,#303b4f 40%,#222b3b 65%);background-size:300% 100%;}
+@media (hover:hover) and (pointer:fine) {
+  .dl-public-showroom .dl-ps-card:hover {transform:translateY(-3px);box-shadow:0 16px 34px rgba(10,15,30,.2);}
+  .dl-public-showroom .dl-ps-card:hover .dl-ps-card-img {transform:scale(1.035);}
+}
+@media (max-width:390px) {
+  .dl-public-showroom .dl-ps-card {aspect-ratio:4/5.15;border-radius:24px;}
+  .dl-public-showroom .dl-ps-card-overlay {right:0;bottom:0;left:0;padding:14px;}
+  .dl-public-showroom .dl-ps-card-overlay h3 {font-size:20px;}
+  .dl-public-showroom .dl-ps-card-description {font-size:11px;margin-bottom:8px;}
+  .dl-public-showroom .dl-ps-card-specs {gap:5px;max-height:58px;margin-bottom:10px;}
+  .dl-public-showroom .dl-ps-card-specs > span {font-size:9px;padding:5px 7px;}
+  .dl-public-showroom .dl-ps-card-price {top:12px;right:12px;max-width:calc(100% - 105px);font-size:12px;padding:7px 9px;}
+  .dl-public-showroom .dl-ps-status-pill {top:12px;left:12px;padding:5px 9px;}
+  .dl-public-showroom .dl-ps-heart-btn {top:54px;right:12px;}
+}
+@media (prefers-reduced-motion:reduce) {
+  .dl-public-showroom .dl-ps-card,.dl-public-showroom .dl-ps-card-img,.dl-public-showroom .dl-ps-card-cta {transition:none!important;animation:none!important;}
+  .dl-public-showroom .dl-ps-card:active {transform:none;opacity:1;}
+}
