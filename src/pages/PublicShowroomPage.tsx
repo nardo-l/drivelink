@@ -347,25 +347,13 @@ export const PublicShowroomPage: React.FC<PublicShowroomPageProps> = ({ slug, pr
           {filtered.length > 0 ? (
             <div className="dl-ps-grid">
               {filtered.map((vehicle, index) => {
-                const isSold = vehicle.status === 'sold';
-                const isReserved = vehicle.status === 'reserved';
-                const isSaved = saved.includes(vehicle.id);
                 const hasPhoto = Boolean(vehicle.photos?.[0]);
                 const imageFailed = failedImages.includes(vehicle.id);
                 const showPhoto = hasPhoto && !imageFailed;
-                const title = [vehicle.year, vehicle.make, vehicle.model].filter(Boolean).join(' ');
-                const mileage = vehicle.mileageKm != null && (Number(vehicle.mileageKm) > 0 || Number(vehicle.mileageKm) === 0 && (vehicle.condition === 'New' || vehicle.condition === 'Brand New'))
-                  ? Number(vehicle.mileageKm).toLocaleString() + ' km' : '';
-                const specs = [
-                  mileage ? 'Mileage · ' + mileage : '',
-                  vehicle.transmission ? 'Transmission · ' + vehicle.transmission : '',
-                  vehicle.fuel ? 'Fuel · ' + vehicle.fuel : '',
-                  vehicle.colour ? 'Colour · ' + vehicle.colour : '',
-                  vehicle.condition ? 'Condition · ' + vehicle.condition : '',
-                ].filter(Boolean);
+                const title = [vehicle.make, vehicle.model].filter(Boolean).join(' ') || 'Vehicle';
                 const vehicleUrl = '/' + dealer.slug + '/vehicle/' + vehicle.id;
                 return (
-                  <article key={vehicle.id} className={'dl-ps-card ' + (isSold ? 'is-sold' : '') + (!showPhoto ? ' no-photo' : '')}>
+                  <article key={vehicle.id} className={'dl-ps-card' + (!showPhoto ? ' no-photo' : '')}>
                     <a className="dl-ps-card-link" href={vehicleUrl} aria-label={'View ' + title}>
                       <div className="dl-ps-card-media">
                         {showPhoto ? (
@@ -379,31 +367,19 @@ export const PublicShowroomPage: React.FC<PublicShowroomPageProps> = ({ slug, pr
                           </>
                         ) : <div className="dl-ps-no-photo-view" aria-hidden="true"><CarFront size={58} strokeWidth={1.35} /></div>}
                         <div className="dl-ps-card-gradient" />
-                        <span className={'dl-ps-status-pill is-' + vehicle.status}>{isSold ? 'Sold' : isReserved ? 'Reserved' : 'Available'}</span>
-                        <strong className="dl-ps-card-price">{money(vehicle)}</strong>
                         <div className="dl-ps-card-overlay">
-                          <div className="dl-ps-card-copy">
-                            <h3 title={title}>
-                              {vehicle.year && <span className="dl-ps-card-year">{vehicle.year}</span>}
-                              <span>{[vehicle.make, vehicle.model].filter(Boolean).join(' ') || title || 'Vehicle'}</span>
-                            </h3>
-                            {vehicle.description?.trim() && <p className="dl-ps-card-description">{vehicle.description.trim()}</p>}
-                            {specs.length > 0 && <div className="dl-ps-card-specs">{specs.map(spec => <span key={spec}>{spec}</span>)}</div>}
-                            <span className="dl-ps-card-cta">View details <span aria-hidden="true">→</span></span>
-                          </div>
+                          <h3 title={title}>{title}</h3>
+                          <strong className="dl-ps-card-price">{money(vehicle)}</strong>
                         </div>
                       </div>
                     </a>
-                    <button type="button" className={'dl-ps-heart-btn ' + (isSaved ? 'is-saved' : '')} onClick={event => toggleSave(vehicle.id, event)} aria-label={isSaved ? 'Remove from saved' : 'Save car'}>
-                      <Heart size={18} fill={isSaved ? 'currentColor' : 'none'} />
-                    </button>
                   </article>
                 );
               })}
             </div>
           ) : (
             <div className="dl-ps-empty-box">
-              {savedOnly ? <><Heart size={34} /><h3>No saved cars</h3><p>Tap the heart on a car to save it.</p><button type="button" onClick={() => { setSavedOnly(false); setActiveTab('inventory'); }}>Browse inventory</button></>
+              {savedOnly ? <><Heart size={34} /><h3>No saved cars</h3><p>Your saved vehicles will appear here.</p><button type="button" onClick={() => { setSavedOnly(false); setActiveTab('inventory'); }}>Browse inventory</button></>
                 : publicVehicles.length === 0 ? <><h3>No vehicles listed yet</h3></>
                   : <><Search size={34} /><h3>No cars match your search</h3><button type="button" onClick={clearFilters}>Clear filters</button></>}
             </div>
