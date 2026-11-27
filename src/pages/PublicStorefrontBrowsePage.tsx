@@ -7,6 +7,7 @@ import { storageService } from '../services/storage';
 import { supabaseService } from '../services/supabaseService';
 import { isSupabaseConfigured } from '../lib/supabase';
 import type { Dealership, Vehicle } from '../types';
+import { VehicleCard } from '../components/storefront/VehicleCard';
 
 export const PublicStorefrontBrowsePage: React.FC<{ slug: string }> = ({ slug }) => {
   const { navigate } = useNavigation();
@@ -26,6 +27,12 @@ export const PublicStorefrontBrowsePage: React.FC<{ slug: string }> = ({ slug })
   const [transmission, setTransmission] = useState('All');
   const [fuel, setFuel] = useState('All');
   const [sort, setSort] = useState('newest');
+  const [saved, setSaved] = useState<string[]>([]);
+
+  useEffect(() => {
+    try { setSaved(JSON.parse(localStorage.getItem('drivelink:saved-vehicles') || '[]')); }
+    catch { setSaved([]); }
+  }, []);
 
   useEffect(() => {
     let active = true;
@@ -69,7 +76,14 @@ export const PublicStorefrontBrowsePage: React.FC<{ slug: string }> = ({ slug })
 
   if (loading) return <div className="dl-store-loading">Loading vehicles…</div>;
   if (!dealer) return <div className="dl-store-loading"><h1>Showroom unavailable</h1><button onClick={() => navigate('/')}>Back to {name}</button></div>;
-  const money = (v: Vehicle) => new Intl.NumberFormat('en-US', { style:'currency', currency:v.currency || dealer.currency, maximumFractionDigits:0 }).format(v.price);
+  const money = (v: Vehicle) => v.price == null || Number(v.price) <= 0 ? 'Price on request' : new Intl.NumberFormat('en-US', { style:'currency', currency:v.currency || dealer.currency, maximumFractionDigits:0 }).format(v.price);
+  const toggleSaved = (id: string) => {
+    setSaved(current => {
+      const next = current.includes(id) ? current.filter(item => item !== id) : [...current, id];
+      try { localStorage.setItem('drivelink:saved-vehicles', JSON.stringify(next)); } catch {}
+      return next;
+    });
+  };
   const clearFilters = () => { setMinPrice(''); setMaxPrice(''); setYearFrom(''); setYearTo(''); setMinMileage(''); setMaxMileage(''); setTransmission('All'); setFuel('All'); setBrand('All'); };
   const goHome = () => navigate('/' + dealer.slug);
   const goContact = () => navigate('/' + dealer.slug + '/contact');
@@ -90,15 +104,16 @@ export const PublicStorefrontBrowsePage: React.FC<{ slug: string }> = ({ slug })
     <div className="dl-store-brands">{brands.map(item => <button key={item} className={brand === item ? 'active' : ''} onClick={() => setBrand(item)}>{item}</button>)}</div>
     <section className="dl-store-section-heading"><div><h1>Featured Cars</h1><p>{filtered.length} vehicles available</p></div><button onClick={() => {setBrand('All');setQuery('');}}>View all <ArrowRight size={16}/></button></section>
     <div className="dl-store-sort"><span>Available inventory</span><Select compact value={sort} aria-label="Sort vehicles" title="Sort vehicles" options={[{value:'newest',label:'Recently added'},{value:'price-low',label:'Price: low to high'},{value:'price-high',label:'Price: high to low'},{value:'year',label:'Newest year'}]} onChange={setSort}/></div>
-    {filtered.length ? <section className="dl-store-list">{filtered.map(vehicle => <article key={vehicle.id} className="dl-store-car-card">
-      <a className="dl-store-car-link" href={'/' + encodeURIComponent(dealer.slug) + '/vehicle/' + encodeURIComponent(vehicle.id)} aria-label={'View ' + vehicle.make + ' ' + vehicle.model + ' at ' + dealer.name}>
-        <div className="dl-store-car-photo">
-          {vehicle.photos?.[0] ? <img src={vehicle.photos[0]} alt={vehicle.year + ' ' + vehicle.make + ' ' + vehicle.model}/> : <div className="dl-store-car-no-photo"><CarFront/></div>}
-          <strong className="dl-store-car-price">{money(vehicle)}</strong>
-          <span className="dl-store-car-dealer-tab">{dealer.name}</span>
-        </div>
-      </a>
-    </article>)}</section> : <div className="dl-store-empty"><CarFront/><h2>No matching vehicles</h2><p>Try a different search or clear your filters.</p><button onClick={() => {clearFilters();setQuery('');}}>Clear filters</button></div>}
+    {filtered.length ? <section className="dl-vehicle-card-grid">{filtered.map((vehicle, index) => <VehicleCard
+      key={vehicle.id}
+      vehicle={vehicle}
+      price={money(vehicle)}
+      href={'/' + encodeURIComponent(dealer.slug) + '/vehicle/' + encodeURIComponent(vehicle.id)}
+      eager={index === 0}
+      showInventoryExtras
+      saved={saved.includes(vehicle.id)}
+      onToggleSaved={toggleSaved}
+    />)}</section> : <div className="dl-store-empty"><CarFront/><h2>No matching vehicles</h2><p>Try a different search or clear your filters.</p><button onClick={() => {clearFilters();setQuery('');}}>Clear filters</button></div>}
     <footer className="dl-store-footer">{dealer.name} · Powered by {name}</footer>
     <nav className="dl-store-bottom-nav"><button onClick={goHome}><Grid2x2/><span>Home</span></button><button className="active"><CarFront/><span>Inventory</span></button><button onClick={goContact}><Contact/><span>Enquiries</span></button><button onClick={shareShowroom}><Share2/><span>More</span></button></nav>
     {filtersOpen && <div className="dl-store-filter-backdrop" onClick={() => setFiltersOpen(false)}><section className="dl-store-filter-panel" onClick={e => e.stopPropagation()}><header><div><h2>Filters</h2><p>Find the right vehicle</p></div><button onClick={() => setFiltersOpen(false)} aria-label="Close filters"><X/></button></header>

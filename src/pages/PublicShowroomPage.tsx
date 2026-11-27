@@ -13,6 +13,7 @@ import { isSupabaseConfigured } from '../lib/supabase';
 import { absoluteUrl, homeTitle, pageTitle } from '../config/brand';
 import type { Dealership, FuelType, Vehicle } from '../types';
 import { FeaturedVehicleCarousel } from '../components/storefront/FeaturedVehicleCarousel';
+import { VehicleCard } from '../components/storefront/VehicleCard';
 import { CustomerEnquiryAssistant } from '../components/storefront/CustomerEnquiryAssistant';
 import './PublicShowroomPage.css';
 
@@ -49,8 +50,6 @@ export const PublicShowroomPage: React.FC<PublicShowroomPageProps> = ({ slug, pr
   const [sheet, setSheet] = useState<Sheet>(null);
   const [showEnquiryAssistant, setShowEnquiryAssistant] = useState(false);
   const [enquiryVehicle, setEnquiryVehicle] = useState<Vehicle | null>(null);
-  const [loadedImages, setLoadedImages] = useState<string[]>([]);
-  const [failedImages, setFailedImages] = useState<string[]>([]);
   const [activeTab, setActiveTab] = useState<'home' | 'inventory' | 'saved' | 'contact'>('home');
   const searchInputRef = useRef<HTMLInputElement>(null);
 
@@ -239,8 +238,7 @@ export const PublicShowroomPage: React.FC<PublicShowroomPageProps> = ({ slug, pr
   // /render/image/public can fail when image transformations are unavailable
   // or the bucket does not support them, leaving both the hero and cards blank.
   const imageUrl = (source: string, ..._dimensions: number[]) => source || '';
-  const toggleSave = (id: string, event: React.MouseEvent) => {
-    event.stopPropagation();
+  const toggleSave = (id: string) => {
     setSaved(current => {
       const next = current.includes(id) ? current.filter(item => item !== id) : [...current, id];
       try { localStorage.setItem('drivelink:saved-vehicles', JSON.stringify(next)); } catch {}
@@ -345,34 +343,13 @@ export const PublicShowroomPage: React.FC<PublicShowroomPageProps> = ({ slug, pr
             {filtered.length > 0 && <span>{countLabel(filtered.length)}</span>}
           </div>
           {filtered.length > 0 ? (
-            <div className="dl-ps-grid">
-              {filtered.map((vehicle, index) => {
-                const hasPhoto = Boolean(vehicle.photos?.[0]);
-                const imageFailed = failedImages.includes(vehicle.id);
-                const showPhoto = hasPhoto && !imageFailed;
-                const title = [vehicle.make, vehicle.model].filter(Boolean).join(' ') || 'Vehicle';
-                const vehicleUrl = '/' + dealer.slug + '/vehicle/' + vehicle.id;
-                return (
-                  <article key={vehicle.id} className={'dl-ps-card' + (!showPhoto ? ' no-photo' : '')}>
-                    <a className="dl-ps-card-link" href={vehicleUrl} aria-label={'View ' + title}>
-                      <div className="dl-ps-card-media">
-                        {showPhoto ? (
-                          <>
-                            {!loadedImages.includes(vehicle.id) && <div className="dl-ps-image-skeleton" />}
-                            <img src={imageUrl(vehicle.photos[0])} alt={title} className={'dl-ps-card-img ' + (loadedImages.includes(vehicle.id) ? 'is-loaded' : '')}
-                              loading={index === 0 ? 'eager' : 'lazy'} fetchPriority={index === 0 ? 'high' : 'auto'} decoding="async"
-                              width={1200} height={900}
-                              onLoad={() => setLoadedImages(current => current.includes(vehicle.id) ? current : [...current, vehicle.id])}
-                              onError={() => setFailedImages(current => current.includes(vehicle.id) ? current : [...current, vehicle.id])} />
-                          </>
-                        ) : <div className="dl-ps-no-photo-view" aria-hidden="true"><CarFront size={58} strokeWidth={1.35} /></div>}
-                        <strong className="dl-ps-card-price">{money(vehicle)}</strong>
-                        <span className="dl-ps-card-dealer-tab">{dealer.name}</span>
-                      </div>
-                    </a>
-                  </article>
-                );
-              })}
+            <div className="dl-vehicle-card-grid">
+              {filtered.map((vehicle, index) => (
+                <VehicleCard key={vehicle.id} vehicle={vehicle} price={money(vehicle)}
+                  href={'/' + encodeURIComponent(dealer.slug) + '/vehicle/' + encodeURIComponent(vehicle.id)}
+                  eager={index === 0} showInventoryExtras saved={saved.includes(vehicle.id)}
+                  onToggleSaved={toggleSave} />
+              ))}
             </div>
           ) : (
             <div className="dl-ps-empty-box">
